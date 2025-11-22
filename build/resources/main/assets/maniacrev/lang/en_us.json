@@ -1,0 +1,27 @@
+{
+  "key.categories.maniacrev": "ManiacRev",
+  "key.maniacrev.open_guide": "Open Guide",
+  "key.maniacrev.activate_perk": "Activate Perk",
+  "key.maniacrev.switch_perk": "Switch Active Perk",
+
+  "perk.maniacrev.berserker.name": "Berserker",
+  "perk.maniacrev.berserker.desc": "Passive: Strength I. Active: Regeneration based on nearby allies.",
+
+  "perk.maniacrev.vampire.name": "Vampire",
+  "perk.maniacrev.vampire.desc": "Lifesteal: restore 20% of damage dealt.",
+
+  "perk.maniacrev.speedster.name": "Speedster",
+  "perk.maniacrev.speedster.desc": "Permanent Speed I.",
+
+  "perk.maniacrev.fortress.name": "Fortress",
+  "perk.maniacrev.fortress.desc": "Permanent Resistance I.",
+
+  "perk.maniacrev.scout.name": "Scout",
+  "perk.maniacrev.scout.desc": "Activate: night vision and speed for 10 seconds.",
+
+  "perk.maniacrev.mimic.name": "Mimic",
+  "perk.maniacrev.mimic.desc": "Transform into the most common block nearby for 7 seconds.",
+
+  "perk.maniacrev.predator.name": "Predator",
+  "perk.maniacrev.predator.desc": "Highlights the nearest survivor and grants speed."
+}

@@ -1,0 +1,78 @@
+{
+  "key.categories.maniacrev": "ManiacRev",
+  "key.maniacrev.open_guide": "Открыть гайд",
+  "key.maniacrev.activate_perk": "Активировать перк",
+  "key.maniacrev.switch_perk": "Сменить активный перк",
+
+  "perk.maniacrev.berserker.name": "Берсерк",
+  "perk.maniacrev.berserker.desc": "Пассивно: Сила I. Активно: Регенерация зависит от союзников рядом.",
+
+  "perk.maniacrev.vampire.name": "Вампир",
+  "perk.maniacrev.vampire.desc": "Вампиризм: восстанавливает 20% от нанесённого урона.",
+
+  "perk.maniacrev.speedster.name": "Скороход",
+  "perk.maniacrev.speedster.desc": "Постоянное ускорение I.",
+
+  "perk.maniacrev.fortress.name": "Крепость",
+  "perk.maniacrev.fortress.desc": "Постоянное сопротивление урону I.",
+
+  "perk.maniacrev.scout.name": "Разведчик",
+  "perk.maniacrev.scout.desc": "Активация: ночное зрение и скорость на 10 секунд.",
+
+  "perk.maniacrev.mimic.name": "Мимик",
+  "perk.maniacrev.mimic.desc": "Превращает в самый распространённый блок вокруг на 7 секунд.",
+
+  "perk.maniacrev.medic.name": "Медик",
+  "perk.maniacrev.medic.desc": "Пассивно: регенерация. Активно: лечит всех союзников в радиусе 5 блоков.",
+
+  "perk.maniacrev.trapper_survivor.name": "Ловчий",
+  "perk.maniacrev.trapper_survivor.desc": "Устанавливает паутину для замедления маньяка.",
+
+  "perk.maniacrev.hacker.name": "Хакер",
+  "perk.maniacrev.hacker.desc": "Ускоренный взлом компьютеров.",
+
+  "perk.maniacrev.decoy.name": "Обманка",
+  "perk.maniacrev.decoy.desc": "Создаёт отвлекающий шум и частицы в стороне.",
+
+  "perk.maniacrev.predator.name": "Хищник",
+  "perk.maniacrev.predator.desc": "Подсвечивает ближайшего выжившего и даёт скорость.",
+
+  "perk.maniacrev.terror.name": "Террор",
+  "perk.maniacrev.terror.desc": "Пассивно: слабость выжившим рядом. Активно: крик ужаса - слепота врагам.",
+
+  "perk.maniacrev.trapper_maniac.name": "Капканщик",
+  "perk.maniacrev.trapper_maniac.desc": "Устанавливает невидимый капкан.",
+
+  "perk.maniacrev.executioner.name": "Палач",
+  "perk.maniacrev.executioner.desc": "Режим казни: огромный урон, но замедление. Только в Перевороте!",
+
+  "perk.maniacrev.shadow.name": "Тень",
+  "perk.maniacrev.shadow.desc": "Невидимость и скорость на 5 секунд.",
+
+  "shop.maniacrev.skin_fire.name": "Огненный скин",
+  "shop.maniacrev.skin_fire.desc": "Огненная рамка для перка Берсерк",
+
+  "shop.maniacrev.skin_ice.name": "Ледяной скин",
+  "shop.maniacrev.skin_ice.desc": "Ледяная рамка для перка Скороход",
+
+  "shop.maniacrev.skin_shadow.name": "Теневой скин",
+  "shop.maniacrev.skin_shadow.desc": "Тёмная рамка для перка Хищник",
+
+  "shop.maniacrev.particles_flame.name": "Частицы: Пламя",
+  "shop.maniacrev.particles_flame.desc": "Огненные частицы вокруг игрока",
+
+  "shop.maniacrev.particles_hearts.name": "Частицы: Сердца",
+  "shop.maniacrev.particles_hearts.desc": "Сердечки вокруг игрока",
+
+  "shop.maniacrev.particles_smoke.name": "Частицы: Дым",
+  "shop.maniacrev.particles_smoke.desc": "Лёгкий дымок вокруг игрока",
+
+  "shop.maniacrev.reveal_maniac_class.name": "Разведка: Маньяк",
+  "shop.maniacrev.reveal_maniac_class.desc": "Узнать класс маньяка в начале игры",
+
+  "shop.maniacrev.reveal_survivor_count.name": "Разведка: Выжившие",
+  "shop.maniacrev.reveal_survivor_count.desc": "Узнать количество выживших в начале игры",
+
+  "shop.maniacrev.extra_preset_slot.name": "Доп. слот пресета",
+  "shop.maniacrev.extra_preset_slot.desc": "Добавляет +1 слот для сохранённых наборов перков"
+}
