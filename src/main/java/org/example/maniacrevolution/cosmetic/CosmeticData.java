@@ -112,15 +112,16 @@ public class CosmeticData {
     public static CosmeticData load(CompoundTag tag) {
         CosmeticData data = new CosmeticData();
 
+        // Загружаем купленные
         ListTag purchasedTag = tag.getList("purchased", Tag.TAG_STRING);
         for (int i = 0; i < purchasedTag.size(); i++) {
             data.purchasedCosmetics.add(purchasedTag.getString(i));
         }
 
+        // Загружаем включённые (только если куплено)
         ListTag enabledTag = tag.getList("enabled", Tag.TAG_STRING);
         for (int i = 0; i < enabledTag.size(); i++) {
             String id = enabledTag.getString(i);
-            // Только если куплено
             if (data.purchasedCosmetics.contains(id)) {
                 data.enabledCosmetics.add(id);
             }

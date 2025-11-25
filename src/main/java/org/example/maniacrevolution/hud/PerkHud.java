@@ -3,6 +3,8 @@ package org.example.maniacrevolution.hud;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.perk.PerkType;
@@ -12,6 +14,8 @@ import java.util.List;
 public class PerkHud {
     private static final int ICON_SIZE = 24;
     private static final int SPACING = 4;
+    private static final ResourceLocation DEFAULT_TEXTURE =
+            new ResourceLocation("maniacrev", "textures/perks/default.png");
 
     public static void render(GuiGraphics gui, int x, int y) {
         Minecraft mc = Minecraft.getInstance();
@@ -21,7 +25,7 @@ public class PerkHud {
 
         int activeIndex = ClientPlayerData.getActivePerkIndex();
 
-          //Фон панели
+        // Фон панели
 //        int panelWidth = perks.size() * (ICON_SIZE + SPACING) + 10;
 //        gui.fill(x, y, x + panelWidth + 50, y + 65, 0x80000000);
 
@@ -44,9 +48,8 @@ public class PerkHud {
             int bgColor = getTypeColor(perk.type());
             gui.fill(perkX, perkY, perkX + ICON_SIZE, perkY + ICON_SIZE, bgColor);
 
-            // Иконка перка (заглушка - первая буква названия)
-            String initial = perk.id().substring(0, 1).toUpperCase();
-            gui.drawString(mc.font, initial, perkX + 8, perkY + 8, 0xFFFFFF, true);
+            // ФИКС: Рендерим текстуру перка
+            renderPerkIcon(gui, perk, perkX, perkY);
 
             // Оверлей кулдауна
             if (perk.isOnCooldown()) {
@@ -76,11 +79,35 @@ public class PerkHud {
         gui.drawString(mc.font, "§7[" + switchKey + "] Сменить", x + 5, hintY + 10, 0xAAAAAA, false);
     }
 
+    // НОВЫЙ МЕТОД: Рендеринг иконки перка
+    private static void renderPerkIcon(GuiGraphics gui, ClientPlayerData.ClientPerkData perk, int x, int y) {
+        Minecraft mc = Minecraft.getInstance();
+        ResourceLocation texture = perk.getIcon();
+
+        // Пробуем загрузить текстуру
+        TextureManager textureManager = mc.getTextureManager();
+
+        try {
+            // Биндим текстуру
+            RenderSystem.setShaderTexture(0, texture);
+            RenderSystem.enableBlend();
+
+            // Рендерим текстуру 24x24
+            gui.blit(texture, x, y, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+
+            RenderSystem.disableBlend();
+        } catch (Exception e) {
+            // Если текстура не найдена - рисуем заглушку (первую букву)
+            String initial = perk.id().substring(0, 1).toUpperCase();
+            gui.drawString(mc.font, initial, x + 8, y + 8, 0xFFFFFF, true);
+        }
+    }
+
     private static int getTypeColor(PerkType type) {
         return switch (type) {
-            case PASSIVE -> 0xFF3355FF;  // Синий
-            case ACTIVE -> 0xFFFF5533;   // Красный
-            case HYBRID -> 0xFFAA55FF;   // Фиолетовый
+            case PASSIVE -> 0xFF3355FF;
+            case ACTIVE -> 0xFFFF5533;
+            case HYBRID -> 0xFFAA55FF;
         };
     }
 

@@ -47,7 +47,7 @@ public class MimicPerk extends Perk {
 
         // Делаем игрока невидимым и неуязвимым
         player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 7 * 20, 0, false, false));
-        player.setInvulnerable(true);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 40, 255, false, false));
 
         // Сохраняем данные
         ACTIVE_MIMICS.put(player.getUUID(), new MimicData(
@@ -84,7 +84,7 @@ public class MimicPerk extends Perk {
         if (data == null) return;
 
         // Снимаем неуязвимость
-        player.setInvulnerable(false);
+//        player.setInvulnerable(false);
 
         // Удаляем энтити блока
         ServerLevel level = player.serverLevel();

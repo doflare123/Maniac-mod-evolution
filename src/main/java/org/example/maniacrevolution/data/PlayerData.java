@@ -229,7 +229,7 @@ public class PlayerData {
         }
         tag.put("presets", presetsTag);
 
-        // Косметика
+        // ФИКС: Сохранение косметики
         tag.put("cosmetics", cosmeticData.save());
 
         // Выбранные перки
@@ -259,16 +259,24 @@ public class PlayerData {
             if (preset != null) data.presets.add(preset);
         }
 
-        // Косметика
+        // ФИКС: Загрузка косметики - правильное восстановление данных
         if (tag.contains("cosmetics")) {
-            CosmeticData loaded = CosmeticData.load(tag.getCompound("cosmetics"));
-            data.cosmeticData.getPurchasedCosmetics().forEach(id -> {}); // Clear
-            // Копируем данные
-            for (String id : loaded.getPurchasedCosmetics()) {
-                data.cosmeticData.addPurchase(id);
+            CompoundTag cosmeticsTag = tag.getCompound("cosmetics");
+
+            // Загружаем купленные
+            ListTag purchasedTag = cosmeticsTag.getList("purchased", Tag.TAG_STRING);
+            for (int i = 0; i < purchasedTag.size(); i++) {
+                data.cosmeticData.addPurchase(purchasedTag.getString(i));
             }
-            for (String id : loaded.getEnabledCosmetics()) {
-                data.cosmeticData.setEnabled(id, true);
+
+            // Загружаем включённые
+            ListTag enabledTag = cosmeticsTag.getList("enabled", Tag.TAG_STRING);
+            for (int i = 0; i < enabledTag.size(); i++) {
+                String id = enabledTag.getString(i);
+                // Включаем только если куплено
+                if (data.cosmeticData.hasPurchased(id)) {
+                    data.cosmeticData.setEnabled(id, true);
+                }
             }
         }
 

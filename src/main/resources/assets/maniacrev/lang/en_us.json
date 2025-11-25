@@ -5,10 +5,10 @@
   "key.maniacrev.switch_perk": "Switch Active Perk",
 
   "perk.maniacrev.berserker.name": "Berserker",
-  "perk.maniacrev.berserker.desc": "Passive: Strength I. Active: Regeneration based on nearby allies.",
+  "perk.maniacrev.berserker.desc": "Passive: Strength I. Active: Regeneration depends on nearby allies.",
 
   "perk.maniacrev.vampire.name": "Vampire",
-  "perk.maniacrev.vampire.desc": "Lifesteal: restore 20% of damage dealt.",
+  "perk.maniacrev.vampire.desc": "Vampirism: restores 20% of damage dealt.",
 
   "perk.maniacrev.speedster.name": "Speedster",
   "perk.maniacrev.speedster.desc": "Permanent Speed I.",
@@ -17,11 +17,98 @@
   "perk.maniacrev.fortress.desc": "Permanent Resistance I.",
 
   "perk.maniacrev.scout.name": "Scout",
-  "perk.maniacrev.scout.desc": "Activate: night vision and speed for 10 seconds.",
+  "perk.maniacrev.scout.desc": "Activation: Night Vision and Speed for 10 seconds.",
 
   "perk.maniacrev.mimic.name": "Mimic",
-  "perk.maniacrev.mimic.desc": "Transform into the most common block nearby for 7 seconds.",
+  "perk.maniacrev.mimic.desc": "Transforms into the most common surrounding block for 7 seconds.",
+
+  "perk.maniacrev.medic.name": "Medic",
+  "perk.maniacrev.medic.desc": "Passive: regeneration. Active: heals all allies within 5 blocks.",
+
+  "perk.maniacrev.trapper_survivor.name": "Trapper",
+  "perk.maniacrev.trapper_survivor.desc": "Places cobwebs to slow down the maniac.",
+
+  "perk.maniacrev.hacker.name": "Hacker",
+  "perk.maniacrev.hacker.desc": "Faster computer hacking.",
+
+  "perk.maniacrev.decoy.name": "Decoy",
+  "perk.maniacrev.decoy.desc": "Creates a distracting noise and particles away from you.",
 
   "perk.maniacrev.predator.name": "Predator",
-  "perk.maniacrev.predator.desc": "Highlights the nearest survivor and grants speed."
+  "perk.maniacrev.predator.desc": "Highlights the nearest survivor and grants speed.",
+
+  "perk.maniacrev.terror.name": "Terror",
+  "perk.maniacrev.terror.desc": "Passive: weakness to nearby survivors. Active: scream of terror - blindness to enemies.",
+
+  "perk.maniacrev.trapper_maniac.name": "Trapmaster",
+  "perk.maniacrev.trapper_maniac.desc": "Places an invisible trap.",
+
+  "perk.maniacrev.executioner.name": "Executioner",
+  "perk.maniacrev.executioner.desc": "Execution mode: massive damage, but slowness. Only in Overturn phase!",
+
+  "perk.maniacrev.shadow.name": "Shadow",
+  "perk.maniacrev.shadow.desc": "Invisibility and speed for 5 seconds.",
+
+  "shop.maniacrev.skin_fire.name": "Fire Skin",
+  "shop.maniacrev.skin_fire.desc": "Flaming frame for Berserker perk",
+
+  "shop.maniacrev.skin_ice.name": "Ice Skin",
+  "shop.maniacrev.skin_ice.desc": "Icy frame for Speedster perk",
+
+  "shop.maniacrev.skin_shadow.name": "Shadow Skin",
+  "shop.maniacrev.skin_shadow.desc": "Dark frame for Predator perk",
+
+  "shop.maniacrev.particles_flame.name": "Particles: Flame",
+  "shop.maniacrev.particles_flame.desc": "Fiery particles around the player",
+
+  "shop.maniacrev.particles_hearts.name": "Particles: Hearts",
+  "shop.maniacrev.particles_hearts.desc": "Hearts around the player",
+
+  "shop.maniacrev.particles_smoke.name": "Particles: Smoke",
+  "shop.maniacrev.particles_smoke.desc": "Light smoke around the player",
+
+  "shop.maniacrev.reveal_maniac_class.name": "Intel: Maniac",
+  "shop.maniacrev.reveal_maniac_class.desc": "Reveals the maniac's class at game start",
+
+  "shop.maniacrev.reveal_survivor_count.name": "Intel: Survivors",
+  "shop.maniacrev.reveal_survivor_count.desc": "Reveals the number of survivors at game start",
+
+  "shop.maniacrev.extra_preset_slot.name": "Extra Preset Slot",
+  "shop.maniacrev.extra_preset_slot.desc": "Adds +1 slot for saved perk sets",
+
+  "cosmetic.maniacrev.particles_flame.name": "Particles: Flame",
+  "cosmetic.maniacrev.particles_flame.desc": "Fiery particles around the player",
+
+  "cosmetic.maniacrev.particles_hearts.name": "Particles: Hearts",
+  "cosmetic.maniacrev.particles_hearts.desc": "Hearts around the player",
+
+  "cosmetic.maniacrev.particles_smoke.name": "Particles: Smoke",
+  "cosmetic.maniacrev.particles_smoke.desc": "Light smoke around the player",
+
+  "cosmetic.maniacrev.particles_enchant.name": "Particles: Enchant",
+  "cosmetic.maniacrev.particles_enchant.desc": "Magical particles around the player",
+
+  "cosmetic.maniacrev.bleeding_axe.name": "Bleeding (Axe)",
+  "cosmetic.maniacrev.bleeding_axe.desc": "Red trail when hitting with an axe",
+
+  "cosmetic.maniacrev.frost_sword.name": "Frost (Sword)",
+  "cosmetic.maniacrev.frost_sword.desc": "Icy trail when hitting with a sword",
+
+  "cosmetic.maniacrev.shadow_blade.name": "Shadow (Weapon)",
+  "cosmetic.maniacrev.shadow_blade.desc": "Dark trail when hitting with any weapon",
+
+  "cosmetic.maniacrev.skin_berserker_fire.name": "Skin: Berserker (Fire)",
+  "cosmetic.maniacrev.skin_berserker_fire.desc": "Flaming frame for Berserker perk",
+
+  "cosmetic.maniacrev.skin_mimic_shadow.name": "Skin: Mimic (Shadow)",
+  "cosmetic.maniacrev.skin_mimic_shadow.desc": "Dark frame for Mimic perk",
+
+  "cosmetic.maniacrev.skin_predator_blood.name": "Skin: Predator (Blood)",
+  "cosmetic.maniacrev.skin_predator_blood.desc": "Bloody frame for Predator perk",
+
+  "cosmetic.maniacrev.trail_fire.name": "Trail: Fire",
+  "cosmetic.maniacrev.trail_fire.desc": "Fiery trail behind the player",
+
+  "cosmetic.maniacrev.trail_soul.name": "Trail: Souls",
+  "cosmetic.maniacrev.trail_soul.desc": "Blue soul flame trail"
 }

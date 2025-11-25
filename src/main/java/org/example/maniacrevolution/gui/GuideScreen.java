@@ -1,10 +1,13 @@
 package org.example.maniacrevolution.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.perk.Perk;
 import org.example.maniacrevolution.perk.PerkPhase;
@@ -131,18 +134,19 @@ public class GuideScreen extends Screen {
         }
 
         // Иконка типа
-        int typeColor = switch (perk.getType()) {
-            case PASSIVE -> 0xFF5555FF;
-            case ACTIVE -> 0xFFFF5555;
-            case HYBRID -> 0xFFFF55FF;
-        };
-        gui.fill(x + 3, y + 3, x + 28, y + 28, typeColor);
-        String typeChar = switch (perk.getType()) {
-            case PASSIVE -> "П";
-            case ACTIVE -> "А";
-            case HYBRID -> "Г";
-        };
-        gui.drawCenteredString(font, typeChar, x + 15, y + 11, 0xFFFFFF);
+        renderPerkIcon(gui, perk, x + 3, y + 3, 28);
+//        int typeColor = switch (perk.getType()) {
+//            case PASSIVE -> 0xFF5555FF;
+//            case ACTIVE -> 0xFFFF5555;
+//            case HYBRID -> 0xFFFF55FF;
+//        };
+//        gui.fill(x + 3, y + 3, x + 28, y + 28, typeColor);
+//        String typeChar = switch (perk.getType()) {
+//            case PASSIVE -> "П";
+//            case ACTIVE -> "А";
+//            case HYBRID -> "Г";
+//        };
+//        gui.drawCenteredString(font, typeChar, x + 15, y + 11, 0xFFFFFF);
 
         // Название
         gui.drawString(font, "§f" + perk.getName().getString(), x + 35, y + 5, 0xFFFFFF, false);
@@ -155,6 +159,22 @@ public class GuideScreen extends Screen {
         if (perk.getCooldownTicks() > 0) {
             String cd = "КД: " + (perk.getCooldownTicks() / 20) + "с";
             gui.drawString(font, "§c" + cd, x + width - font.width(cd) - 5, y + 5, 0xFF5555, false);
+        }
+    }
+
+    private void renderPerkIcon(GuiGraphics gui, Perk perk, int x, int y, int size) {
+        Minecraft mc = Minecraft.getInstance();
+        ResourceLocation texture = new ResourceLocation("maniacrev", "textures/perks/" + perk.getId() + ".png");
+
+        try {
+            RenderSystem.setShaderTexture(0, texture);
+            RenderSystem.enableBlend();
+            gui.blit(texture, x, y, 0, 0, size, size, size, size);
+            RenderSystem.disableBlend();
+        } catch (Exception e) {
+            // Заглушка
+            String initial = perk.getId().substring(0, 2).toUpperCase();
+            gui.drawCenteredString(font, initial, x + size / 2, y + size / 2 - 4, 0xFFFFFF);
         }
     }
 

@@ -1,10 +1,13 @@
 package org.example.maniacrevolution.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.cosmetic.CosmeticEffect;
 import org.example.maniacrevolution.cosmetic.CosmeticRegistry;
 import org.example.maniacrevolution.cosmetic.CosmeticType;
@@ -143,8 +146,7 @@ public class CosmeticScreen extends Screen {
         gui.renderOutline(x, y, width, height, borderColor);
 
         // Иконка статуса
-        int iconColor = enabled ? 0xFF00FF00 : 0xFF666666;
-        gui.fill(x + 4, y + 4, x + 24, y + 24, iconColor);
+        renderCosmeticIcon(gui, effect, x + 3, y + 3, 24);
         String statusIcon = enabled ? "✓" : "✗";
         gui.drawCenteredString(font, statusIcon, x + 14, y + 10, 0xFFFFFF);
 
@@ -218,6 +220,27 @@ public class CosmeticScreen extends Screen {
         int maxScroll = Math.max(0, ownedCount * 35 - 130);
         scrollOffset = (int) Math.max(0, Math.min(maxScroll, scrollOffset - delta * 25));
         return true;
+    }
+
+    private void renderCosmeticIcon(GuiGraphics gui, CosmeticEffect effect, int x, int y, int size) {
+        Minecraft mc = Minecraft.getInstance();
+        ResourceLocation texture = new ResourceLocation("maniacrev", "textures/cosmetics/" + effect.getId() + ".png");
+
+        try {
+            RenderSystem.setShaderTexture(0, texture);
+            RenderSystem.enableBlend();
+            gui.blit(texture, x, y, 0, 0, size, size, size, size);
+            RenderSystem.disableBlend();
+        } catch (Exception e) {
+            // Заглушка - иконка по типу
+            String icon = switch (effect.getType()) {
+                case PARTICLE -> "✦";
+                case WEAPON_EFFECT -> "⚔";
+                case PERK_SKIN -> "◈";
+                case TRAIL -> "~";
+            };
+            gui.drawCenteredString(font, icon, x + size / 2, y + size / 2 - 4, 0xFFFFFF);
+        }
     }
 
     @Override

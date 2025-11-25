@@ -74,5 +74,41 @@
   "shop.maniacrev.reveal_survivor_count.desc": "Узнать количество выживших в начале игры",
 
   "shop.maniacrev.extra_preset_slot.name": "Доп. слот пресета",
-  "shop.maniacrev.extra_preset_slot.desc": "Добавляет +1 слот для сохранённых наборов перков"
+  "shop.maniacrev.extra_preset_slot.desc": "Добавляет +1 слот для сохранённых наборов перков",
+
+  "cosmetic.maniacrev.particles_flame.name": "Частицы: Пламя",
+  "cosmetic.maniacrev.particles_flame.desc": "Огненные частицы вокруг игрока",
+
+  "cosmetic.maniacrev.particles_hearts.name": "Частицы: Сердца",
+  "cosmetic.maniacrev.particles_hearts.desc": "Сердечки вокруг игрока",
+
+  "cosmetic.maniacrev.particles_smoke.name": "Частицы: Дым",
+  "cosmetic.maniacrev.particles_smoke.desc": "Лёгкий дымок вокруг игрока",
+
+  "cosmetic.maniacrev.particles_enchant.name": "Частицы: Зачарование",
+  "cosmetic.maniacrev.particles_enchant.desc": "Магические частицы вокруг игрока",
+
+  "cosmetic.maniacrev.bleeding_axe.name": "Кровотечение (Топор)",
+  "cosmetic.maniacrev.bleeding_axe.desc": "Красный след при ударе топором",
+
+  "cosmetic.maniacrev.frost_sword.name": "Мороз (Меч)",
+  "cosmetic.maniacrev.frost_sword.desc": "Ледяной след при ударе мечом",
+
+  "cosmetic.maniacrev.shadow_blade.name": "Тень (Оружие)",
+  "cosmetic.maniacrev.shadow_blade.desc": "Тёмный след при ударе любым оружием",
+
+  "cosmetic.maniacrev.skin_berserker_fire.name": "Скин: Берсерк (Огонь)",
+  "cosmetic.maniacrev.skin_berserker_fire.desc": "Огненная рамка для перка Берсерк",
+
+  "cosmetic.maniacrev.skin_mimic_shadow.name": "Скин: Мимик (Тень)",
+  "cosmetic.maniacrev.skin_mimic_shadow.desc": "Тёмная рамка для перка Мимик",
+
+  "cosmetic.maniacrev.skin_predator_blood.name": "Скин: Хищник (Кровь)",
+  "cosmetic.maniacrev.skin_predator_blood.desc": "Кровавая рамка для перка Хищник",
+
+  "cosmetic.maniacrev.trail_fire.name": "След: Огонь",
+  "cosmetic.maniacrev.trail_fire.desc": "Огненный след за игроком",
+
+  "cosmetic.maniacrev.trail_soul.name": "След: Души",
+  "cosmetic.maniacrev.trail_soul.desc": "След синего пламени душ"
 }

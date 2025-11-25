@@ -1,10 +1,13 @@
 package org.example.maniacrevolution.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import org.example.maniacrevolution.cosmetic.CosmeticEffect;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.PurchaseItemPacket;
@@ -121,9 +124,10 @@ public class ShopScreen extends Screen {
 
         // Иконка
         int iconSize = height - 8;
-        gui.fill(x + 4, y + 4, x + 4 + iconSize, y + 4 + iconSize, getCategoryColor(item.getCategory()));
-        String initial = item.getId().substring(0, 1).toUpperCase();
-        gui.drawCenteredString(font, initial, x + 4 + iconSize / 2, y + 4 + iconSize / 2 - 4, 0xFFFFFF);
+        renderCosmeticIcon(gui, item, x + 4, y + 4, iconSize);
+//        gui.fill(x + 4, y + 4, x + 4 + iconSize, y + 4 + iconSize, getCategoryColor(item.getCategory()));
+//        String initial = item.getId().substring(0, 1).toUpperCase();
+//        gui.drawCenteredString(font, initial, x + 4 + iconSize / 2, y + 4 + iconSize / 2 - 4, 0xFFFFFF);
 
         // Название
         gui.drawString(font, item.getName(), x + iconSize + 10, y + 5, 0xFFFFFF, false);
@@ -211,6 +215,25 @@ public class ShopScreen extends Screen {
         int maxScroll = Math.max(0, items.size() * 38 - 150);
         scrollOffset = (int) Math.max(0, Math.min(maxScroll, scrollOffset - delta * 25));
         return true;
+    }
+    private void renderCosmeticIcon(GuiGraphics gui, ShopItem item, int x, int y, int size) {
+        Minecraft mc = Minecraft.getInstance();
+        ResourceLocation texture = new ResourceLocation("maniacrev", "textures/cosmetics/" + item.getId() + ".png");
+
+        try {
+            RenderSystem.setShaderTexture(0, texture);
+            RenderSystem.enableBlend();
+            gui.blit(texture, x, y, 0, 0, size, size, size, size);
+            RenderSystem.disableBlend();
+        } catch (Exception e) {
+            // Заглушка - иконка по типу
+            String icon = switch (item.getCategory()) {
+                case COSMETICS -> "✦";
+                case UPGRADES -> "⬆";
+                case BOOSTS -> "◈";
+            };
+            gui.drawCenteredString(font, icon, x + size / 2, y + size / 2 - 4, 0xFFFFFF);
+        }
     }
 
     @Override

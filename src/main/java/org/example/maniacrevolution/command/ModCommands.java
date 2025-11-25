@@ -3,11 +3,16 @@ package org.example.maniacrevolution.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
@@ -79,12 +84,28 @@ public class ModCommands {
                                             return 1;
                                         }))))
 
-                // /maniacrev phase <0-3>
                 .then(Commands.literal("phase")
                         .then(Commands.argument("phase", IntegerArgumentType.integer(0, 3))
                                 .executes(ctx -> {
                                     int phase = IntegerArgumentType.getInteger(ctx, "phase");
                                     GameManager.setPhase(phase);
+
+                                    // Если переходим в 3-ю фазу - воспроизводим звук дракона для всех
+                                    if (phase == 3) {
+                                        MinecraftServer server = ctx.getSource().getServer();
+
+                                        // Проходим по всем игрокам на сервере
+                                        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                                            // Воспроизводим звук дракона на позиции игрока
+                                            player.playNotifySound(
+                                                    SoundEvents.ENDER_DRAGON_GROWL,
+                                                    SoundSource.MASTER,
+                                                    5.0F,  // Громкость (очень громко)
+                                                    1.0F    // Высота тона
+                                            );
+                                        }
+                                    }
+
                                     ctx.getSource().sendSuccess(() ->
                                             Component.literal("§eФаза установлена: " + phase), true);
                                     return 1;

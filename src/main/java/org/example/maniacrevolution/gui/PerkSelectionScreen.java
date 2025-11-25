@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -143,8 +144,7 @@ public class PerkSelectionScreen extends Screen {
             gui.renderOutline(x, y, PERK_SLOT_SIZE, PERK_SLOT_SIZE, borderColor);
 
             // Иконка (заглушка)
-            String initial = perk.getId().substring(0, 2).toUpperCase();
-            gui.drawCenteredString(font, initial, x + PERK_SLOT_SIZE / 2, y + PERK_SLOT_SIZE / 2 - 4, 0xFFFFFF);
+            renderPerkIcon(gui, perk, x, y, PERK_SLOT_SIZE);
 
             // Индикатор команды
             String teamMark = switch (perk.getTeam()) {
@@ -244,6 +244,22 @@ public class PerkSelectionScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    private void renderPerkIcon(GuiGraphics gui, Perk perk, int x, int y, int size) {
+        Minecraft mc = Minecraft.getInstance();
+        ResourceLocation texture = new ResourceLocation("maniacrev", "textures/perks/" + perk.getId() + ".png");
+
+        try {
+            RenderSystem.setShaderTexture(0, texture);
+            RenderSystem.enableBlend();
+            gui.blit(texture, x, y, 0, 0, size, size, size, size);
+            RenderSystem.disableBlend();
+        } catch (Exception e) {
+            // Заглушка
+            String initial = perk.getId().substring(0, 2).toUpperCase();
+            gui.drawCenteredString(font, initial, x + size / 2, y + size / 2 - 4, 0xFFFFFF);
+        }
     }
 
     private enum Tab { ALL, PRESETS }
