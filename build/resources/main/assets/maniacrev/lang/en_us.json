@@ -110,5 +110,8 @@
   "cosmetic.maniacrev.trail_fire.desc": "Fiery trail behind the player",
 
   "cosmetic.maniacrev.trail_soul.name": "Trail: Souls",
-  "cosmetic.maniacrev.trail_soul.desc": "Blue soul flame trail"
+  "cosmetic.maniacrev.trail_soul.desc": "Blue soul flame trail",
+
+  "item.maniacrev.salt": "Salt",
+  "block.maniacrev.salt_block": "Salt"
 }

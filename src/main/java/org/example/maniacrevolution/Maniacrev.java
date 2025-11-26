@@ -16,6 +16,8 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.example.maniacrevolution.block.ModBlocks;
+import org.example.maniacrevolution.command.ClearSaltCommand;
 import org.example.maniacrevolution.command.ModCommands;
 import org.example.maniacrevolution.cosmetic.CosmeticRegistry;
 import org.example.maniacrevolution.data.PlayerDataManager;
@@ -48,6 +50,7 @@ public class Maniacrev {
         // ========== РЕГИСТРАЦИЯ ВСЕХ DEFERRED REGISTERS ==========
         SOUNDS.register(modEventBus);
         ModItems.register(modEventBus);
+        ModBlocks.register(modEventBus);
         ModEntities.register(modEventBus);  // <-- ДОБАВИТЬ ЭТУ СТРОКУ
         // =========================================================
 
@@ -82,6 +85,7 @@ public class Maniacrev {
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
         ModCommands.register(event.getDispatcher());
+        ClearSaltCommand.register(event.getDispatcher());
     }
 
     public static ResourceLocation loc(String path) {

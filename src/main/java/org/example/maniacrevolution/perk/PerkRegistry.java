@@ -13,11 +13,14 @@ public class PerkRegistry {
 
     public static void init() {
         // Общие перки (5 штук)
-        register(new BerserkerPerk());
-        register(new VampirePerk());
-        register(new SpeedsterPerk());
-        register(new FortressPerk());
-        register(new ScoutPerk());
+//        register(new BerserkerPerk());
+//        register(new VampirePerk());
+//        register(new SpeedsterPerk());
+//        register(new FortressPerk());
+//        register(new ScoutPerk());
+        register(new BigmoneyPerk());
+        register(new MegamindPerk());
+        register(new GtoMedalPerk());
 
         // Перки выживших (5 штук)
         register(new MimicPerk());

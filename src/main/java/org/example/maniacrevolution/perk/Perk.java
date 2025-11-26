@@ -14,7 +14,7 @@ public abstract class Perk {
     private final PerkType type;
     private final PerkTeam team;
     private final Set<PerkPhase> activePhases;
-    private final int cooldownTicks; // 0 если нет КД (пассивный)
+    private final int cooldownTicks;
     private final ResourceLocation icon;
 
     protected Perk(Builder builder) {
@@ -43,6 +43,21 @@ public abstract class Perk {
     /** Вызывается каждый тик пока перк активен */
     public void onTick(ServerPlayer player) {}
 
+    /**
+     * Вызывается каждый тик для проверки условия срабатывания.
+     * Возвращает true если перк должен сработать и уйти в КД.
+     * Используется для PASSIVE_COOLDOWN перков.
+     */
+    public boolean shouldTrigger(ServerPlayer player) {
+        return false;
+    }
+
+    /**
+     * Вызывается при срабатывании PASSIVE_COOLDOWN перка.
+     * Здесь выполняется основной эффект перка.
+     */
+    public void onTrigger(ServerPlayer player) {}
+
     /** Вызывается при старте игры (для перков с фазой START) */
     public void onGameStart(ServerPlayer player) {}
 
@@ -61,7 +76,7 @@ public abstract class Perk {
 
     /** Проверка, может ли игрок использовать активную способность */
     public boolean canActivate(ServerPlayer player, PerkPhase currentPhase) {
-        if (type == PerkType.PASSIVE) return false;
+        if (type == PerkType.PASSIVE || type == PerkType.PASSIVE_COOLDOWN) return false;
         if (!isActiveInPhase(currentPhase)) return false;
         if (player.gameMode.getGameModeForPlayer() != net.minecraft.world.level.GameType.ADVENTURE) {
             return false;

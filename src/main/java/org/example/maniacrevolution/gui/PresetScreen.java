@@ -320,6 +320,7 @@ public class PresetScreen extends Screen {
                     case PASSIVE -> 0xFF5555FF;
                     case ACTIVE -> 0xFFFF5555;
                     case HYBRID -> 0xFFFF55FF;
+                    case PASSIVE_COOLDOWN -> 0xFF5555FF;
                 };
             }
             gui.renderOutline(x, y, slotSize, slotSize, borderColor);

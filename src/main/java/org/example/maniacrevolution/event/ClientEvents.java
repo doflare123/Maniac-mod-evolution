@@ -1,12 +1,16 @@
 package org.example.maniacrevolution.event;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.gui.GuideScreen;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.network.ModNetworking;
@@ -41,5 +45,13 @@ public class ClientEvents {
         public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
             ModKeybinds.registerKeyMappings(event);
         }
+    }
+
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            // Устанавливаем cutout render type для блока соли
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.SALT_BLOCK.get(), RenderType.cutout());
+        });
     }
 }

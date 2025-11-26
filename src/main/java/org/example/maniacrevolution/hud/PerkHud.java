@@ -108,6 +108,7 @@ public class PerkHud {
             case PASSIVE -> 0xFF3355FF;
             case ACTIVE -> 0xFFFF5533;
             case HYBRID -> 0xFFAA55FF;
+            case PASSIVE_COOLDOWN -> 0xFF3355FF;
         };
     }
 
@@ -116,6 +117,7 @@ public class PerkHud {
             case PASSIVE -> 0x5555FF;
             case ACTIVE -> 0xFF5555;
             case HYBRID -> 0xFF55FF;
+            case PASSIVE_COOLDOWN -> 0x5555FF;
         };
     }
 
@@ -124,6 +126,7 @@ public class PerkHud {
             case PASSIVE -> "ПАС";
             case ACTIVE -> "АКТ";
             case HYBRID -> "ГИБ";
+            case PASSIVE_COOLDOWN -> "ПАС";
         };
     }
 }

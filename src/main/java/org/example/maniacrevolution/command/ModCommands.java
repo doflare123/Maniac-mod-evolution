@@ -3,14 +3,12 @@ package org.example.maniacrevolution.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.network.PacketDistributor;
@@ -19,6 +17,9 @@ import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.OpenGuiPacket;
+import org.example.maniacrevolution.perk.perks.common.BigmoneyPerk;
+import org.example.maniacrevolution.perk.perks.common.MegamindPerk;
+
 
 import java.util.Collection;
 
@@ -129,7 +130,6 @@ public class ModCommands {
                                 .executes(ctx -> clearPerks(ctx, null))
                                 .then(Commands.argument("targets", EntityArgument.players())
                                         .executes(ctx -> clearPerks(ctx, EntityArgument.getPlayers(ctx, "targets")))))
-                        // ФИКСnull: теперь принимает несколько игроков через EntityArgument.players()
                         .then(Commands.literal("open")
                                 .then(Commands.argument("targets", EntityArgument.players())
                                         .executes(ctx -> openPerkGui(ctx)))))
@@ -142,35 +142,65 @@ public class ModCommands {
 
     private static int addExp(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         Collection<ServerPlayer> targets = EntityArgument.getPlayers(ctx, "targets");
-        int amount = IntegerArgumentType.getInteger(ctx, "amount");
+        int baseAmount = IntegerArgumentType.getInteger(ctx, "amount");
 
         for (ServerPlayer player : targets) {
             PlayerData data = PlayerDataManager.get(player);
-            data.addExperience(amount);
+
+            // Применяем бонус от перка Megamind если он есть
+            int actualAmount = baseAmount;
+            if (MegamindPerk.hasActivePerk(player)) {
+                actualAmount = MegamindPerk.applyBonus(baseAmount);
+                player.displayClientMessage(
+                        Component.literal("§a+" + actualAmount + " опыта! §7(Megamind: +" + (actualAmount - baseAmount) + ")"),
+                        true
+                );
+            } else {
+                player.displayClientMessage(Component.literal("§a+" + actualAmount + " опыта!"), true);
+            }
+
+            data.addExperience(actualAmount);
             PlayerDataManager.syncToClient(player);
-            player.displayClientMessage(Component.literal("§a+" + amount + " опыта!"), true);
         }
 
         ctx.getSource().sendSuccess(() ->
-                Component.literal("§aДобавлено " + amount + " опыта " + targets.size() + " игрокам"), true);
+                Component.literal("§aДобавлено " + baseAmount + " опыта " + targets.size() + " игрокам"), true);
         return targets.size();
     }
 
     private static int addMoney(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         Collection<ServerPlayer> targets = EntityArgument.getPlayers(ctx, "targets");
-        int amount = IntegerArgumentType.getInteger(ctx, "amount");
+        int baseAmount = IntegerArgumentType.getInteger(ctx, "amount");
 
         for (ServerPlayer player : targets) {
             PlayerData data = PlayerDataManager.get(player);
-            data.addCoins(amount);
-            PlayerDataManager.syncToClient(player);
-            if (amount > 0) {
-                player.displayClientMessage(Component.literal("§6+" + amount + " монет!"), true);
+
+            // Применяем бонус от перка Bigmoney если он есть
+            int actualAmount = baseAmount;
+            if (BigmoneyPerk.hasActivePerk(player)) {
+                actualAmount = BigmoneyPerk.applyBonus(baseAmount);
+                if (baseAmount > 0) {
+                    player.displayClientMessage(
+                            Component.literal("§6+" + actualAmount + " монет! §7(Bigmoney: +" + (actualAmount - baseAmount) + ")"),
+                            true
+                    );
+                } else {
+                    player.displayClientMessage(Component.literal("§6" + actualAmount + " монет!"), true);
+                }
+            } else {
+                if (baseAmount > 0) {
+                    player.displayClientMessage(Component.literal("§6+" + actualAmount + " монет!"), true);
+                } else {
+                    player.displayClientMessage(Component.literal("§6" + actualAmount + " монет!"), true);
+                }
             }
+
+            data.addCoins(actualAmount);
+            PlayerDataManager.syncToClient(player);
         }
 
         ctx.getSource().sendSuccess(() ->
-                Component.literal("§aДобавлено " + amount + " монет " + targets.size() + " игрокам"), true);
+                Component.literal("§aДобавлено " + baseAmount + " монет " + targets.size() + " игрокам"), true);
         return targets.size();
     }
 
@@ -192,7 +222,6 @@ public class ModCommands {
         return count;
     }
 
-    // ФИКС: Теперь открывает UI для нескольких игроков (@a, @a[team=...] и т.д.)
     private static int openPerkGui(CommandContext<CommandSourceStack> ctx)
             throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         Collection<ServerPlayer> targets = EntityArgument.getPlayers(ctx, "targets");

@@ -6,7 +6,8 @@ import net.minecraft.network.chat.Component;
 public enum PerkType {
     PASSIVE("Пассивный", ChatFormatting.BLUE),
     ACTIVE("Активный", ChatFormatting.RED),
-    HYBRID("Гибридный", ChatFormatting.LIGHT_PURPLE);
+    HYBRID("Гибридный", ChatFormatting.LIGHT_PURPLE),
+    PASSIVE_COOLDOWN("Пассивный", ChatFormatting.BLUE);
 
     private final String displayName;
     private final ChatFormatting color;

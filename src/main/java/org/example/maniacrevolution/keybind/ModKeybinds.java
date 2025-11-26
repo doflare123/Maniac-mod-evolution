@@ -35,14 +35,6 @@ public class ModKeybinds {
             CATEGORY
     );
 
-    public static final KeyMapping OPEN_STOREGE = new KeyMapping(
-            "Open storege goods",
-            KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_B,
-            CATEGORY
-    );
-
     // Этот метод теперь пустой, но оставляем для совместимости
     public static void register() {
         Maniacrev.LOGGER.debug("Keybinds initialized");
@@ -53,7 +45,6 @@ public class ModKeybinds {
         event.register(OPEN_GUIDE);
         event.register(ACTIVATE_PERK);
         event.register(SWITCH_PERK);
-        event.register(OPEN_STOREGE);
         Maniacrev.LOGGER.info("Keybinds registered");
     }
 }

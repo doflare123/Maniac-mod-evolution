@@ -121,7 +121,6 @@ key_key.hotbar.9:key.keyboard.9
 key_key.maniacrev.open_guide:key.keyboard.c
 key_key.maniacrev.activate_perk:key.keyboard.f
 key_key.maniacrev.switch_perk:key.keyboard.x
-key_Open storege goods:key.keyboard.b
 soundCategory_master:0.4966887417218543
 soundCategory_music:0.0
 soundCategory_record:0.31690140845070425

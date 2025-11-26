@@ -110,5 +110,17 @@
   "cosmetic.maniacrev.trail_fire.desc": "Огненный след за игроком",
 
   "cosmetic.maniacrev.trail_soul.name": "След: Души",
-  "cosmetic.maniacrev.trail_soul.desc": "След синего пламени душ"
+  "cosmetic.maniacrev.trail_soul.desc": "След синего пламени душ",
+
+  "item.maniacrev.salt": "Соль",
+  "block.maniacrev.salt_block": "Соль",
+
+  "perk.maniacrev.bigmoney.name": "большие деньги - большие яйца",
+  "perk.maniacrev.bigmoney.desc": "Получайте на 20% больше монет в конце игры",
+
+  "perk.maniacrev.megamind.name": "Мегамозг",
+  "perk.maniacrev.megamind.desc": "Получайте на 20% больше опыта в конце игры",
+
+  "perk.maniacrev.gto_medal.name": "Золотая медаль ГТО",
+  "perk.maniacrev.gto_medal.desc": "Мощный рывок вперёд: толкает на 1 блок вверх и 4 блока вперёд"
 }

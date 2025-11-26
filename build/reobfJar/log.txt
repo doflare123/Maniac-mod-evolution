@@ -134,15 +134,46 @@ Adding Libraries to Inheritance
 Reading Input: D:\￐ﾟ￑ﾀ￐ﾸ￐ﾺ￐ﾾ￐ﾻ￑ﾎ￑ﾅ￐ﾸ\ManiacRevolution\maniacrev\build\libs\maniacrev-1.0-SNAPSHOT.jar
 Adding input to inheritance map
 Processing entries
+Conflicting propagated mapping for org/example/maniacrevolution/client/renderer/MimicBlockRenderer/getTextureLocation(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/resources/ResourceLocation; from net/minecraft/client/renderer/entity/EntityRenderer/getTextureLocation(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/resources/ResourceLocation;: getTextureLocation -> m_5478_
+Conflicting propagated mapping for org/example/maniacrevolution/client/renderer/MimicBlockRenderer/render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V from net/minecraft/client/renderer/entity/EntityRenderer/render(Lnet/minecraft/world/entity/Entity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V: render -> m_7392_
+Conflicting propagated mapping for org/example/maniacrevolution/block/SaltBlock/entityInside(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)V from net/minecraft/world/level/block/state/BlockBehaviour/entityInside(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)V: entityInside -> m_7892_
+Conflicting propagated mapping for org/example/maniacrevolution/block/SaltBlock/onRemove(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)V from net/minecraft/world/level/block/state/BlockBehaviour/onRemove(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)V: onRemove -> m_6810_
+Conflicting propagated mapping for org/example/maniacrevolution/block/SaltBlock/getRenderShape(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/RenderShape; from net/minecraft/world/level/block/state/BlockBehaviour/getRenderShape(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/RenderShape;: getRenderShape -> m_7514_
+Conflicting propagated mapping for org/example/maniacrevolution/block/SaltBlock/canSurvive(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z from net/minecraft/world/level/block/state/BlockBehaviour/canSurvive(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z: canSurvive -> m_7898_
+Conflicting propagated mapping for org/example/maniacrevolution/block/SaltBlock/getShape(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape; from net/minecraft/world/level/block/state/BlockBehaviour/getShape(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape;: getShape -> m_5940_
+Conflicting propagated mapping for org/example/maniacrevolution/entity/MimicBlockEntity/canBeCollidedWith()Z from net/minecraft/world/entity/Entity/canBeCollidedWith()Z: canBeCollidedWith -> m_5829_
+Conflicting propagated mapping for org/example/maniacrevolution/entity/MimicBlockEntity/readAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V from net/minecraft/world/entity/Entity/readAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V: readAdditionalSaveData -> m_7378_
+Conflicting propagated mapping for org/example/maniacrevolution/entity/MimicBlockEntity/isPickable()Z from net/minecraft/world/entity/Entity/isPickable()Z: isPickable -> m_6087_
+Conflicting propagated mapping for org/example/maniacrevolution/entity/MimicBlockEntity/tick()V from net/minecraft/world/entity/Entity/tick()V: tick -> m_8119_
+Conflicting propagated mapping for org/example/maniacrevolution/entity/MimicBlockEntity/isNoGravity()Z from net/minecraft/world/entity/Entity/isNoGravity()Z: isNoGravity -> m_20068_
+Conflicting propagated mapping for org/example/maniacrevolution/entity/MimicBlockEntity/getAddEntityPacket()Lnet/minecraft/network/protocol/Packet; from net/minecraft/world/entity/Entity/getAddEntityPacket()Lnet/minecraft/network/protocol/Packet;: getAddEntityPacket -> m_5654_
+Conflicting propagated mapping for org/example/maniacrevolution/entity/MimicBlockEntity/defineSynchedData()V from net/minecraft/world/entity/Entity/defineSynchedData()V: defineSynchedData -> m_8097_
+Conflicting propagated mapping for org/example/maniacrevolution/entity/MimicBlockEntity/addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V from net/minecraft/world/entity/Entity/addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V: addAdditionalSaveData -> m_7380_
+Conflicting propagated mapping for org/example/maniacrevolution/entity/MimicBlockEntity/isPushable()Z from net/minecraft/world/entity/Entity/isPushable()Z: isPushable -> m_6094_
+Conflicting propagated mapping for net/minecraft/world/entity/LivingEntity/lambda$addAdditionalSaveData$3(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/Tag;)V from net/minecraft/world/entity/player/Player/lambda$addAdditionalSaveData$3(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/Tag;)V: lambda$addAdditionalSaveData$3 -> m_219754_
+Conflicting propagated mapping for org/example/maniacrevolution/util/SaltTracker/save(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag; from net/minecraft/world/level/saveddata/SavedData/save(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;: save -> m_7176_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/CosmeticScreen/isPauseScreen()Z from net/minecraft/client/gui/screens/Screen/isPauseScreen()Z: isPauseScreen -> m_7043_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/CosmeticScreen/render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V from net/minecraft/client/gui/screens/Screen/render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V: render -> m_88315_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/CosmeticScreen/mouseScrolled(DDD)Z from net/minecraft/client/gui/components/events/ContainerEventHandler/mouseScrolled(DDD)Z: mouseScrolled -> m_6050_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/CosmeticScreen/init()V from net/minecraft/client/gui/screens/Screen/init()V: init -> m_7856_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/GuideScreen/keyPressed(III)Z from net/minecraft/client/gui/screens/Screen/keyPressed(III)Z: keyPressed -> m_7933_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/GuideScreen/isPauseScreen()Z from net/minecraft/client/gui/screens/Screen/isPauseScreen()Z: isPauseScreen -> m_7043_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/GuideScreen/render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V from net/minecraft/client/gui/screens/Screen/render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V: render -> m_88315_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/GuideScreen/mouseScrolled(DDD)Z from net/minecraft/client/gui/components/events/ContainerEventHandler/mouseScrolled(DDD)Z: mouseScrolled -> m_6050_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/GuideScreen/init()V from net/minecraft/client/gui/screens/Screen/init()V: init -> m_7856_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/GuideScreen/mouseClicked(DDI)Z from net/minecraft/client/gui/components/events/ContainerEventHandler/mouseClicked(DDI)Z: mouseClicked -> m_6375_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/PerkSelectionScreen/isPauseScreen()Z from net/minecraft/client/gui/screens/Screen/isPauseScreen()Z: isPauseScreen -> m_7043_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/PerkSelectionScreen/render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V from net/minecraft/client/gui/screens/Screen/render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V: render -> m_88315_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/PerkSelectionScreen/mouseScrolled(DDD)Z from net/minecraft/client/gui/components/events/ContainerEventHandler/mouseScrolled(DDD)Z: mouseScrolled -> m_6050_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/PerkSelectionScreen/init()V from net/minecraft/client/gui/screens/Screen/init()V: init -> m_7856_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/PerkSelectionScreen/mouseClicked(DDI)Z from net/minecraft/client/gui/components/events/ContainerEventHandler/mouseClicked(DDI)Z: mouseClicked -> m_6375_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/CosmeticScreen/mouseClicked(DDI)Z from net/minecraft/client/gui/components/events/ContainerEventHandler/mouseClicked(DDI)Z: mouseClicked -> m_6375_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/PresetScreen/isPauseScreen()Z from net/minecraft/client/gui/screens/Screen/isPauseScreen()Z: isPauseScreen -> m_7043_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/PresetScreen/render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V from net/minecraft/client/gui/screens/Screen/render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V: render -> m_88315_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/PresetScreen/mouseScrolled(DDD)Z from net/minecraft/client/gui/components/events/ContainerEventHandler/mouseScrolled(DDD)Z: mouseScrolled -> m_6050_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/PresetScreen/init()V from net/minecraft/client/gui/screens/Screen/init()V: init -> m_7856_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/PresetScreen/mouseClicked(DDI)Z from net/minecraft/client/gui/components/events/ContainerEventHandler/mouseClicked(DDI)Z: mouseClicked -> m_6375_
+Conflicting propagated mapping for org/example/maniacrevolution/gui/PresetScreen/tick()V from net/minecraft/client/gui/screens/Screen/tick()V: tick -> m_86600_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/ShopScreen/isPauseScreen()Z from net/minecraft/client/gui/screens/Screen/isPauseScreen()Z: isPauseScreen -> m_7043_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/ShopScreen/render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V from net/minecraft/client/gui/screens/Screen/render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V: render -> m_88315_
 Conflicting propagated mapping for org/example/maniacrevolution/gui/ShopScreen/mouseScrolled(DDD)Z from net/minecraft/client/gui/components/events/ContainerEventHandler/mouseScrolled(DDD)Z: mouseScrolled -> m_6050_
@@ -151,7 +182,7 @@ Conflicting propagated mapping for org/example/maniacrevolution/gui/ShopScreen/m
 Conflicting propagated mapping for org/example/maniacrevolution/item/ShopOpenItem/appendHoverText(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V from net/minecraft/world/item/Item/appendHoverText(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V: appendHoverText -> m_7373_
 Conflicting propagated mapping for org/example/maniacrevolution/item/ShopOpenItem/getName(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/network/chat/Component; from net/minecraft/world/item/Item/getName(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/network/chat/Component;: getName -> m_7626_
 Conflicting propagated mapping for org/example/maniacrevolution/item/ShopOpenItem/use(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResultHolder; from net/minecraft/world/item/Item/use(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResultHolder;: use -> m_7203_
-Conflicting propagated mapping for net/minecraft/world/entity/LivingEntity/lambda$addAdditionalSaveData$3(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/Tag;)V from net/minecraft/world/entity/player/Player/lambda$addAdditionalSaveData$3(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/Tag;)V: lambda$addAdditionalSaveData$3 -> m_219754_
+Conflicting propagated mapping for org/example/maniacrevolution/item/SaltItem/useOn(Lnet/minecraft/world/item/context/UseOnContext;)Lnet/minecraft/world/InteractionResult; from net/minecraft/world/item/Item/useOn(Lnet/minecraft/world/item/context/UseOnContext;)Lnet/minecraft/world/InteractionResult;: useOn -> m_6225_
 Adding extras
 Sorting
 Writing Output: D:\￐ﾟ￑ﾀ￐ﾸ￐ﾺ￐ﾾ￐ﾻ￑ﾎ￑ﾅ￐ﾸ\ManiacRevolution\maniacrev\build\reobfJar\output.jar
@@ -159,10 +190,27 @@ Writing Output: D:\￐ﾟ￑ﾀ￐ﾸ￐ﾺ￐ﾾ￐ﾻ￑ﾎ￑ﾅ￐ﾸ\Maniac
   META-INF/MANIFEST.MF
   META-INF/mods.toml
   assets/
-  assets/maniacrevolution/
-  assets/maniacrevolution/lang/
-  assets/maniacrevolution/lang/en_us.json
-  assets/maniacrevolution/lang/ru_ru.json
+  assets/maniacrev/
+  assets/maniacrev/blockstates/
+  assets/maniacrev/blockstates/salt_block.json
+  assets/maniacrev/lang/
+  assets/maniacrev/lang/en_us.json
+  assets/maniacrev/lang/ru_ru.json
+  assets/maniacrev/models/
+  assets/maniacrev/models/block/
+  assets/maniacrev/models/block/salt_block.json
+  assets/maniacrev/models/item/
+  assets/maniacrev/models/item/salt.json
+  assets/maniacrev/models/item/shop_token.json
+  assets/maniacrev/textures/
+  assets/maniacrev/textures/block/
+  assets/maniacrev/textures/block/redstone_dust_line0.png
+  assets/maniacrev/textures/block/salt.png
+  assets/maniacrev/textures/item/
+  assets/maniacrev/textures/item/salt.png
+  assets/maniacrev/textures/item/shop_token.png
+  assets/maniacrev/textures/perks/
+  assets/maniacrev/textures/perks/mimic.png
   org/
   org/example/
   org/example/maniacrevolution/
@@ -170,10 +218,32 @@ Writing Output: D:\￐ﾟ￑ﾀ￐ﾸ￐ﾺ￐ﾾ￐ﾻ￑ﾎ￑ﾅ￐ﾸ\Maniac
   org/example/maniacrevolution/Maniacrev$ClientModEvents.class
   org/example/maniacrevolution/Maniacrev.class
   org/example/maniacrevolution/ModItems.class
+  org/example/maniacrevolution/block/
+  org/example/maniacrevolution/block/ModBlocks.class
+  org/example/maniacrevolution/block/SaltBlock.class
+  org/example/maniacrevolution/client/
+  org/example/maniacrevolution/client/ClientSetupEvents.class
+  org/example/maniacrevolution/client/renderer/
+  org/example/maniacrevolution/client/renderer/MimicBlockRenderer.class
   org/example/maniacrevolution/command/
+  org/example/maniacrevolution/command/ClearSaltCommand.class
   org/example/maniacrevolution/command/ModCommands.class
   org/example/maniacrevolution/config/
   org/example/maniacrevolution/config/ModConfig.class
+  org/example/maniacrevolution/cosmetic/
+  org/example/maniacrevolution/cosmetic/CosmeticData.class
+  org/example/maniacrevolution/cosmetic/CosmeticEffect$SimpleBuilder.class
+  org/example/maniacrevolution/cosmetic/CosmeticEffect.class
+  org/example/maniacrevolution/cosmetic/CosmeticEventHandler.class
+  org/example/maniacrevolution/cosmetic/CosmeticRegistry.class
+  org/example/maniacrevolution/cosmetic/CosmeticType.class
+  org/example/maniacrevolution/cosmetic/effects/
+  org/example/maniacrevolution/cosmetic/effects/ParticleEffect$Builder.class
+  org/example/maniacrevolution/cosmetic/effects/ParticleEffect.class
+  org/example/maniacrevolution/cosmetic/effects/TrailEffect$Builder.class
+  org/example/maniacrevolution/cosmetic/effects/TrailEffect.class
+  org/example/maniacrevolution/cosmetic/effects/WeaponEffect$Builder.class
+  org/example/maniacrevolution/cosmetic/effects/WeaponEffect.class
   org/example/maniacrevolution/data/
   org/example/maniacrevolution/data/ClientGameState.class
   org/example/maniacrevolution/data/ClientPlayerData$ClientPerkData.class
@@ -181,6 +251,9 @@ Writing Output: D:\￐ﾟ￑ﾀ￐ﾸ￐ﾺ￐ﾾ￐ﾻ￑ﾎ￑ﾅ￐ﾸ\Maniac
   org/example/maniacrevolution/data/PlayerData.class
   org/example/maniacrevolution/data/PlayerDataManager.class
   org/example/maniacrevolution/data/SaveDataHandler.class
+  org/example/maniacrevolution/entity/
+  org/example/maniacrevolution/entity/MimicBlockEntity.class
+  org/example/maniacrevolution/entity/ModEntities.class
   org/example/maniacrevolution/event/
   org/example/maniacrevolution/event/ClientEvents$ModBusEvents.class
   org/example/maniacrevolution/event/ClientEvents.class
@@ -190,12 +263,16 @@ Writing Output: D:\￐ﾟ￑ﾀ￐ﾸ￐ﾺ￐ﾾ￐ﾻ￑ﾎ￑ﾅ￐ﾸ\Maniac
   org/example/maniacrevolution/game/GamePhase.class
   org/example/maniacrevolution/game/GameTimer.class
   org/example/maniacrevolution/gui/
+  org/example/maniacrevolution/gui/CosmeticScreen$1.class
+  org/example/maniacrevolution/gui/CosmeticScreen.class
   org/example/maniacrevolution/gui/GuideScreen$1.class
   org/example/maniacrevolution/gui/GuideScreen$Chapter.class
   org/example/maniacrevolution/gui/GuideScreen.class
   org/example/maniacrevolution/gui/PerkSelectionScreen$1.class
   org/example/maniacrevolution/gui/PerkSelectionScreen$Tab.class
   org/example/maniacrevolution/gui/PerkSelectionScreen.class
+  org/example/maniacrevolution/gui/PresetScreen$1.class
+  org/example/maniacrevolution/gui/PresetScreen$Mode.class
   org/example/maniacrevolution/gui/PresetScreen.class
   org/example/maniacrevolution/gui/ShopScreen$1.class
   org/example/maniacrevolution/gui/ShopScreen.class
@@ -206,6 +283,7 @@ Writing Output: D:\￐ﾟ￑ﾀ￐ﾸ￐ﾺ￐ﾾ￐ﾻ￑ﾎ￑ﾅ￐ﾸ\Maniac
   org/example/maniacrevolution/hud/PerkHud.class
   org/example/maniacrevolution/hud/TimerHud.class
   org/example/maniacrevolution/item/
+  org/example/maniacrevolution/item/SaltItem.class
   org/example/maniacrevolution/item/ShopOpenItem.class
   org/example/maniacrevolution/keybind/
   org/example/maniacrevolution/keybind/ModKeybinds.class
@@ -216,15 +294,20 @@ Writing Output: D:\￐ﾟ￑ﾀ￐ﾸ￐ﾺ￐ﾾ￐ﾻ￑ﾎ￑ﾅ￐ﾸ\Maniac
   org/example/maniacrevolution/network/packets/
   org/example/maniacrevolution/network/packets/ActivatePerkPacket$1.class
   org/example/maniacrevolution/network/packets/ActivatePerkPacket.class
+  org/example/maniacrevolution/network/packets/ApplyPresetPacket.class
+  org/example/maniacrevolution/network/packets/DeletePresetPacket.class
   org/example/maniacrevolution/network/packets/GameStatePacket.class
   org/example/maniacrevolution/network/packets/OpenGuiPacket$1.class
   org/example/maniacrevolution/network/packets/OpenGuiPacket$GuiType.class
   org/example/maniacrevolution/network/packets/OpenGuiPacket.class
   org/example/maniacrevolution/network/packets/PurchaseItemPacket.class
+  org/example/maniacrevolution/network/packets/SavePresetPacket.class
   org/example/maniacrevolution/network/packets/SelectPerkPacket.class
   org/example/maniacrevolution/network/packets/SwitchPerkPacket.class
   org/example/maniacrevolution/network/packets/SyncPlayerDataPacket$PerkSyncData.class
+  org/example/maniacrevolution/network/packets/SyncPlayerDataPacket$PresetSyncData.class
   org/example/maniacrevolution/network/packets/SyncPlayerDataPacket.class
+  org/example/maniacrevolution/network/packets/ToggleCosmeticPacket.class
   org/example/maniacrevolution/perk/
   org/example/maniacrevolution/perk/Perk$Builder.class
   org/example/maniacrevolution/perk/Perk.class
@@ -250,7 +333,9 @@ Writing Output: D:\￐ﾟ￑ﾀ￐ﾸ￐ﾺ￐ﾾ￐ﾻ￑ﾎ￑ﾅ￐ﾸ\Maniac
   org/example/maniacrevolution/perk/perks/survivor/
   org/example/maniacrevolution/perk/perks/survivor/DecoyPerk.class
   org/example/maniacrevolution/perk/perks/survivor/HackerPerk.class
+  org/example/maniacrevolution/perk/perks/survivor/LastStandPerk.class
   org/example/maniacrevolution/perk/perks/survivor/MedicPerk.class
+  org/example/maniacrevolution/perk/perks/survivor/MimicPerk$MimicData.class
   org/example/maniacrevolution/perk/perks/survivor/MimicPerk.class
   org/example/maniacrevolution/perk/perks/survivor/TrapperSurvivorPerk.class
   org/example/maniacrevolution/preset/
@@ -261,8 +346,11 @@ Writing Output: D:\￐ﾟ￑ﾀ￐ﾸ￐ﾺ￐ﾾ￐ﾻ￑ﾎ￑ﾅ￐ﾸ\Maniac
   org/example/maniacrevolution/shop/ShopItem.class
   org/example/maniacrevolution/shop/ShopRegistry.class
   org/example/maniacrevolution/shop/items/
+  org/example/maniacrevolution/shop/items/CosmeticShopItem.class
   org/example/maniacrevolution/shop/items/InfoBoostItem.class
   org/example/maniacrevolution/shop/items/ParticleEffectItem.class
   org/example/maniacrevolution/shop/items/PerkSkinItem.class
   org/example/maniacrevolution/shop/items/PresetSlotItem.class
+  org/example/maniacrevolution/util/
+  org/example/maniacrevolution/util/SaltTracker.class
   pack.mcmeta

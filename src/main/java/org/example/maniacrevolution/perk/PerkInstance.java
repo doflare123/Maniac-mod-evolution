@@ -29,7 +29,7 @@ public class PerkInstance {
     }
 
     public int getCooldownRemainingSeconds() {
-        return (cooldownRemaining + 19) / 20; // Округление вверх
+        return (cooldownRemaining + 19) / 20;
     }
 
     public float getCooldownProgress() {
@@ -53,7 +53,13 @@ public class PerkInstance {
             cooldownRemaining--;
         }
 
-        // Применяем пассивный эффект если перк активен в этой фазе
+        // Обработка PASSIVE_COOLDOWN перков
+        if (perk.getType() == PerkType.PASSIVE_COOLDOWN) {
+            handlePassiveCooldownTick(player, currentPhase);
+            return;
+        }
+
+        // Обычная логика для других типов перков
         if (perk.getType().hasPassiveAbility() && perk.isActiveInPhase(currentPhase)) {
             if (!passiveApplied) {
                 perk.applyPassiveEffect(player);
@@ -63,6 +69,48 @@ public class PerkInstance {
         } else if (passiveApplied) {
             perk.removePassiveEffect(player);
             passiveApplied = false;
+        }
+    }
+
+    /**
+     * Обработка тика для PASSIVE_COOLDOWN перков.
+     * Проверяет условие срабатывания и запускает эффект.
+     */
+    private void handlePassiveCooldownTick(ServerPlayer player, PerkPhase currentPhase) {
+        // Проверяем активность в текущей фазе
+        if (!perk.isActiveInPhase(currentPhase)) {
+            if (passiveApplied) {
+                perk.removePassiveEffect(player);
+                passiveApplied = false;
+            }
+            return;
+        }
+
+        // Если перк на кулдауне, пассивный эффект не работает
+        if (isOnCooldown()) {
+            if (passiveApplied) {
+                perk.removePassiveEffect(player);
+                passiveApplied = false;
+            }
+            return;
+        }
+
+        // Применяем пассивный эффект если он еще не применен
+        if (!passiveApplied) {
+            perk.applyPassiveEffect(player);
+            passiveApplied = true;
+        }
+
+        // Вызываем тик перка
+        perk.onTick(player);
+
+        // Проверяем условие срабатывания
+        if (perk.shouldTrigger(player)) {
+            // Срабатываем и запускаем кулдаун
+            perk.onTrigger(player);
+            perk.removePassiveEffect(player);
+            passiveApplied = false;
+            startCooldown();
         }
     }
 
@@ -108,8 +156,8 @@ public class PerkInstance {
         perk.onPhaseChange(player, newPhase);
 
         // Обновляем пассивный эффект
-        if (perk.getType().hasPassiveAbility()) {
-            if (perk.isActiveInPhase(newPhase) && !passiveApplied) {
+        if (perk.getType().hasPassiveAbility() || perk.getType() == PerkType.PASSIVE_COOLDOWN) {
+            if (perk.isActiveInPhase(newPhase) && !passiveApplied && !isOnCooldown()) {
                 perk.applyPassiveEffect(player);
                 passiveApplied = true;
             } else if (!perk.isActiveInPhase(newPhase) && passiveApplied) {

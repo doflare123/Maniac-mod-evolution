@@ -139,6 +139,7 @@ public class PerkSelectionScreen extends Screen {
                 case PASSIVE -> 0xFF5555FF;
                 case ACTIVE -> 0xFFFF5555;
                 case HYBRID -> 0xFFFF55FF;
+                case PASSIVE_COOLDOWN -> 0xFF5555FF;
             };
             if (isSelected) borderColor = 0xFF55FF55;
             gui.renderOutline(x, y, PERK_SLOT_SIZE, PERK_SLOT_SIZE, borderColor);
