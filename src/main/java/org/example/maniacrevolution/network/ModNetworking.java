@@ -7,6 +7,8 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.network.packets.*;
 
+import static com.mojang.datafixers.optics.Optics.id;
+
 public class ModNetworking {
     private static final String PROTOCOL_VERSION = "1";
 
@@ -89,6 +91,13 @@ public class ModNetworking {
                 .encoder(ToggleCosmeticPacket::encode)
                 .decoder(ToggleCosmeticPacket::decode)
                 .consumerMainThread(ToggleCosmeticPacket::handle)
+                .add();
+
+        // Новый пакет для синхронизации направления страха (Server -> Client)
+        CHANNEL.messageBuilder(FearDirectionPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(FearDirectionPacket::encode)
+                .decoder(FearDirectionPacket::decode)
+                .consumerMainThread(FearDirectionPacket::handle)
                 .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);

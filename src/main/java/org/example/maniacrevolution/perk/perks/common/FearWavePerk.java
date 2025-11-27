@@ -9,7 +9,11 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
+import org.example.maniacrevolution.effect.FearEffect;
 import org.example.maniacrevolution.effect.ModEffects;
+import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.FearDirectionPacket;
 import org.example.maniacrevolution.perk.*;
 import org.joml.Vector3f;
 
@@ -139,6 +143,20 @@ public class FearWavePerk extends Perk {
         );
 
         for (LivingEntity entity : entities) {
+            // Сохраняем направление взгляда ДО наложения эффекта
+            FearEffect.setFearDirection(entity);
+
+            // Если это игрок, отправляем пакет с направлением на клиент
+            if (entity instanceof ServerPlayer serverPlayer) {
+                Vec3 fleeDirection = FearEffect.getFearDirection(entity.getUUID());
+                if (fleeDirection != null) {
+                    ModNetworking.CHANNEL.send(
+                            PacketDistributor.PLAYER.with(() -> serverPlayer),
+                            new FearDirectionPacket(fleeDirection)
+                    );
+                }
+            }
+
             // Накладываем эффект страха
             entity.addEffect(new MobEffectInstance(
                     ModEffects.FEAR.get(),

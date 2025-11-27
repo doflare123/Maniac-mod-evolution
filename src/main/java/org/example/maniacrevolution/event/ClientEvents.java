@@ -6,11 +6,13 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.block.ModBlocks;
+import org.example.maniacrevolution.effect.client.FearClientHandler;
 import org.example.maniacrevolution.gui.GuideScreen;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.network.ModNetworking;
@@ -49,6 +51,7 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
+        MinecraftForge.EVENT_BUS.register(FearClientHandler.class);
         event.enqueueWork(() -> {
             // Устанавливаем cutout render type для блока соли
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.SALT_BLOCK.get(), RenderType.cutout());

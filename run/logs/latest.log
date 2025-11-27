@@ -1,89 +1,82 @@
-[27нояб.2025 23:02:53.050] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeclientuserdev, --version, MOD_DEV, --assetIndex, 5, --assetsDir, C:\Users\ABOBUS\.gradle\caches\forge_gradle\assets, --gameDir, ., --fml.forgeVersion, 47.2.18, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412]
-[27нояб.2025 23:02:53.059] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.17 by Microsoft; OS Windows 10 arch amd64 version 10.0
-[27нояб.2025 23:02:53.341] [main/INFO] [net.minecraftforge.fml.loading.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
-[27нояб.2025 23:02:53.513] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.6
-[27нояб.2025 23:02:54.175] [main/INFO] [EARLYDISPLAY/]: Requested GL version 4.6 got version 4.6
-[27нояб.2025 23:02:54.281] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/C:/Users/ABOBUS/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23128!/ Service=ModLauncher Env=CLIENT
-[27нояб.2025 23:02:54.329] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: NVIDIA GeForce GTX 1660 SUPER/PCIe/SSE2 GL version 4.6.0 NVIDIA 581.80, NVIDIA Corporation
-[27нояб.2025 23:02:54.663] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\ABOBUS\.gradle\caches\modules-2\files-2.1\net.minecraftforge\javafmllanguage\1.20.1-47.2.18\f100914f5a581eb8941f1d8f5551e673fba19da0\javafmllanguage-1.20.1-47.2.18.jar is missing mods.toml file
-[27нояб.2025 23:02:54.668] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\ABOBUS\.gradle\caches\modules-2\files-2.1\net.minecraftforge\lowcodelanguage\1.20.1-47.2.18\f72e36e7092c9230b8b7af439a17f162bfc6dcdb\lowcodelanguage-1.20.1-47.2.18.jar is missing mods.toml file
-[27нояб.2025 23:02:54.672] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\ABOBUS\.gradle\caches\modules-2\files-2.1\net.minecraftforge\mclanguage\1.20.1-47.2.18\2b0ad44d9f354d0b5886254114c0ce6e8d3a091b\mclanguage-1.20.1-47.2.18.jar is missing mods.toml file
-[27нояб.2025 23:02:54.677] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\ABOBUS\.gradle\caches\modules-2\files-2.1\net.minecraftforge\fmlcore\1.20.1-47.2.18\a202606f3e61e1159f479243c8d12809ba7325d4\fmlcore-1.20.1-47.2.18.jar is missing mods.toml file
-[27нояб.2025 23:02:54.770] [main/INFO] [net.minecraftforge.fml.loading.moddiscovery.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
-[27нояб.2025 23:02:56.069] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeclientuserdev' with arguments [--version, MOD_DEV, --gameDir, ., --assetsDir, C:\Users\ABOBUS\.gradle\caches\forge_gradle\assets, --assetIndex, 5]
-[27нояб.2025 23:02:59.962] [Datafixer Bootstrap/INFO] [com.mojang.datafixers.DataFixerBuilder/]: 188 Datafixer optimizations took 146 milliseconds
-[27нояб.2025 23:03:01.565] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/ABOBUS/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.2.18_mapped_official_1.20.1/forge-1.20.1-47.2.18_mapped_official_1.20.1.jar%23191!/assets/.mcassetsroot' uses unexpected schema
-[27нояб.2025 23:03:01.565] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/ABOBUS/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.2.18_mapped_official_1.20.1/forge-1.20.1-47.2.18_mapped_official_1.20.1.jar%23191!/data/.mcassetsroot' uses unexpected schema
-[27нояб.2025 23:03:01.588] [Render thread/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
-[27нояб.2025 23:03:01.594] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: Dev
-[27нояб.2025 23:03:01.704] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Backend library: LWJGL version 3.3.1 build 7
-[27нояб.2025 23:03:01.952] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.2.18, for MC 1.20.1 with MCP 20230612.114412
-[27нояб.2025 23:03:01.954] [modloading-worker-0/INFO] [net.minecraftforge.common.MinecraftForge/FORGE]: MinecraftForge v47.2.18 Initialized
-[27нояб.2025 23:03:02.989] [Render thread/INFO] [net.minecraftforge.gametest.ForgeGameTestHooks/]: Enabled Gametest Namespaces: [maniacrev]
-[27нояб.2025 23:03:03.126] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: Keybinds registered
-[27нояб.2025 23:03:03.231] [Render thread/INFO] [net.minecraft.server.packs.resources.ReloadableResourceManager/]: Reloading ResourceManager: vanilla, mod_resources
-[27нояб.2025 23:03:03.340] [Worker-Main-5/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_all_no_pua-15.0.06.hex, loading
-[27нояб.2025 23:03:03.531] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: Network packets registered: 11 packets
-[27нояб.2025 23:03:03.545] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: Registered 14 perks
-[27нояб.2025 23:03:03.550] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: Registered 15 shop items
-[27нояб.2025 23:03:03.550] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
-[27нояб.2025 23:03:03.560] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: Registered 12 cosmetic effects
-[27нояб.2025 23:03:03.560] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: ManiacRev Mod initialized!
-[27нояб.2025 23:03:03.580] [Worker-Main-3/INFO] [org.example.maniacrevolution.Maniacrev/]: ManiacRev client initialized
-[27нояб.2025 23:03:03.587] [Worker-Main-9/WARN] [net.minecraft.client.renderer.texture.SpriteLoader/]: Texture maniacrev:item/salt with size 360x360 limits mip level from 4 to 3
-[27нояб.2025 23:03:04.046] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Found status: OUTDATED Current: 47.2.18 Target: 47.4.10
-[27нояб.2025 23:03:05.686] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:item.goat_horn.play
-[27нояб.2025 23:03:05.686] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
-[27нояб.2025 23:03:05.687] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: maniacrev:phase_change
-[27нояб.2025 23:03:05.722] [Render thread/INFO] [com.mojang.blaze3d.audio.Library/]: OpenAL initialized on device OpenAL Soft on Наушники гарнитуры (G435 Wireless Gaming Headset)
-[27нояб.2025 23:03:05.723] [Render thread/INFO] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Sound engine started
-[27нояб.2025 23:03:05.825] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 2048x1024x4 minecraft:textures/atlas/blocks.png-atlas
-[27нояб.2025 23:03:05.835] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
-[27нояб.2025 23:03:05.836] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
-[27нояб.2025 23:03:05.836] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
-[27нояб.2025 23:03:05.837] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
-[27нояб.2025 23:03:05.840] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
-[27нояб.2025 23:03:05.842] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
-[27нояб.2025 23:03:05.842] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
-[27нояб.2025 23:03:05.842] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
-[27нояб.2025 23:03:05.979] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
-[27нояб.2025 23:03:06.030] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x0 minecraft:textures/atlas/particles.png-atlas
-[27нояб.2025 23:03:06.032] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x0 minecraft:textures/atlas/paintings.png-atlas
-[27нояб.2025 23:03:06.032] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x128x0 minecraft:textures/atlas/mob_effects.png-atlas
-[27нояб.2025 23:03:06.542] [Realms Notification Availability checker #1/INFO] [com.mojang.realmsclient.client.RealmsClient/]: Could not authorize you against Realms server: java.lang.RuntimeException: Failed to parse into SignedJWT: 0
-[27нояб.2025 23:03:36.024] [Render thread/INFO] [net.minecraftforge.registries.GameData/REGISTRIES]: Injecting existing registry data into this CLIENT instance
-[27нояб.2025 23:03:37.485] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 7 recipes
-[27нояб.2025 23:03:37.592] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 1271 advancements
-[27нояб.2025 23:03:37.993] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.20.1
-[27нояб.2025 23:03:37.993] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
-[27нояб.2025 23:03:39.179] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
-[27нояб.2025 23:03:41.602] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
-[27нояб.2025 23:03:41.624] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
-[27нояб.2025 23:03:41.624] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
-[27нояб.2025 23:03:41.644] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
-[27нояб.2025 23:03:41.644] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
-[27нояб.2025 23:03:41.682] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
-[27нояб.2025 23:03:42.194] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
-[27нояб.2025 23:03:42.697] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 68%
-[27нояб.2025 23:03:42.838] [Server thread/INFO] [net.minecraftforge.server.permission.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
-[27нояб.2025 23:03:42.839] [Server thread/INFO] [org.example.maniacrevolution.Maniacrev/]: ManiacRev server data loaded
-[27нояб.2025 23:03:42.846] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 3665 ms
-[27нояб.2025 23:03:42.973] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 12, from 10
-[27нояб.2025 23:03:42.975] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 12, from 0
-[27нояб.2025 23:03:43.104] [Render thread/WARN] [io.netty.util.internal.SystemPropertyUtil/]: Unable to parse the boolean system property 'java.net.preferIPv6Addresses':system - using the default value: false
-[27нояб.2025 23:03:43.442] [Netty Local Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
-[27нояб.2025 23:03:43.506] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:5dd301e6] logged in with entity id 147 at (-126.54824759838465, 72.17675927506424, 74.10258022583908)
-[27нояб.2025 23:03:43.583] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev присоединился к игре
-[27нояб.2025 23:03:44.217] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 3 advancements
-[27нояб.2025 23:03:55.018] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Применён эффект «Страх» к Dev]
-[27нояб.2025 23:03:55.024] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Применён эффект «Страх» к Dev
-[27нояб.2025 23:04:08.044] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Применён эффект «Страх» к Dev]
-[27нояб.2025 23:04:08.050] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Применён эффект «Страх» к Dev
-[27нояб.2025 23:04:15.687] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Применён эффект «Страх» к Dev]
-[27нояб.2025 23:04:15.693] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Применён эффект «Страх» к Dev
-[27нояб.2025 23:04:38.015] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Открыто меню выбора перков для 1 игроков]
-[27нояб.2025 23:04:38.029] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Открыто меню выбора перков для 1 игроков
-[27нояб.2025 23:04:38.034] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/bigmoney.png
+[27нояб.2025 23:32:32.185] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeclientuserdev, --version, MOD_DEV, --assetIndex, 5, --assetsDir, C:\Users\ABOBUS\.gradle\caches\forge_gradle\assets, --gameDir, ., --fml.forgeVersion, 47.2.18, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412]
+[27нояб.2025 23:32:32.190] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.17 by Microsoft; OS Windows 10 arch amd64 version 10.0
+[27нояб.2025 23:32:32.307] [main/INFO] [net.minecraftforge.fml.loading.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
+[27нояб.2025 23:32:32.385] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.6
+[27нояб.2025 23:32:32.625] [main/INFO] [EARLYDISPLAY/]: Requested GL version 4.6 got version 4.6
+[27нояб.2025 23:32:32.723] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/C:/Users/ABOBUS/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23128!/ Service=ModLauncher Env=CLIENT
+[27нояб.2025 23:32:32.780] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: NVIDIA GeForce GTX 1660 SUPER/PCIe/SSE2 GL version 4.6.0 NVIDIA 581.80, NVIDIA Corporation
+[27нояб.2025 23:32:33.086] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\ABOBUS\.gradle\caches\modules-2\files-2.1\net.minecraftforge\javafmllanguage\1.20.1-47.2.18\f100914f5a581eb8941f1d8f5551e673fba19da0\javafmllanguage-1.20.1-47.2.18.jar is missing mods.toml file
+[27нояб.2025 23:32:33.090] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\ABOBUS\.gradle\caches\modules-2\files-2.1\net.minecraftforge\lowcodelanguage\1.20.1-47.2.18\f72e36e7092c9230b8b7af439a17f162bfc6dcdb\lowcodelanguage-1.20.1-47.2.18.jar is missing mods.toml file
+[27нояб.2025 23:32:33.093] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\ABOBUS\.gradle\caches\modules-2\files-2.1\net.minecraftforge\mclanguage\1.20.1-47.2.18\2b0ad44d9f354d0b5886254114c0ce6e8d3a091b\mclanguage-1.20.1-47.2.18.jar is missing mods.toml file
+[27нояб.2025 23:32:33.097] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\ABOBUS\.gradle\caches\modules-2\files-2.1\net.minecraftforge\fmlcore\1.20.1-47.2.18\a202606f3e61e1159f479243c8d12809ba7325d4\fmlcore-1.20.1-47.2.18.jar is missing mods.toml file
+[27нояб.2025 23:32:33.202] [main/INFO] [net.minecraftforge.fml.loading.moddiscovery.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[27нояб.2025 23:32:34.694] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeclientuserdev' with arguments [--version, MOD_DEV, --gameDir, ., --assetsDir, C:\Users\ABOBUS\.gradle\caches\forge_gradle\assets, --assetIndex, 5]
+[27нояб.2025 23:32:38.619] [Datafixer Bootstrap/INFO] [com.mojang.datafixers.DataFixerBuilder/]: 188 Datafixer optimizations took 163 milliseconds
+[27нояб.2025 23:32:40.541] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/ABOBUS/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.2.18_mapped_official_1.20.1/forge-1.20.1-47.2.18_mapped_official_1.20.1.jar%23191!/assets/.mcassetsroot' uses unexpected schema
+[27нояб.2025 23:32:40.541] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/C:/Users/ABOBUS/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.2.18_mapped_official_1.20.1/forge-1.20.1-47.2.18_mapped_official_1.20.1.jar%23191!/data/.mcassetsroot' uses unexpected schema
+[27нояб.2025 23:32:40.558] [Render thread/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[27нояб.2025 23:32:40.565] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: Dev
+[27нояб.2025 23:32:40.683] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Backend library: LWJGL version 3.3.1 build 7
+[27нояб.2025 23:32:40.949] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.2.18, for MC 1.20.1 with MCP 20230612.114412
+[27нояб.2025 23:32:40.952] [modloading-worker-0/INFO] [net.minecraftforge.common.MinecraftForge/FORGE]: MinecraftForge v47.2.18 Initialized
+[27нояб.2025 23:32:41.895] [Render thread/INFO] [net.minecraftforge.gametest.ForgeGameTestHooks/]: Enabled Gametest Namespaces: [maniacrev]
+[27нояб.2025 23:32:42.029] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: Keybinds registered
+[27нояб.2025 23:32:42.134] [Render thread/INFO] [net.minecraft.server.packs.resources.ReloadableResourceManager/]: Reloading ResourceManager: vanilla, mod_resources
+[27нояб.2025 23:32:42.275] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[27нояб.2025 23:32:42.287] [Worker-Main-8/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_all_no_pua-15.0.06.hex, loading
+[27нояб.2025 23:32:42.459] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: Network packets registered: 12 packets
+[27нояб.2025 23:32:42.471] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: Registered 14 perks
+[27нояб.2025 23:32:42.476] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: Registered 15 shop items
+[27нояб.2025 23:32:42.484] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: Registered 12 cosmetic effects
+[27нояб.2025 23:32:42.484] [Render thread/INFO] [org.example.maniacrevolution.Maniacrev/]: ManiacRev Mod initialized!
+[27нояб.2025 23:32:42.489] [Worker-Main-11/INFO] [org.example.maniacrevolution.Maniacrev/]: ManiacRev client initialized
+[27нояб.2025 23:32:42.591] [Worker-Main-9/WARN] [net.minecraft.client.renderer.texture.SpriteLoader/]: Texture maniacrev:item/salt with size 360x360 limits mip level from 4 to 3
+[27нояб.2025 23:32:42.832] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Found status: OUTDATED Current: 47.2.18 Target: 47.4.10
+[27нояб.2025 23:32:44.716] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:item.goat_horn.play
+[27нояб.2025 23:32:44.716] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[27нояб.2025 23:32:44.717] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: maniacrev:phase_change
+[27нояб.2025 23:32:44.748] [Render thread/INFO] [com.mojang.blaze3d.audio.Library/]: OpenAL initialized on device OpenAL Soft on Наушники гарнитуры (G435 Wireless Gaming Headset)
+[27нояб.2025 23:32:44.749] [Render thread/INFO] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Sound engine started
+[27нояб.2025 23:32:44.864] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 2048x1024x4 minecraft:textures/atlas/blocks.png-atlas
+[27нояб.2025 23:32:44.877] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
+[27нояб.2025 23:32:44.877] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
+[27нояб.2025 23:32:44.878] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
+[27нояб.2025 23:32:44.879] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
+[27нояб.2025 23:32:44.881] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
+[27нояб.2025 23:32:44.883] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
+[27нояб.2025 23:32:44.883] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
+[27нояб.2025 23:32:44.883] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
+[27нояб.2025 23:32:45.035] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[27нояб.2025 23:32:45.085] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x0 minecraft:textures/atlas/particles.png-atlas
+[27нояб.2025 23:32:45.086] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x0 minecraft:textures/atlas/paintings.png-atlas
+[27нояб.2025 23:32:45.086] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x128x0 minecraft:textures/atlas/mob_effects.png-atlas
+[27нояб.2025 23:32:45.328] [Realms Notification Availability checker #1/INFO] [com.mojang.realmsclient.client.RealmsClient/]: Could not authorize you against Realms server: java.lang.RuntimeException: Failed to parse into SignedJWT: 0
+[27нояб.2025 23:32:52.649] [Render thread/INFO] [net.minecraftforge.registries.GameData/REGISTRIES]: Injecting existing registry data into this CLIENT instance
+[27нояб.2025 23:32:54.136] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 7 recipes
+[27нояб.2025 23:32:54.230] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 1271 advancements
+[27нояб.2025 23:32:54.653] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.20.1
+[27нояб.2025 23:32:54.653] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[27нояб.2025 23:32:55.767] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[27нояб.2025 23:32:58.165] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
+[27нояб.2025 23:32:58.203] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
+[27нояб.2025 23:32:58.305] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
+[27нояб.2025 23:32:58.305] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
+[27нояб.2025 23:32:58.343] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
+[27нояб.2025 23:32:58.343] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 0%
+[27нояб.2025 23:32:58.787] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Подготовка области возрождения: 24%
+[27нояб.2025 23:32:59.160] [Server thread/INFO] [net.minecraftforge.server.permission.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[27нояб.2025 23:32:59.161] [Server thread/INFO] [org.example.maniacrevolution.Maniacrev/]: ManiacRev server data loaded
+[27нояб.2025 23:32:59.174] [Render thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 3395 ms
+[27нояб.2025 23:32:59.288] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 12, from 10
+[27нояб.2025 23:32:59.291] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 12, from 0
+[27нояб.2025 23:32:59.370] [Render thread/WARN] [io.netty.util.internal.SystemPropertyUtil/]: Unable to parse the boolean system property 'java.net.preferIPv6Addresses':system - using the default value: false
+[27нояб.2025 23:32:59.726] [Netty Local Client IO #0/INFO] [net.minecraftforge.network.NetworkHooks/]: Connected to a modded server.
+[27нояб.2025 23:32:59.768] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:8947ade8] logged in with entity id 160 at (-119.5, 71.0, 86.5)
+[27нояб.2025 23:32:59.827] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev присоединился к игре
+[27нояб.2025 23:33:00.576] [Render thread/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 31 advancements
+[27нояб.2025 23:33:09.295] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Dev: Открыто меню выбора перков для 1 игроков]
+[27нояб.2025 23:33:09.313] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Открыто меню выбора перков для 1 игроков
+[27нояб.2025 23:33:09.326] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/bigmoney.png
 java.io.FileNotFoundException: maniacrev:textures/perks/bigmoney.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -122,7 +115,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/bigmoney.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.050] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/megamind.png
+[27нояб.2025 23:33:09.346] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/megamind.png
 java.io.FileNotFoundException: maniacrev:textures/perks/megamind.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -161,7 +154,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/megamind.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.051] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/gto_medal.png
+[27нояб.2025 23:33:09.348] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/gto_medal.png
 java.io.FileNotFoundException: maniacrev:textures/perks/gto_medal.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -200,7 +193,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/gto_medal.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.052] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/fear_wave.png
+[27нояб.2025 23:33:09.349] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/fear_wave.png
 java.io.FileNotFoundException: maniacrev:textures/perks/fear_wave.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -239,7 +232,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/fear_wave.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.055] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/medic.png
+[27нояб.2025 23:33:09.353] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/medic.png
 java.io.FileNotFoundException: maniacrev:textures/perks/medic.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -278,7 +271,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/medic.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.056] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/trapper_survivor.png
+[27нояб.2025 23:33:09.354] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/trapper_survivor.png
 java.io.FileNotFoundException: maniacrev:textures/perks/trapper_survivor.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -317,7 +310,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/trapper_survivor.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.057] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/hacker.png
+[27нояб.2025 23:33:09.354] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/hacker.png
 java.io.FileNotFoundException: maniacrev:textures/perks/hacker.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -356,7 +349,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/hacker.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.058] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/decoy.png
+[27нояб.2025 23:33:09.355] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/decoy.png
 java.io.FileNotFoundException: maniacrev:textures/perks/decoy.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -395,7 +388,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/decoy.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.059] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/predator.png
+[27нояб.2025 23:33:09.356] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/predator.png
 java.io.FileNotFoundException: maniacrev:textures/perks/predator.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -434,7 +427,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/predator.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.059] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/terror.png
+[27нояб.2025 23:33:09.357] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/terror.png
 java.io.FileNotFoundException: maniacrev:textures/perks/terror.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -473,7 +466,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/terror.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.060] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/trapper_maniac.png
+[27нояб.2025 23:33:09.358] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/trapper_maniac.png
 java.io.FileNotFoundException: maniacrev:textures/perks/trapper_maniac.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -512,7 +505,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/trapper_maniac.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.075] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/executioner.png
+[27нояб.2025 23:33:09.359] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/executioner.png
 java.io.FileNotFoundException: maniacrev:textures/perks/executioner.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -551,7 +544,7 @@ java.io.FileNotFoundException: maniacrev:textures/perks/executioner.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:04:38.076] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/shadow.png
+[27нояб.2025 23:33:09.360] [Render thread/WARN] [net.minecraft.client.renderer.texture.TextureManager/]: Failed to load texture: maniacrev:textures/perks/shadow.png
 java.io.FileNotFoundException: maniacrev:textures/perks/shadow.png
 	at net.minecraft.server.packs.resources.ResourceProvider.lambda$getResourceOrThrow$0(ResourceProvider.java:21) ~[forge-1.20.1-47.2.18_mapped_official_1.20.1.jar:?]
 	at java.util.Optional.orElseThrow(Optional.java:403) ~[?:?]
@@ -590,22 +583,22 @@ java.io.FileNotFoundException: maniacrev:textures/perks/shadow.png
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[27нояб.2025 23:05:08.140] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
-[27нояб.2025 23:05:08.146] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[27нояб.2025 23:05:08.157] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[27нояб.2025 23:05:08.158] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[27нояб.2025 23:05:09.053] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Отключение
-[27нояб.2025 23:05:09.053] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev покинул игру
-[27нояб.2025 23:05:09.058] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Stopping singleplayer server as player logged out
-[27нояб.2025 23:05:09.100] [Server thread/INFO] [org.example.maniacrevolution.Maniacrev/]: ManiacRev server data saved
-[27нояб.2025 23:05:09.100] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
-[27нояб.2025 23:05:09.101] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
-[27нояб.2025 23:05:09.101] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
-[27нояб.2025 23:05:09.471] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
-[27нояб.2025 23:05:11.138] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
-[27нояб.2025 23:05:11.139] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
-[27нояб.2025 23:05:11.158] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (New World (2)): All chunks are saved
-[27нояб.2025 23:05:11.158] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
-[27нояб.2025 23:05:11.158] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
-[27нояб.2025 23:05:11.159] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
-[27нояб.2025 23:05:12.318] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!
+[27нояб.2025 23:33:14.322] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[27нояб.2025 23:33:14.333] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[27нояб.2025 23:33:14.367] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[27нояб.2025 23:33:14.381] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[27нояб.2025 23:33:14.867] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Отключение
+[27нояб.2025 23:33:14.868] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev покинул игру
+[27нояб.2025 23:33:14.876] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Stopping singleplayer server as player logged out
+[27нояб.2025 23:33:14.913] [Server thread/INFO] [org.example.maniacrevolution.Maniacrev/]: ManiacRev server data saved
+[27нояб.2025 23:33:14.913] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[27нояб.2025 23:33:14.913] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+[27нояб.2025 23:33:14.913] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[27нояб.2025 23:33:15.450] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[27нояб.2025 23:33:16.515] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[27нояб.2025 23:33:16.515] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[27нояб.2025 23:33:16.537] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (New World (2)): All chunks are saved
+[27нояб.2025 23:33:16.537] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[27нояб.2025 23:33:16.537] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[27нояб.2025 23:33:16.537] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
+[27нояб.2025 23:34:46.298] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!

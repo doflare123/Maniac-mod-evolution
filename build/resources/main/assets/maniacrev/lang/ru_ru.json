@@ -124,5 +124,9 @@
   "perk.maniacrev.gto_medal.name": "Золотая медаль ГТО",
   "perk.maniacrev.gto_medal.desc": "Мощный рывок вперёд: толкает на 1 блок вверх и 4 блока вперёд",
 
+  "perk.maniacrev.fear_wave.name": "Волна ужаса",
+  "perk.maniacrev.fear_wave.desc": "Выпускаете волну страха в радиусе 5 блоков, которая пугает ВСЕХ, даже союзников на короткое время",
+
   "effect.maniacrev.fear": "Страх"
+
 }
