@@ -19,6 +19,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.command.ClearSaltCommand;
 import org.example.maniacrevolution.command.ModCommands;
+import org.example.maniacrevolution.command.QTECommand;
 import org.example.maniacrevolution.cosmetic.CosmeticRegistry;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.effect.ModEffects;
@@ -87,6 +88,7 @@ public class Maniacrev {
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
         ModCommands.register(event.getDispatcher());
+        QTECommand.register(event.getDispatcher());
         ClearSaltCommand.register(event.getDispatcher());
     }
 

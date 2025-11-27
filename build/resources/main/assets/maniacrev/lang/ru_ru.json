@@ -125,8 +125,14 @@
   "perk.maniacrev.gto_medal.desc": "Мощный рывок вперёд: толкает на 1 блок вверх и 4 блока вперёд",
 
   "perk.maniacrev.fear_wave.name": "Волна ужаса",
-  "perk.maniacrev.fear_wave.desc": "Выпускаете волну страха в радиусе 5 блоков, которая пугает ВСЕХ, даже союзников на короткое время",
+  "perk.maniacrev.fear_wave.desc": "Выпускаете волну страха в радиусе 5 блоков, которая пугает ВСЕХ, даже союзников, на короткое время",
 
-  "effect.maniacrev.fear": "Страх"
+  "effect.maniacrev.fear": "Страх",
+
+  "key.categories.maniacrev": "ManiacRev QTE",
+  "key.maniacrev.qte1": "QTE Клавиша 1",
+  "key.maniacrev.qte2": "QTE Клавиша 2",
+  "key.maniacrev.qte3": "QTE Клавиша 3",
+  "key.maniacrev.qte4": "QTE Клавиша 4"
 
 }

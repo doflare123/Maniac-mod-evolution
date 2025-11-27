@@ -113,5 +113,11 @@
   "cosmetic.maniacrev.trail_soul.desc": "Blue soul flame trail",
 
   "item.maniacrev.salt": "Salt",
-  "block.maniacrev.salt_block": "Salt"
+  "block.maniacrev.salt_block": "Salt",
+
+  "key.categories.maniacrev": "ManiacRev QTE",
+  "key.maniacrev.qte1": "QTE Key 1",
+  "key.maniacrev.qte2": "QTE Key 2",
+  "key.maniacrev.qte3": "QTE Key 3",
+  "key.maniacrev.qte4": "QTE Key 4"
 }

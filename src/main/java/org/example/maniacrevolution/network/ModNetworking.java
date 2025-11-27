@@ -100,6 +100,24 @@ public class ModNetworking {
                 .consumerMainThread(FearDirectionPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(StartQTEPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(StartQTEPacket::encode)
+                .decoder(StartQTEPacket::decode)
+                .consumerMainThread(StartQTEPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(StopQTEPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(StopQTEPacket::encode)
+                .decoder(StopQTEPacket::decode)
+                .consumerMainThread(StopQTEPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(QTEKeyPressPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(QTEKeyPressPacket::encode)
+                .decoder(QTEKeyPressPacket::decode)
+                .consumerMainThread(QTEKeyPressPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 }

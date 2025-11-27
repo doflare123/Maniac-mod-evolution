@@ -121,6 +121,10 @@ key_key.hotbar.9:key.keyboard.9
 key_key.maniacrev.open_guide:key.keyboard.c
 key_key.maniacrev.activate_perk:key.keyboard.f
 key_key.maniacrev.switch_perk:key.keyboard.x
+key_key.maniacrev.qte1:key.keyboard.b
+key_key.maniacrev.qte2:key.keyboard.n
+key_key.maniacrev.qte3:key.keyboard.m
+key_key.maniacrev.qte4:key.keyboard.comma
 soundCategory_master:0.4966887417218543
 soundCategory_music:0.0
 soundCategory_record:0.31690140845070425
