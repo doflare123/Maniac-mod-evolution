@@ -21,6 +21,7 @@ import org.example.maniacrevolution.command.ClearSaltCommand;
 import org.example.maniacrevolution.command.ModCommands;
 import org.example.maniacrevolution.cosmetic.CosmeticRegistry;
 import org.example.maniacrevolution.data.PlayerDataManager;
+import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.keybind.ModKeybinds;
@@ -52,6 +53,7 @@ public class Maniacrev {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModEntities.register(modEventBus);  // <-- ДОБАВИТЬ ЭТУ СТРОКУ
+        ModEffects.register(modEventBus);
         // =========================================================
 
         MinecraftForge.EVENT_BUS.register(this);

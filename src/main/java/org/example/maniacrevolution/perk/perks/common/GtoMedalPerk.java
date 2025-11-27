@@ -17,7 +17,7 @@ import org.example.maniacrevolution.perk.*;
  */
 public class GtoMedalPerk extends Perk {
 
-    private static final double FORWARD_POWER = 2.0; // 4 блока вперёд
+    private static final double FORWARD_POWER = 1.0; // 4 блока вперёд
     private static final double UPWARD_POWER = .5;  // 1 блок вверх
 
     public GtoMedalPerk() {
@@ -25,7 +25,7 @@ public class GtoMedalPerk extends Perk {
                 .type(PerkType.ACTIVE)
                 .team(PerkTeam.ALL)
                 .phases(PerkPhase.ANY)
-                .cooldown(2)); // 80 секунд
+                .cooldown(30)); // 80 секунд
     }
 
     @Override

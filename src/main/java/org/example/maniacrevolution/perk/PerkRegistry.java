@@ -21,6 +21,7 @@ public class PerkRegistry {
         register(new BigmoneyPerk());
         register(new MegamindPerk());
         register(new GtoMedalPerk());
+        register(new FearWavePerk());
 
         // Перки выживших (5 штук)
         register(new MimicPerk());

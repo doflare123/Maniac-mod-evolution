@@ -122,5 +122,7 @@
   "perk.maniacrev.megamind.desc": "Получайте на 20% больше опыта в конце игры",
 
   "perk.maniacrev.gto_medal.name": "Золотая медаль ГТО",
-  "perk.maniacrev.gto_medal.desc": "Мощный рывок вперёд: толкает на 1 блок вверх и 4 блока вперёд"
+  "perk.maniacrev.gto_medal.desc": "Мощный рывок вперёд: толкает на 1 блок вверх и 4 блока вперёд",
+
+  "effect.maniacrev.fear": "Страх"
 }
