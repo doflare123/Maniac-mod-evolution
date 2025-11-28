@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -47,7 +48,11 @@ public class MimicPerk extends Perk {
 
         // Делаем игрока невидимым и неуязвимым
         player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 7 * 20, 0, false, false));
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 40, 255, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 7 * 20, 255, false, false));
+
+        // КРИТИЧНО: Устанавливаем позу SWIMMING для уменьшения хитбокса
+        // Это уменьшает размер до 0.6 x 0.6 (как при плавании)
+        player.setForcedPose(Pose.SWIMMING);
 
         // Сохраняем данные
         ACTIVE_MIMICS.put(player.getUUID(), new MimicData(
@@ -66,8 +71,16 @@ public class MimicPerk extends Perk {
         UUID playerId = player.getUUID();
         MimicData data = ACTIVE_MIMICS.get(playerId);
 
-        if (data != null && System.currentTimeMillis() >= data.endTime) {
-            endMimicEffect(player);
+        if (data != null) {
+            // Проверяем время окончания
+            if (System.currentTimeMillis() >= data.endTime) {
+                endMimicEffect(player);
+            } else {
+                // Удерживаем позу SWIMMING каждый тик
+                if (player.getForcedPose() != Pose.SWIMMING) {
+                    player.setForcedPose(Pose.SWIMMING);
+                }
+            }
         }
     }
 
@@ -83,8 +96,8 @@ public class MimicPerk extends Perk {
         MimicData data = ACTIVE_MIMICS.remove(player.getUUID());
         if (data == null) return;
 
-        // Снимаем неуязвимость
-//        player.setInvulnerable(false);
+        // КРИТИЧНО: Восстанавливаем нормальную позу
+        player.setForcedPose(null);
 
         // Удаляем энтити блока
         ServerLevel level = player.serverLevel();
@@ -131,7 +144,8 @@ public class MimicPerk extends Perk {
     public static void forceEndMimic(ServerPlayer player) {
         MimicData data = ACTIVE_MIMICS.remove(player.getUUID());
         if (data != null) {
-            player.setInvulnerable(false);
+            player.setForcedPose(null);
+
             if (player.serverLevel().getEntity(data.entityUUID) instanceof MimicBlockEntity mimic) {
                 mimic.discard();
             }
@@ -140,4 +154,3 @@ public class MimicPerk extends Perk {
 
     private record MimicData(UUID entityUUID, long endTime) {}
 }
-

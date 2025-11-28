@@ -86,6 +86,13 @@ public class ModNetworking {
                 .consumerMainThread(DeletePresetPacket::handle)
                 .add();
 
+        // Пакет для подсветки маньяков через стены (Server -> Client)
+        CHANNEL.messageBuilder(WallhackHighlightPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WallhackHighlightPacket::encode)
+                .decoder(WallhackHighlightPacket::decode)
+                .consumerMainThread(WallhackHighlightPacket::handle)
+                .add();
+
         // Пакет для переключения косметики
         CHANNEL.messageBuilder(ToggleCosmeticPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(ToggleCosmeticPacket::encode)

@@ -22,13 +22,15 @@ public class PerkRegistry {
         register(new MegamindPerk());
         register(new GtoMedalPerk());
         register(new FearWavePerk());
+        register(new StrPerk());
 
         // Перки выживших (5 штук)
         register(new MimicPerk());
-        register(new MedicPerk());
-        register(new TrapperSurvivorPerk());
-        register(new HackerPerk());
-        register(new DecoyPerk());
+//        register(new MedicPerk());
+//        register(new TrapperSurvivorPerk());
+//        register(new HackerPerk());
+//        register(new DecoyPerk());
+        register(new WallhackPerk());
 
         // Перки маньяка (5 штук)
         register(new PredatorPerk());

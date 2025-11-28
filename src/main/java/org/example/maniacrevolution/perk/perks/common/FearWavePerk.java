@@ -40,7 +40,7 @@ public class FearWavePerk extends Perk {
         super(new Builder("fear_wave")
                 .type(PerkType.ACTIVE)
                 .team(PerkTeam.ALL)
-                .phases(PerkPhase.ANY)
+                .phases(PerkPhase.MIDGAME, PerkPhase.REVERSAL)
                 .cooldown(60)); // 60 секунд КД
     }
 

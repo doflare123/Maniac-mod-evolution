@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 
 public class QTEState {
-    private static final int QTE_DURATION = 2000; // 2 секунды на реакцию
+    private static final int QTE_DURATION = 750; // 2 секунды на реакцию
     private static final int BOX_SIZE = 100;
     private static final int GREEN_ZONE_SIZE = 20;
 

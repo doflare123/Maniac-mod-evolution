@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.block.ModBlocks;
+import org.example.maniacrevolution.client.renderer.WallhackRenderer;
 import org.example.maniacrevolution.effect.client.FearClientHandler;
 import org.example.maniacrevolution.gui.GuideScreen;
 import org.example.maniacrevolution.keybind.ModKeybinds;
@@ -51,6 +52,7 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
+        MinecraftForge.EVENT_BUS.register(WallhackRenderer.class);
         MinecraftForge.EVENT_BUS.register(FearClientHandler.class);
         event.enqueueWork(() -> {
             // Устанавливаем cutout render type для блока соли

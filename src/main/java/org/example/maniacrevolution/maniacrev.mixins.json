@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "package": "org.example.maniacrevolution.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "maniacrev.refmap.json",
+  "mixins": [
+    "PlayerDimensionsMixin"
+  ],
+  "minVersion": "0.8"
+}

@@ -127,6 +127,12 @@
   "perk.maniacrev.fear_wave.name": "Волна ужаса",
   "perk.maniacrev.fear_wave.desc": "Выпускаете волну страха в радиусе 5 блоков, которая пугает ВСЕХ, даже союзников, на короткое время",
 
+  "perk.maniacrev.str_perk.name": "Сила Волги",
+  "perk.maniacrev.str_perk.desc": "Внемли силе земли!",
+
+  "perk.maniacrev.wallhack.name": "Просвет сквозь стену",
+  "perk.maniacrev.wallhack.desc": "Подсвечивает маньяков через стены на 5 секунд. Дистанция: 15 блоков",
+
   "effect.maniacrev.fear": "Страх",
 
   "key.categories.maniacrev": "ManiacRev QTE",
