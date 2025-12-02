@@ -4,8 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -23,26 +21,19 @@ import java.util.UUID;
 
 /**
  * Клиентский рендерер для подсветки маньяков через стены.
+ * Версия с полупрозрачной заливкой.
  */
 @OnlyIn(Dist.CLIENT)
 public class WallhackRenderer {
 
-    // Игроки, которые должны быть подсвечены
     private static Set<UUID> highlightedPlayers = new HashSet<>();
     private static int remainingTicks = 0;
 
-    /**
-     * Устанавливает список игроков для подсветки.
-     * Вызывается из пакета.
-     */
     public static void setHighlightedPlayers(Set<UUID> players, int durationTicks) {
         highlightedPlayers = new HashSet<>(players);
         remainingTicks = durationTicks;
     }
 
-    /**
-     * Тик для отсчёта времени.
-     */
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
@@ -56,9 +47,6 @@ public class WallhackRenderer {
         }
     }
 
-    /**
-     * Рендерит подсветку игроков.
-     */
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
@@ -67,66 +55,99 @@ public class WallhackRenderer {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
 
+        // ОТЛАДКА
+        System.out.println("Rendering " + highlightedPlayers.size() + " highlighted players");
+
         Vec3 cameraPos = event.getCamera().getPosition();
         PoseStack poseStack = event.getPoseStack();
 
         poseStack.pushPose();
-
-        // Смещаем на позицию камеры
         poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        // Рендерим каждого подсвеченного игрока
+        // Настраиваем рендер для прозрачности и рендера через стены
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableDepthTest(); // Рендерим через стены
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.disableCull(); // Отключаем отсечение задних граней
+
+        int renderedCount = 0;
         for (UUID uuid : highlightedPlayers) {
             Entity entity = mc.level.getPlayerByUUID(uuid);
+
+            // ОТЛАДКА
+            System.out.println("  UUID: " + uuid + " -> Entity: " + (entity != null ? entity.getName().getString() : "NULL"));
+
             if (entity instanceof Player player) {
-                renderPlayerOutline(poseStack, player);
+                renderPlayerHighlight(poseStack, player);
+                renderedCount++;
             }
         }
+
+        System.out.println("Actually rendered: " + renderedCount + " players");
+
+        // Восстанавливаем настройки
+        RenderSystem.enableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.disableBlend();
 
         poseStack.popPose();
     }
 
-    /**
-     * Рендерит обводку игрока.
-     */
-    private static void renderPlayerOutline(PoseStack poseStack, Player player) {
-        // Получаем хитбокс игрока
+    private static void renderPlayerHighlight(PoseStack poseStack, Player player) {
         AABB aabb = player.getBoundingBox();
-
-        // Цвет: красный с прозрачностью
-        float red = 1.0f;
-        float green = 0.0f;
-        float blue = 0.0f;
-        float alpha = 0.5f;
-
-        // Настраиваем рендер
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableDepthTest(); // КРИТИЧНО: рендерим через стены
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder buffer = tesselator.getBuilder();
-
         Matrix4f matrix = poseStack.last().pose();
 
-        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-
-        // Рисуем куб вокруг игрока
-        drawBox(buffer, matrix, aabb, red, green, blue, alpha);
-
+        // Рендерим заливку (красная полупрозрачная)
+        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        drawFilledBox(buffer, matrix, aabb, 1.0f, 0.0f, 0.0f, 0.3f);
         tesselator.end();
 
-        // Восстанавливаем настройки
-        RenderSystem.enableDepthTest();
-        RenderSystem.disableBlend();
+        // Рендерим обводку (красная яркая)
+        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        drawBoxOutline(buffer, matrix, aabb, 1.0f, 0.0f, 0.0f, 0.8f);
+        tesselator.end();
     }
 
     /**
-     * Рисует линии куба.
+     * Рисует заполненный куб.
      */
-    private static void drawBox(BufferBuilder buffer, Matrix4f matrix, AABB aabb,
-                                float r, float g, float b, float a) {
+    private static void drawFilledBox(BufferBuilder buffer, Matrix4f matrix, AABB aabb,
+                                      float r, float g, float b, float a) {
+        float minX = (float) aabb.minX;
+        float minY = (float) aabb.minY;
+        float minZ = (float) aabb.minZ;
+        float maxX = (float) aabb.maxX;
+        float maxY = (float) aabb.maxY;
+        float maxZ = (float) aabb.maxZ;
+
+        // Нижняя грань (Y-)
+        quad(buffer, matrix, minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ, r, g, b, a);
+
+        // Верхняя грань (Y+)
+        quad(buffer, matrix, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ, r, g, b, a);
+
+        // Северная грань (Z-)
+        quad(buffer, matrix, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ, maxX, minY, minZ, r, g, b, a);
+
+        // Южная грань (Z+)
+        quad(buffer, matrix, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ, minX, minY, maxZ, r, g, b, a);
+
+        // Западная грань (X-)
+        quad(buffer, matrix, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, minX, minY, minZ, r, g, b, a);
+
+        // Восточная грань (X+)
+        quad(buffer, matrix, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ, maxX, minY, maxZ, r, g, b, a);
+    }
+
+    /**
+     * Рисует обводку куба.
+     */
+    private static void drawBoxOutline(BufferBuilder buffer, Matrix4f matrix, AABB aabb,
+                                       float r, float g, float b, float a) {
         float minX = (float) aabb.minX;
         float minY = (float) aabb.minY;
         float minZ = (float) aabb.minZ;
@@ -154,7 +175,22 @@ public class WallhackRenderer {
     }
 
     /**
-     * Рисует одну линию.
+     * Рисует квад (4 вершины).
+     */
+    private static void quad(BufferBuilder buffer, Matrix4f matrix,
+                             float x1, float y1, float z1,
+                             float x2, float y2, float z2,
+                             float x3, float y3, float z3,
+                             float x4, float y4, float z4,
+                             float r, float g, float b, float a) {
+        buffer.vertex(matrix, x1, y1, z1).color(r, g, b, a).endVertex();
+        buffer.vertex(matrix, x2, y2, z2).color(r, g, b, a).endVertex();
+        buffer.vertex(matrix, x3, y3, z3).color(r, g, b, a).endVertex();
+        buffer.vertex(matrix, x4, y4, z4).color(r, g, b, a).endVertex();
+    }
+
+    /**
+     * Рисует линию.
      */
     private static void line(BufferBuilder buffer, Matrix4f matrix,
                              float x1, float y1, float z1,

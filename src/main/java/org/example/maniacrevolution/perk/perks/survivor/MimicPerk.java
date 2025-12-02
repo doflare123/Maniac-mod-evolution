@@ -52,7 +52,7 @@ public class MimicPerk extends Perk {
 
         // КРИТИЧНО: Устанавливаем позу SWIMMING для уменьшения хитбокса
         // Это уменьшает размер до 0.6 x 0.6 (как при плавании)
-        player.setForcedPose(Pose.SWIMMING);
+//        player.setForcedPose(Pose.SWIMMING);
 
         // Сохраняем данные
         ACTIVE_MIMICS.put(player.getUUID(), new MimicData(
@@ -75,12 +75,13 @@ public class MimicPerk extends Perk {
             // Проверяем время окончания
             if (System.currentTimeMillis() >= data.endTime) {
                 endMimicEffect(player);
-            } else {
-                // Удерживаем позу SWIMMING каждый тик
-                if (player.getForcedPose() != Pose.SWIMMING) {
-                    player.setForcedPose(Pose.SWIMMING);
-                }
             }
+//            else {
+//                // Удерживаем позу SWIMMING каждый тик
+//                if (player.getForcedPose() != Pose.SWIMMING) {
+//                    player.setForcedPose(Pose.SWIMMING);
+//                }
+//            }
         }
     }
 
@@ -96,8 +97,8 @@ public class MimicPerk extends Perk {
         MimicData data = ACTIVE_MIMICS.remove(player.getUUID());
         if (data == null) return;
 
-        // КРИТИЧНО: Восстанавливаем нормальную позу
-        player.setForcedPose(null);
+//        // КРИТИЧНО: Восстанавливаем нормальную позу
+//        player.setForcedPose(Pose.STANDING);
 
         // Удаляем энтити блока
         ServerLevel level = player.serverLevel();

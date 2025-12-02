@@ -31,6 +31,7 @@ public class PerkRegistry {
 //        register(new HackerPerk());
 //        register(new DecoyPerk());
         register(new WallhackPerk());
+        register(new LastBreathPerk());
 
         // Перки маньяка (5 штук)
         register(new PredatorPerk());

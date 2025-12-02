@@ -57,6 +57,11 @@ public class WallhackHighlightPacket {
     // Обработчик (выполняется на клиенте)
     public static void handle(WallhackHighlightPacket packet, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
+            // ОТЛАДКА
+            System.out.println("WallhackPacket received on client!");
+            System.out.println("  Players to highlight: " + packet.highlightedPlayers.size());
+            System.out.println("  Duration: " + packet.durationTicks + " ticks");
+
             // Обновляем список подсвеченных игроков на клиенте
             WallhackRenderer.setHighlightedPlayers(
                     packet.highlightedPlayers,

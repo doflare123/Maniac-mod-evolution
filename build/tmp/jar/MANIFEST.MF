@@ -5,5 +5,5 @@ Specification-Version: 1
 Implementation-Title: maniacrev
 Implementation-Version: 1.0-SNAPSHOT
 Implementation-Vendor: 
-Implementation-Timestamp: 2025-11-26T16:51:59+0200
+Implementation-Timestamp: 2025-11-30T20:05:40+0200
 

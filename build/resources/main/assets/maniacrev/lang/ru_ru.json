@@ -133,6 +133,9 @@
   "perk.maniacrev.wallhack.name": "Просвет сквозь стену",
   "perk.maniacrev.wallhack.desc": "Подсвечивает маньяков через стены на 5 секунд. Дистанция: 15 блоков",
 
+  "perk.maniacrev.last_breath.name": "Последнее дыхание",
+  "perk.maniacrev.last_breath.desc": "При смерти подсвечивает вашего убийцу для всей команды на 7 секунд",
+
   "effect.maniacrev.fear": "Страх",
 
   "key.categories.maniacrev": "ManiacRev QTE",
