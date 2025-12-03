@@ -34,8 +34,9 @@ public class QTECommand {
             int generatorNumber = IntegerArgumentType.getInteger(context, "number");
 
             for (ServerPlayer player : players) {
+                boolean hasQuickReflexes = org.example.maniacrevolution.perk.perks.survivor.QuickReflexesPerk.hasQuickReflexes(player);
                 ModNetworking.CHANNEL.sendTo(
-                        new StartQTEPacket(generatorNumber),
+                        new StartQTEPacket(generatorNumber, hasQuickReflexes),
                         player.connection.connection,
                         net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT
                 );

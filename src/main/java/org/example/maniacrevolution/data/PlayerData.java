@@ -117,6 +117,7 @@ public class PlayerData {
         }
 
         selectedPerks.add(new PerkInstance(perk));
+
         return true;
     }
 
@@ -127,6 +128,7 @@ public class PlayerData {
             if (activePerkIndex >= selectedPerks.size()) {
                 activePerkIndex = Math.max(0, selectedPerks.size() - 1);
             }
+
         }
     }
 
@@ -136,6 +138,7 @@ public class PlayerData {
         }
         selectedPerks.clear();
         activePerkIndex = 0;
+
     }
 
     public void switchActivePerk() {

@@ -7,8 +7,6 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.network.packets.*;
 
-import static com.mojang.datafixers.optics.Optics.id;
-
 public class ModNetworking {
     private static final String PROTOCOL_VERSION = "1";
 
@@ -41,6 +39,30 @@ public class ModNetworking {
                 .consumerMainThread(OpenGuiPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(StartQTEPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(StartQTEPacket::encode)
+                .decoder(StartQTEPacket::decode)
+                .consumerMainThread(StartQTEPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(StopQTEPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(StopQTEPacket::encode)
+                .decoder(StopQTEPacket::decode)
+                .consumerMainThread(StopQTEPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(FearDirectionPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(FearDirectionPacket::encode)
+                .decoder(FearDirectionPacket::decode)
+                .consumerMainThread(FearDirectionPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(WallhackGlowPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WallhackGlowPacket::encode)
+                .decoder(WallhackGlowPacket::decode)
+                .consumerMainThread(WallhackGlowPacket::handle)
+                .add();
+
         // Client -> Server
         CHANNEL.messageBuilder(ActivatePerkPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(ActivatePerkPacket::encode)
@@ -60,11 +82,16 @@ public class ModNetworking {
                 .consumerMainThread(SelectPerkPacket::handle)
                 .add();
 
-        // ФИКС: Добавлена регистрация PurchaseItemPacket
         CHANNEL.messageBuilder(PurchaseItemPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(PurchaseItemPacket::encode)
                 .decoder(PurchaseItemPacket::decode)
                 .consumerMainThread(PurchaseItemPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(QTEKeyPressPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(QTEKeyPressPacket::encode)
+                .decoder(QTEKeyPressPacket::decode)
+                .consumerMainThread(QTEKeyPressPacket::handle)
                 .add();
 
         // Пакеты для пресетов
@@ -86,57 +113,10 @@ public class ModNetworking {
                 .consumerMainThread(DeletePresetPacket::handle)
                 .add();
 
-        // Пакет для подсветки маньяков через стены (Server -> Client)
-        CHANNEL.messageBuilder(WallhackHighlightPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(WallhackHighlightPacket::encode)
-                .decoder(WallhackHighlightPacket::decode)
-                .consumerMainThread(WallhackHighlightPacket::handle)
-                .add();
-
-        // Пакет для подсветки маньяков через стены (Server -> Client)
-        CHANNEL.messageBuilder(WallhackHighlightPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(WallhackHighlightPacket::encode)
-                .decoder(WallhackHighlightPacket::decode)
-                .consumerMainThread(WallhackHighlightPacket::handle)
-                .add();
-
-        // Пакет для управления Glowing эффектом (Server -> Client)
-        CHANNEL.messageBuilder(WallhackGlowPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(WallhackGlowPacket::encode)
-                .decoder(WallhackGlowPacket::decode)
-                .consumerMainThread(WallhackGlowPacket::handle)
-                .add();
-
-        // Пакет для переключения косметики
         CHANNEL.messageBuilder(ToggleCosmeticPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(ToggleCosmeticPacket::encode)
                 .decoder(ToggleCosmeticPacket::decode)
                 .consumerMainThread(ToggleCosmeticPacket::handle)
-                .add();
-
-        // Новый пакет для синхронизации направления страха (Server -> Client)
-        CHANNEL.messageBuilder(FearDirectionPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(FearDirectionPacket::encode)
-                .decoder(FearDirectionPacket::decode)
-                .consumerMainThread(FearDirectionPacket::handle)
-                .add();
-
-        CHANNEL.messageBuilder(StartQTEPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(StartQTEPacket::encode)
-                .decoder(StartQTEPacket::decode)
-                .consumerMainThread(StartQTEPacket::handle)
-                .add();
-
-        CHANNEL.messageBuilder(StopQTEPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(StopQTEPacket::encode)
-                .decoder(StopQTEPacket::decode)
-                .consumerMainThread(StopQTEPacket::handle)
-                .add();
-
-        CHANNEL.messageBuilder(QTEKeyPressPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(QTEKeyPressPacket::encode)
-                .decoder(QTEKeyPressPacket::decode)
-                .consumerMainThread(QTEKeyPressPacket::handle)
                 .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);

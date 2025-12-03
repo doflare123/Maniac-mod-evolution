@@ -136,6 +136,9 @@
   "perk.maniacrev.last_breath.name": "Последнее дыхание",
   "perk.maniacrev.last_breath.desc": "При смерти подсвечивает вашего убийцу для всей команды на 7 секунд",
 
+  "perk.maniacrev.quick_reflexes.name": "Быстрая реакция",
+  "perk.maniacrev.quick_reflexes.desc": "QTE генератора: +0.25 сек времени и +10% пространства для успеха",
+
   "effect.maniacrev.fear": "Страх",
 
   "key.categories.maniacrev": "ManiacRev QTE",

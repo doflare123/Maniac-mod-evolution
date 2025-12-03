@@ -22,11 +22,14 @@ public class QTEClientHandler {
     private static QTEState currentQTE = null;
     private static final Random random = new Random();
 
+    // Флаг наличия перка Quick Reflexes (обновляется через пакет)
+    private static boolean hasQuickReflexes = false;
+
     public static void startQTE(int generator) {
         isActive = true;
         generatorNumber = generator;
         lastQTETime = System.currentTimeMillis();
-        nextQTEDelay = (3 + random.nextInt(5)) * 1000L; // 3-7 секунд
+        nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
         currentQTE = null;
     }
 
@@ -36,24 +39,31 @@ public class QTEClientHandler {
         generatorNumber = 0;
     }
 
+    /**
+     * Устанавливает флаг наличия перка Quick Reflexes.
+     * Вызывается из пакета при синхронизации с сервером.
+     */
+    public static void setQuickReflexes(boolean hasIt) {
+        hasQuickReflexes = hasIt;
+        System.out.println("QTE: Quick Reflexes perk = " + hasIt);
+    }
+
     @SubscribeEvent
     public static void onRenderGui(RenderGuiOverlayEvent.Post event) {
         if (!isActive) return;
 
         long currentTime = System.currentTimeMillis();
 
-        // Проверяем, нужно ли создать новый QTE
+        // Создаём новый QTE с учётом перка
         if (currentQTE == null && currentTime - lastQTETime >= nextQTEDelay) {
-            currentQTE = new QTEState(random.nextInt(4)); // 0-3 для 4 кнопок
+            currentQTE = new QTEState(random.nextInt(4), hasQuickReflexes);
             lastQTETime = currentTime;
         }
 
-        // Рендерим активный QTE
         if (currentQTE != null) {
             currentQTE.update();
             currentQTE.render(event.getGuiGraphics());
 
-            // Если QTE завершён (неудача)
             if (currentQTE.isFinished()) {
                 currentQTE = null;
                 nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
@@ -66,7 +76,7 @@ public class QTEClientHandler {
         if (!isActive || currentQTE == null) return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.screen != null) return; // Игнорируем если открыто меню
+        if (mc.screen != null) return;
 
         int pressedKey = -1;
 
@@ -79,14 +89,10 @@ public class QTEClientHandler {
             boolean success = currentQTE.checkSuccess(pressedKey);
 
             if (success) {
-                // Отправляем пакет на сервер для выполнения функции датапака
                 ModNetworking.CHANNEL.sendToServer(new QTEKeyPressPacket(pressedKey, generatorNumber, true));
-
-                // Сбрасываем текущий QTE и планируем следующий
                 currentQTE = null;
                 nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
             } else {
-                // Неправильная кнопка - QTE проваливается
                 currentQTE = null;
                 nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
             }
@@ -95,5 +101,9 @@ public class QTEClientHandler {
 
     public static boolean isQTEActive() {
         return isActive;
+    }
+
+    public static boolean hasQuickReflexesPerk() {
+        return hasQuickReflexes;
     }
 }
