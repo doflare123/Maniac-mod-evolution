@@ -139,6 +139,9 @@
   "perk.maniacrev.quick_reflexes.name": "Быстрая реакция",
   "perk.maniacrev.quick_reflexes.desc": "QTE генератора: +0.25 сек времени и +10% пространства для успеха",
 
+  "perk.maniacrev.blindness.name": "Слепота",
+  "perk.maniacrev.blindness.desc": "Пассивная: слепота маньякам в радиусе 2 блоков (1 сек). Активная: слепота всем маньякам на карте (1 сек, КД 120 сек)",
+
   "effect.maniacrev.fear": "Страх",
 
   "key.categories.maniacrev": "ManiacRev QTE",

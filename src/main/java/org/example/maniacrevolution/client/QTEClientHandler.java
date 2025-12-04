@@ -65,6 +65,11 @@ public class QTEClientHandler {
             currentQTE.render(event.getGuiGraphics());
 
             if (currentQTE.isFinished()) {
+                // QTE истекло - считаем промахом
+                System.out.println("QTE timeout - sending FAIL packet");
+                ModNetworking.CHANNEL.sendToServer(
+                        new QTEKeyPressPacket(-1, generatorNumber, false));
+
                 currentQTE = null;
                 nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
             }
@@ -88,14 +93,13 @@ public class QTEClientHandler {
         if (pressedKey != -1) {
             boolean success = currentQTE.checkSuccess(pressedKey);
 
-            if (success) {
-                ModNetworking.CHANNEL.sendToServer(new QTEKeyPressPacket(pressedKey, generatorNumber, true));
-                currentQTE = null;
-                nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
-            } else {
-                currentQTE = null;
-                nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
-            }
+            // Отправляем результат на сервер
+            ModNetworking.CHANNEL.sendToServer(
+                    new QTEKeyPressPacket(pressedKey, generatorNumber, success));
+
+            // Сбрасываем текущий QTE
+            currentQTE = null;
+            nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
         }
     }
 

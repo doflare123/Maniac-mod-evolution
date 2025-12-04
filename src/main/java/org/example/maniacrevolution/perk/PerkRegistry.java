@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.perk;
 
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.perk.perks.CatchMistakesPerk;
 import org.example.maniacrevolution.perk.perks.common.*;
 import org.example.maniacrevolution.perk.perks.maniac.*;
 import org.example.maniacrevolution.perk.perks.survivor.*;
@@ -33,13 +34,18 @@ public class PerkRegistry {
         register(new WallhackPerk());
         register(new LastBreathPerk());
         register(new QuickReflexesPerk());
+        register(new BlindnessPerk());
 
         // Перки маньяка (5 штук)
-        register(new PredatorPerk());
-        register(new TerrorPerk());
-        register(new TrapperManiacPerk());
-        register(new ExecutionerPerk());
-        register(new ShadowPerk());
+//        register(new PredatorPerk());
+//        register(new TerrorPerk());
+//        register(new TrapperManiacPerk());
+//        register(new ExecutionerPerk());
+//        register(new ShadowPerk());
+        register(new BloodflowPerk());
+        register(new IAmSpeedPerk());
+        register(new CatchMistakesPerk());
+        register(new ComputerBreakerPerk());
 
         Maniacrev.LOGGER.info("Registered {} perks", PERKS.size());
     }

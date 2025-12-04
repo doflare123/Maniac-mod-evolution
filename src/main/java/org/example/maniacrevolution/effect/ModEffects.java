@@ -15,6 +15,9 @@ public class ModEffects {
             FearEffect::new
     );
 
+    public static final RegistryObject<MobEffect> OPEN_WOUND =
+            MOB_EFFECTS.register("open_wound", OpenWoundEffect::new);
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }

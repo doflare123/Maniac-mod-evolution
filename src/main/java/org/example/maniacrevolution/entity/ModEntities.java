@@ -8,6 +8,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.example.maniacrevolution.Maniacrev;
 
+import static net.minecraftforge.registries.ForgeRegistries.Keys.ENTITY_TYPES;
+
 public class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES =
             DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Maniacrev.MODID);
@@ -20,6 +22,18 @@ public class ModEntities {
                             .updateInterval(1)
                             .noSummon() // Нельзя заспавнить командой /summon
                             .build("mimic_block")
+            );
+
+    public static final RegistryObject<EntityType<BloodMarkerEntity>> BLOOD_MARKER =
+            ENTITIES.register("blood_marker",
+                    () -> EntityType.Builder.<BloodMarkerEntity>of(BloodMarkerEntity::new, MobCategory.MISC)
+                            .sized(0.5F, 0.1F) // Маленький размер
+                            .clientTrackingRange(64) // Дистанция отслеживания
+                            .updateInterval(20) // Интервал обновления
+                            .noSave() // Не сохраняется в мир
+                            .noSummon() // Нельзя призвать командой
+                            .fireImmune() // Не горит
+                            .build("blood_marker")
             );
 
     public static void register(IEventBus eventBus) {
