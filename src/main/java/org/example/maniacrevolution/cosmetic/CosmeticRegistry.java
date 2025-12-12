@@ -2,6 +2,7 @@ package org.example.maniacrevolution.cosmetic;
 
 import net.minecraft.world.item.Items;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.cosmetic.effects.HaloEffect;
 import org.example.maniacrevolution.cosmetic.effects.ParticleEffect;
 import org.example.maniacrevolution.cosmetic.effects.TrailEffect;
 import org.example.maniacrevolution.cosmetic.effects.WeaponEffect;
@@ -14,6 +15,12 @@ public class CosmeticRegistry {
 
     public static void init() {
         // === Частицы (на игроке) ===
+        register(new HaloEffect.Builder("halo")
+                .type(CosmeticType.PARTICLE)
+                .price(250)
+                .haloHeight(0.6)
+                .haloRadius(0.4)
+                .build());
         register(new ParticleEffect.Builder("particles_flame")
                 .type(CosmeticType.PARTICLE)
                 .price(100)

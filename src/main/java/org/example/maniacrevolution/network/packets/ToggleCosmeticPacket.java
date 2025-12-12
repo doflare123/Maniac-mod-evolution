@@ -4,6 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
+import org.example.maniacrevolution.cosmetic.CosmeticSyncHandler;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 
@@ -41,7 +42,11 @@ public class ToggleCosmeticPacket {
             player.displayClientMessage(
                     Component.literal("Эффект " + status), true);
 
+            // Синхронизируем с клиентом самого игрока
             PlayerDataManager.syncToClient(player);
+
+            // НОВОЕ: Синхронизируем косметику всем остальным игрокам
+            CosmeticSyncHandler.syncCosmeticsToAll(player);
         });
         ctx.get().setPacketHandled(true);
         return true;

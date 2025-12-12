@@ -145,7 +145,7 @@ public class PerkSelectionScreen extends Screen {
             gui.renderOutline(x, y, PERK_SLOT_SIZE, PERK_SLOT_SIZE, borderColor);
 
             // Иконка (заглушка)
-            renderPerkIcon(gui, perk, x, y, PERK_SLOT_SIZE);
+            renderPerkIcon(gui, perk, x+2, y+2, PERK_SLOT_SIZE-4);
 
             // Индикатор команды
             String teamMark = switch (perk.getTeam()) {

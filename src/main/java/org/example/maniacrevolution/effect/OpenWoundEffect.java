@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class OpenWoundEffect extends MobEffect {
 
-    private static final int PARTICLE_SPAWN_INTERVAL = 60; // Каждые 3 секунды (60 тиков)
+    private static final int PARTICLE_SPAWN_INTERVAL = 30; // Каждые 3 секунды (60 тиков)
     private static final int BLOOD_TRAIL_DURATION = 100; // След держится 5 секунд (100 тиков)
 
     // Темно-красный цвет для частиц крови

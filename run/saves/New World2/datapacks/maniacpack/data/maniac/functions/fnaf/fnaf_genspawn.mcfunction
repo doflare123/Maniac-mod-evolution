@@ -1,0 +1,9 @@
+setblock -494 44 19 minecraft:stone_pressure_plate
+setblock -496 45 -31 minecraft:stone_pressure_plate
+setblock -477 44 7 minecraft:stone_pressure_plate
+setblock -483 44 -41 minecraft:stone_pressure_plate
+setblock -456 45 -75 minecraft:stone_pressure_plate
+setblock -479 57 -100 minecraft:stone_pressure_plate
+setblock -510 45 -122 minecraft:stone_pressure_plate
+setblock -523 43 -88 minecraft:stone_pressure_plate
+setblock -461 49 -112 minecraft:stone_pressure_plate

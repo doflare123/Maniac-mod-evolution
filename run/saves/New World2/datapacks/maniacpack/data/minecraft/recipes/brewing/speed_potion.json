@@ -1,0 +1,13 @@
+{
+    "type": "minecraft:brewing",
+    "ingredient": {
+        "item": "minecraft:sugar"
+    },
+    "base": {
+        "item": "minecraft:awkward_potion"
+    },
+    "result": {
+        "item": "minecraft:potion",
+        "nbt": "{Potion:\"minecraft:swiftness\",custom_potion_effects:[{id:\"minecraft:speed\",amplifier:0,duration:600}]}"
+    }
+}

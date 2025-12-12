@@ -1,0 +1,1 @@
+summon zombie ~ ~ ~ {DeathLootTable:"minecraft:empty",Team:"maniac",Tags:["plague_zombie"],Health:10f,ArmorItems:[{},{},{},{id:"minecraft:leather_helmet",Count:1b}],ArmorDropChances:[0.0f,0.0f,0.0f,0.0f],CustomName:'{"text":"Чумной Зомби","color":"dark_green"}',CustomNameVisible:1b}

@@ -19,6 +19,7 @@ import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.OpenGuiPacket;
 import org.example.maniacrevolution.perk.perks.common.BigmoneyPerk;
 import org.example.maniacrevolution.perk.perks.common.MegamindPerk;
+import org.example.maniacrevolution.perk.perks.maniac.HighlightPerk;
 
 
 import java.util.Collection;
@@ -41,6 +42,10 @@ public class ModCommands {
                         .executes(ctx -> {
                             GameManager.stopGame(ctx.getSource());
                             return 1;
+                        }))
+                .then(Commands.literal("glowing_perks")
+                        .executes(ctx -> {
+                            return executeGlowingPerks(ctx.getSource());
                         }))
 
                 // /maniacrev timer ...
@@ -202,6 +207,31 @@ public class ModCommands {
         ctx.getSource().sendSuccess(() ->
                 Component.literal("§aДобавлено " + baseAmount + " монет " + targets.size() + " игрокам"), true);
         return targets.size();
+    }
+
+    private static int executeGlowingPerks(CommandSourceStack source) {
+        try {
+            // Активируем перк "Подсветка"
+            int highlightedCount = HighlightPerk.activateGlowing(source.getServer());
+
+            if (highlightedCount > 0) {
+                source.sendSuccess(
+                        () -> Component.literal("Подсвечено выживших: " + highlightedCount),
+                        true
+                );
+            } else {
+                source.sendSuccess(
+                        () -> Component.literal("Нет активных перков подсветки или нет доступных выживших"),
+                        false
+                );
+            }
+
+            return highlightedCount;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("Ошибка при активации перка: " + e.getMessage()));
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     private static int clearPerks(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> targets)

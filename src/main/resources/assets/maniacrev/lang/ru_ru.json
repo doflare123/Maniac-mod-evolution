@@ -52,6 +52,9 @@
   "shop.maniacrev.skin_fire.name": "Огненный скин",
   "shop.maniacrev.skin_fire.desc": "Огненная рамка для перка Берсерк",
 
+  "shop.maniacrev.hola.name": "Рулеточка",
+  "shop.maniacrev.hola.desc": "Чтобы лучше депалось",
+
   "shop.maniacrev.skin_ice.name": "Ледяной скин",
   "shop.maniacrev.skin_ice.desc": "Ледяная рамка для перка Скороход",
 
@@ -81,6 +84,9 @@
 
   "cosmetic.maniacrev.particles_hearts.name": "Частицы: Сердца",
   "cosmetic.maniacrev.particles_hearts.desc": "Сердечки вокруг игрока",
+
+  "cosmetic.maniacrev.halo.name": "Рулеточка",
+  "cosmetic.maniacrev.halo.desc": "Чтобы лучше депалось",
 
   "cosmetic.maniacrev.particles_smoke.name": "Частицы: Дым",
   "cosmetic.maniacrev.particles_smoke.desc": "Лёгкий дымок вокруг игрока",
@@ -140,9 +146,25 @@
   "perk.maniacrev.quick_reflexes.desc": "QTE генератора: +0.25 сек времени и +10% пространства для успеха",
 
   "perk.maniacrev.blindness.name": "Слепота",
-  "perk.maniacrev.blindness.desc": "Пассивная: слепота маньякам в радиусе 2 блоков (1 сек). Активная: слепота всем маньякам на карте (1 сек, КД 120 сек)",
+  "perk.maniacrev.blindness.desc": "Пассивная: слепота маньякам в радиусе 2 блоков (1 сек). Активная: слепота всем маньякам на карте (10 сек, КД 120 сек)",
+
+  "perk.maniacrev.bloodflow.name": "Разрывающий удар",
+  "perk.maniacrev.bloodflow.desc": "Следущий удар разорвет плоть жертвы и она будет истекать кровью.",
+
+  "perk.maniacrev.i_am_speed.name": "Я - скорость",
+  "perk.maniacrev.i_am_speed.desc": "После убийства выжившего вы получаете небольшой прилив сил и тем самым перемещаетесь быстрее",
+
+  "perk.maniacrev.catch_mistakes.name": "Прогрел новичка",
+  "perk.maniacrev.catch_mistakes.desc": "Если при  проверке игрока на реакцию он не проходит ее успешно, то этот выживший подсвечивается",
+
+  "perk.maniacrev.computer_breaker.name": "Компьютер раскрафтер",
+  "perk.maniacrev.computer_breaker.desc": "Уменьшает прогресс взлома у не взломанного компьютера, который имеет самый большой прогресс",
+
+  "perk.maniacrev.highlight.name": "Не наебывай меня Тони",
+  "perk.maniacrev.highlight.desc": "Подсвечивает рандомного выжившего при взломе компьютера",
 
   "effect.maniacrev.fear": "Страх",
+  "effect.maniacrev.open_wound": "Открытая рана",
 
   "key.categories.maniacrev": "ManiacRev QTE",
   "key.maniacrev.qte1": "QTE Клавиша 1",

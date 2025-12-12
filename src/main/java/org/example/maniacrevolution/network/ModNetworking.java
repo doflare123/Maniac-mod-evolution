@@ -57,6 +57,12 @@ public class ModNetworking {
                 .consumerMainThread(FearDirectionPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(SyncPlayerCosmeticsPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SyncPlayerCosmeticsPacket::encode)
+                .decoder(SyncPlayerCosmeticsPacket::decode)
+                .consumerMainThread(SyncPlayerCosmeticsPacket::handle)
+                .add();
+
         CHANNEL.messageBuilder(WallhackGlowPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(WallhackGlowPacket::encode)
                 .decoder(WallhackGlowPacket::decode)

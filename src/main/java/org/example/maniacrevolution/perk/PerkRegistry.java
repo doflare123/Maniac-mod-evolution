@@ -46,6 +46,7 @@ public class PerkRegistry {
         register(new IAmSpeedPerk());
         register(new CatchMistakesPerk());
         register(new ComputerBreakerPerk());
+        register(new HighlightPerk());
 
         Maniacrev.LOGGER.info("Registered {} perks", PERKS.size());
     }

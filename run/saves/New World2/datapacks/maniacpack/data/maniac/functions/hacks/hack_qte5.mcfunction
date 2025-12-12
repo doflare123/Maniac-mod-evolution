@@ -1,0 +1,1 @@
+execute if score comp5 hackGoal matches 0 run scoreboard players add Progress5 hack 650

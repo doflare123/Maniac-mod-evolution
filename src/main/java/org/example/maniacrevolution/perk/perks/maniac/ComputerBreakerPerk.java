@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * Ломание компа (Активный) (Мидгейм)
- * Отнимает 500 очков у самого заряженного компьютера
+ * Отнимает 500 очков у самого заряженного НЕзаряженного компьютера
  */
 public class ComputerBreakerPerk extends Perk {
 
@@ -20,7 +20,7 @@ public class ComputerBreakerPerk extends Perk {
     private static final int POINTS_TO_REMOVE = 500;
 
     // Максимальное количество компьютеров (можно увеличить при необходимости)
-    private static final int MAX_COMPUTERS = 10;
+    private static final int MAX_COMPUTERS = 9;
 
     public ComputerBreakerPerk() {
         super(new Builder("computer_breaker")
@@ -64,10 +64,14 @@ public class ComputerBreakerPerk extends Perk {
             int goal = goalScore.getScore();
 
             // Пропускаем компьютеры с нулевой целью (возможно не существуют)
-            if (goal == 0) continue;
+            if (currentProgress == 0) {
+                System.out.println(String.format("[ComputerBreaker] Skipping Computer %d: Goal is 0", i));
+                continue;
+            }
 
-            // Проверяем, не заряжен ли компьютер
-            boolean isCharged = currentProgress >= goal;
+            // ВАЖНО: В вашей системе заряженный компьютер имеет ОТРИЦАТЕЛЬНЫЙ прогресс
+            // Незаряженный когда Progress >= 0
+            boolean isCharged = currentProgress < 0;
 
             computers.add(new ComputerInfo(i, progressName, currentProgress, goal, isCharged));
 
@@ -96,6 +100,9 @@ public class ComputerBreakerPerk extends Perk {
             return;
         }
 
+        System.out.println(String.format("[ComputerBreaker] Target computer selected: %d (Progress=%d, Goal=%d)",
+                targetComputer.id, targetComputer.currentProgress, targetComputer.goal));
+
         // Отнимаем очки
         int newProgress = Math.max(0, targetComputer.currentProgress - POINTS_TO_REMOVE);
         Score progressScore = scoreboard.getOrCreatePlayerScore(targetComputer.progressName, hackObjective);
@@ -117,10 +124,24 @@ public class ComputerBreakerPerk extends Perk {
      * Находит самый заряженный незаряженный компьютер
      */
     private ComputerInfo findMostChargedUnfinishedComputer(List<ComputerInfo> computers) {
-        return computers.stream()
-                .filter(c -> !c.isCharged) // Только незаряженные
+        System.out.println("[ComputerBreaker] Searching for most charged unfinished computer...");
+
+        ComputerInfo result = computers.stream()
+                .filter(c -> !c.isCharged) // ВАЖНО: Только НЕзаряженные
+                .peek(c -> System.out.println(String.format(
+                        "[ComputerBreaker] Candidate: Computer %d (Progress=%d, Charged=%b)",
+                        c.id, c.currentProgress, c.isCharged)))
                 .max((c1, c2) -> Integer.compare(c1.currentProgress, c2.currentProgress)) // Максимальный прогресс
                 .orElse(null);
+
+        if (result != null) {
+            System.out.println(String.format("[ComputerBreaker] Selected: Computer %d with progress %d",
+                    result.id, result.currentProgress));
+        } else {
+            System.out.println("[ComputerBreaker] No unfinished computers found!");
+        }
+
+        return result;
     }
 
     /**

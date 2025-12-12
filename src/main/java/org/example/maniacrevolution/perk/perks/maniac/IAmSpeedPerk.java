@@ -6,94 +6,83 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.example.maniacrevolution.perk.*;
+import org.example.maniacrevolution.data.PlayerDataManager;
+import org.example.maniacrevolution.perk.Perk;
+import org.example.maniacrevolution.perk.PerkPhase;
+import org.example.maniacrevolution.perk.PerkTeam;
+import org.example.maniacrevolution.perk.PerkType;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-/**
- * Я скорость (Пассивный) (Охота/Мидгейм)
- * При убийстве игрока даёт скорость 1 на 30 секунд
- */
-@Mod.EventBusSubscriber
 public class IAmSpeedPerk extends Perk {
-
-    private static final int SPEED_DURATION_TICKS = 600; // 30 секунд
+    private static final int SPEED_DURATION_TICKS = 200; // 10 секунд
     private static final int SPEED_AMPLIFIER = 0; // Уровень 1 (0 = Speed I)
-
-    // Храним игроков, у которых активен перк
-    private static final Map<UUID, Boolean> activePlayers = new HashMap<>();
 
     public IAmSpeedPerk() {
         super(new Builder("i_am_speed")
                 .type(PerkType.PASSIVE)
                 .team(PerkTeam.MANIAC)
-                .phases(PerkPhase.HUNT, PerkPhase.MIDGAME)
+                .phases(PerkPhase.ANY)
         );
     }
 
-    @Override
-    public void applyPassiveEffect(ServerPlayer player) {
-        // Регистрируем игрока как активного
-        activePlayers.put(player.getUUID(), true);
-    }
-
-    @Override
-    public void removePassiveEffect(ServerPlayer player) {
-        // Убираем игрока из активных
-        activePlayers.remove(player.getUUID());
-    }
-
     /**
-     * Проверяет, активен ли перк у игрока
+     * Применяет эффект скорости маньяку после убийства
      */
-    public static boolean isActive(UUID playerUUID) {
-        return activePlayers.getOrDefault(playerUUID, false);
-    }
-
-    /**
-     * Обработчик события смерти
-     */
-    @SubscribeEvent
-    public static void onPlayerDeath(LivingDeathEvent event) {
-        // Проверяем, что жертва - игрок
-        if (!(event.getEntity() instanceof ServerPlayer victim)) return;
-
-        // Проверяем, что убийца - игрок
-        if (!(event.getSource().getEntity() instanceof ServerPlayer killer)) return;
-
-        // Проверяем, что убийца и жертва - разные игроки
-        if (killer.getUUID().equals(victim.getUUID())) return;
-
-        // Проверяем, что убийца - маньяк
-        PerkTeam killerTeam = PerkTeam.fromPlayer(killer);
-        if (killerTeam != PerkTeam.MANIAC) return;
-
-        // Проверяем, что у убийцы активен перк "Я скорость"
-        if (!isActive(killer.getUUID())) return;
-
-        // Применяем эффект скорости
-        killer.addEffect(new MobEffectInstance(
+    public void applySpeedOnKill(ServerPlayer killer) {
+        MobEffectInstance speedEffect = new MobEffectInstance(
                 MobEffects.MOVEMENT_SPEED,
                 SPEED_DURATION_TICKS,
                 SPEED_AMPLIFIER,
                 false, // ambient
                 true,  // visible
                 true   // showIcon
-        ));
-
-        // Опционально: отправить сообщение игроку
-        // killer.displayClientMessage(
-        //     Component.literal("Я - скорость!").withStyle(ChatFormatting.YELLOW),
-        //     true // actionBar
-        // );
+        );
+        killer.addEffect(speedEffect);
     }
 
     /**
-     * Очистка данных при удалении перка
+     * Обработчик события убийства игрока.
+     * Должен быть зарегистрирован в EventBusSubscriber.
      */
-    public static void cleanup(UUID playerUUID) {
-        activePlayers.remove(playerUUID);
+    @Mod.EventBusSubscriber(modid = "maniacrev")
+    public static class EventHandler {
+
+        @SubscribeEvent
+        public static void onPlayerKill(LivingDeathEvent event) {
+            // Проверяем, что убитый - игрок
+            if (!(event.getEntity() instanceof ServerPlayer victim)) {
+                return;
+            }
+
+            // Проверяем, что убийца - игрок
+            if (!(event.getSource().getEntity() instanceof ServerPlayer killer)) {
+                return;
+            }
+
+            // Не засчитываем самоубийство
+            if (killer.equals(victim)) {
+                return;
+            }
+
+            // Проверяем команду убийцы
+            PerkTeam killerTeam = PerkTeam.fromPlayer(killer);
+            if (killerTeam != PerkTeam.MANIAC) {
+                return;
+            }
+
+            // Получаем данные игрока
+            var playerData = PlayerDataManager.get(killer);
+            if (playerData == null) return;
+
+            // Проверяем активные перки
+            for (var perkInstance : playerData.getSelectedPerks()) {
+                Perk perk = perkInstance.getPerk();
+
+                // Если у маньяка есть этот перк - активируем эффект
+                if (perk instanceof IAmSpeedPerk speedPerk) {
+                    speedPerk.applySpeedOnKill(killer);
+                    break; // Один раз за убийство достаточно
+                }
+            }
+        }
     }
 }

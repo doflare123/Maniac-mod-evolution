@@ -6,6 +6,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.example.maniacrevolution.cosmetic.effects.HaloEffect;
 import org.example.maniacrevolution.cosmetic.effects.ParticleEffect;
 import org.example.maniacrevolution.cosmetic.effects.TrailEffect;
 import org.example.maniacrevolution.cosmetic.effects.WeaponEffect;
@@ -22,6 +23,14 @@ public class CosmeticEffect {
 
     // Конструктор для ParticleEffect.Builder
     protected CosmeticEffect(ParticleEffect.Builder builder) {
+        this.id = builder.getId();
+        this.nameKey = "cosmetic.maniacrev." + id + ".name";
+        this.descKey = "cosmetic.maniacrev." + id + ".desc";
+        this.type = builder.getType();
+        this.price = builder.getPrice();
+    }
+
+    protected CosmeticEffect(HaloEffect.Builder builder) {
         this.id = builder.getId();
         this.nameKey = "cosmetic.maniacrev." + id + ".name";
         this.descKey = "cosmetic.maniacrev." + id + ".desc";

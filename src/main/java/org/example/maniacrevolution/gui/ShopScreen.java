@@ -125,9 +125,9 @@ public class ShopScreen extends Screen {
         // Иконка
         int iconSize = height - 8;
         renderCosmeticIcon(gui, item, x + 4, y + 4, iconSize);
-//        gui.fill(x + 4, y + 4, x + 4 + iconSize, y + 4 + iconSize, getCategoryColor(item.getCategory()));
-//        String initial = item.getId().substring(0, 1).toUpperCase();
-//        gui.drawCenteredString(font, initial, x + 4 + iconSize / 2, y + 4 + iconSize / 2 - 4, 0xFFFFFF);
+        gui.fill(x + 4, y + 4, x + 4 + iconSize, y + 4 + iconSize, getCategoryColor(item.getCategory()));
+        String initial = item.getId().substring(0, 1).toUpperCase();
+        gui.drawCenteredString(font, initial, x + 4 + iconSize / 2, y + 4 + iconSize / 2 - 4, 0xFFFFFF);
 
         // Название
         gui.drawString(font, item.getName(), x + iconSize + 10, y + 5, 0xFFFFFF, false);

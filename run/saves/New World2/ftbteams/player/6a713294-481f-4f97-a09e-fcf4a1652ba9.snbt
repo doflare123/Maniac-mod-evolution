@@ -1,0 +1,17 @@
+{
+	id: "6a713294-481f-4f97-a09e-fcf4a1652ba9"
+	type: "player"
+	player_name: "doflare"
+	ranks: {
+		6a713294-481f-4f97-a09e-fcf4a1652ba9: "owner"
+	}
+	properties: {
+		"ftbteams:display_name": "doflare"
+		"ftbteams:description": ""
+		"ftbteams:color": "#BDFF59"
+		"ftbteams:free_to_join": 0b
+		"ftbteams:max_msg_history_size": 1000
+	}
+	message_history: [ ]
+	extra: { }
+}

@@ -1,0 +1,1725 @@
+{
+  "minecraft:recipes/decorations/crafting_table": {
+    "criteria": {
+      "unlock_right_away": "2024-11-08 18:55:35 +0200"
+    },
+    "done": true
+  },
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "minecraft:windswept_hills": "2024-11-08 18:55:36 +0200"
+    },
+    "done": false
+  },
+  "securitycraft:recipes/misc/keycard_lv5_reset": {
+    "criteria": {
+      "has_keycard": "2024-11-08 19:02:46 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/cherry_boat": {
+    "criteria": {
+      "in_water": "2024-11-08 19:02:54 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/bamboo_raft": {
+    "criteria": {
+      "in_water": "2024-11-08 19:02:54 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/spruce_boat": {
+    "criteria": {
+      "in_water": "2024-11-08 19:02:54 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/birch_boat": {
+    "criteria": {
+      "in_water": "2024-11-08 19:02:54 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/oak_boat": {
+    "criteria": {
+      "in_water": "2024-11-08 19:02:54 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/mangrove_boat": {
+    "criteria": {
+      "in_water": "2024-11-08 19:02:54 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/acacia_boat": {
+    "criteria": {
+      "in_water": "2024-11-08 19:02:54 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/jungle_boat": {
+    "criteria": {
+      "in_water": "2024-11-08 19:02:54 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/transportation/dark_oak_boat": {
+    "criteria": {
+      "in_water": "2024-11-08 19:02:54 +0200"
+    },
+    "done": true
+  },
+  "minecraft:adventure/root": {
+    "criteria": {
+      "killed_by_something": "2024-11-08 19:03:19 +0200"
+    },
+    "done": true
+  },
+  "immersive_armors:recipes/misc/warrior": {
+    "criteria": {
+      "has_item": "2024-11-08 19:03:37 +0200"
+    },
+    "done": true
+  },
+  "minecraft:husbandry/root": {
+    "criteria": {
+      "consumed_item": "2024-11-08 19:14:58 +0200"
+    },
+    "done": true
+  },
+  "minecraft:husbandry/balanced_diet": {
+    "criteria": {
+      "golden_apple": "2024-11-08 19:14:58 +0200"
+    },
+    "done": false
+  },
+  "minecraft:recipes/misc/iron_nugget_from_smelting": {
+    "criteria": {
+      "has_chainmail_chestplate": "2024-11-08 19:19:19 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/iron_nugget_from_blasting": {
+    "criteria": {
+      "has_chainmail_chestplate": "2024-11-08 19:19:19 +0200"
+    },
+    "done": true
+  },
+  "immersive_armors:recipes/misc/divine": {
+    "criteria": {
+      "has_item": "2024-11-08 19:29:29 +0200"
+    },
+    "done": true
+  },
+  "spartanweaponry:parrying_dagger": {
+    "criteria": {
+      "has_parrying_dagger": "2024-11-08 19:33:51 +0200"
+    },
+    "done": true
+  },
+  "minecraft:adventure/avoid_vibration": {
+    "criteria": {
+      "avoid_vibration": "2024-11-08 19:39:55 +0200"
+    },
+    "done": true
+  },
+  "minecraft:adventure/sleep_in_bed": {
+    "criteria": {
+      "slept_in_bed": "2024-11-08 20:12:30 +0200"
+    },
+    "done": true
+  },
+  "spartanweaponry:recipes/studded_cestus": {
+    "criteria": {
+      "has_cestus": "2024-11-08 20:36:26 +0200"
+    },
+    "done": true
+  },
+  "spartanweaponry:cestus": {
+    "criteria": {
+      "has_cestus": "2024-11-08 20:36:26 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/beacon": {
+    "criteria": {
+      "has_nether_star": "2024-11-08 21:10:59 +0200"
+    },
+    "done": true
+  },
+  "securitycraft:recipes/tools/codebreaker": {
+    "criteria": {
+      "has_nether_star": "2024-11-08 21:10:59 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/andesite_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/sandstone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cracked_stone_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/pink_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/honey_block_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_blue_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/lime_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/horn_coral_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/chiseled_stone_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/glowstone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/ice_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cyan_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/warped_nylium_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/birch_log_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/magma_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/lime_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/black_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/netherite_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/netherrack_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/beehive_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/brown_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/diorite_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/magenta_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/chorus_flower_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/dark_prismarine_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/chiseled_quartz_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_blue_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/polished_andesite_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/ancient_debris_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/slime_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/gray_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/yellow_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/prismarine_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/polished_basalt_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/purple_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/blackstone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cyan_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/lime_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/coal_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/yellow_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/crimson_stem_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/acacia_log_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/end_stone_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_nether_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/gray_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/lapis_ore_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/wet_sponge_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/brown_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/stone_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cyan_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/green_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/stone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/emerald_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/white_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/stripped_acacia_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/chiseled_polished_blackstone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/dirt_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/yellow_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/crimson_nylium_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/bee_nest_front_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/purple_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/blue_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/quartz_pillar_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cyan_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/brain_coral_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/orange_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/black_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/nether_gold_ore_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/pink_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/sea_lantern_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/gray_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/nether_wart_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/obsidian_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/birch_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/pumpkin_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/bee_nest_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/oak_log_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/orange_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/gray_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/brown_mushroom_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/iron_ore_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_blue_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cyan_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_blue_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/diamond_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/iron_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/white_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/warped_nylium_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/stripped_birch_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/redstone_ore_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/orange_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/warped_stem_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/bone_block_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/gold_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/lime_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/blue_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/purpur_pillar_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/emerald_ore_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/basalt_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/bookshelf_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/quartz_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_gray_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/magenta_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/blue_ice_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_gray_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/gray_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/honeycomb_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/basalt_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/dried_kelp_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/brown_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/black_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/purple_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/green_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/podzol_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/spawner_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/polished_basalt_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_gray_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/end_stone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/blue_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cake_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/green_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/lapis_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/soul_soil_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/diamond_ore_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/polished_blackstone_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/magenta_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_gray_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/blue_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/stripped_warped_stem_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/clay_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/dried_kelp_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/pink_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/pink_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/crimson_stem_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/dark_oak_log_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/coal_ore_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/stripped_oak_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/stripped_jungle_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/lava_still_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/orange_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/tube_coral_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/stripped_spruce_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/stripped_crimson_stem_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_blue_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/magenta_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/mossy_stone_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/acacia_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/quartz_pillar_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/warped_stem_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/chorus_plant_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/melon_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/granite_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/gilded_blackstone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/purpur_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/bubble_coral_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/black_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/lime_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_gray_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/mushroom_stem_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/black_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/pink_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/soul_sand_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/white_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/yellow_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/gray_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/jungle_log_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/hay_block_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/yellow_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/brown_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/green_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/pink_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/spruce_log_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/snow_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_sand_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/lime_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/brown_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/nether_quartz_ore_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/lava_flow_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_mushroom_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/campfire_fire_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/gold_ore_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/polished_diorite_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/fire_coral_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/crying_obsidian_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_blue_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/purple_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/quartz_block_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/blue_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/jungle_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/coarse_dirt_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/light_gray_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/bee_nest_bottom_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/polished_granite_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cobblestone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/blue_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/bedrock_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cactus_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/magenta_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/dark_oak_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/s_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/ancient_debris_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/gravel_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/warped_wart_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_sandstone_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/nether_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/sandstone_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/chiseled_nether_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/hay_block_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/sand_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/yellow_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/orange_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_sandstone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/orange_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/white_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/smooth_stone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/purple_glazed_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/sponge_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/red_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/nether_portal_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/black_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/green_stained_glass_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/brown_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/spruce_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/green_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/soul_campfire_fire_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/mossy_cobblestone_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cracked_nether_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/white_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/crimson_nylium_side_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/packed_ice_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/stripped_dark_oak_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/mycelium_top_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/shroomlight_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/redstone_block_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/magenta_wool_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/purple_concrete_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/white_terracotta_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/cyan_concrete_powder_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/oak_log_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "moredoors:recipes/doors/prismarine_bricks_door": {
+    "criteria": {
+      "has_block": "2025-05-02 18:48:56 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/leather_helmet": {
+    "criteria": {
+      "has_leather": "2025-05-02 19:53:24 +0200"
+    },
+    "done": true
+  },
+  "spartanweaponry:recipes/leather_longbow": {
+    "criteria": {
+      "has_leather": "2025-05-02 19:53:24 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/leather_leggings": {
+    "criteria": {
+      "has_leather": "2025-05-02 19:53:24 +0200"
+    },
+    "done": true
+  },
+  "spartanweaponry:recipes/cestus": {
+    "criteria": {
+      "has_leather": "2025-05-02 19:53:24 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/leather_chestplate": {
+    "criteria": {
+      "has_leather": "2025-05-02 19:53:24 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/chest": {
+    "criteria": {
+      "has_lots_of_items": "2025-05-02 19:56:29 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/leather_horse_armor": {
+    "criteria": {
+      "has_leather": "2025-05-02 19:53:24 +0200"
+    },
+    "done": true
+  },
+  "spartanweaponry:recipes/leather_heavy_crossbow": {
+    "criteria": {
+      "has_leather": "2025-05-02 19:53:24 +0200"
+    },
+    "done": true
+  },
+  "spartanweaponry:greatsword": {
+    "criteria": {
+      "has_greatsword": "2025-05-02 19:49:49 +0200"
+    },
+    "done": true
+  },
+  "spartanweaponry:recipes/quiver_compartment": {
+    "criteria": {
+      "has_leather": "2025-05-02 19:53:24 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/decorations/item_frame": {
+    "criteria": {
+      "has_leather": "2025-05-02 19:53:24 +0200"
+    },
+    "done": true
+  },
+  "spartanweaponry:lance": {
+    "criteria": {
+      "has_lance": "2025-05-02 19:49:49 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/combat/leather_boots": {
+    "criteria": {
+      "has_leather": "2025-05-02 19:53:24 +0200"
+    },
+    "done": true
+  },
+  "DataVersion": 3465
+}

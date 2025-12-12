@@ -1,0 +1,2 @@
+give @a[scores={SurvivorClass=1},team=survivors] maniacweapons:totem_spawn_egg{display:{Name:'{"text":"Тотем Защиты","color":"yellow","bold":true,"italic":false}'},CanPlaceOn:["#minecraft:replaceable","#minecraft:base_stone_overworld","#minecraft:dirt","#minecraft:logs","#minecraft:planks","#minecraft:stone_bricks","#minecraft:wool","minecraft:grass_block","minecraft:stone","minecraft:dirt","minecraft:cobblestone","minecraft:blackstone","minecraft:quartz_block"]} 2
+give @a[scores={SurvivorClass=1},team=survivors] maniacweapons:soul 1

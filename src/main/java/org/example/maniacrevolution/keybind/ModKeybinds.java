@@ -41,7 +41,7 @@ public class ModKeybinds {
             "key.maniacrev.qte1",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_Q,
+            GLFW.GLFW_KEY_F,
             CATEGORY2
     );
 
@@ -49,7 +49,7 @@ public class ModKeybinds {
             "key.maniacrev.qte2",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_E,
+            GLFW.GLFW_KEY_G,
             CATEGORY
     );
 
@@ -57,7 +57,7 @@ public class ModKeybinds {
             "key.maniacrev.qte3",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_R,
+            GLFW.GLFW_KEY_H,
             CATEGORY
     );
 
@@ -65,7 +65,7 @@ public class ModKeybinds {
             "key.maniacrev.qte4",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_F,
+            GLFW.GLFW_KEY_J,
             CATEGORY
     );
 

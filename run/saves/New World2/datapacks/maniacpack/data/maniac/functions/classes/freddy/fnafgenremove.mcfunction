@@ -1,0 +1,1 @@
+execute if entity @a[team=maniac,scores={ManiacClass=12}] if score gen hack matches 1.. run scoreboard players remove gen hack 1

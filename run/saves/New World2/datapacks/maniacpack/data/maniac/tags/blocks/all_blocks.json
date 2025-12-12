@@ -1,0 +1,15 @@
+{
+  "values": [
+    "#minecraft:replaceable",
+    "#minecraft:base_stone_overworld",
+    "#minecraft:dirt",
+    "#minecraft:logs",
+    "#minecraft:planks",
+    "#minecraft:wool",
+    "#minecraft:terracotta",
+    "#minecraft:concrete",
+    "minecraft:grass_block",
+    "minecraft:stone",
+    "minecraft:cobblestone"
+  ]
+}

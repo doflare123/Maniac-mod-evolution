@@ -1,7 +1,9 @@
 package org.example.maniacrevolution.cosmetic;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -23,6 +25,7 @@ public class CosmeticEventHandler {
         CosmeticData cosmetics = data.getCosmeticData();
 
         // Применяем все включённые эффекты
+        if (Minecraft.getInstance().gameMode.getPlayerMode() == GameType.SPECTATOR) return;
         for (String cosmeticId : cosmetics.getEnabledCosmetics()) {
             CosmeticEffect effect = CosmeticRegistry.getEffect(cosmeticId);
             if (effect != null) {

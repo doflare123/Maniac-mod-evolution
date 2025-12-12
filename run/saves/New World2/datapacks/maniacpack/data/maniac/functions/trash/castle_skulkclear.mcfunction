@@ -1,0 +1,16 @@
+setblock -264 56 -167 minecraft:air
+setblock -264 56 -151 minecraft:air
+setblock -238 58 -138 minecraft:air
+setblock -247 52 -186 minecraft:air
+setblock -238 52 -121 minecraft:air
+setblock -223 60 -120 minecraft:air
+setblock -271 60 -123 minecraft:air
+setblock -224 60 -149 minecraft:air
+setblock -235 63 -164 minecraft:air
+setblock -296 61 -182 minecraft:air
+setblock -288 71 -178 minecraft:air
+setblock -270 69 -200 minecraft:air
+setblock -226 69 -193 minecraft:air
+setblock -247 73 -164 minecraft:air
+setblock -278 73 -167 minecraft:air
+setblock -235 47 -168 minecraft:air

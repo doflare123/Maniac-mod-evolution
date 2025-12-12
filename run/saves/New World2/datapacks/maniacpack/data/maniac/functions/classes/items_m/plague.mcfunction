@@ -1,0 +1,6 @@
+item replace entity @a[scores={ManiacClass=6},team=maniac] armor.head with minecraft:player_head{display:{Name:"{\"text\":\"Чумной доктор\"}"},SkullOwner:{Id:[I;1348588827,711999720,-2022459919,-1858757912],Properties:{textures:[{Value:"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTQ2MDFlNjY0ZTJhZjA3NmI1NDU1MzViN2E2ODljYzc5YjEwODI2YWE2NTc1M2ZiYzZmNjU0MmJjOTRjZjcxIn19fQ=="}]}}} 1
+item replace entity @a[scores={ManiacClass=6},team=maniac] armor.chest with minecraft:leather_chestplate{Unbreakable:100,display:{color:1908001}} 1
+item replace entity @a[scores={ManiacClass=6},team=maniac] armor.legs with minecraft:leather_leggings{Unbreakable:100,display:{color:1908001}} 1
+item replace entity @a[scores={ManiacClass=6},team=maniac] armor.feet with minecraft:leather_boots{Unbreakable:100,display:{color:1908001}} 1
+give @a[scores={ManiacClass=6},team=maniac] minecraft:wooden_sword{display: {Name:"{\"text\":\"Коса\"}"}, Unbreakable:100} 1
+effect give @a[scores={ManiacClass=6},team=maniac] minecraft:slowness infinite 0 false

@@ -91,8 +91,8 @@ public class BloodflowPerk extends Perk {
                 EFFECT_DURATION_TICKS,
                 0, // amplifier
                 false, // ambient
-                true, // visible
-                true // showIcon
+                false, // visible
+                false // showIcon
         ));
 
         // ВАЖНО: Теперь нужно запустить кулдаун через PerkInstance
