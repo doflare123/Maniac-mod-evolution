@@ -30,7 +30,7 @@ public class MimicPerk extends Perk {
                 .type(PerkType.ACTIVE)
                 .team(PerkTeam.SURVIVOR)
                 .phases(PerkPhase.ANY)
-                .cooldown(80));
+                .cooldown(90));
     }
 
     @Override

@@ -19,7 +19,7 @@ import java.util.*;
 public class WallhackPerk extends Perk {
 
     private static final double MAX_DISTANCE = 15.0;
-    private static final int HIGHLIGHT_DURATION = 2 * 20; // 2 секунды в тиках
+    private static final int HIGHLIGHT_DURATION = 4 * 20; // 4 секунды в тиках
     private static final double VIEW_ANGLE_COS = Math.cos(Math.toRadians(45));
 
     public WallhackPerk() {
@@ -27,7 +27,7 @@ public class WallhackPerk extends Perk {
                 .type(PerkType.PASSIVE_COOLDOWN)
                 .team(PerkTeam.SURVIVOR)
                 .phases(PerkPhase.ANY)
-                .cooldown(70));
+                .cooldown(45));
     }
 
     @Override

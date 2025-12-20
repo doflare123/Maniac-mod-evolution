@@ -16,12 +16,14 @@ import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.ClosePerkScreenPacket;
 import org.example.maniacrevolution.network.packets.OpenGuiPacket;
 import org.example.maniacrevolution.perk.perks.common.BigmoneyPerk;
 import org.example.maniacrevolution.perk.perks.common.MegamindPerk;
 import org.example.maniacrevolution.perk.perks.maniac.HighlightPerk;
 
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 public class ModCommands {
@@ -137,7 +139,11 @@ public class ModCommands {
                                         .executes(ctx -> clearPerks(ctx, EntityArgument.getPlayers(ctx, "targets")))))
                         .then(Commands.literal("open")
                                 .then(Commands.argument("targets", EntityArgument.players())
-                                        .executes(ctx -> openPerkGui(ctx)))))
+                                        .executes(ctx -> openPerkGui(ctx))))
+                        .then(Commands.literal("close")
+                                .executes(ctx -> closePerkGui(ctx, null))
+                                .then(Commands.argument("targets", EntityArgument.players())
+                                        .executes(ctx -> closePerkGui(ctx, EntityArgument.getPlayers(ctx, "targets"))))))
 
                 // /maniacrev guide
                 .then(Commands.literal("guide")
@@ -278,4 +284,32 @@ public class ModCommands {
         }
         return 1;
     }
+
+    private static int closePerkGui(CommandContext<CommandSourceStack> ctx, @Nullable Collection<ServerPlayer> targets) {
+        if (targets == null) {
+            // Если цель не указана, закрываем у отправителя команды
+            if (ctx.getSource().getEntity() instanceof ServerPlayer player) {
+                ModNetworking.CHANNEL.send(
+                        PacketDistributor.PLAYER.with(() -> player),
+                        new ClosePerkScreenPacket()
+                );
+                ctx.getSource().sendSuccess(() -> Component.literal("§aЭкран выбора перков закрыт"), false);
+                return 1;
+            }
+            return 0;
+        }
+
+        // Закрываем у указанных игроков
+        for (ServerPlayer player : targets) {
+            ModNetworking.CHANNEL.send(
+                    PacketDistributor.PLAYER.with(() -> player),
+                    new ClosePerkScreenPacket()
+            );
+        }
+
+        ctx.getSource().sendSuccess(() ->
+                Component.literal("§aЭкран выбора перков закрыт у " + targets.size() + " игроков"), false);
+        return targets.size();
+    }
+
 }

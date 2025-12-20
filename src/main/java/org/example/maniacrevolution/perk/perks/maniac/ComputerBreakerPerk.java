@@ -16,8 +16,8 @@ import java.util.List;
  */
 public class ComputerBreakerPerk extends Perk {
 
-    private static final int COOLDOWN_SECONDS = 200;
-    private static final int POINTS_TO_REMOVE = 500;
+    private static final int COOLDOWN_SECONDS = 180;
+    private static final int POINTS_TO_REMOVE = 6000;
 
     // Максимальное количество компьютеров (можно увеличить при необходимости)
     private static final int MAX_COMPUTERS = 9;

@@ -39,6 +39,12 @@ public class ModNetworking {
                 .consumerMainThread(OpenGuiPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(ClosePerkScreenPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClosePerkScreenPacket::encode)
+                .decoder(ClosePerkScreenPacket::decode)
+                .consumerMainThread(ClosePerkScreenPacket::handle)
+                .add();
+
         CHANNEL.messageBuilder(StartQTEPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(StartQTEPacket::encode)
                 .decoder(StartQTEPacket::decode)

@@ -4,6 +4,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
 import org.example.maniacrevolution.perk.*;
 
@@ -18,7 +19,7 @@ public class BlindnessPerk extends Perk {
 
     private static final double PASSIVE_RADIUS = 2.0;
     private static final int PASSIVE_DURATION_TICKS = 60; // 1 секунда
-    private static final int ACTIVE_DURATION_TICKS = 260; // 1 секунда
+    private static final int ACTIVE_DURATION_TICKS = 200; // 1 секунда
     private static final int COOLDOWN_SECONDS = 120;
 
     public BlindnessPerk() {
@@ -46,6 +47,7 @@ public class BlindnessPerk extends Perk {
      * Применяет слепоту маньякам в радиусе вокруг игрока
      */
     private void applyBlindnessAround(ServerPlayer player, double radius, int durationTicks) {
+        if (player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE) return;
         ServerLevel level = player.serverLevel();
 
         // Создаем AABB для поиска игроков в радиусе

@@ -20,7 +20,7 @@ import java.util.UUID;
 public class BloodflowPerk extends Perk {
 
     private static final int EFFECT_DURATION_TICKS = 200; // 10 секунд эффекта
-    private static final int COOLDOWN_SECONDS = 70;
+    private static final int COOLDOWN_SECONDS = 50;
 
     // Храним игроков, у которых перк готов к использованию
     private static final Map<UUID, BloodflowPerk> activePerkInstances = new HashMap<>();

@@ -26,8 +26,8 @@ import java.util.List;
  */
 public class FearWavePerk extends Perk {
 
-    private static final double RADIUS = 5.0;
-    private static final int FEAR_DURATION = 5 * 20; // 5 секунд в тиках
+    private static final double RADIUS = 10.0;
+    private static final int FEAR_DURATION = 3 * 20; // 5 секунд в тиках
     private static final int WAVE_ANIMATION_TICKS = 20; // Длительность анимации волны
 
     // Тёмно-зелёный цвет (близкий к чёрному)
@@ -41,7 +41,7 @@ public class FearWavePerk extends Perk {
                 .type(PerkType.ACTIVE)
                 .team(PerkTeam.ALL)
                 .phases(PerkPhase.MIDGAME, PerkPhase.REVERSAL)
-                .cooldown(60)); // 60 секунд КД
+                .cooldown(70)); // 60 секунд КД
     }
 
     @Override

@@ -8,7 +8,7 @@ import org.example.maniacrevolution.keybind.ModKeybinds;
 public class QTEState {
     private static final int BASE_QTE_DURATION = 750;
     private static final int BOX_SIZE = 100;
-    private static final int BASE_GREEN_ZONE_SIZE = 20;
+    private static final int BASE_GREEN_ZONE_SIZE = 25;
     private static final int BASE_SUCCESS_TOLERANCE = 15;
 
     private final int requiredKey;

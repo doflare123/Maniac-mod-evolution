@@ -13,8 +13,8 @@ import java.util.*;
  */
 public class CatchMistakesPerk extends Perk {
 
-    private static final int GLOW_DURATION_TICKS = 100; // 5 секунд свечения
-    private static final int COOLDOWN_SECONDS = 40;
+    private static final int GLOW_DURATION_TICKS = 80; // 3 секунд свечения
+    private static final int COOLDOWN_SECONDS = 27;
 
     // Храним игроков, у которых перк активен (НЕ на кулдауне)
     private static final Map<UUID, CatchMistakesPerk> readyPlayers = new HashMap<>();

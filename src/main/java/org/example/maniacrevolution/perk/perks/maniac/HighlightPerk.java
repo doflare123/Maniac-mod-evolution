@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class HighlightPerk extends Perk {
 
-    private static final int GLOW_DURATION_TICKS = 100; // 5 секунд свечения
+    private static final int GLOW_DURATION_TICKS = 60; // 5 секунд свечения
 
     // Храним маньяков, у которых активен этот перк
     private static final Set<UUID> activeManiacsWithPerk = new HashSet<>();

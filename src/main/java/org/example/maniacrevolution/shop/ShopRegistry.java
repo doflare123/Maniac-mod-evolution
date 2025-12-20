@@ -13,25 +13,25 @@ public class ShopRegistry {
         // === КОСМЕТИКА ===
 
         // Нимб
-        register(new CosmeticShopItem("halo", 250, "Рулетка",
+        register(new CosmeticShopItem("halo", 2228, "Рулетка",
                 "Вращающаяся рулетка над головой с красными, чёрными и зелёным сегментами"));
 
         // Частицы
-        register(new CosmeticShopItem("particles_flame", 100, "Частицы: Пламя",
+        register(new CosmeticShopItem("particles_flame", 500, "Частицы: Пламя",
                 "Огненные частицы вокруг игрока"));
-        register(new CosmeticShopItem("particles_hearts", 80, "Частицы: Сердца",
+        register(new CosmeticShopItem("particles_hearts", 400, "Частицы: Сердца",
                 "Сердечки вокруг игрока"));
-        register(new CosmeticShopItem("particles_smoke", 60, "Частицы: Дым",
+        register(new CosmeticShopItem("particles_smoke", 300, "Частицы: Дым",
                 "Лёгкий дымок вокруг игрока"));
-        register(new CosmeticShopItem("particles_enchant", 120, "Частицы: Зачарование",
+        register(new CosmeticShopItem("particles_enchant", 200, "Частицы: Зачарование",
                 "Магические частицы вокруг игрока"));
 
         // Эффекты оружия
-        register(new CosmeticShopItem("bleeding_axe", 150, "Кровотечение (Топор)",
+        register(new CosmeticShopItem("bleeding_axe", 400, "Кровотечение (Топор)",
                 "Красный след при ударе топором"));
-        register(new CosmeticShopItem("frost_sword", 150, "Мороз (Меч)",
+        register(new CosmeticShopItem("frost_sword", 500, "Мороз (Меч)",
                 "Ледяной след при ударе мечом"));
-        register(new CosmeticShopItem("shadow_blade", 200, "Тень (Всё оружие)",
+        register(new CosmeticShopItem("shadow_blade", 700, "Тень (Всё оружие)",
                 "Тёмный след при ударе любым оружием"));
 
         // Следы
@@ -49,13 +49,13 @@ public class ShopRegistry {
 //                "Кровавая рамка для перка Хищник"));
 
         // === УСИЛЕНИЯ ===
-        register(new InfoBoostItem("reveal_maniac_class", 30, "Разведка: Маньяк",
+        register(new InfoBoostItem("reveal_maniac_class", 9999, "Разведка: Маньяк",
                 "Узнать класс маньяка в начале игры"));
-        register(new InfoBoostItem("reveal_survivor_count", 20, "Разведка: Выжившие",
+        register(new InfoBoostItem("reveal_survivor_count", 9999, "Разведка: Выжившие",
                 "Узнать количество выживших в начале игры"));
 
         // === УЛУЧШЕНИЯ ===
-        register(new PresetSlotItem("extra_preset_slot", 150));
+        register(new PresetSlotItem("extra_preset_slot", 700));
 
         Maniacrev.LOGGER.info("Registered {} shop items", ITEMS.size());
     }
