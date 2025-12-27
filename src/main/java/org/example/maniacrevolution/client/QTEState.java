@@ -9,7 +9,7 @@ public class QTEState {
     private static final int BASE_QTE_DURATION = 750;
     private static final int BOX_SIZE = 100;
     private static final int BASE_GREEN_ZONE_SIZE = 25;
-    private static final int BASE_SUCCESS_TOLERANCE = 15;
+    private static final int BASE_SUCCESS_TOLERANCE = 25;
 
     private final int requiredKey;
     private final long startTime;
@@ -30,7 +30,7 @@ public class QTEState {
 
         if (hasQuickReflexes) {
             this.qteDuration = BASE_QTE_DURATION + 400;
-            this.greenZoneSize = (int) (BASE_GREEN_ZONE_SIZE * 1.9f);
+            this.greenZoneSize = (int) (BASE_GREEN_ZONE_SIZE * 1.3f);
             this.successTolerance = (int) (BASE_SUCCESS_TOLERANCE * 1.1f);
 
             System.out.println("WITH PERK:");

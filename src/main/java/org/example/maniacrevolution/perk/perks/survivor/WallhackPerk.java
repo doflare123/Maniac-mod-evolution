@@ -6,6 +6,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.perk.*;
@@ -38,6 +39,7 @@ public class WallhackPerk extends Perk {
 
     @Override
     public void onTrigger(ServerPlayer player) {
+        if (player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE) return;
         List<ServerPlayer> maniacs = findManiacsInView(player);
 
         if (maniacs.isEmpty()) return;
