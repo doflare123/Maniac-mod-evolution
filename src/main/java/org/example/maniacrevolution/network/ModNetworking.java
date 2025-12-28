@@ -1,8 +1,10 @@
 package org.example.maniacrevolution.network;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.network.packets.*;
@@ -131,6 +133,52 @@ public class ModNetworking {
                 .consumerMainThread(ToggleCosmeticPacket::handle)
                 .add();
 
+        // Пакет синхронизации маны
+        CHANNEL.messageBuilder(SyncManaPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SyncManaPacket::encode)
+                .decoder(SyncManaPacket::decode)
+                .consumerMainThread(SyncManaPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
+    }
+
+    // Утилитные методы для отправки пакетов
+
+    /**
+     * Отправляет пакет конкретному игроку
+     */
+    public static <MSG> void sendToPlayer(MSG message, ServerPlayer player) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
+    }
+
+    /**
+     * Отправляет пакет всем игрокам на сервере
+     */
+    public static <MSG> void sendToAllPlayers(MSG message) {
+        CHANNEL.send(PacketDistributor.ALL.noArg(), message);
+    }
+
+    /**
+     * Отправляет пакет на сервер (используется на клиенте)
+     */
+    public static <MSG> void sendToServer(MSG message) {
+        CHANNEL.sendToServer(message);
+    }
+
+    /**
+     * Отправляет пакет всем игрокам рядом с точкой
+     */
+    public static <MSG> void sendToNearby(MSG message, ServerPlayer player, double radius) {
+        CHANNEL.send(
+                PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(
+                        player.getX(),
+                        player.getY(),
+                        player.getZ(),
+                        radius,
+                        player.level().dimension()
+                )),
+                message
+        );
     }
 }

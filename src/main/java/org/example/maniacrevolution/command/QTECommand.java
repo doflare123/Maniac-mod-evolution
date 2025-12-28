@@ -8,6 +8,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import org.example.maniacrevolution.Config;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.StartQTEPacket;
 import org.example.maniacrevolution.network.packets.StopQTEPacket;
@@ -25,7 +26,13 @@ public class QTECommand {
                                         .executes(context -> startGame(context)))))
                 .then(Commands.literal("stop_game")
                         .then(Commands.argument("targets", EntityArgument.players())
-                                .executes(context -> stopGame(context)))));
+                                .executes(context -> stopGame(context))))
+                .then(Commands.literal("hackQTE")
+                    .then(Commands.argument("amount", IntegerArgumentType.integer(0))
+                            .executes(QTECommand::setHackQTEReward)
+                    )
+                            .executes(QTECommand::getHackQTEReward))
+        );
     }
 
     private static int startGame(CommandContext<CommandSourceStack> context) {
@@ -77,5 +84,28 @@ public class QTECommand {
             context.getSource().sendFailure(Component.literal("Error stopping game: " + e.getMessage()));
             return 0;
         }
+    }
+
+    private static int setHackQTEReward(CommandContext<CommandSourceStack> context) {
+        int amount = IntegerArgumentType.getInteger(context, "amount");
+        Config.setHackQTEReward(amount);
+
+        context.getSource().sendSuccess(
+                () -> Component.literal("§aHack QTE reward set to: §e" + amount),
+                true
+        );
+
+        return amount;
+    }
+
+    private static int getHackQTEReward(CommandContext<CommandSourceStack> context) {
+        int current = Config.getHackQTEReward();
+
+        context.getSource().sendSuccess(
+                () -> Component.literal("§aCurrent Hack QTE reward: §e" + current),
+                false
+        );
+
+        return current;
     }
 }

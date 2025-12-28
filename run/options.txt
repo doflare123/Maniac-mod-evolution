@@ -48,7 +48,7 @@ lastServer:
 lang:ru_ru
 soundDevice:""
 chatVisibility:0
-chatOpacity:1.0
+chatOpacity:0.0
 chatLineSpacing:0.0
 textBackgroundOpacity:0.5
 backgroundForChatOnly:true
@@ -61,7 +61,7 @@ chatHeightFocused:1.0
 chatDelay:0.0
 chatHeightUnfocused:0.4375
 chatScale:1.0
-chatWidth:1.0
+chatWidth:0.44014084507042256
 notificationDisplayTime:1.0
 mipmapLevels:4
 useNativeTransport:true
@@ -119,12 +119,12 @@ key_key.hotbar.7:key.keyboard.7
 key_key.hotbar.8:key.keyboard.8
 key_key.hotbar.9:key.keyboard.9
 key_key.maniacrev.open_guide:key.keyboard.c
-key_key.maniacrev.activate_perk:key.keyboard.f
-key_key.maniacrev.switch_perk:key.keyboard.x
-key_key.maniacrev.qte1:key.keyboard.b
-key_key.maniacrev.qte2:key.keyboard.n
-key_key.maniacrev.qte3:key.keyboard.m
-key_key.maniacrev.qte4:key.keyboard.comma
+key_key.maniacrev.activate_perk:key.keyboard.z
+key_key.maniacrev.switch_perk:key.keyboard.left.alt
+key_key.maniacrev.qte1:key.keyboard.left
+key_key.maniacrev.qte2:key.keyboard.down
+key_key.maniacrev.qte3:key.keyboard.right
+key_key.maniacrev.qte4:key.keyboard.up
 soundCategory_master:0.4966887417218543
 soundCategory_music:0.0
 soundCategory_record:0.31690140845070425

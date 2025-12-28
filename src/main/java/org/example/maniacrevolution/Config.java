@@ -18,6 +18,18 @@ import java.util.stream.Collectors;
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config
 {
+
+    private static int hackQTEReward = 10; // Значение по умолчанию
+
+    public static int getHackQTEReward() {
+        return hackQTEReward;
+    }
+
+    public static void setHackQTEReward(int value) {
+        hackQTEReward = Math.max(0, value); // Не даём устанавливать отрицательные значения
+        System.out.println("[QTE Config] Hack QTE reward set to: " + hackQTEReward);
+    }
+
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
     private static final ForgeConfigSpec.BooleanValue LOG_DIRT_BLOCK = BUILDER

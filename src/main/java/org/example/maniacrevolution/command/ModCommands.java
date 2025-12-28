@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -12,6 +13,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.network.PacketDistributor;
+import org.example.maniacrevolution.config.GameRulesConfig;
+import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
@@ -144,7 +147,37 @@ public class ModCommands {
                                 .executes(ctx -> closePerkGui(ctx, null))
                                 .then(Commands.argument("targets", EntityArgument.players())
                                         .executes(ctx -> closePerkGui(ctx, EntityArgument.getPlayers(ctx, "targets"))))))
+                    .then(Commands.literal("hud")
+                            .then(Commands.literal("toggle")
+                                    .executes(ModCommands::toggleHud)
+                            )
+                            .then(Commands.literal("enable")
+                                    .executes(ModCommands::enableHud)
+                            )
+                            .then(Commands.literal("disable")
+                                    .executes(ModCommands::disableHud)
+                            )
 
+                        .then(Commands.literal("itemdrop")
+                                .then(Commands.literal("allow")
+                                        .then(Commands.argument("enabled", BoolArgumentType.bool())
+                                                .executes(ModCommands::setItemDrop)
+                                        )
+                                )
+                                .then(Commands.literal("toggle")
+                                        .executes(ModCommands::toggleItemDrop)
+                                )
+                        )
+
+                        // Команды для дебага хитбоксов
+                        .then(Commands.literal("hitboxdebug")
+                                .then(Commands.literal("allow")
+                                        .then(Commands.argument("enabled", BoolArgumentType.bool())
+                                                .executes(ModCommands::setHitboxDebug)
+                                        )
+                                )
+                        )
+                )
                 // /maniacrev guide
                 .then(Commands.literal("guide")
                         .executes(ctx -> openGuide(ctx)))
@@ -312,4 +345,83 @@ public class ModCommands {
         return targets.size();
     }
 
+    private static int toggleHud(CommandContext<CommandSourceStack> context) {
+        HudConfig.toggleCustomHud();
+        boolean enabled = HudConfig.isCustomHudEnabled();
+
+        context.getSource().sendSuccess(
+                () -> Component.literal(enabled ?
+                        "§aCustom HUD enabled" :
+                        "§cCustom HUD disabled (vanilla HUD active)"),
+                true
+        );
+
+        return enabled ? 1 : 0;
+    }
+
+    private static int enableHud(CommandContext<CommandSourceStack> context) {
+        HudConfig.setCustomHudEnabled(true);
+
+        context.getSource().sendSuccess(
+                () -> Component.literal("§aCustom HUD enabled"),
+                true
+        );
+
+        return 1;
+    }
+
+    private static int disableHud(CommandContext<CommandSourceStack> context) {
+        HudConfig.setCustomHudEnabled(false);
+
+        context.getSource().sendSuccess(
+                () -> Component.literal("§cCustom HUD disabled (vanilla HUD active)"),
+                true
+        );
+
+        return 1;
+    }
+
+    // Item Drop команды
+    private static int setItemDrop(CommandContext<CommandSourceStack> context) {
+        boolean enabled = BoolArgumentType.getBool(context, "enabled");
+        GameRulesConfig.setItemDropAllowed(enabled);
+
+        context.getSource().sendSuccess(
+                () -> Component.literal(enabled ?
+                        "§aItem dropping enabled" :
+                        "§cItem dropping disabled"),
+                true
+        );
+
+        return enabled ? 1 : 0;
+    }
+
+    private static int toggleItemDrop(CommandContext<CommandSourceStack> context) {
+        boolean current = GameRulesConfig.isItemDropAllowed();
+        GameRulesConfig.setItemDropAllowed(!current);
+
+        context.getSource().sendSuccess(
+                () -> Component.literal(!current ?
+                        "§aItem dropping enabled" :
+                        "§cItem dropping disabled"),
+                true
+        );
+
+        return !current ? 1 : 0;
+    }
+
+    // Hitbox Debug команды
+    private static int setHitboxDebug(CommandContext<CommandSourceStack> context) {
+        boolean enabled = BoolArgumentType.getBool(context, "enabled");
+        GameRulesConfig.setHitboxDebugAllowed(enabled);
+
+        context.getSource().sendSuccess(
+                () -> Component.literal(enabled ?
+                        "§aHitbox debug allowed" :
+                        "§cHitbox debug blocked"),
+                true
+        );
+
+        return enabled ? 1 : 0;
+    }
 }

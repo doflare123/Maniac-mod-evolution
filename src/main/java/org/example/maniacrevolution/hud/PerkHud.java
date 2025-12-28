@@ -25,10 +25,6 @@ public class PerkHud {
 
         int activeIndex = ClientPlayerData.getActivePerkIndex();
 
-        // Фон панели
-//        int panelWidth = perks.size() * (ICON_SIZE + SPACING) + 10;
-//        gui.fill(x, y, x + panelWidth + 50, y + 65, 0x80000000);
-
         // Рендерим каждый перк
         for (int i = 0; i < perks.size(); i++) {
             ClientPlayerData.ClientPerkData perk = perks.get(i);

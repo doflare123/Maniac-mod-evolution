@@ -3,7 +3,9 @@ package org.example.maniacrevolution.network.packets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
+import org.example.maniacrevolution.Config;
 import org.example.maniacrevolution.perk.perks.CatchMistakesPerk;
+import org.example.maniacrevolution.util.ScoreboardUtil;
 
 import java.util.function.Supplier;
 
@@ -49,13 +51,12 @@ public class QTEKeyPressPacket {
             System.out.println("===========================");
 
             if (packet.success) {
-                System.out.println("[QTE] Success branch - executing hack command");
-                // Успешный хак
-                String command = String.format("function maniac:hacks/hack_qte%d", packet.generatorNumber);
-                player.getServer().getCommands().performPrefixedCommand(
-                        player.createCommandSourceStack(),
-                        command
-                );
+                System.out.println("[QTE] Success branch - updating scoreboard");
+
+                // Успешный хак - добавляем очки напрямую в скорборд
+                int rewardAmount = Config.getHackQTEReward();
+                ScoreboardUtil.addHackProgress(player, packet.generatorNumber, rewardAmount);
+
             } else {
                 System.out.println("[QTE] Fail branch - checking Catch Mistakes perk");
                 // Промах - активируем перк "Ловля на ошибках"
