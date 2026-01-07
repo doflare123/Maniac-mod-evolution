@@ -36,6 +36,13 @@ public class ModEntities {
                             .build("blood_marker")
             );
 
+    public static final RegistryObject<EntityType<HookEntity>> HOOK = ENTITIES.register("hook",
+            () -> EntityType.Builder.<HookEntity>of(HookEntity::new, MobCategory.MISC)
+                    .sized(0.25f, 0.25f)
+                    .clientTrackingRange(64)
+                    .updateInterval(1)
+                    .build("hook"));
+
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
     }

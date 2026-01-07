@@ -173,11 +173,17 @@ public class CustomHud implements IGuiOverlay {
         int textY = y + (BAR_HEIGHT - 8) / 2;
         gui.drawString(mc.font, hpText, textX, textY, 0xFFFFFFFF, true);
 
-        // Регенерация (в правом нижнем углу) - пока заглушка
-        String regenText = "+1.0/с";
-        int regenX = x + BAR_WIDTH - mc.font.width(regenText) - 3;
-        int regenY = y + BAR_HEIGHT - 9;
-        gui.drawString(mc.font, regenText, regenX, regenY, 0xFF55FF55, false);
+        // Регенерация HP (в правом нижнем углу)
+        float hpRegen = ClientHealthData.getHealthRegen();
+        if (Math.abs(hpRegen) > 0.01f) {
+            String regenText = String.format("%+.1f/s", hpRegen);
+            int regenX = x + BAR_WIDTH - mc.font.width(regenText) - 3;
+            int regenY = y + BAR_HEIGHT - 9;
+
+            // Цвет в зависимости от знака
+            int regenColor = hpRegen > 0 ? 0xFF55FF55 : 0xFFFF5555;
+            gui.drawString(mc.font, regenText, regenX, regenY, regenColor, false);
+        }
     }
 
     private void renderManaBar(GuiGraphics gui, int x, int y) {
@@ -186,6 +192,7 @@ public class CustomHud implements IGuiOverlay {
         float mana = ClientManaData.getMana();
         float maxMana = ClientManaData.getMaxMana();
         float manaPercent = ClientManaData.getManaPercentage();
+        float regenRate = ClientManaData.getRegenRate();
 
         // Фон бара
         gui.fill(x, y, x + BAR_WIDTH, y + BAR_HEIGHT, MANA_BG);
@@ -203,11 +210,13 @@ public class CustomHud implements IGuiOverlay {
         int textY = y + (BAR_HEIGHT - 8) / 2;
         gui.drawString(mc.font, manaText, textX, textY, 0xFFFFFFFF, true);
 
-        // Регенерация (в правом нижнем углу) - берём из данных
-        String regenText = "+1.0/с"; // TODO: Получать реальное значение регена из ClientManaData
-        int regenX = x + BAR_WIDTH - mc.font.width(regenText) - 3;
-        int regenY = y + BAR_HEIGHT - 9;
-        gui.drawString(mc.font, regenText, regenX, regenY, 0xFF55AAFF, false);
+        // Регенерация маны (показываем только если > 0)
+        if (regenRate > 0.01f) {
+            String regenText = String.format("+%.1f/s", regenRate);
+            int regenX = x + BAR_WIDTH - mc.font.width(regenText) - 3;
+            int regenY = y + BAR_HEIGHT - 9;
+            gui.drawString(mc.font, regenText, regenX, regenY, 0xFF55AAFF, false);
+        }
     }
 
     private void renderHotbar(GuiGraphics gui, int x, int y, Player player) {

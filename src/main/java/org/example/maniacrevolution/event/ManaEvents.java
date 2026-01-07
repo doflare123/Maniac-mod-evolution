@@ -47,7 +47,7 @@ public class ManaEvents {
                 // Синхронизация с клиентом каждые 10 тиков
                 if (event.player.tickCount % 10 == 0) {
                     ModNetworking.sendToPlayer(
-                            new SyncManaPacket(mana.getMana(), mana.getMaxMana()),
+                            new SyncManaPacket(mana.getMana(), mana.getMaxMana(), mana.getTotalRegenRate()),
                             (ServerPlayer) event.player
                     );
                 }

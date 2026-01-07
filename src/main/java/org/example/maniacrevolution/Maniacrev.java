@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -17,6 +18,8 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.example.maniacrevolution.block.ModBlocks;
+import org.example.maniacrevolution.client.model.HookModel;
+import org.example.maniacrevolution.client.renderer.HookRenderer;
 import org.example.maniacrevolution.command.ClearSaltCommand;
 import org.example.maniacrevolution.command.ModCommands;
 import org.example.maniacrevolution.command.QTECommand;
@@ -31,7 +34,6 @@ import org.example.maniacrevolution.perk.PerkRegistry;
 import org.example.maniacrevolution.shop.ShopRegistry;
 import org.slf4j.Logger;
 
-// The value here should match an entry in the META-INF/mods.toml file
 @Mod(Maniacrev.MODID)
 public class Maniacrev {
     public static final String MODID = "maniacrev";
@@ -53,8 +55,8 @@ public class Maniacrev {
         SOUNDS.register(modEventBus);
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
-        ModEntities.register(modEventBus);  // <-- ДОБАВИТЬ ЭТУ СТРОКУ
-        ModEffects.register(modEventBus);
+        ModEntities.ENTITIES.register(modEventBus);  // Исправлено: используем ENTITIES
+        ModEffects.MOB_EFFECTS.register(modEventBus);    // Исправлено: используем EFFECTS
         // =========================================================
 
         MinecraftForge.EVENT_BUS.register(this);
@@ -98,10 +100,21 @@ public class Maniacrev {
 
     @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
+
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             ModKeybinds.register();
             LOGGER.info("ManiacRev client initialized");
+        }
+
+        @SubscribeEvent
+        public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerEntityRenderer(ModEntities.HOOK.get(), HookRenderer::new);
+        }
+
+        @SubscribeEvent
+        public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+            event.registerLayerDefinition(HookModel.LAYER_LOCATION, HookModel::createBodyLayer);
         }
     }
 }

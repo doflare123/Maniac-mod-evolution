@@ -5,16 +5,20 @@ import net.minecraft.nbt.CompoundTag;
 public class ManaData {
     private float mana;
     private float maxMana;
-    private float regenRate; // Маны в секунду
+    private float baseRegenRate; // Базовая регенерация маны в секунду
+    private float bonusRegenRate; // Бонусная регенерация (от эффектов)
+    private boolean passiveRegenEnabled; // Включена ли пассивная регенерация
 
-    public ManaData(float maxMana, float regenRate) {
+    public ManaData(float maxMana, float baseRegenRate) {
         this.maxMana = maxMana;
         this.mana = maxMana;
-        this.regenRate = regenRate;
+        this.baseRegenRate = baseRegenRate;
+        this.bonusRegenRate = 0.0f;
+        this.passiveRegenEnabled = true;
     }
 
     public ManaData() {
-        this(100.0f, 1.0f); // Дефолтные значения
+        this(100.0f, 1.0f); // Дефолтные значения: 100 маны, 1 ед/сек
     }
 
     public float getMana() {
@@ -25,8 +29,28 @@ public class ManaData {
         return maxMana;
     }
 
-    public float getRegenRate() {
-        return regenRate;
+    public float getBaseRegenRate() {
+        return baseRegenRate;
+    }
+
+    public float getBonusRegenRate() {
+        return bonusRegenRate;
+    }
+
+    public float getTotalRegenRate() {
+        float total = bonusRegenRate; // Бонус всегда работает
+        if (passiveRegenEnabled) {
+            total += baseRegenRate; // Базовый реген только если включен
+        }
+        return total;
+    }
+
+    public boolean isPassiveRegenEnabled() {
+        return passiveRegenEnabled;
+    }
+
+    public void setPassiveRegenEnabled(boolean enabled) {
+        this.passiveRegenEnabled = enabled;
     }
 
     public void setMana(float mana) {
@@ -40,8 +64,12 @@ public class ManaData {
         }
     }
 
-    public void setRegenRate(float regenRate) {
-        this.regenRate = regenRate;
+    public void setBaseRegenRate(float regenRate) {
+        this.baseRegenRate = Math.max(0, regenRate);
+    }
+
+    public void setBonusRegenRate(float bonusRegenRate) {
+        this.bonusRegenRate = Math.max(0, bonusRegenRate);
     }
 
     public boolean consumeMana(float amount) {
@@ -58,7 +86,10 @@ public class ManaData {
 
     public void regenerate(float deltaTime) {
         if (mana < maxMana) {
-            addMana(regenRate * deltaTime);
+            float totalRegen = getTotalRegenRate();
+            if (totalRegen > 0) {
+                addMana(totalRegen * deltaTime);
+            }
         }
     }
 
@@ -69,20 +100,26 @@ public class ManaData {
     public void copyFrom(ManaData source) {
         this.mana = source.mana;
         this.maxMana = source.maxMana;
-        this.regenRate = source.regenRate;
+        this.baseRegenRate = source.baseRegenRate;
+        this.bonusRegenRate = source.bonusRegenRate;
+        this.passiveRegenEnabled = source.passiveRegenEnabled;
     }
 
     public CompoundTag saveNBTData() {
         CompoundTag tag = new CompoundTag();
         tag.putFloat("mana", mana);
         tag.putFloat("maxMana", maxMana);
-        tag.putFloat("regenRate", regenRate);
+        tag.putFloat("baseRegenRate", baseRegenRate);
+        tag.putFloat("bonusRegenRate", bonusRegenRate);
+        tag.putBoolean("passiveRegenEnabled", passiveRegenEnabled);
         return tag;
     }
 
     public void loadNBTData(CompoundTag tag) {
         mana = tag.getFloat("mana");
         maxMana = tag.getFloat("maxMana");
-        regenRate = tag.getFloat("regenRate");
+        baseRegenRate = tag.getFloat("baseRegenRate");
+        bonusRegenRate = tag.getFloat("bonusRegenRate");
+        passiveRegenEnabled = tag.getBoolean("passiveRegenEnabled");
     }
 }

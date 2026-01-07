@@ -2,6 +2,7 @@ package org.example.maniacrevolution.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -18,13 +19,15 @@ import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.mana.ManaProvider;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.ClosePerkScreenPacket;
 import org.example.maniacrevolution.network.packets.OpenGuiPacket;
+import org.example.maniacrevolution.network.packets.SyncManaPacket;
 import org.example.maniacrevolution.perk.perks.common.BigmoneyPerk;
 import org.example.maniacrevolution.perk.perks.common.MegamindPerk;
 import org.example.maniacrevolution.perk.perks.maniac.HighlightPerk;
-
+import org.example.maniacrevolution.util.ManaUtil;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -48,6 +51,7 @@ public class ModCommands {
                             GameManager.stopGame(ctx.getSource());
                             return 1;
                         }))
+
                 .then(Commands.literal("glowing_perks")
                         .executes(ctx -> {
                             return executeGlowingPerks(ctx.getSource());
@@ -101,18 +105,14 @@ public class ModCommands {
                                     int phase = IntegerArgumentType.getInteger(ctx, "phase");
                                     GameManager.setPhase(phase);
 
-                                    // Если переходим в 3-ю фазу - воспроизводим звук дракона для всех
                                     if (phase == 3) {
                                         MinecraftServer server = ctx.getSource().getServer();
-
-                                        // Проходим по всем игрокам на сервере
                                         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                                            // Воспроизводим звук дракона на позиции игрока
                                             player.playNotifySound(
                                                     SoundEvents.ENDER_DRAGON_GROWL,
                                                     SoundSource.MASTER,
-                                                    5.0F,  // Громкость (очень громко)
-                                                    1.0F    // Высота тона
+                                                    5.0F,
+                                                    1.0F
                                             );
                                         }
                                     }
@@ -147,37 +147,44 @@ public class ModCommands {
                                 .executes(ctx -> closePerkGui(ctx, null))
                                 .then(Commands.argument("targets", EntityArgument.players())
                                         .executes(ctx -> closePerkGui(ctx, EntityArgument.getPlayers(ctx, "targets"))))))
-                    .then(Commands.literal("hud")
-                            .then(Commands.literal("toggle")
-                                    .executes(ModCommands::toggleHud)
-                            )
-                            .then(Commands.literal("enable")
-                                    .executes(ModCommands::enableHud)
-                            )
-                            .then(Commands.literal("disable")
-                                    .executes(ModCommands::disableHud)
-                            )
 
-                        .then(Commands.literal("itemdrop")
-                                .then(Commands.literal("allow")
-                                        .then(Commands.argument("enabled", BoolArgumentType.bool())
-                                                .executes(ModCommands::setItemDrop)
-                                        )
-                                )
-                                .then(Commands.literal("toggle")
-                                        .executes(ModCommands::toggleItemDrop)
-                                )
-                        )
+                // HUD команды
+                .then(Commands.literal("hud")
+                        .then(Commands.literal("toggle")
+                                .executes(ModCommands::toggleHud))
+                        .then(Commands.literal("enable")
+                                .executes(ModCommands::enableHud))
+                        .then(Commands.literal("disable")
+                                .executes(ModCommands::disableHud)))
 
-                        // Команды для дебага хитбоксов
-                        .then(Commands.literal("hitboxdebug")
-                                .then(Commands.literal("allow")
-                                        .then(Commands.argument("enabled", BoolArgumentType.bool())
-                                                .executes(ModCommands::setHitboxDebug)
-                                        )
-                                )
-                        )
-                )
+                // Item drop команды
+                .then(Commands.literal("itemdrop")
+                        .then(Commands.literal("allow")
+                                .then(Commands.argument("enabled", BoolArgumentType.bool())
+                                        .executes(ModCommands::setItemDrop)))
+                        .then(Commands.literal("toggle")
+                                .executes(ModCommands::toggleItemDrop)))
+
+                // Hitbox debug команды
+                .then(Commands.literal("hitboxdebug")
+                        .then(Commands.literal("allow")
+                                .then(Commands.argument("enabled", BoolArgumentType.bool())
+                                        .executes(ModCommands::setHitboxDebug))))
+
+                // Mana команды
+                .then(Commands.literal("mana")
+                        .then(Commands.literal("regen")
+                                .then(Commands.literal("enable")
+                                        .executes(ModCommands::enablePassiveRegen))
+                                .then(Commands.literal("disable")
+                                        .executes(ModCommands::disablePassiveRegen)))
+                        .then(Commands.literal("set")
+                                .then(Commands.argument("amount", FloatArgumentType.floatArg(0))
+                                        .executes(ModCommands::setMana)))
+                        .then(Commands.literal("add")
+                                .then(Commands.argument("amount", FloatArgumentType.floatArg(0))
+                                        .executes(ModCommands::addMana))))
+
                 // /maniacrev guide
                 .then(Commands.literal("guide")
                         .executes(ctx -> openGuide(ctx)))
@@ -191,7 +198,6 @@ public class ModCommands {
         for (ServerPlayer player : targets) {
             PlayerData data = PlayerDataManager.get(player);
 
-            // Применяем бонус от перка Megamind если он есть
             int actualAmount = baseAmount;
             if (MegamindPerk.hasActivePerk(player)) {
                 actualAmount = MegamindPerk.applyBonus(baseAmount);
@@ -219,7 +225,6 @@ public class ModCommands {
         for (ServerPlayer player : targets) {
             PlayerData data = PlayerDataManager.get(player);
 
-            // Применяем бонус от перка Bigmoney если он есть
             int actualAmount = baseAmount;
             if (BigmoneyPerk.hasActivePerk(player)) {
                 actualAmount = BigmoneyPerk.applyBonus(baseAmount);
@@ -250,7 +255,6 @@ public class ModCommands {
 
     private static int executeGlowingPerks(CommandSourceStack source) {
         try {
-            // Активируем перк "Подсветка"
             int highlightedCount = HighlightPerk.activateGlowing(source.getServer());
 
             if (highlightedCount > 0) {
@@ -320,7 +324,6 @@ public class ModCommands {
 
     private static int closePerkGui(CommandContext<CommandSourceStack> ctx, @Nullable Collection<ServerPlayer> targets) {
         if (targets == null) {
-            // Если цель не указана, закрываем у отправителя команды
             if (ctx.getSource().getEntity() instanceof ServerPlayer player) {
                 ModNetworking.CHANNEL.send(
                         PacketDistributor.PLAYER.with(() -> player),
@@ -332,7 +335,6 @@ public class ModCommands {
             return 0;
         }
 
-        // Закрываем у указанных игроков
         for (ServerPlayer player : targets) {
             ModNetworking.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> player),
@@ -381,7 +383,6 @@ public class ModCommands {
         return 1;
     }
 
-    // Item Drop команды
     private static int setItemDrop(CommandContext<CommandSourceStack> context) {
         boolean enabled = BoolArgumentType.getBool(context, "enabled");
         GameRulesConfig.setItemDropAllowed(enabled);
@@ -410,7 +411,6 @@ public class ModCommands {
         return !current ? 1 : 0;
     }
 
-    // Hitbox Debug команды
     private static int setHitboxDebug(CommandContext<CommandSourceStack> context) {
         boolean enabled = BoolArgumentType.getBool(context, "enabled");
         GameRulesConfig.setHitboxDebugAllowed(enabled);
@@ -423,5 +423,67 @@ public class ModCommands {
         );
 
         return enabled ? 1 : 0;
+    }
+
+    private static int enablePassiveRegen(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        ManaUtil.setPassiveRegenEnabled(player, true);
+
+        context.getSource().sendSuccess(
+                () -> Component.literal("§aPassive mana regeneration enabled"),
+                true
+        );
+        return 1;
+    }
+
+    private static int disablePassiveRegen(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        ManaUtil.setPassiveRegenEnabled(player, false);
+
+        context.getSource().sendSuccess(
+                () -> Component.literal("§cPassive mana regeneration disabled"),
+                true
+        );
+        return 1;
+    }
+
+    private static int setMana(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        float amount = FloatArgumentType.getFloat(context, "amount");
+
+        player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+            mana.setMana(amount);
+            // Сразу синхронизируем с клиентом
+            ModNetworking.sendToPlayer(
+                    new SyncManaPacket(mana.getMana(), mana.getMaxMana(), mana.getTotalRegenRate()),
+                    player
+            );
+        });
+
+        context.getSource().sendSuccess(
+                () -> Component.literal("§aMana set to: §e" + amount),
+                true
+        );
+        return 1;
+    }
+
+    private static int addMana(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        float amount = FloatArgumentType.getFloat(context, "amount");
+
+        player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+            mana.addMana(amount);
+            // Сразу синхронизируем с клиентом
+            ModNetworking.sendToPlayer(
+                    new SyncManaPacket(mana.getMana(), mana.getMaxMana(), mana.getTotalRegenRate()),
+                    player
+            );
+        });
+
+        context.getSource().sendSuccess(
+                () -> Component.literal("§aAdded §e" + amount + " §amana"),
+                true
+        );
+        return 1;
     }
 }

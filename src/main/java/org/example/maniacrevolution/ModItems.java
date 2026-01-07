@@ -5,9 +5,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-import org.example.maniacrevolution.item.PerkOpenItem;
-import org.example.maniacrevolution.item.SaltItem;
-import org.example.maniacrevolution.item.ShopOpenItem;
+import org.example.maniacrevolution.item.*;
 
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
@@ -22,6 +20,12 @@ public class ModItems {
 
     public static final RegistryObject<Item> SALT = ITEMS.register("salt",
             () -> new SaltItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> CLARITY = ITEMS.register("clarity",
+            () -> new ClarityItem(new Item.Properties().stacksTo(16)));
+
+    public static final RegistryObject<Item> HOOK = ITEMS.register("hook",
+            () -> new HookItem(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
