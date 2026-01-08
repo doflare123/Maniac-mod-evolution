@@ -18,7 +18,7 @@ import java.util.List;
 public class ClarityItem extends Item {
 
     private static final int EFFECT_DURATION = 20 * 30; // 30 секунд
-    private static final int EFFECT_AMPLIFIER = 0; // Уровень 1 (индекс 0)
+    private static final int EFFECT_AMPLIFIER = 1; // Уровень 1 (индекс 0)
 
     public ClarityItem(Properties properties) {
         super(properties);

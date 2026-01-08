@@ -41,7 +41,8 @@ public class ManaEvents {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && !event.player.level().isClientSide()) {
             event.player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
-                // Регенерация маны каждый тик (1/20 секунды)
+                // ИСПРАВЛЕНО: Регенерация учитывает настройки (пассивный реген + бонусы)
+                // regenerate() внутри себя уже проверяет getTotalRegenRate(), который учитывает passiveRegenEnabled
                 mana.regenerate(0.05f);
 
                 // Синхронизация с клиентом каждые 10 тиков

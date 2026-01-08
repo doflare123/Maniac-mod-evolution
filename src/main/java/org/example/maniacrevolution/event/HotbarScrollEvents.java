@@ -25,12 +25,12 @@ public class HotbarScrollEvents {
             // Скролл вверх (к меньшим номерам)
             newSlot--;
             if (newSlot < 0) {
-                newSlot = 5; // Возврат на слот 6 (индекс 5)
+                newSlot = 8; // Возврат на слот 6 (индекс 5)
             }
         } else {
             // Скролл вниз (к большим номерам)
             newSlot++;
-            if (newSlot > 5) {
+            if (newSlot > 8) {
                 newSlot = 0; // Возврат на слот 1 (индекс 0)
             }
         }

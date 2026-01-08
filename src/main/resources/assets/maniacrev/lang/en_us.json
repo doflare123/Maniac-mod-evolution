@@ -4,6 +4,8 @@
   "key.maniacrev.activate_perk": "Activate Perk",
   "key.maniacrev.switch_perk": "Switch Active Perk",
 
+  "item.maniacrev.hook": "Hook",
+
   "perk.maniacrev.berserker.name": "Berserker",
   "perk.maniacrev.berserker.desc": "Passive: Strength I. Active: Regeneration depends on nearby allies.",
 

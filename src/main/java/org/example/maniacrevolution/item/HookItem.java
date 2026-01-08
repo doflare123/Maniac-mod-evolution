@@ -21,7 +21,7 @@ import java.util.UUID;
 public class HookItem extends Item {
 
     private static final float MANA_COST = 20.0f;
-    private static final int COOLDOWN_TICKS = 20 * 1; // 20 секунд
+    private static final int COOLDOWN_TICKS = 20 * 20; // 20 секунд
 
     // Хранение кулдаунов по игрокам
     private static final Map<UUID, Long> cooldowns = new HashMap<>();
@@ -49,7 +49,7 @@ public class HookItem extends Item {
                 int secondsLeft = (int) (ticksLeft / 20);
 
                 player.displayClientMessage(
-                        Component.literal("§cHook on cooldown: " + secondsLeft + "s"),
+                        Component.literal("§cПерезарядка: " + secondsLeft + "s"),
                         true
                 );
                 return InteractionResultHolder.fail(stack);
@@ -59,7 +59,7 @@ public class HookItem extends Item {
         // Проверяем ману
         if (!ManaUtil.hasMana(player, MANA_COST)) {
             player.displayClientMessage(
-                    Component.literal("§9Not enough mana! (" + MANA_COST + " required)"),
+                    Component.literal("§9Недостаточно маны!"),
                     true
             );
             return InteractionResultHolder.fail(stack);
@@ -85,10 +85,10 @@ public class HookItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("§7Launches a hook that pulls enemies"));
-        tooltip.add(Component.literal("§7Max range: §e7 blocks"));
-        tooltip.add(Component.literal("§9Costs: §b20 mana"));
-        tooltip.add(Component.literal("§7Cooldown: §e20 seconds"));
+        tooltip.add(Component.literal("§7Притягивает к себе игрока"));
+        tooltip.add(Component.literal("§7Дальность: §e10 блоков"));
+        tooltip.add(Component.literal("§Стоимость: §b20 маны"));
+        tooltip.add(Component.literal("§Перезарядка: §e20 секунд"));
     }
 
     // Статический метод для очистки кулдаунов (можно вызвать при выходе игрока)
