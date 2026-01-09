@@ -71,6 +71,8 @@ public class CustomHud implements IGuiOverlay {
 
         // Рендерим главную панель
         renderMainPanel(guiGraphics, mainX, mainY, player);
+        LevelHud.render(guiGraphics, 5, 5);
+        TimerHud.render(guiGraphics, screenWidth / 2, 5);
 
         // Рендерим основной хотбар (6 слотов) справа
         int hotbarY = mainY + (MAIN_PANEL_HEIGHT - (HOTBAR_SLOT_SIZE * 2 + 4)) / 2;

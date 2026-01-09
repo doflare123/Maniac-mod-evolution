@@ -26,6 +26,18 @@ public class ManaFlowEffect extends MobEffect {
     }
 
     @Override
+    public void removeAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
+        // Этот метод вызывается когда эффект заканчивается
+        if (entity instanceof Player player && !player.level().isClientSide()) {
+            player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+                // Сбрасываем бонусный реген
+                mana.setBonusRegenRate(0.0f);
+            });
+        }
+        super.removeAttributeModifiers(entity, attributeMap, amplifier);
+    }
+
+    @Override
     public boolean isDurationEffectTick(int duration, int amplifier) {
         return true; // Применяется каждый тик
     }

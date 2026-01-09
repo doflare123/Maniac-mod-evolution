@@ -41,14 +41,14 @@ public class PenaltyHudOverlay {
         }
 
         // Показываем уровень замедления в правом верхнем углу
-        int filledSlots = PenaltySlotManager.getFilledPenaltySlots(player);
-        if (filledSlots > 0) {
-            String slownessInfo = "§cЗамедление: §f" + getRomanNumeral(filledSlots);
-            int x = screenW - mc.font.width(slownessInfo) - 5;
-            int y = 5;
-
-            gui.drawString(mc.font, slownessInfo, x, y, 0xFFFFFFFF, true);
-        }
+//        int filledSlots = PenaltySlotManager.getFilledPenaltySlots(player);
+//        if (filledSlots > 0) {
+//            String slownessInfo = "§cЗамедление: §f" + getRomanNumeral(filledSlots);
+//            int x = screenW - mc.font.width(slownessInfo) - 5;
+//            int y = 5;
+//
+//            gui.drawString(mc.font, slownessInfo, x, y, 0xFFFFFFFF, true);
+//        }
     }
 
     /**

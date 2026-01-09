@@ -44,29 +44,29 @@ public class PenaltySlotManager {
         }
 
         // Убираем старый эффект замедления (если он от нас)
-        if (player.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
-            MobEffectInstance currentEffect = player.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
-            // Проверяем, что это наш эффект (длительность 25 тиков = ~1 секунда)
-            if (currentEffect != null && currentEffect.getDuration() <= 25) {
-                player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
-            }
-        }
+//        if (player.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
+//            MobEffectInstance currentEffect = player.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+//            // Проверяем, что это наш эффект (длительность 25 тиков = ~1 секунда)
+//            if (currentEffect != null && currentEffect.getDuration() <= 25) {
+//                player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+//            }
+//        }
 
         // Применяем новый эффект, если есть предметы в пенальти-слотах
-        if (filledPenaltySlots > 0) {
-            // Уровень замедления = количество заполненных слотов - 1 (0, 1, 2)
-            int slownessLevel = filledPenaltySlots - 1;
-
-            // Применяем эффект на 25 тиков (~1 секунда), без частиц
-            player.addEffect(new MobEffectInstance(
-                    MobEffects.MOVEMENT_SLOWDOWN,
-                    25, // Длительность
-                    slownessLevel, // Уровень (0 = I, 1 = II, 2 = III)
-                    false, // ambient
-                    false, // visible
-                    false  // showIcon
-            ));
-        }
+//        if (filledPenaltySlots > 0) {
+//            // Уровень замедления = количество заполненных слотов - 1 (0, 1, 2)
+//            int slownessLevel = filledPenaltySlots - 1;
+//
+//            // Применяем эффект на 25 тиков (~1 секунда), без частиц
+//            player.addEffect(new MobEffectInstance(
+//                    MobEffects.MOVEMENT_SLOWDOWN,
+//                    25, // Длительность
+//                    slownessLevel, // Уровень (0 = I, 1 = II, 2 = III)
+//                    false, // ambient
+//                    false, // visible
+//                    false  // showIcon
+//            ));
+//        }
     }
 
     /**

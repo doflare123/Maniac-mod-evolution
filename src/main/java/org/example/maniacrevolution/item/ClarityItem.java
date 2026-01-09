@@ -43,8 +43,8 @@ public class ClarityItem extends Item {
                         EFFECT_DURATION,
                         EFFECT_AMPLIFIER,
                         false, // ambient
-                        true,  // visible
-                        true   // showIcon
+                        false,  // visible
+                        false   // showIcon
                 ));
 
                 player.displayClientMessage(
