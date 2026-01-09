@@ -20,6 +20,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.client.model.HookModel;
 import org.example.maniacrevolution.client.renderer.HookRenderer;
+import org.example.maniacrevolution.command.ClearAttributesCommand;
 import org.example.maniacrevolution.command.ClearSaltCommand;
 import org.example.maniacrevolution.command.ModCommands;
 import org.example.maniacrevolution.command.QTECommand;
@@ -92,6 +93,7 @@ public class Maniacrev {
         ModCommands.register(event.getDispatcher());
         QTECommand.register(event.getDispatcher());
         ClearSaltCommand.register(event.getDispatcher());
+        ClearAttributesCommand.register(event.getDispatcher());
     }
 
     public static ResourceLocation loc(String path) {

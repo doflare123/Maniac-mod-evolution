@@ -9,6 +9,8 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.network.packets.*;
 
+import static ca.weblite.objc.Runtime.INSTANCE;
+
 public class ModNetworking {
     private static final String PROTOCOL_VERSION = "1";
 
@@ -138,6 +140,12 @@ public class ModNetworking {
                 .encoder(SyncManaPacket::encode)
                 .decoder(SyncManaPacket::decode)
                 .consumerMainThread(SyncManaPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(FleshHeapSyncPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(FleshHeapSyncPacket::decode)
+                .encoder(FleshHeapSyncPacket::encode)
+                .consumerMainThread(FleshHeapSyncPacket::handle)
                 .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);

@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.ClientPlayerData;
+import org.example.maniacrevolution.fleshheap.ClientFleshHeapData;
 import org.example.maniacrevolution.mana.ClientManaData;
 import org.example.maniacrevolution.perk.PerkType;
 
@@ -55,35 +56,79 @@ public class CustomHud implements IGuiOverlay {
             return;
         }
 
-        // Вычисляем масштаб для адаптивности
         float scale = calculateScale(screenWidth);
-
         guiGraphics.pose().pushPose();
         guiGraphics.pose().scale(scale, scale, 1.0f);
 
-        // Скорректированные размеры экрана с учетом масштаба
         int scaledWidth = (int) (screenWidth / scale);
         int scaledHeight = (int) (screenHeight / scale);
 
-        // Позиция главной панели (внизу по центру)
         int mainX = (scaledWidth - MAIN_PANEL_WIDTH) / 2;
         int mainY = scaledHeight - MAIN_PANEL_HEIGHT - 5;
 
-        // Рендерим главную панель
+        // Рендерим Flesh Heap ВЫШЕ главной панели
+        renderFleshHeap(guiGraphics, scaledWidth / 2, mainY - 10);
+
         renderMainPanel(guiGraphics, mainX, mainY, player);
         LevelHud.render(guiGraphics, 5, 5);
         TimerHud.render(guiGraphics, screenWidth / 2, 5);
 
-        // Рендерим основной хотбар (6 слотов) справа
         int hotbarY = mainY + (MAIN_PANEL_HEIGHT - (HOTBAR_SLOT_SIZE * 2 + 4)) / 2;
         renderHotbar(guiGraphics, mainX + MAIN_PANEL_WIDTH + 5, hotbarY, player);
 
-        // Рендерим пенальти-слоты (7-9) справа от основного хотбара
         int penaltyX = mainX + MAIN_PANEL_WIDTH + 5 + (HOTBAR_SLOT_SIZE + 4) * 3 + 8;
         int penaltyY = mainY + (MAIN_PANEL_HEIGHT - PENALTY_SLOT_SIZE * 3 - 8) / 2;
         renderPenaltySlots(guiGraphics, penaltyX, penaltyY, player);
 
         guiGraphics.pose().popPose();
+    }
+
+    /**
+     * Рендер индикатора Flesh Heap
+     */
+    private void renderFleshHeap(GuiGraphics gui, int centerX, int centerY) {
+        int stacks = ClientFleshHeapData.getStacks();
+        if (stacks <= 0) return;
+
+        Minecraft mc = Minecraft.getInstance();
+        final int ICON_SIZE = 16;
+
+        int x = centerX - ICON_SIZE / 2;
+        int y = centerY - ICON_SIZE / 2;
+
+        // Рисуем круглую маску для текстуры
+        gui.pose().pushPose();
+
+        // Рендерим текстуру с круглой маской
+        ResourceLocation texture = new ResourceLocation("maniacrev", "textures/gui/flesh_heap.png");
+        RenderSystem.setShaderTexture(0, texture);
+        RenderSystem.enableBlend();
+
+        // Рисуем круглую маску поверх текстуры
+        gui.blit(texture, x, y, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+
+        RenderSystem.disableBlend();
+        RenderSystem.disableScissor();
+
+        // Количество стаков НА иконке
+        String stackText = String.valueOf(stacks);
+        int textWidth = mc.font.width(stackText);
+        int textX = centerX - textWidth / 2;
+        int textY = centerY - 4;
+
+        // Черная обводка для читаемости
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                if (dx != 0 || dy != 0) {
+                    gui.drawString(mc.font, stackText, textX + dx, textY + dy, 0xFF000000, false);
+                }
+            }
+        }
+
+        // Основной текст (белый, жирный)
+        gui.drawString(mc.font, "§l" + stackText, textX, textY, 0xFFFFFFFF, false);
+
+        gui.pose().popPose();
     }
 
     /**

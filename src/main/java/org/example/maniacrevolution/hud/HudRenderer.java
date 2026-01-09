@@ -46,7 +46,7 @@ public class HudRenderer {
             event.setCanceled(true);
 
             // Рендерим название выше
-            renderCustomItemName(event.getGuiGraphics(), mc);
+            //renderCustomItemName(event.getGuiGraphics(), mc);
         }
     }
 
