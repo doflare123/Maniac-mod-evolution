@@ -1,1 +1,0 @@
-execute if score comp8 hackGoal matches 0 run scoreboard players add Progress8 hack 650

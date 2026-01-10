@@ -1,1 +1,0 @@
-execute as @a[team=survivors,scores={SurvivorClass=1}] at @a[team=maniac] run particle minecraft:soul_fire_flame ~ ~2 ~ 4.5 1.2 4.5 0.01 1 force @s

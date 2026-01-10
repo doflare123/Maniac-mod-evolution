@@ -1,1 +1,0 @@
-effect give @a[team=survivors,gamemode=!spectator,distance=..8] minecraft:glowing 10 0
