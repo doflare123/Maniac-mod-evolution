@@ -65,8 +65,8 @@ public class ModItems {
                 new int[]{0, 0, 0, 0}, // Защита [ботинки, штаны, нагрудник, шлем]
                 15, // Зачаровываемость
                 SoundEvents.ARMOR_EQUIP_DIAMOND,
-                2.0F, // Прочность
-                0.1F, // Сопротивление отбрасыванию
+                0.0F, // Прочность
+                0.0F, // Сопротивление отбрасыванию
                 () -> Ingredient.of(ModItems.SOUL_ESSENCE.get())
         );
 

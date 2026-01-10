@@ -75,7 +75,7 @@ public class ResurrectPlayerPacket {
 
     private void resurrectPlayer(ServerPlayer target, ServerPlayer necromancer) {
         // Меняем режим игры
-        target.setGameMode(GameType.SURVIVAL);
+        target.setGameMode(GameType.ADVENTURE);
 
         // Телепортируем к некроманту
         target.teleportTo(
@@ -94,7 +94,7 @@ public class ResurrectPlayerPacket {
         target.addEffect(new MobEffectInstance(
                 MobEffects.MOVEMENT_SLOWDOWN,
                 600, // 30 секунд
-                1, // Уровень 2
+                0, // Уровень 2
                 false,
                 true
         ));
@@ -104,15 +104,6 @@ public class ResurrectPlayerPacket {
                 MobEffects.WEAKNESS,
                 600,
                 0,
-                false,
-                true
-        ));
-
-        // Можно добавить эффект голода
-        target.addEffect(new MobEffectInstance(
-                MobEffects.HUNGER,
-                600,
-                1,
                 false,
                 true
         ));

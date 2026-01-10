@@ -190,5 +190,9 @@
   "gui.maniacrev.resurrection.title": "§5§l✦ Врата Смерти ✦",
   "gui.maniacrev.resurrection.no_souls": "§7Нет душ для воскрешения",
   "gui.maniacrev.resurrection.instructions": "§7[ЛКМ] Воскресить | [ПКМ/ESC] Отмена",
-  "gui.maniacrev.resurrection.soul_label": "§7Душа"
+  "gui.maniacrev.resurrection.soul_label": "§7Душа",
+  "item.maniacrev.necromancer_helmet": "Шлем некроча",
+  "item.maniacrev.necromancer_chestplate": "Нагрудник некроча",
+  "item.maniacrev.necromancer_leggings": "Штаны некроча",
+  "item.maniacrev.necromancer_boots": "Ботинки некроча"
 }

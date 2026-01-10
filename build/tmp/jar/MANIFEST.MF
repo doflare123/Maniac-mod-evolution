@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Specification-Title: maniacrev
-Specification-Vendor: 
-Specification-Version: 1
-Implementation-Title: maniacrev
-Implementation-Version: 1.0-SNAPSHOT
-Implementation-Vendor: 
-Implementation-Timestamp: 2026-01-10T15:48:55+0200
-
