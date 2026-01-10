@@ -135,6 +135,37 @@ public class ModItems {
         }
     }
 
+    // Ингредиенты для зелий
+    public static final RegistryObject<Item> MANIAC_REGEN_FRAGMENT = ITEMS.register("maniac_regen_fragment",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> MANIAC_STRENGTH_FRAGMENT = ITEMS.register("maniac_strength_fragment",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> MANIAC_SPEED_FRAGMENT = ITEMS.register("maniac_speed_fragment",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> MANIAC_SLOWNESS_FRAGMENT = ITEMS.register("maniac_slowness_fragment",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> MANIAC_SLOW_FALLING_FRAGMENT = ITEMS.register("maniac_slow_falling_fragment",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> MANIAC_WEAKNESS_FRAGMENT = ITEMS.register("maniac_weakness_fragment",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> MANIAC_HEALING_FRAGMENT = ITEMS.register("maniac_healing_fragment",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> MANIAC_BLINDNESS_FRAGMENT = ITEMS.register("maniac_blindness_fragment",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> MANIAC_GLOWING_FRAGMENT = ITEMS.register("maniac_glowing_fragment",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> RECIPE_BOOK = ITEMS.register("recipe_book",
+            () -> new RecipeBookItem(new Item.Properties().stacksTo(1)));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

@@ -33,6 +33,8 @@ import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.perk.PerkRegistry;
 import org.example.maniacrevolution.shop.ShopRegistry;
+import org.example.maniacrevolution.potion.ModPotions;
+import org.example.maniacrevolution.brewing.ModBrewingRecipes;
 import org.slf4j.Logger;
 
 @Mod(Maniacrev.MODID)
@@ -56,8 +58,9 @@ public class Maniacrev {
         SOUNDS.register(modEventBus);
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
-        ModEntities.ENTITIES.register(modEventBus);  // Исправлено: используем ENTITIES
-        ModEffects.MOB_EFFECTS.register(modEventBus);    // Исправлено: используем EFFECTS
+        ModEntities.ENTITIES.register(modEventBus);
+        ModEffects.MOB_EFFECTS.register(modEventBus);
+        ModPotions.POTIONS.register(modEventBus); // Добавь эту строку
         // =========================================================
 
         MinecraftForge.EVENT_BUS.register(this);
@@ -68,6 +71,7 @@ public class Maniacrev {
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             ModNetworking.register();
+            ModBrewingRecipes.register(); // Добавь эту строку
             PerkRegistry.init();
             ShopRegistry.init();
             CosmeticRegistry.init();

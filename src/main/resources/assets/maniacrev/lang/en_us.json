@@ -195,4 +195,52 @@
   "item.maniacrev.necromancer_chestplate": "Нагрудник некроча",
   "item.maniacrev.necromancer_leggings": "Штаны некроча",
   "item.maniacrev.necromancer_boots": "Ботинки некроча"
+  "key.maniacrev.qte4": "QTE Key 4",
+
+  "effect.maniacrev.slow_regeneration": "Slow Regeneration",
+  "effect.maniacrev.weak_weakness": "Minor Weakness",
+  "effect.maniacrev.weak_instant_health": "Minor Healing",
+
+  "item.maniacrev.maniac_regen_fragment": "Philosopher's Stone Piece",
+  "item.maniacrev.maniac_strength_fragment": "Dirt",
+  "item.maniacrev.maniac_speed_fragment": "McQueen's Wheel",
+  "item.maniacrev.maniac_slowness_fragment": "Lich's Heart",
+  "item.maniacrev.maniac_slow_falling_fragment": "Rooster Feather",
+  "item.maniacrev.maniac_weakness_fragment": "Withered Flower",
+  "item.maniacrev.maniac_healing_fragment": "Holy Water",
+  "item.maniacrev.maniac_blindness_fragment": "Candle Ash",
+  "item.maniacrev.maniac_glowing_fragment": "Firefly in a Jar",
+
+  "potion.effect.slow_regeneration": "Slow Regeneration",
+  "potion.effect.strength": "Strength",
+  "potion.effect.speed": "Speed II",
+  "potion.effect.slowness": "Slowness III",
+  "potion.effect.slow_falling": "Slow Falling",
+  "potion.effect.weak_weakness": "Minor Weakness",
+  "potion.effect.weak_healing": "Minor Healing",
+  "potion.effect.blindness": "Blindness",
+  "potion.effect.glowing": "Glowing",
+
+  "item.minecraft.potion.effect.slow_regeneration": "Potion of Slow Regeneration",
+  "item.minecraft.potion.effect.strength": "Potion of Strength",
+  "item.minecraft.potion.effect.speed": "Potion of Speed II",
+  "item.minecraft.potion.effect.slowness": "Potion of Slowness III",
+  "item.minecraft.potion.effect.slow_falling": "Potion of Slow Falling",
+  "item.minecraft.potion.effect.weak_weakness": "Potion of Minor Weakness",
+  "item.minecraft.potion.effect.weak_healing": "Potion of Minor Healing",
+  "item.minecraft.potion.effect.blindness": "Potion of Blindness",
+  "item.minecraft.potion.effect.glowing": "Potion of Glowing",
+
+  "item.minecraft.splash_potion.effect.slow_regeneration": "Splash Potion of Slow Regeneration",
+  "item.minecraft.splash_potion.effect.strength": "Splash Potion of Strength",
+  "item.minecraft.splash_potion.effect.speed": "Splash Potion of Speed II",
+  "item.minecraft.splash_potion.effect.slowness": "Splash Potion of Slowness III",
+  "item.minecraft.splash_potion.effect.slow_falling": "Splash Potion of Slow Falling",
+  "item.minecraft.splash_potion.effect.weak_weakness": "Splash Potion of Minor Weakness",
+  "item.minecraft.splash_potion.effect.weak_healing": "Splash Potion of Minor Healing",
+  "item.minecraft.splash_potion.effect.blindness": "Splash Potion of Blindness",
+  "item.minecraft.splash_potion.effect.glowing": "Splash Potion of Glowing",
+
+  "item.maniacrev.recipe_book": "Recipe List",
+  "gui.maniacrev.recipe_book": "Potion Recipes"
 }

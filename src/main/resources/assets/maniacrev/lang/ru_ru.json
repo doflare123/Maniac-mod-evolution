@@ -173,6 +173,11 @@
   "key.maniacrev.qte2": "QTE Клавиша 2",
   "key.maniacrev.qte3": "QTE Клавиша 3",
   "key.maniacrev.qte4": "QTE Клавиша 4",
+  "key.maniacrev.qte4": "QTE Клавиша 4",
+
+  "effect.maniacrev.slow_regeneration": "Медленная регенерация",
+  "effect.maniacrev.weak_weakness": "Слабая слабость",
+  "effect.maniacrev.weak_instant_health": "Слабое исцеление",
 
   "item.maniacrev.necromancer_staff": "Посох Некроманта",
   "item.maniacrev.necromancer_staff.tooltip": "§5Призывает души павших",
@@ -195,4 +200,46 @@
   "item.maniacrev.necromancer_chestplate": "Нагрудник некроча",
   "item.maniacrev.necromancer_leggings": "Штаны некроча",
   "item.maniacrev.necromancer_boots": "Ботинки некроча"
+  "item.maniacrev.maniac_regen_fragment": "Часть философского камня",
+  "item.maniacrev.maniac_strength_fragment": "Грязь",
+  "item.maniacrev.maniac_speed_fragment": "Колесо маквина",
+  "item.maniacrev.maniac_slowness_fragment": "Сердце Лича",
+  "item.maniacrev.maniac_slow_falling_fragment": "Перо петуха",
+  "item.maniacrev.maniac_weakness_fragment": "Увядший цветок",
+  "item.maniacrev.maniac_healing_fragment": "Святая вода",
+  "item.maniacrev.maniac_blindness_fragment": "Пепел свечи",
+  "item.maniacrev.maniac_glowing_fragment": "Светлячок в банке",
+
+  "potion.effect.slow_regeneration": "Медленная регенерация",
+  "potion.effect.strength": "Сила",
+  "potion.effect.speed": "Скорость II",
+  "potion.effect.slowness": "Замедление III",
+  "potion.effect.slow_falling": "Плавное падение",
+  "potion.effect.weak_weakness": "Слабая слабость",
+  "potion.effect.weak_healing": "Слабое исцеление",
+  "potion.effect.blindness": "Слепота",
+  "potion.effect.glowing": "Подсветка",
+
+  "item.minecraft.potion.effect.slow_regeneration": "Зелье медленной регенерации",
+  "item.minecraft.potion.effect.strength": "Зелье силы",
+  "item.minecraft.potion.effect.speed": "Зелье скорости II",
+  "item.minecraft.potion.effect.slowness": "Зелье замедления III",
+  "item.minecraft.potion.effect.slow_falling": "Зелье плавного падения",
+  "item.minecraft.potion.effect.weak_weakness": "Зелье слабой слабости",
+  "item.minecraft.potion.effect.weak_healing": "Зелье слабого исцеления",
+  "item.minecraft.potion.effect.blindness": "Зелье слепоты",
+  "item.minecraft.potion.effect.glowing": "Зелье подсветки",
+
+  "item.minecraft.splash_potion.effect.slow_regeneration": "Взрывное зелье медленной регенерации",
+  "item.minecraft.splash_potion.effect.strength": "Взрывное зелье силы",
+  "item.minecraft.splash_potion.effect.speed": "Взрывное зелье скорости II",
+  "item.minecraft.splash_potion.effect.slowness": "Взрывное зелье замедления III",
+  "item.minecraft.splash_potion.effect.slow_falling": "Взрывное зелье плавного падения",
+  "item.minecraft.splash_potion.effect.weak_weakness": "Взрывное зелье слабой слабости",
+  "item.minecraft.splash_potion.effect.weak_healing": "Взрывное зелье слабого исцеления",
+  "item.minecraft.splash_potion.effect.blindness": "Взрывное зелье слепоты",
+  "item.minecraft.splash_potion.effect.glowing": "Взрывное зелье подсветки",
+
+  "item.maniacrev.recipe_book": "Список рецептов",
+  "gui.maniacrev.recipe_book": "Рецепты зелий"
 }
