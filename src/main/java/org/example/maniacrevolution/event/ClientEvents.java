@@ -4,20 +4,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.block.ModBlocks;
+import org.example.maniacrevolution.client.particle.NecromancerParticle;
 import org.example.maniacrevolution.client.renderer.BloodMarkerRenderer;
 import org.example.maniacrevolution.effect.client.FearClientHandler;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.gui.GuideScreen;
+import org.example.maniacrevolution.init.ModParticles;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.ActivatePerkPacket;
@@ -45,6 +44,22 @@ public class ClientEvents {
             ModNetworking.CHANNEL.sendToServer(new SwitchPerkPacket());
         }
     }
+
+//    @Mod.EventBusSubscriber(modid = Maniacrev.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+//    public class ParticleFactoryRegistry {
+//
+//        @SubscribeEvent
+//        public static void registerParticleFactories(RegisterParticleProvidersEvent event) {
+//            event.registerSpriteSet(ModParticles.NECROMANCER_SOUL.get(),
+//                    NecromancerParticle.Provider::new);
+//
+//            event.registerSpriteSet(ModParticles.NECROMANCER_PENTAGRAM.get(),
+//                    NecromancerParticle.Provider::new);
+//
+//            event.registerSpriteSet(ModParticles.RESURRECTION_ENERGY.get(),
+//                    NecromancerParticle.Provider::new);
+//        }
+//    }
 
     @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ModBusEvents {

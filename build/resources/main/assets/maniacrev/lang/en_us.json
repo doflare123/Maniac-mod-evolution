@@ -172,5 +172,23 @@
   "key.maniacrev.qte1": "QTE Key 1",
   "key.maniacrev.qte2": "QTE Key 2",
   "key.maniacrev.qte3": "QTE Key 3",
-  "key.maniacrev.qte4": "QTE Key 4"
+  "key.maniacrev.qte4": "QTE Key 4",
+
+  "item.maniacrev.necromancer_staff": "Посох Некроманта",
+  "item.maniacrev.necromancer_staff.tooltip": "§5Призывает души павших",
+  "necromancer.passive.activated": "§5§lНекромантская защита активирована!",
+  "necromancer.passive.ready": "§aПассивная защита готова",
+  "necromancer.passive.cooldown": "§cПассивная защита: %s",
+  "necromancer.mana.insufficient": "§cНедостаточно маны! Требуется: %s",
+  "necromancer.ritual.interrupted": "§cРитуал прерван!",
+  "necromancer.ritual.complete": "§5Выберите душу для воскрешения...",
+  "necromancer.resurrect.success": "§aВы воскресили %s",
+  "necromancer.resurrect.failed": "§cВоскрешение не удалось",
+  "necromancer.resurrect.no_target": "§cИгрок не найден!",
+  "necromancer.resurrect.not_dead": "§cИгрок не мёртв!",
+  "necromancer.resurrect.received": "§5Вы были воскрешены некромантом!",
+  "gui.maniacrev.resurrection.title": "§5§l✦ Врата Смерти ✦",
+  "gui.maniacrev.resurrection.no_souls": "§7Нет душ для воскрешения",
+  "gui.maniacrev.resurrection.instructions": "§7[ЛКМ] Воскресить | [ПКМ/ESC] Отмена",
+  "gui.maniacrev.resurrection.soul_label": "§7Душа"
 }

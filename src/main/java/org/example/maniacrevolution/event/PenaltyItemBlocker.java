@@ -63,15 +63,4 @@ public class PenaltyItemBlocker {
         }
     }
 
-    /**
-     * Блокирует пустой клик
-     */
-    @SubscribeEvent
-    public static void onLeftClickEmpty(PlayerInteractEvent.LeftClickEmpty event) {
-        Player player = event.getEntity();
-
-        if (PenaltySlotManager.isInPenaltySlot(player)) {
-            event.setCanceled(true);
-        }
-    }
 }

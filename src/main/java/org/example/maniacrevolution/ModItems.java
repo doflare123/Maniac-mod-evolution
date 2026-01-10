@@ -1,11 +1,17 @@
 package org.example.maniacrevolution;
 
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.example.maniacrevolution.item.*;
+import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
@@ -26,6 +32,108 @@ public class ModItems {
 
     public static final RegistryObject<Item> HOOK = ITEMS.register("hook",
             () -> new HookItem(new Item.Properties()));
+
+    // Посох некроманта
+    public static final RegistryObject<Item> NECROMANCER_STAFF = ITEMS.register("necromancer_staff",
+            () -> new NecromancerStaffItem(new Item.Properties()));
+
+    // Броня некроманта
+    public static final RegistryObject<Item> NECROMANCER_HELMET = ITEMS.register("necromancer_helmet",
+            () -> new NecromancerArmorItem(ModArmorMaterials.NECROMANCER,
+                    ArmorItem.Type.HELMET, new Item.Properties()));
+
+    public static final RegistryObject<Item> NECROMANCER_CHESTPLATE = ITEMS.register("necromancer_chestplate",
+            () -> new NecromancerArmorItem(ModArmorMaterials.NECROMANCER,
+                    ArmorItem.Type.CHESTPLATE, new Item.Properties()));
+
+    public static final RegistryObject<Item> NECROMANCER_LEGGINGS = ITEMS.register("necromancer_leggings",
+            () -> new NecromancerArmorItem(ModArmorMaterials.NECROMANCER,
+                    ArmorItem.Type.LEGGINGS, new Item.Properties()));
+
+    public static final RegistryObject<Item> NECROMANCER_BOOTS = ITEMS.register("necromancer_boots",
+            () -> new NecromancerArmorItem(ModArmorMaterials.NECROMANCER,
+                    ArmorItem.Type.BOOTS, new Item.Properties()));
+
+    // Материал для крафта (опционально)
+    public static final RegistryObject<Item> SOUL_ESSENCE = ITEMS.register("soul_essence",
+            () -> new Item(new Item.Properties()));
+
+    public enum ModArmorMaterials implements ArmorMaterial {
+        NECROMANCER(
+                "necromancer",
+                25, // Прочность
+                new int[]{0, 0, 0, 0}, // Защита [ботинки, штаны, нагрудник, шлем]
+                15, // Зачаровываемость
+                SoundEvents.ARMOR_EQUIP_DIAMOND,
+                2.0F, // Прочность
+                0.1F, // Сопротивление отбрасыванию
+                () -> Ingredient.of(ModItems.SOUL_ESSENCE.get())
+        );
+
+        private final String name;
+        private final int durabilityMultiplier;
+        private final int[] protectionAmounts;
+        private final int enchantmentValue;
+        private final SoundEvent equipSound;
+        private final float toughness;
+        private final float knockbackResistance;
+        private final java.util.function.Supplier<Ingredient> repairIngredient;
+
+        private static final int[] BASE_DURABILITY = {11, 16, 15, 13};
+
+        ModArmorMaterials(String name, int durabilityMultiplier, int[] protectionAmounts,
+                          int enchantmentValue, SoundEvent equipSound, float toughness,
+                          float knockbackResistance, java.util.function.Supplier<Ingredient> repairIngredient) {
+            this.name = name;
+            this.durabilityMultiplier = durabilityMultiplier;
+            this.protectionAmounts = protectionAmounts;
+            this.enchantmentValue = enchantmentValue;
+            this.equipSound = equipSound;
+            this.toughness = toughness;
+            this.knockbackResistance = knockbackResistance;
+            this.repairIngredient = repairIngredient;
+        }
+
+        @Override
+        public int getDurabilityForType(ArmorItem.Type type) {
+            return BASE_DURABILITY[type.ordinal()] * this.durabilityMultiplier;
+        }
+
+        @Override
+        public int getDefenseForType(ArmorItem.Type type) {
+            return this.protectionAmounts[type.ordinal()];
+        }
+
+        @Override
+        public int getEnchantmentValue() {
+            return this.enchantmentValue;
+        }
+
+        @Override
+        public SoundEvent getEquipSound() {
+            return this.equipSound;
+        }
+
+        @Override
+        public Ingredient getRepairIngredient() {
+            return this.repairIngredient.get();
+        }
+
+        @Override
+        public String getName() {
+            return Maniacrev.MODID + ":" + this.name;
+        }
+
+        @Override
+        public float getToughness() {
+            return this.toughness;
+        }
+
+        @Override
+        public float getKnockbackResistance() {
+            return this.knockbackResistance;
+        }
+    }
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

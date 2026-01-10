@@ -1,4 +1,4 @@
-C:\Users\ABOBUS\.gradle\caches\forge_gradle\minecraft_user_repo\net\minecraftforge\forge\1.20.1-47.2.18_mapped_official_1.20.1\forge-1.20.1-47.2.18_mapped_official_1.20.1.jar
+C:\Users\ABOBUS\.gradle\caches\forge_gradle\minecraft_user_repo\net\minecraftforge\forge\1.20.1-47.2.18_mapped_official_1.20.1\forge-1.20.1-47.2.18_mapped_official_1.20.1-recomp.jar
 C:\Users\ABOBUS\.gradle\caches\forge_gradle\minecraft_repo\versions\1.20.1\client-extra.jar
 C:\Users\ABOBUS\.gradle\caches\modules-2\files-2.1\net.minecraftforge\fmlearlydisplay\1.20.1-47.2.18\9bff89ec036272162147cbc5470d162105398767\fmlearlydisplay-1.20.1-47.2.18.jar
 C:\Users\ABOBUS\.gradle\caches\modules-2\files-2.1\net.minecraftforge\javafmllanguage\1.20.1-47.2.18\f100914f5a581eb8941f1d8f5551e673fba19da0\javafmllanguage-1.20.1-47.2.18.jar

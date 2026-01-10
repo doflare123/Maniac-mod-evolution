@@ -148,6 +148,20 @@ public class ModNetworking {
                 .consumerMainThread(FleshHeapSyncPacket::handle)
                 .add();
 
+        // Регистрация пакета для открытия GUI (сервер -> клиент)
+        CHANNEL.messageBuilder(OpenResurrectionGuiPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(OpenResurrectionGuiPacket::new)
+                .encoder(OpenResurrectionGuiPacket::toBytes)
+                .consumerMainThread(OpenResurrectionGuiPacket::handle)
+                .add();
+
+        // Регистрация пакета для воскрешения (клиент -> сервер)
+        CHANNEL.messageBuilder(ResurrectPlayerPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .decoder(ResurrectPlayerPacket::new)
+                .encoder(ResurrectPlayerPacket::toBytes)
+                .consumerMainThread(ResurrectPlayerPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 
