@@ -20,10 +20,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.client.model.HookModel;
 import org.example.maniacrevolution.client.renderer.HookRenderer;
-import org.example.maniacrevolution.command.ClearAttributesCommand;
-import org.example.maniacrevolution.command.ClearSaltCommand;
-import org.example.maniacrevolution.command.ModCommands;
-import org.example.maniacrevolution.command.QTECommand;
+import org.example.maniacrevolution.command.*;
 import org.example.maniacrevolution.cosmetic.CosmeticRegistry;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.effect.ModEffects;
@@ -35,6 +32,8 @@ import org.example.maniacrevolution.perk.PerkRegistry;
 import org.example.maniacrevolution.shop.ShopRegistry;
 import org.example.maniacrevolution.potion.ModPotions;
 import org.example.maniacrevolution.brewing.ModBrewingRecipes;
+import org.example.maniacrevolution.character.CharacterRegistry;
+import org.example.maniacrevolution.readiness.ReadinessManager;
 import org.slf4j.Logger;
 
 @Mod(Maniacrev.MODID)
@@ -75,6 +74,7 @@ public class Maniacrev {
             PerkRegistry.init();
             ShopRegistry.init();
             CosmeticRegistry.init();
+            CharacterRegistry.init();
             LOGGER.info("ManiacRev Mod initialized!");
         });
     }
@@ -83,12 +83,15 @@ public class Maniacrev {
     public void onServerStarting(ServerStartingEvent event) {
         GameManager.init(event.getServer());
         PlayerDataManager.load(event.getServer());
+        ReadinessManager.setServer(event.getServer());
+        LOGGER.info("Character system initialized");
         LOGGER.info("ManiacRev server data loaded");
     }
 
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
         PlayerDataManager.save(event.getServer());
+        ReadinessManager.clear();
         LOGGER.info("ManiacRev server data saved");
     }
 
@@ -98,6 +101,7 @@ public class Maniacrev {
         QTECommand.register(event.getDispatcher());
         ClearSaltCommand.register(event.getDispatcher());
         ClearAttributesCommand.register(event.getDispatcher());
+        CharacterMenuCommand.register(event.getDispatcher());
     }
 
     public static ResourceLocation loc(String path) {

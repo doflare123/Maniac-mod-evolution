@@ -162,6 +162,25 @@ public class ModNetworking {
                 .consumerMainThread(ResurrectPlayerPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(OpenCharacterMenuPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OpenCharacterMenuPacket::encode)
+                .decoder(OpenCharacterMenuPacket::decode)
+                .consumerMainThread(OpenCharacterMenuPacket::handle)
+                .add();
+
+        // Пакеты для выбора персонажей (Client -> Server)
+        CHANNEL.messageBuilder(SelectCharacterPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(SelectCharacterPacket::encode)
+                .decoder(SelectCharacterPacket::decode)
+                .consumerMainThread(SelectCharacterPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(ReadyStatusPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ReadyStatusPacket::encode)
+                .decoder(ReadyStatusPacket::decode)
+                .consumerMainThread(ReadyStatusPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

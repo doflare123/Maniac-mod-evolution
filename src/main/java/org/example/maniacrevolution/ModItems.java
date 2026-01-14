@@ -10,8 +10,11 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.item.*;
 import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
+import org.example.maniacrevolution.item.CharacterSelectionItem;
+import org.example.maniacrevolution.item.ReadyItem;
 
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
@@ -165,6 +168,15 @@ public class ModItems {
 
     public static final RegistryObject<Item> RECIPE_BOOK = ITEMS.register("recipe_book",
             () -> new RecipeBookItem(new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> SURVIVOR_SELECTION = ITEMS.register("survivor_selection",
+            () -> new CharacterSelectionItem(new Item.Properties(), CharacterType.SURVIVOR));
+
+    public static final RegistryObject<Item> MANIAC_SELECTION = ITEMS.register("maniac_selection",
+            () -> new CharacterSelectionItem(new Item.Properties(), CharacterType.MANIAC));
+
+    public static final RegistryObject<Item> READY_ITEM = ITEMS.register("ready_item",
+            () -> new ReadyItem(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
