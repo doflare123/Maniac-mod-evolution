@@ -81,22 +81,30 @@ public class CharacterSelectionScreen extends Screen {
     }
 
     private void calculateSizes(double guiScale) {
-        // Базовые размеры для scale 2
+        // Адаптивные размеры в зависимости от scale и размера окна
+        int screenWidth = this.width;
+
         if (guiScale <= 2.0) {
             frescoWidth = 120;
             frescoHeight = 280;
-            infoPanelWidth = 350;
+            infoPanelWidth = Math.min(350, screenWidth - 500);
         } else if (guiScale <= 3.0) {
-            // Для scale 3 уменьшаем
             frescoWidth = 100;
             frescoHeight = 233;
-            infoPanelWidth = 280;
-        } else {
-            // Для больших scale ещё меньше
+            infoPanelWidth = Math.min(280, screenWidth - 450);
+        } else if (guiScale <= 4.0) {
             frescoWidth = 80;
             frescoHeight = 187;
-            infoPanelWidth = 220;
+            infoPanelWidth = Math.min(220, screenWidth - 380);
+        } else {
+            // Для очень больших scale
+            frescoWidth = 70;
+            frescoHeight = 163;
+            infoPanelWidth = Math.min(200, screenWidth - 350);
         }
+
+        // Минимальные размеры
+        infoPanelWidth = Math.max(180, infoPanelWidth);
     }
 
     private void createFilterButtons() {
@@ -113,14 +121,16 @@ public class CharacterSelectionScreen extends Screen {
         List<String> sortedTags = new ArrayList<>(allTags);
         Collections.sort(sortedTags);
 
-        // Создаём кнопки фильтров
+        // Создаём кнопки фильтров с учётом размера экрана
         int startX = 10;
         int startY = 50;
         int buttonWidth = 100;
-        int buttonHeight = 20;
-        int spacing = 5;
+        int buttonHeight = 18;
+        int spacing = 3;
         int x = startX;
         int y = startY;
+        int maxColumns = 2;
+        int currentColumn = 0;
 
         for (String tag : sortedTags) {
             boolean isActive = activeFilters.contains(tag);
@@ -138,7 +148,13 @@ public class CharacterSelectionScreen extends Screen {
             // Если вышли за пределы экрана - новый столбец
             if (y > this.height - 100) {
                 y = startY;
-                x += buttonWidth + spacing;
+                currentColumn++;
+                x = startX + (currentColumn * (buttonWidth + spacing));
+
+                // Ограничиваем количество столбцов
+                if (currentColumn >= maxColumns) {
+                    break;
+                }
             }
         }
     }
@@ -295,21 +311,41 @@ public class CharacterSelectionScreen extends Screen {
     private void drawInfoPanel(GuiGraphics graphics, int mouseX, int mouseY) {
         CharacterClass selected = filteredCharacters.get(selectedIndex);
 
-        int panelX = this.width - infoPanelWidth - 20;
-        int panelY = 60;
-        int panelHeight = this.height - 140;
+        // Адаптивная позиция панели
+        int panelX = this.width - infoPanelWidth - 15;
+        int panelY = 55;
+        int panelHeight = this.height - 130;
+
+        // Проверяем не перекрывается ли с фресками
+        int centerX = this.width / 2;
+        int frescoRightEdge = centerX + frescoWidth / 2 + 15;
+        if (panelX < frescoRightEdge + 20) {
+            panelX = frescoRightEdge + 20;
+            // Если всё равно не влезает - уменьшаем ширину
+            if (panelX + infoPanelWidth > this.width - 10) {
+                infoPanelWidth = this.width - panelX - 10;
+            }
+        }
 
         graphics.fill(panelX, panelY, panelX + infoPanelWidth, panelY + panelHeight, 0xCC000000);
 
-        int textX = panelX + 10;
-        int textY = panelY + 10;
+        int textX = panelX + 8;
+        int textY = panelY + 8;
         int lineHeight = 9;
-        int maxWidth = infoPanelWidth - 20;
+        int maxWidth = infoPanelWidth - 16;
 
         // Имя
         String titleColor = type == CharacterType.SURVIVOR ? "§b§l" : "§e§l";
-        graphics.drawString(this.font, titleColor + selected.getName(), textX, textY, 0xFFFFFF);
-        textY += 16;
+        String nameText = titleColor + selected.getName();
+        // Если имя слишком длинное - обрезаем
+        if (this.font.width(nameText) > maxWidth) {
+            while (this.font.width(nameText + "...") > maxWidth && nameText.length() > 3) {
+                nameText = nameText.substring(0, nameText.length() - 1);
+            }
+            nameText += "...";
+        }
+        graphics.drawString(this.font, nameText, textX, textY, 0xFFFFFF);
+        textY += 14;
 
         // Тэги с переносом
         if (!selected.getTags().isEmpty()) {
