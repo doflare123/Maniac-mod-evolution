@@ -19,7 +19,7 @@ public class CountdownTask {
 
     public CountdownTask(MinecraftServer server) {
         this.server = server;
-        this.remainingSeconds = 10;
+        this.remainingSeconds = 5;
         this.running = false;
     }
 
@@ -29,23 +29,34 @@ public class CountdownTask {
         running = true;
         timer = new Timer();
 
-        // Отправляем сообщение о начале отсчёта
-        broadcastMessage("§aИгра начнётся через 10 секунд...");
+        broadcastMessage("§aИгра начнётся через 5 секунд...");
 
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 if (remainingSeconds > 0) {
-                    if (remainingSeconds <= 5) {
-                        broadcastMessage("§e" + remainingSeconds + "...");
-                    }
+                    // Показываем title с отсчётом
+                    showCountdownTitle(remainingSeconds);
                     remainingSeconds--;
                 } else {
-                    // Время вышло - начинаем игру
                     finish();
                 }
             }
-        }, 1000, 1000); // Каждую секунду
+        }, 1000, 1000);
+    }
+
+    private void showCountdownTitle(int seconds) {
+        server.execute(() -> {
+            String color = seconds <= 3 ? "§c" : "§e";
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(
+                        10, 20, 10
+                ));
+                player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(
+                        Component.literal(color + "§l" + seconds)
+                ));
+            }
+        });
     }
 
     public void cancel() {

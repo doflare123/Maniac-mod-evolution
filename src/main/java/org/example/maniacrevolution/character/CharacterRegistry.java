@@ -24,12 +24,16 @@ public class CharacterRegistry {
         register(new ShamanClass());
         register(new MefedronshchikClass());
         register(new ScientistClass());
+        register(new AgentClass());
+        register(new PudgeClass());
 
         // Регистрация маньяков
         register(new DeathClass());
         register(new UrsaClass());
         register(new PlagueDoctorClass());
         register(new FreddyBearClass());
+        register(new NecromancerClass());
+        register(new DoctorClass());
 
         initialized = true;
     }

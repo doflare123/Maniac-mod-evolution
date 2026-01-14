@@ -9,65 +9,64 @@ import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterRegistry;
 import org.example.maniacrevolution.character.CharacterType;
+import org.example.maniacrevolution.character.TagRegistry;
 import org.example.maniacrevolution.network.ModNetworking;
-import org.example.maniacrevolution.network.packets.ReadyStatusPacket;
 import org.example.maniacrevolution.network.packets.SelectCharacterPacket;
-import org.example.maniacrevolution.readiness.ReadinessManager;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
-/**
- * Экран выбора класса персонажа
- */
 public class CharacterSelectionScreen extends Screen {
     private final CharacterType type;
-    private final List<CharacterClass> characters;
+    private final List<CharacterClass> allCharacters;
+    private List<CharacterClass> filteredCharacters;
     private int selectedIndex = 0;
+    private Set<String> activeFilters = new HashSet<>();
 
-    // Размеры элементов
-    private static final int FRESCO_WIDTH = 120;
-    private static final int FRESCO_HEIGHT = 280;
-    private static final int FRESCO_SPACING = 15;
-    private static final int INFO_PANEL_WIDTH = 300;
+    // Адаптивные размеры
+    private int frescoWidth;
+    private int frescoHeight;
+    private int infoPanelWidth;
 
-    // Кнопки
     private Button leftArrowButton;
     private Button rightArrowButton;
     private Button selectButton;
+    private List<Button> filterButtons = new ArrayList<>();
 
     public CharacterSelectionScreen(CharacterType type) {
         super(Component.literal("Выбор класса: " + type.getDisplayName()));
         this.type = type;
-        this.characters = CharacterRegistry.getClassesByType(type);
+        this.allCharacters = CharacterRegistry.getClassesByType(type);
+        this.filteredCharacters = new ArrayList<>(allCharacters);
     }
 
     @Override
     protected void init() {
         super.init();
 
+        // Вычисляем адаптивные размеры
+        double guiScale = this.minecraft.getWindow().getGuiScale();
+        calculateSizes(guiScale);
+
         int centerX = this.width / 2;
         int centerY = this.height / 2;
 
-        // Кнопка "Стрелка влево" - стандартная майнкрафтовская
-        leftArrowButton = Button.builder(Component.literal("◄"), button -> {
-                    previousCharacter();
-                })
-                .bounds(centerX - 250, centerY, 50, 20)
+        int arrowWidth = 50;
+        int arrowHeight = 20;
+        int gap = 10;
+
+        // Левая стрелка - слева от фрески
+        leftArrowButton = Button.builder(Component.literal("◄"), b -> previousCharacter())
+                .bounds(centerX - frescoWidth / 2 - arrowWidth - gap, centerY, arrowWidth, arrowHeight)
                 .build();
 
-        // Кнопка "Стрелка вправо" - стандартная майнкрафтовская
-        rightArrowButton = Button.builder(Component.literal("►"), button -> {
-                    nextCharacter();
-                })
-                .bounds(centerX + 200, centerY, 50, 20)
+        // Правая стрелка - справа от фрески
+        rightArrowButton = Button.builder(Component.literal("►"), b -> nextCharacter())
+                .bounds(centerX + frescoWidth / 2 + gap, centerY, arrowWidth, arrowHeight)
                 .build();
 
-        // Кнопка "Выбрать" - просто выбирает класс и закрывает меню
-        selectButton = Button.builder(
-                        Component.literal("Выбрать"),
-                        button -> selectCharacter()
-                )
+        // Кнопка выбора внизу
+        selectButton = Button.builder(Component.literal("Выбрать"), b -> selectCharacter())
                 .bounds(centerX - 60, this.height - 50, 120, 20)
                 .build();
 
@@ -75,13 +74,103 @@ public class CharacterSelectionScreen extends Screen {
         this.addRenderableWidget(rightArrowButton);
         this.addRenderableWidget(selectButton);
 
-        // Обновляем состояние кнопок
+        // Создаём кнопки фильтров
+        createFilterButtons();
+
         updateButtonStates();
     }
 
-    /**
-     * Предыдущий персонаж
-     */
+    private void calculateSizes(double guiScale) {
+        // Базовые размеры для scale 2
+        if (guiScale <= 2.0) {
+            frescoWidth = 120;
+            frescoHeight = 280;
+            infoPanelWidth = 350;
+        } else if (guiScale <= 3.0) {
+            // Для scale 3 уменьшаем
+            frescoWidth = 100;
+            frescoHeight = 233;
+            infoPanelWidth = 280;
+        } else {
+            // Для больших scale ещё меньше
+            frescoWidth = 80;
+            frescoHeight = 187;
+            infoPanelWidth = 220;
+        }
+    }
+
+    private void createFilterButtons() {
+        // Очищаем старые кнопки
+        filterButtons.forEach(this::removeWidget);
+        filterButtons.clear();
+
+        // Собираем все уникальные тэги
+        Set<String> allTags = new HashSet<>();
+        for (CharacterClass character : allCharacters) {
+            allTags.addAll(character.getTags());
+        }
+
+        List<String> sortedTags = new ArrayList<>(allTags);
+        Collections.sort(sortedTags);
+
+        // Создаём кнопки фильтров
+        int startX = 10;
+        int startY = 50;
+        int buttonWidth = 100;
+        int buttonHeight = 20;
+        int spacing = 5;
+        int x = startX;
+        int y = startY;
+
+        for (String tag : sortedTags) {
+            boolean isActive = activeFilters.contains(tag);
+
+            Button filterButton = Button.builder(
+                    Component.literal((isActive ? "§a✓ " : "§7") + tag),
+                    b -> toggleFilter(tag)
+            ).bounds(x, y, buttonWidth, buttonHeight).build();
+
+            filterButtons.add(filterButton);
+            this.addRenderableWidget(filterButton);
+
+            y += buttonHeight + spacing;
+
+            // Если вышли за пределы экрана - новый столбец
+            if (y > this.height - 100) {
+                y = startY;
+                x += buttonWidth + spacing;
+            }
+        }
+    }
+
+    private void toggleFilter(String tag) {
+        if (activeFilters.contains(tag)) {
+            activeFilters.remove(tag);
+        } else {
+            activeFilters.add(tag);
+        }
+
+        applyFilters();
+        createFilterButtons();
+
+        // Сброс выбранного индекса если вышли за пределы
+        if (selectedIndex >= filteredCharacters.size()) {
+            selectedIndex = Math.max(0, filteredCharacters.size() - 1);
+        }
+
+        updateButtonStates();
+    }
+
+    private void applyFilters() {
+        if (activeFilters.isEmpty()) {
+            filteredCharacters = new ArrayList<>(allCharacters);
+        } else {
+            filteredCharacters = allCharacters.stream()
+                    .filter(c -> c.getTags().stream().anyMatch(activeFilters::contains))
+                    .collect(Collectors.toList());
+        }
+    }
+
     private void previousCharacter() {
         if (selectedIndex > 0) {
             selectedIndex--;
@@ -89,180 +178,171 @@ public class CharacterSelectionScreen extends Screen {
         }
     }
 
-    /**
-     * Следующий персонаж
-     */
     private void nextCharacter() {
-        if (selectedIndex < characters.size() - 1) {
+        if (selectedIndex < filteredCharacters.size() - 1) {
             selectedIndex++;
             updateButtonStates();
         }
     }
 
-    /**
-     * Обновляет активность кнопок навигации
-     */
     private void updateButtonStates() {
         leftArrowButton.active = selectedIndex > 0;
-        rightArrowButton.active = selectedIndex < characters.size() - 1;
+        rightArrowButton.active = selectedIndex < filteredCharacters.size() - 1;
+    }
+
+    private void selectCharacter() {
+        if (filteredCharacters.isEmpty()) return;
+
+        CharacterClass selected = filteredCharacters.get(selectedIndex);
+        ModNetworking.sendToServer(new SelectCharacterPacket(selected.getId()));
+        this.onClose();
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Рисуем фон
         this.renderBackground(graphics);
         drawGradientBackground(graphics);
 
-        // Рисуем фрески (карточки персонажей)
-        drawFrescos(graphics);
+        if (!filteredCharacters.isEmpty()) {
+            drawFresco(graphics);
+            drawInfoPanel(graphics, mouseX, mouseY);
+        } else {
+            graphics.drawCenteredString(this.font, "§cНет персонажей с выбранными тэгами",
+                    this.width / 2, this.height / 2, 0xFFFFFF);
+        }
 
-        // Рисуем информационную панель
-        drawInfoPanel(graphics);
-
-        // Рисуем кнопки (стандартные майнкрафтовские)
         super.render(graphics, mouseX, mouseY, partialTick);
 
-        // Рисуем заголовок
         graphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);
 
-        // Показываем счётчик классов
-        String counterText = (selectedIndex + 1) + " / " + characters.size();
-        graphics.drawCenteredString(this.font, counterText, this.width / 2, this.height - 65, 0xAAAAAA);
+        if (!filteredCharacters.isEmpty()) {
+            String counter = (selectedIndex + 1) + " / " + filteredCharacters.size();
+            graphics.drawCenteredString(this.font, counter, this.width / 2, this.height - 65, 0xAAAAAA);
+        }
+
+        // Рендерим подсказки для тэгов
+        renderTagTooltips(graphics, mouseX, mouseY);
     }
 
-    /**
-     * Рисуем градиентный фон
-     */
     private void drawGradientBackground(GuiGraphics graphics) {
-        int color1 = type == CharacterType.SURVIVOR ? 0x40004400 : 0x40440000;
-        int color2 = type == CharacterType.SURVIVOR ? 0x80006600 : 0x80660000;
-
+        int color1 = type == CharacterType.SURVIVOR ? 0x40003344 : 0x40440000;
+        int color2 = type == CharacterType.SURVIVOR ? 0x80004466 : 0x80660000;
         graphics.fillGradient(0, 0, this.width, this.height, color1, color2);
     }
 
-    /**
-     * Рисуем фрески персонажей
-     */
-    private void drawFrescos(GuiGraphics graphics) {
+    private void drawFresco(GuiGraphics graphics) {
         int centerX = this.width / 2;
         int centerY = this.height / 2;
 
-        // Смещаем влево
-        int offsetX = -80;
-
-        // Показываем 3 карточки одновременно (текущая по центру)
+        // Показываем 3 фрески (предыдущая, текущая, следующая)
         int startIndex = Math.max(0, selectedIndex - 1);
-        int endIndex = Math.min(characters.size(), startIndex + 3);
+        int endIndex = Math.min(filteredCharacters.size(), selectedIndex + 2);
 
         for (int i = startIndex; i < endIndex; i++) {
-            CharacterClass character = characters.get(i);
+            CharacterClass character = filteredCharacters.get(i);
 
-            // Позиция карточки
+            // Позиция карточки относительно центра
             int offsetFromCenter = (i - selectedIndex);
-            int x = centerX + offsetX - (FRESCO_WIDTH / 2) + (offsetFromCenter * (FRESCO_WIDTH + FRESCO_SPACING));
-            int y = centerY - (FRESCO_HEIGHT / 2);
+            int spacing = 15;
+            int x = centerX - frescoWidth / 2 + (offsetFromCenter * (frescoWidth + spacing));
+            int y = centerY - frescoHeight / 2;
 
-            // Масштаб и прозрачность
+            // Прозрачность для боковых карточек
             float alpha = (i == selectedIndex) ? 1.0f : 0.6f;
 
-            // Рисуем рамку
-            drawFrescoFrame(graphics, x, y, i == selectedIndex);
+            // Рамка
+            if (i == selectedIndex) {
+                int color = type == CharacterType.SURVIVOR ? 0xFF00CCFF : 0xFFFFD700;
+                graphics.fill(x - 3, y - 3, x + frescoWidth + 3, y, color);
+                graphics.fill(x - 3, y + frescoHeight, x + frescoWidth + 3, y + frescoHeight + 3, color);
+                graphics.fill(x - 3, y, x, y + frescoHeight, color);
+                graphics.fill(x + frescoWidth, y, x + frescoWidth + 3, y + frescoHeight, color);
+            } else {
+                // Тонкая серая рамка для боковых
+                graphics.fill(x - 1, y - 1, x + frescoWidth + 1, y, 0xFF808080);
+                graphics.fill(x - 1, y + frescoHeight, x + frescoWidth + 1, y + frescoHeight + 1, 0xFF808080);
+                graphics.fill(x - 1, y, x, y + frescoHeight, 0xFF808080);
+                graphics.fill(x + frescoWidth, y, x + frescoWidth + 1, y + frescoHeight, 0xFF808080);
+            }
 
-            // Рисуем текстуру фрески
-            drawFrescoTexture(graphics, character, x, y, alpha);
+            // Текстура
+            ResourceLocation texture = character.getFrescoTexture();
+            graphics.pose().pushPose();
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
 
-            // Рисуем имя персонажа
+            try {
+                graphics.blit(texture, x, y, 0, 0, frescoWidth, frescoHeight,
+                        frescoWidth, frescoHeight);
+            } catch (Exception e) {
+                graphics.fill(x, y, x + frescoWidth, y + frescoHeight, 0xFF333333);
+                if (i == selectedIndex) {
+                    graphics.drawCenteredString(this.font, "Нет текстуры",
+                            x + frescoWidth / 2, y + frescoHeight / 2, 0xFFFFFF);
+                }
+            }
+
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            graphics.pose().popPose();
+
+            // Имя только для выбранной
             if (i == selectedIndex) {
                 graphics.drawCenteredString(this.font, character.getName(),
-                        x + FRESCO_WIDTH / 2, y - 15, 0xFFFFFF);
+                        x + frescoWidth / 2, y - 15, 0xFFFFFF);
             }
         }
     }
 
-    /**
-     * Рисуем рамку фрески
-     */
-    private void drawFrescoFrame(GuiGraphics graphics, int x, int y, boolean selected) {
-        int color = selected ? 0xFFFFD700 : 0xFF808080;
-        int thickness = selected ? 3 : 1;
+    private void drawInfoPanel(GuiGraphics graphics, int mouseX, int mouseY) {
+        CharacterClass selected = filteredCharacters.get(selectedIndex);
 
-        // Верх
-        graphics.fill(x - thickness, y - thickness,
-                x + FRESCO_WIDTH + thickness, y, color);
-        // Низ
-        graphics.fill(x - thickness, y + FRESCO_HEIGHT,
-                x + FRESCO_WIDTH + thickness, y + FRESCO_HEIGHT + thickness, color);
-        // Лево
-        graphics.fill(x - thickness, y,
-                x, y + FRESCO_HEIGHT, color);
-        // Право
-        graphics.fill(x + FRESCO_WIDTH, y,
-                x + FRESCO_WIDTH + thickness, y + FRESCO_HEIGHT, color);
-    }
+        int panelX = this.width - infoPanelWidth - 20;
+        int panelY = 60;
+        int panelHeight = this.height - 140;
 
-    /**
-     * Рисуем текстуру фрески
-     */
-    private void drawFrescoTexture(GuiGraphics graphics, CharacterClass character,
-                                   int x, int y, float alpha) {
-        ResourceLocation texture = character.getFrescoTexture();
-
-        graphics.pose().pushPose();
-
-        // Применяем альфа-канал
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-
-        // Рисуем текстуру (или заглушку)
-        try {
-            graphics.blit(texture, x, y, 0, 0, FRESCO_WIDTH, FRESCO_HEIGHT,
-                    FRESCO_WIDTH, FRESCO_HEIGHT);
-        } catch (Exception e) {
-            // Если текстуры нет - рисуем заглушку
-            graphics.fill(x, y, x + FRESCO_WIDTH, y + FRESCO_HEIGHT, 0xFF333333);
-            graphics.drawCenteredString(this.font, "Нет текстуры",
-                    x + FRESCO_WIDTH / 2, y + FRESCO_HEIGHT / 2, 0xFFFFFF);
-        }
-
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        graphics.pose().popPose();
-    }
-
-    /**
-     * Рисуем информационную панель
-     */
-    private void drawInfoPanel(GuiGraphics graphics) {
-        CharacterClass selected = characters.get(selectedIndex);
-
-        // Панель справа
-        int panelX = this.width - INFO_PANEL_WIDTH - 30;
-        int panelY = 80;
-        int panelHeight = this.height - 160;
-
-        // Фон панели
-        graphics.fill(panelX, panelY, panelX + INFO_PANEL_WIDTH, panelY + panelHeight, 0xCC000000);
+        graphics.fill(panelX, panelY, panelX + infoPanelWidth, panelY + panelHeight, 0xCC000000);
 
         int textX = panelX + 10;
         int textY = panelY + 10;
         int lineHeight = 9;
+        int maxWidth = infoPanelWidth - 20;
 
         // Имя
-        graphics.drawString(this.font, "§e§l" + selected.getName(), textX, textY, 0xFFFFFF);
+        String titleColor = type == CharacterType.SURVIVOR ? "§b§l" : "§e§l";
+        graphics.drawString(this.font, titleColor + selected.getName(), textX, textY, 0xFFFFFF);
         textY += 16;
 
-        // Тэги
+        // Тэги с переносом
         if (!selected.getTags().isEmpty()) {
-            graphics.drawString(this.font, "§7Тэги: §f" + String.join(", ", selected.getTags()),
-                    textX, textY, 0xFFFFFF);
-            textY += 12;
+            graphics.drawString(this.font, "§7Тэги:", textX, textY, 0xFFFFFF);
+            textY += 10;
+
+            StringBuilder currentLine = new StringBuilder();
+            for (int i = 0; i < selected.getTags().size(); i++) {
+                String tag = selected.getTags().get(i);
+                String tagText = tag + (i < selected.getTags().size() - 1 ? ", " : "");
+
+                if (this.font.width(currentLine + tagText) > maxWidth) {
+                    graphics.drawString(this.font, "§f" + currentLine.toString(), textX, textY, 0xFFFFFF);
+                    textY += lineHeight;
+                    currentLine = new StringBuilder(tagText);
+                } else {
+                    currentLine.append(tagText);
+                }
+            }
+            if (currentLine.length() > 0) {
+                graphics.drawString(this.font, "§f" + currentLine.toString(), textX, textY, 0xFFFFFF);
+                textY += lineHeight;
+            }
+            textY += 3;
         }
 
-        textY += 3;
+        textY += 5;
 
         // Описание
         graphics.drawString(this.font, "§6Описание:", textX, textY, 0xFFFFFF);
         textY += lineHeight + 2;
-        drawWrappedText(graphics, selected.getDescription(), textX, textY, INFO_PANEL_WIDTH - 20, lineHeight);
-        textY += getWrappedTextHeight(selected.getDescription(), INFO_PANEL_WIDTH - 20, lineHeight) + 8;
+        textY += drawWrappedText(graphics, selected.getDescription(), textX, textY, maxWidth, lineHeight);
+        textY += 8;
 
         // Особенности
         if (!selected.getFeatures().isEmpty()) {
@@ -272,8 +352,8 @@ public class CharacterSelectionScreen extends Screen {
             for (CharacterClass.Feature feature : selected.getFeatures()) {
                 graphics.drawString(this.font, "§a• " + feature.getName(), textX, textY, 0xFFFFFF);
                 textY += lineHeight + 1;
-                drawWrappedText(graphics, "  " + feature.getDescription(), textX, textY, INFO_PANEL_WIDTH - 30, lineHeight);
-                textY += getWrappedTextHeight(feature.getDescription(), INFO_PANEL_WIDTH - 30, lineHeight) + 4;
+                textY += drawWrappedText(graphics, "  " + feature.getDescription(), textX, textY, maxWidth - 10, lineHeight);
+                textY += 4;
             }
             textY += 3;
         }
@@ -286,33 +366,21 @@ public class CharacterSelectionScreen extends Screen {
             for (CharacterClass.Item item : selected.getItems()) {
                 graphics.drawString(this.font, "§b• " + item.getName(), textX, textY, 0xFFFFFF);
                 textY += lineHeight + 1;
-                drawWrappedText(graphics, "  " + item.getDescription(), textX, textY, INFO_PANEL_WIDTH - 30, lineHeight);
-                textY += getWrappedTextHeight(item.getDescription(), INFO_PANEL_WIDTH - 30, lineHeight) + 4;
+                textY += drawWrappedText(graphics, "  " + item.getDescription(), textX, textY, maxWidth - 10, lineHeight);
+                textY += 4;
             }
         }
     }
 
-    /**
-     * Рисуем текст с переносом строк
-     */
-    private void drawWrappedText(GuiGraphics graphics, String text, int x, int y, int maxWidth, int lineHeight) {
+    private int drawWrappedText(GuiGraphics graphics, String text, int x, int y, int maxWidth, int lineHeight) {
         List<String> lines = wrapText(text, maxWidth);
         for (String line : lines) {
             graphics.drawString(this.font, line, x, y, 0xCCCCCC);
             y += lineHeight;
         }
+        return lines.size() * lineHeight;
     }
 
-    /**
-     * Получить высоту текста с переносом
-     */
-    private int getWrappedTextHeight(String text, int maxWidth, int lineHeight) {
-        return wrapText(text, maxWidth).size() * lineHeight;
-    }
-
-    /**
-     * Разбить текст на строки по ширине
-     */
     private List<String> wrapText(String text, int maxWidth) {
         List<String> lines = new ArrayList<>();
         String[] words = text.split(" ");
@@ -341,40 +409,40 @@ public class CharacterSelectionScreen extends Screen {
         return lines;
     }
 
-    /**
-     * Выбрать персонажа
-     */
-    private void selectCharacter() {
-        CharacterClass selected = characters.get(selectedIndex);
+    private void renderTagTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
+        for (Button button : filterButtons) {
+            if (button.isMouseOver(mouseX, mouseY)) {
+                String tagText = button.getMessage().getString().replace("§a✓ ", "").replace("§7", "");
+                String description = TagRegistry.getTagDescription(tagText);
 
-        // Отправляем пакет на сервер
-        ModNetworking.sendToServer(new SelectCharacterPacket(selected.getId()));
+                List<Component> tooltip = new ArrayList<>();
+                tooltip.add(Component.literal("§e" + tagText));
+                tooltip.add(Component.literal("§7" + description));
 
-        // Закрываем меню
-        this.onClose();
+                graphics.renderComponentTooltip(this.font, tooltip, mouseX, mouseY);
+                break;
+            }
+        }
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Проверяем клик по фрескам
-        if (button == 0) { // Левая кнопка мыши
+        if (button == 0 && !filteredCharacters.isEmpty()) {
             int centerX = this.width / 2;
             int centerY = this.height / 2;
-            int offsetX = -80;
 
-            // Проверяем все видимые фрески
+            // Проверяем клик по всем видимым фрескам
             int startIndex = Math.max(0, selectedIndex - 1);
-            int endIndex = Math.min(characters.size(), startIndex + 3);
+            int endIndex = Math.min(filteredCharacters.size(), selectedIndex + 2);
 
             for (int i = startIndex; i < endIndex; i++) {
                 int offsetFromCenter = (i - selectedIndex);
-                int x = centerX + offsetX - (FRESCO_WIDTH / 2) + (offsetFromCenter * (FRESCO_WIDTH + FRESCO_SPACING));
-                int y = centerY - (FRESCO_HEIGHT / 2);
+                int spacing = 15;
+                int x = centerX - frescoWidth / 2 + (offsetFromCenter * (frescoWidth + spacing));
+                int y = centerY - frescoHeight / 2;
 
-                // Проверяем попадание в область фрески
-                if (mouseX >= x && mouseX <= x + FRESCO_WIDTH &&
-                        mouseY >= y && mouseY <= y + FRESCO_HEIGHT) {
-                    // Переключаемся на этот класс
+                if (mouseX >= x && mouseX <= x + frescoWidth &&
+                        mouseY >= y && mouseY <= y + frescoHeight) {
                     selectedIndex = i;
                     updateButtonStates();
                     return true;
@@ -387,18 +455,16 @@ public class CharacterSelectionScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // ESC - закрыть меню
         if (keyCode == 256) {
             this.onClose();
             return true;
         }
 
-        // Стрелки для навигации
-        if (keyCode == 263) { // LEFT
+        if (keyCode == 263) {
             previousCharacter();
             return true;
         }
-        if (keyCode == 262) { // RIGHT
+        if (keyCode == 262) {
             nextCharacter();
             return true;
         }

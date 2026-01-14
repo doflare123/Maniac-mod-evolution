@@ -25,16 +25,28 @@ public class ReadyItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
 
         if (!level.isClientSide) {
-            // На сервере переключаем готовность
             boolean currentReady = ReadinessManager.isPlayerReady(player);
             boolean newReady = !currentReady;
 
             ReadinessManager.setPlayerReady((net.minecraft.server.level.ServerPlayer) player, newReady);
 
-            if (newReady) {
-                player.sendSystemMessage(Component.literal("§aВы готовы! Ожидание других игроков..."));
-            } else {
-                player.sendSystemMessage(Component.literal("§cВы отменили готовность"));
+            // Подсчёт готовых игроков
+            int totalPlayers = level.getServer().getPlayerList().getPlayerCount();
+            int readyPlayers = 0;
+            for (net.minecraft.server.level.ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
+                if (ReadinessManager.isPlayerReady(p)) {
+                    readyPlayers++;
+                }
+            }
+
+            // Сообщение всем игрокам
+            String statusColor = newReady ? "§a" : "§c";
+            String statusText = newReady ? "готов" : "отменил готовность";
+            Component message = Component.literal(statusColor + player.getName().getString() + " " + statusText +
+                    " §7(" + readyPlayers + "/" + totalPlayers + ")");
+
+            for (net.minecraft.server.level.ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
+                p.sendSystemMessage(message);
             }
         }
 

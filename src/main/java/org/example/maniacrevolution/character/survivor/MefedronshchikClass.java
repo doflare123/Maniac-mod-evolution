@@ -8,7 +8,7 @@ public class MefedronshchikClass extends CharacterClass {
     public MefedronshchikClass() {
         super("mefedronshchik", "Мефедронщик", CharacterType.SURVIVOR,
                 "Если двойная доза не поможет, то я даже не знаю!",
-                3); // ID для scoreboard
+                9); // ID для scoreboard
 
         // Тэги
         addTag("Отвлечение");

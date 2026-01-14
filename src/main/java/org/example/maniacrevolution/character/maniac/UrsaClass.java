@@ -8,7 +8,7 @@ public class UrsaClass extends CharacterClass {
     public UrsaClass() {
         super("ursa", "Урса", CharacterType.MANIAC,
                 "Не буди во мне зверя. Первобытная ярость медведя не знает пределов - каждый удар делает Урсу сильнее, а её мощные лапы способны настигнуть жертву молниеносным прыжком.",
-                6); // ID для scoreboard
+                7); // ID для scoreboard
 
         // Тэги
         addTag("Мобильность");
