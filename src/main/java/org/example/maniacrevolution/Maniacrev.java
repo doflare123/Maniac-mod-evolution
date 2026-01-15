@@ -102,6 +102,7 @@ public class Maniacrev {
         ClearSaltCommand.register(event.getDispatcher());
         ClearAttributesCommand.register(event.getDispatcher());
         CharacterMenuCommand.register(event.getDispatcher());
+        TestGlowCommand.register(event.getDispatcher());
     }
 
     public static ResourceLocation loc(String path) {

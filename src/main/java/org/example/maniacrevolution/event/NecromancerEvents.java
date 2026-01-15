@@ -20,6 +20,18 @@ import org.example.maniacrevolution.necromancer.NecromancerProvider;
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class NecromancerEvents {
 
+//    @SubscribeEvent
+//    public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
+//        if (event.getObject() instanceof Player) {
+//            if (!event.getObject().getCapability(NecromancerProvider.NECROMANCER).isPresent()) {
+//                event.addCapability(
+//                        new ResourceLocation(Maniacrev.MODID, "necromancer"),
+//                        new NecromancerProvider()
+//                );
+//            }
+//        }
+//    }
+
     @SubscribeEvent
     public static void onPlayerCloned(PlayerEvent.Clone event) {
         event.getOriginal().getCapability(NecromancerProvider.NECROMANCER).ifPresent(oldStore -> {
@@ -32,6 +44,36 @@ public class NecromancerEvents {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            // ПРОВЕРКА 1: Игрок должен быть некромантом (SurvivorClass = 8)
+            net.minecraft.world.scores.Scoreboard scoreboard = player.getScoreboard();
+            net.minecraft.world.scores.Objective classObjective = scoreboard.getObjective("SurvivorClass");
+
+            if (classObjective == null) {
+                return; // Нет scoreboard - не некромант
+            }
+
+            net.minecraft.world.scores.Score classScore = scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), classObjective);
+            if (classScore.getScore() != 8) {
+                return; // Не некромант - пассивка не работает
+            }
+
+            // ПРОВЕРКА 2: Игрок должен быть в команде survivors
+            net.minecraft.world.scores.PlayerTeam team = (net.minecraft.world.scores.PlayerTeam) player.getTeam();
+            if (team == null || !team.getName().equalsIgnoreCase("survivors")) {
+                return; // Не в команде survivors
+            }
+
+            // ПРОВЕРКА 3: Игрок должен быть в режиме приключений
+            if (player.gameMode.getGameModeForPlayer() != net.minecraft.world.level.GameType.ADVENTURE) {
+                return; // Не в режиме приключений
+            }
+
+            // ПРОВЕРКА 4: Игрок должен носить ПОЛНЫЙ сет брони некроманта
+            if (!hasFullNecromancerSet(player)) {
+                return; // Нет полного сета - пассивка не работает
+            }
+
+            // ПРОВЕРКА 5: Проверяем capability - есть ли защита
             player.getCapability(NecromancerProvider.NECROMANCER).ifPresent(necroData -> {
                 if (necroData.hasPassiveProtection()) {
                     // Отменяем смерть
@@ -43,11 +85,14 @@ public class NecromancerEvents {
                     // Используем пассивку
                     necroData.usePassiveProtection();
 
+                    // ЛОМАЕМ броню некроманта
+                    damageNecromancerArmor(player);
+
                     // Эффекты
                     player.serverLevel().playSound(null, player.getX(), player.getY(), player.getZ(),
                             SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
 
-                    // Можно добавить частицы
+                    // Частицы
                     spawnDeathProtectionParticles(player);
 
                     // Сообщение игроку
@@ -57,6 +102,35 @@ public class NecromancerEvents {
                     );
                 }
             });
+        }
+    }
+
+    /**
+     * Проверяет, носит ли игрок полный сет брони некроманта
+     */
+    private static boolean hasFullNecromancerSet(ServerPlayer player) {
+        int necroArmorPieces = 0;
+
+        for (net.minecraft.world.item.ItemStack armorSlot : player.getArmorSlots()) {
+            if (armorSlot.getItem() instanceof org.example.maniacrevolution.item.armor.NecromancerArmorItem) {
+                necroArmorPieces++;
+            }
+        }
+
+        return necroArmorPieces == 4; // Все 4 части брони
+    }
+
+    /**
+     * Ломает броню некроманта при использовании пассивки
+     */
+    private static void damageNecromancerArmor(ServerPlayer player) {
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            if (slot.getType() == net.minecraft.world.entity.EquipmentSlot.Type.ARMOR) {
+                net.minecraft.world.item.ItemStack armorPiece = player.getItemBySlot(slot);
+                if (armorPiece.getItem() instanceof org.example.maniacrevolution.item.armor.NecromancerArmorItem necroArmor) {
+                    necroArmor.onPassiveActivated(player, armorPiece);
+                }
+            }
         }
     }
 

@@ -8,7 +8,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.scores.PlayerTeam;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -48,6 +50,36 @@ public class NecromancerEventsUpdated {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            // ПРОВЕРКА 1: Игрок должен быть некромантом (SurvivorClass = 8)
+            net.minecraft.world.scores.Scoreboard scoreboard = player.getScoreboard();
+            net.minecraft.world.scores.Objective classObjective = scoreboard.getObjective("SurvivorClass");
+
+            if (classObjective == null) {
+                return; // Нет scoreboard - не некромант
+            }
+
+            net.minecraft.world.scores.Score classScore = scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), classObjective);
+            if (classScore.getScore() != 8) {
+                return; // Не некромант - пассивка не работает
+            }
+
+            // ПРОВЕРКА 2: Игрок должен быть в команде survivors
+            PlayerTeam team = (PlayerTeam) player.getTeam();
+            if (team == null || !team.getName().equalsIgnoreCase("survivors")) {
+                return; // Не в команде survivors
+            }
+
+            // ПРОВЕРКА 3: Игрок должен быть в режиме приключений
+            if (player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE) {
+                return; // Не в режиме приключений
+            }
+
+            // ПРОВЕРКА 4: Игрок должен носить ПОЛНЫЙ сет брони некроманта
+            if (!hasFullNecromancerSet(player)) {
+                return; // Нет полного сета - пассивка не работает
+            }
+
+            // ПРОВЕРКА 5: Проверяем capability - есть ли защита
             player.getCapability(NecromancerProvider.NECROMANCER).ifPresent(necroData -> {
                 if (necroData.hasPassiveProtection()) {
                     // Отменяем смерть
@@ -77,6 +109,21 @@ public class NecromancerEventsUpdated {
                 }
             });
         }
+    }
+
+    /**
+     * Проверяет, носит ли игрок полный сет брони некроманта
+     */
+    private static boolean hasFullNecromancerSet(ServerPlayer player) {
+        int necroArmorPieces = 0;
+
+        for (ItemStack armorSlot : player.getArmorSlots()) {
+            if (armorSlot.getItem() instanceof NecromancerArmorItem) {
+                necroArmorPieces++;
+            }
+        }
+
+        return necroArmorPieces == 4; // Все 4 части брони
     }
 
     private static void damageNecromancerArmor(ServerPlayer player) {
@@ -150,7 +197,12 @@ public class NecromancerEventsUpdated {
      */
     @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
-        if (event.getEntity() instanceof Player player && !player.level().isClientSide()) {
+        if (event.getEntity() instanceof ServerPlayer player && !player.level().isClientSide()) {
+            // Проверяем, является ли игрок некромантом
+            if (!isNecromancer(player)) {
+                return; // Не некромант - бонусы не применяются
+            }
+
             ItemStack from = event.getFrom();
             ItemStack to = event.getTo();
 
@@ -180,6 +232,11 @@ public class NecromancerEventsUpdated {
         if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayer player) {
             // Каждые 5 секунд проверяем возможность восстановления пассивки
             if (player.tickCount % 100 == 0) {
+                // Проверяем класс некроманта
+                if (!isNecromancer(player)) {
+                    return;
+                }
+
                 player.getCapability(NecromancerProvider.NECROMANCER).ifPresent(necroData -> {
                     if (hasFullNecromancerSet(player) && necroData.canRestorePassive()) {
                         necroData.restorePassiveProtection();
@@ -193,12 +250,31 @@ public class NecromancerEventsUpdated {
         }
     }
 
+    /**
+     * Проверяет, является ли игрок некромантом
+     */
+    private static boolean isNecromancer(ServerPlayer player) {
+        // Проверка SurvivorClass = 8
+        net.minecraft.world.scores.Scoreboard scoreboard = player.getScoreboard();
+        net.minecraft.world.scores.Objective classObjective = scoreboard.getObjective("SurvivorClass");
+
+        if (classObjective == null) {
+            return false;
+        }
+
+        net.minecraft.world.scores.Score classScore = scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), classObjective);
+        return classScore.getScore() == 8;
+    }
+
     private static boolean hasFullNecromancerSet(Player player) {
+        int necroArmorPieces = 0;
+
         for (ItemStack armorSlot : player.getArmorSlots()) {
-            if (!(armorSlot.getItem() instanceof NecromancerArmorItem)) {
-                return false;
+            if (armorSlot.getItem() instanceof NecromancerArmorItem) {
+                necroArmorPieces++;
             }
         }
-        return true;
+
+        return necroArmorPieces == 4; // Все 4 части
     }
 }

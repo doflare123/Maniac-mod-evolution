@@ -3,19 +3,18 @@ package org.example.maniacrevolution.perk.perks.survivor;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.perk.*;
+import org.example.maniacrevolution.util.SelectiveGlowingEffect;
 
 import java.util.*;
 
 /**
- * Пассивный перк с использованием встроенного Glowing эффекта Minecraft.
- * Подсвечивает маньяка обводкой на 2 секунды.
+ * Пассивный перк с выборочной подсветкой маньяка.
+ * Подсвечивает маньяка только для владельца перка на 4 секунды.
  */
 public class WallhackPerk extends Perk {
 
@@ -44,20 +43,11 @@ public class WallhackPerk extends Perk {
 
         if (maniacs.isEmpty()) return;
 
-        // Накладываем эффект Glowing на каждого маньяка
+        // Подсвечиваем каждого маньяка ТОЛЬКО для этого игрока
         for (ServerPlayer maniac : maniacs) {
-            MobEffectInstance glowingEffect = new MobEffectInstance(
-                    MobEffects.GLOWING,      // Эффект свечения
-                    HIGHLIGHT_DURATION,       // Длительность (2 секунды = 40 тиков)
-                    0,                        // Уровень эффекта (0 = уровень 1)
-                    false,                    // ambient (частицы менее заметны)
-                    false,                    // visible (показывать иконку эффекта)
-                    true                      // showIcon (показывать над головой)
-            );
-
-            maniac.addEffect(glowingEffect);
-
-            System.out.println("Applied Glowing to: " + maniac.getName().getString() + " for 2 seconds");
+            SelectiveGlowingEffect.addGlowing(maniac, player, HIGHLIGHT_DURATION);
+            System.out.println("Applied selective glowing to: " + maniac.getName().getString()
+                    + " visible only to: " + player.getName().getString());
         }
 
         // Звук и сообщение для владельца перка
@@ -75,13 +65,8 @@ public class WallhackPerk extends Perk {
     }
 
     @Override
-    public void onTick(ServerPlayer player) {
-        // Больше не нужно отслеживать вручную - эффект сам пропадёт через 2 секунды
-    }
-
-    @Override
     public void removePassiveEffect(ServerPlayer player) {
-        // Не нужно ничего делать - эффект управляется самой игрой
+        // Эффект управляется автоматически через SelectiveGlowingEffect
     }
 
     private List<ServerPlayer> findManiacsInView(ServerPlayer viewer) {
