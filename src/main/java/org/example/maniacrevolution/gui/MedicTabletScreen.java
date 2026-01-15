@@ -50,9 +50,12 @@ public class MedicTabletScreen extends Screen {
         survivors.clear();
         Minecraft mc = Minecraft.getInstance();
 
-        if (mc.level == null) return;
+        if (mc.level == null || mc.player == null) return;
 
         for (Player player : mc.level.players()) {
+            // Пропускаем самого игрока, который открыл планшет
+            if (player == mc.player) continue;
+
             Team team = player.getTeam();
             if (team != null && "survivors".equalsIgnoreCase(team.getName())) {
                 survivors.add(new PlayerHealthData(player));
