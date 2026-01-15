@@ -242,5 +242,7 @@
   "item.minecraft.splash_potion.effect.glowing": "Splash Potion of Glowing",
 
   "item.maniacrev.recipe_book": "Recipe List",
-  "gui.maniacrev.recipe_book": "Potion Recipes"
+  "gui.maniacrev.recipe_book": "Potion Recipes",
+  "item.maniacrev.bandage":   "Bandage",
+  "item.maniacrev.medic_tablet": "Medic tablet"
 }

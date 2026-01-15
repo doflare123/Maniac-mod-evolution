@@ -241,5 +241,7 @@
   "item.minecraft.splash_potion.effect.glowing": "Взрывное зелье подсветки",
 
   "item.maniacrev.recipe_book": "Список рецептов",
-  "gui.maniacrev.recipe_book": "Рецепты зелий"
+  "gui.maniacrev.recipe_book": "Рецепты зелий",
+  "item.maniacrev.bandage":   "Бинт",
+  "item.maniacrev.medic_tablet": "Медецинский планшет"
 }

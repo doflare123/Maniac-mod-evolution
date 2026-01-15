@@ -5,6 +5,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -177,6 +178,18 @@ public class ModItems {
 
     public static final RegistryObject<Item> READY_ITEM = ITEMS.register("ready_item",
             () -> new ReadyItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> BANDAGE = ITEMS.register("bandage",
+            () -> new BandageItem(new Item.Properties()
+                    .stacksTo(4)
+                    .rarity(Rarity.UNCOMMON)
+            ));
+
+    public static final RegistryObject<Item> MEDIC_TABLET = ITEMS.register("medic_tablet",
+            () -> new MedicTabletItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.RARE)
+            ));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

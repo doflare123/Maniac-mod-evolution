@@ -181,6 +181,18 @@ public class ModNetworking {
                 .consumerMainThread(ReadyStatusPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(StartTrackingPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .decoder(StartTrackingPacket::decode)
+                .encoder(StartTrackingPacket::encode)
+                .consumerMainThread(StartTrackingPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(SyncTabletCooldownPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(SyncTabletCooldownPacket::decode)
+                .encoder(SyncTabletCooldownPacket::encode)
+                .consumerMainThread(SyncTabletCooldownPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 
