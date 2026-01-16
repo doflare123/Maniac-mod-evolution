@@ -8,17 +8,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.example.maniacrevolution.ModItems;
-import org.example.maniacrevolution.network.ModNetworking;
-import org.example.maniacrevolution.network.packets.ReadyStatusPacket;
 import org.example.maniacrevolution.readiness.ReadinessManager;
 
 /**
- * Предмет "Готово" - ПКМ для переключения готовности
- * Меняет текстуру в зависимости от состояния
+ * Предмет "Готово" в активном состоянии (зелёная кнопка)
  */
-public class ReadyItem extends Item {
+public class ReadyItemActive extends Item {
 
-    public ReadyItem(Properties properties) {
+    public ReadyItemActive(Properties properties) {
         super(properties.stacksTo(1));
     }
 
@@ -27,10 +24,7 @@ public class ReadyItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
 
         if (!level.isClientSide) {
-            boolean currentReady = ReadinessManager.isPlayerReady(player);
-            boolean newReady = !currentReady;
-
-            ReadinessManager.setPlayerReady((net.minecraft.server.level.ServerPlayer) player, newReady);
+            ReadinessManager.setPlayerReady((net.minecraft.server.level.ServerPlayer) player, false);
 
             // Подсчёт готовых игроков
             int totalPlayers = level.getServer().getPlayerList().getPlayerCount();
@@ -42,17 +36,15 @@ public class ReadyItem extends Item {
             }
 
             // Сообщение всем игрокам
-            String statusColor = newReady ? "§a" : "§c";
-            String statusText = newReady ? "готов" : "отменил готовность";
-            Component message = Component.literal(statusColor + player.getName().getString() + " " + statusText +
+            Component message = Component.literal("§c" + player.getName().getString() + " отменил готовность" +
                     " §7(" + readyPlayers + "/" + totalPlayers + ")");
 
             for (net.minecraft.server.level.ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
                 p.sendSystemMessage(message);
             }
 
-            // Меняем предмет на другой в зависимости от состояния
-            ItemStack newStack = new ItemStack(newReady ? ModItems.READY_ITEM_ACTIVE.get() : ModItems.READY_ITEM.get());
+            // Меняем обратно на красную кнопку
+            ItemStack newStack = new ItemStack(ModItems.READY_ITEM.get());
             player.setItemInHand(hand, newStack);
         }
 
@@ -61,6 +53,11 @@ public class ReadyItem extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
-        return Component.literal("§cГотово");
+        return Component.literal("§aГотов!");
+    }
+
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        return true; // Всегда светится
     }
 }
