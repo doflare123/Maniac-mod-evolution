@@ -193,6 +193,31 @@ public class ModNetworking {
                 .consumerMainThread(SyncTabletCooldownPacket::handle)
                 .add();
 
+        // Пакеты Агента 47
+        CHANNEL.messageBuilder(Agent47RequestDataPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .decoder(Agent47RequestDataPacket::decode)
+                .encoder(Agent47RequestDataPacket::encode)
+                .consumerMainThread(Agent47RequestDataPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(Agent47SyncDataPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(Agent47SyncDataPacket::decode)
+                .encoder(Agent47SyncDataPacket::encode)
+                .consumerMainThread(Agent47SyncDataPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(Agent47PurchasePacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .decoder(Agent47PurchasePacket::decode)
+                .encoder(Agent47PurchasePacket::encode)
+                .consumerMainThread(Agent47PurchasePacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(Agent47UpdateMoneyPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(Agent47UpdateMoneyPacket::decode)
+                .encoder(Agent47UpdateMoneyPacket::encode)
+                .consumerMainThread(Agent47UpdateMoneyPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

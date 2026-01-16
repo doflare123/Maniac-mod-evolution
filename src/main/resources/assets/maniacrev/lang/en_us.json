@@ -244,5 +244,6 @@
   "item.maniacrev.recipe_book": "Recipe List",
   "gui.maniacrev.recipe_book": "Potion Recipes",
   "item.maniacrev.bandage":   "Bandage",
-  "item.maniacrev.medic_tablet": "Medic tablet"
+  "item.maniacrev.medic_tablet": "Medic tablet",
+  "item.maniacrev.agent47_tablet": "Agent tablet"
 }

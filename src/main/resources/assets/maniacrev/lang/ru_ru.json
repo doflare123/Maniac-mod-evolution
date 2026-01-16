@@ -243,5 +243,6 @@
   "item.maniacrev.recipe_book": "Список рецептов",
   "gui.maniacrev.recipe_book": "Рецепты зелий",
   "item.maniacrev.bandage":   "Бинт",
-  "item.maniacrev.medic_tablet": "Медецинский планшет"
+  "item.maniacrev.medic_tablet": "Медецинский планшет",
+  "item.maniacrev.agent47_tablet": "Планшет агента"
 }

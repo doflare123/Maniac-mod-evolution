@@ -1,0 +1,101 @@
+[
+  {
+    "id": "debuff_glow",
+    "name": "§eПодсветка цели",
+    "description": "§7Подсвечивает текущую цель на 5 секунд",
+    "price": 50,
+    "type": "DEBUFF_GLOW",
+    "data": "",
+    "amount": 1,
+    "duration": 5,
+    "amplifier": 0
+  },
+  {
+    "id": "debuff_slow",
+    "name": "§bЗамедление I",
+    "description": "§7Замедляет цель на 15 секунд",
+    "price": 75,
+    "type": "DEBUFF_SLOW",
+    "data": "",
+    "amount": 1,
+    "duration": 15,
+    "amplifier": 0
+  },
+  {
+    "id": "debuff_weak",
+    "name": "§cСлабость I",
+    "description": "§7Ослабляет цель на 10 секунд",
+    "price": 75,
+    "type": "DEBUFF_WEAK",
+    "data": "",
+    "amount": 1,
+    "duration": 10,
+    "amplifier": 0
+  },
+  {
+    "id": "shotgun",
+    "name": "§6Дробовик",
+    "description": "§7Для больших городов",
+    "price": 250,
+    "type": "ITEM",
+    "data": "cgm:shotgun{AmmoCount:1,Color:1908001}",
+    "amount": 1,
+    "duration": 0,
+    "amplifier": 0
+  },
+  {
+    "id": "pistol_ammo",
+    "name": "§fПатроны для пистолета",
+    "description": "§7Нужны для стрельбы из пистолета",
+    "price": 50,
+    "type": "ITEM",
+    "data": "cgm:basic_bullet",
+    "amount": 2,
+    "duration": 0,
+    "amplifier": 0
+  },
+  {
+    "id": "shotgun_ammo",
+    "name": "§6Патроны для дробовика",
+    "description": "§7Чтобы устраивать большие города",
+    "price": 100,
+    "type": "ITEM",
+    "data": "cgm:shell",
+    "amount": 1,
+    "duration": 0,
+    "amplifier": 0
+  },
+  {
+    "id": "sniper_ammo",
+    "name": "§eПатроны для снайперки",
+    "description": "§7Почувствуй себя снайпером",
+    "price": 150,
+    "type": "ITEM",
+    "data": "cgm:advanced_bullet",
+    "amount": 1,
+    "duration": 0,
+    "amplifier": 0
+  },
+  {
+    "id": "rifle",
+    "name": "§eСнайперка",
+    "description": "§7Подходит для стрельбы с дальних дистанций",
+    "price": 300,
+    "type": "ITEM",
+    "data": "cgm:rifle{AmmoCount:1,Color:1908001}",
+    "amount": 1,
+    "duration": 0,
+    "amplifier": 0
+  },
+  {
+    "id": "bandage",
+    "name": "§aBинты",
+    "description": "§7Помогают залечивать раны, восстанавливают 1 хп",
+    "price": 25,
+    "type": "ITEM",
+    "data": "maniacrev:bandage",
+    "amount": 1,
+    "duration": 0,
+    "amplifier": 0
+  }
+]

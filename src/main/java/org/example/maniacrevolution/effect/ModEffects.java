@@ -31,6 +31,9 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> WEAK_INSTANT_HEALTH =
             MOB_EFFECTS.register("weak_instant_health", WeakInstantHealthEffect::new);
 
+    public static final RegistryObject<MobEffect> TARGET_EFFECT = MOB_EFFECTS.register("target",
+            TargetEffect::new);
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }

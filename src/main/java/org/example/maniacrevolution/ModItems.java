@@ -194,6 +194,12 @@ public class ModItems {
                     .rarity(Rarity.RARE)
             ));
 
+    public static final RegistryObject<Item> AGENT47_TABLET = ITEMS.register("agent47_tablet",
+            () -> new Agent47TabletItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.RARE)
+            ));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }
