@@ -27,6 +27,9 @@ public class CharacterSelectionScreen extends Screen {
     private int frescoWidth;
     private int frescoHeight;
     private int infoPanelWidth;
+    private int filterPanelWidth;
+    private int filterPanelX;
+    private int infoPanelX;
 
     private Button leftArrowButton;
     private Button rightArrowButton;
@@ -81,29 +84,68 @@ public class CharacterSelectionScreen extends Screen {
     }
 
     private void calculateSizes(double guiScale) {
-        // Адаптивные размеры в зависимости от scale и размера окна
         int screenWidth = this.width;
+        int screenHeight = this.height;
 
+        // Базовые размеры фресок
         if (guiScale <= 2.0) {
             frescoWidth = 120;
             frescoHeight = 280;
-            infoPanelWidth = Math.min(350, screenWidth - 500);
         } else if (guiScale <= 3.0) {
             frescoWidth = 100;
             frescoHeight = 233;
-            infoPanelWidth = Math.min(280, screenWidth - 450);
         } else if (guiScale <= 4.0) {
             frescoWidth = 80;
             frescoHeight = 187;
-            infoPanelWidth = Math.min(220, screenWidth - 380);
         } else {
-            // Для очень больших scale
             frescoWidth = 70;
             frescoHeight = 163;
-            infoPanelWidth = Math.min(200, screenWidth - 350);
+        }
+
+        // Вычисляем минимальное пространство для фресок (3 штуки + отступы)
+        int frescoSpacing = 15;
+        int minFrescoAreaWidth = frescoWidth * 3 + frescoSpacing * 2 + 20; // +20 для полей
+
+        // Вычисляем доступное пространство для боковых панелей
+        int availableWidth = screenWidth - minFrescoAreaWidth;
+
+        // Если места мало - уменьшаем размеры панелей
+        if (availableWidth < 300) {
+            // Очень узкий экран - минимальные панели
+            filterPanelWidth = Math.max(110, availableWidth / 3);
+            infoPanelWidth = Math.max(180, availableWidth * 2 / 3);
+        } else if (availableWidth < 500) {
+            // Средний экран
+            filterPanelWidth = 120;
+            infoPanelWidth = Math.min(280, availableWidth - filterPanelWidth - 30);
+        } else {
+            // Широкий экран
+            filterPanelWidth = 140;
+            infoPanelWidth = Math.min(350, availableWidth - filterPanelWidth - 40);
+        }
+
+        // Вычисляем позиции панелей
+        filterPanelX = 10;
+        infoPanelX = screenWidth - infoPanelWidth - 10;
+
+        // Проверяем что панели не перекрывают фрески
+        int centerX = screenWidth / 2;
+        int frescoLeftEdge = centerX - (frescoWidth * 3 / 2 + frescoSpacing);
+        int frescoRightEdge = centerX + (frescoWidth * 3 / 2 + frescoSpacing);
+
+        // Корректируем позицию левой панели
+        if (filterPanelX + filterPanelWidth + 20 > frescoLeftEdge) {
+            filterPanelWidth = Math.max(100, frescoLeftEdge - filterPanelX - 20);
+        }
+
+        // Корректируем позицию правой панели
+        if (infoPanelX < frescoRightEdge + 20) {
+            infoPanelX = Math.min(screenWidth - 190, frescoRightEdge + 20);
+            infoPanelWidth = screenWidth - infoPanelX - 10;
         }
 
         // Минимальные размеры
+        filterPanelWidth = Math.max(100, filterPanelWidth);
         infoPanelWidth = Math.max(180, infoPanelWidth);
     }
 
@@ -121,22 +163,35 @@ public class CharacterSelectionScreen extends Screen {
         List<String> sortedTags = new ArrayList<>(allTags);
         Collections.sort(sortedTags);
 
-        // Создаём кнопки фильтров с учётом размера экрана
-        int startX = 10;
+        // Создаём кнопки фильтров
         int startY = 50;
-        int buttonWidth = 100;
+        int buttonWidth = Math.min(filterPanelWidth - 10, 120);
         int buttonHeight = 18;
         int spacing = 3;
-        int x = startX;
+        int x = filterPanelX + 5;
         int y = startY;
-        int maxColumns = 2;
-        int currentColumn = 0;
 
+        // Максимальное количество кнопок по высоте
+        int maxButtons = (this.height - startY - 100) / (buttonHeight + spacing);
+
+        int buttonCount = 0;
         for (String tag : sortedTags) {
+            if (buttonCount >= maxButtons) break;
+
             boolean isActive = activeFilters.contains(tag);
 
+            // Укорачиваем текст если не влезает
+            String displayText = tag;
+            String prefix = isActive ? "§a✓ " : "§7";
+            if (this.font.width(prefix + displayText) > buttonWidth - 8) {
+                while (this.font.width(prefix + displayText + "..") > buttonWidth - 8 && displayText.length() > 3) {
+                    displayText = displayText.substring(0, displayText.length() - 1);
+                }
+                displayText += "..";
+            }
+
             Button filterButton = Button.builder(
-                    Component.literal((isActive ? "§a✓ " : "§7") + tag),
+                    Component.literal(prefix + displayText),
                     b -> toggleFilter(tag)
             ).bounds(x, y, buttonWidth, buttonHeight).build();
 
@@ -144,18 +199,7 @@ public class CharacterSelectionScreen extends Screen {
             this.addRenderableWidget(filterButton);
 
             y += buttonHeight + spacing;
-
-            // Если вышли за пределы экрана - новый столбец
-            if (y > this.height - 100) {
-                y = startY;
-                currentColumn++;
-                x = startX + (currentColumn * (buttonWidth + spacing));
-
-                // Ограничиваем количество столбцов
-                if (currentColumn >= maxColumns) {
-                    break;
-                }
-            }
+            buttonCount++;
         }
     }
 
@@ -254,12 +298,14 @@ public class CharacterSelectionScreen extends Screen {
         int startIndex = Math.max(0, selectedIndex - 1);
         int endIndex = Math.min(filteredCharacters.size(), selectedIndex + 2);
 
+        // Адаптивный отступ между фресками
+        int spacing = Math.max(10, Math.min(15, (this.width - frescoWidth * 3) / 20));
+
         for (int i = startIndex; i < endIndex; i++) {
             CharacterClass character = filteredCharacters.get(i);
 
             // Позиция карточки относительно центра
             int offsetFromCenter = (i - selectedIndex);
-            int spacing = 15;
             int x = centerX - frescoWidth / 2 + (offsetFromCenter * (frescoWidth + spacing));
             int y = centerY - frescoHeight / 2;
 
@@ -302,7 +348,15 @@ public class CharacterSelectionScreen extends Screen {
 
             // Имя только для выбранной
             if (i == selectedIndex) {
-                graphics.drawCenteredString(this.font, character.getName(),
+                String name = character.getName();
+                // Обрезаем имя если не влезает
+                if (this.font.width(name) > frescoWidth) {
+                    while (this.font.width(name + "...") > frescoWidth && name.length() > 3) {
+                        name = name.substring(0, name.length() - 1);
+                    }
+                    name += "...";
+                }
+                graphics.drawCenteredString(this.font, name,
                         x + frescoWidth / 2, y - 15, 0xFFFFFF);
             }
         }
@@ -311,25 +365,13 @@ public class CharacterSelectionScreen extends Screen {
     private void drawInfoPanel(GuiGraphics graphics, int mouseX, int mouseY) {
         CharacterClass selected = filteredCharacters.get(selectedIndex);
 
-        // Адаптивная позиция панели
-        int panelX = this.width - infoPanelWidth - 15;
         int panelY = 55;
         int panelHeight = this.height - 130;
 
-        // Проверяем не перекрывается ли с фресками
-        int centerX = this.width / 2;
-        int frescoRightEdge = centerX + frescoWidth / 2 + 15;
-        if (panelX < frescoRightEdge + 20) {
-            panelX = frescoRightEdge + 20;
-            // Если всё равно не влезает - уменьшаем ширину
-            if (panelX + infoPanelWidth > this.width - 10) {
-                infoPanelWidth = this.width - panelX - 10;
-            }
-        }
+        // Используем предвычисленные позиции
+        graphics.fill(infoPanelX, panelY, infoPanelX + infoPanelWidth, panelY + panelHeight, 0xCC000000);
 
-        graphics.fill(panelX, panelY, panelX + infoPanelWidth, panelY + panelHeight, 0xCC000000);
-
-        int textX = panelX + 8;
+        int textX = infoPanelX + 8;
         int textY = panelY + 8;
         int lineHeight = 9;
         int maxWidth = infoPanelWidth - 16;
@@ -448,7 +490,7 @@ public class CharacterSelectionScreen extends Screen {
     private void renderTagTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
         for (Button button : filterButtons) {
             if (button.isMouseOver(mouseX, mouseY)) {
-                String tagText = button.getMessage().getString().replace("§a✓ ", "").replace("§7", "");
+                String tagText = button.getMessage().getString().replace("§a✓ ", "").replace("§7", "").replace("..", "");
                 String description = TagRegistry.getTagDescription(tagText);
 
                 List<Component> tooltip = new ArrayList<>();
@@ -466,6 +508,7 @@ public class CharacterSelectionScreen extends Screen {
         if (button == 0 && !filteredCharacters.isEmpty()) {
             int centerX = this.width / 2;
             int centerY = this.height / 2;
+            int spacing = Math.max(10, Math.min(15, (this.width - frescoWidth * 3) / 20));
 
             // Проверяем клик по всем видимым фрескам
             int startIndex = Math.max(0, selectedIndex - 1);
@@ -473,7 +516,6 @@ public class CharacterSelectionScreen extends Screen {
 
             for (int i = startIndex; i < endIndex; i++) {
                 int offsetFromCenter = (i - selectedIndex);
-                int spacing = 15;
                 int x = centerX - frescoWidth / 2 + (offsetFromCenter * (frescoWidth + spacing));
                 int y = centerY - frescoHeight / 2;
 
