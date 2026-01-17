@@ -1,39 +1,27 @@
 package org.example.maniacrevolution.system;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import org.example.maniacrevolution.util.SelectiveGlowingEffect;
 
-import java.io.*;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Конфигурация магазина Агента 47
- * Позволяет редактировать товары через JSON файл
- * ВАЖНО: Конфиг создается в папке config/ в корне сервера/клиента
+ * Товары захардкожены в коде для простоты
  */
 public class Agent47ShopConfig {
 
     // Награда за убийство цели
     public static final int KILL_TARGET_REWARD = 100;
 
-    // Путь к конфигурации магазина (относительно корня игры/сервера)
-    private static final String CONFIG_DIR = "config/maniacrevolution";
-    private static final String CONFIG_FILE = "agent47_shop.json";
-
     // Список товаров
     private static List<ShopItem> shopItems = new ArrayList<>();
-
-    // Gson для сериализации
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     /**
      * Класс товара в магазине
@@ -77,67 +65,13 @@ public class Agent47ShopConfig {
      */
     public static void init() {
         loadConfig();
+        System.out.println("[Agent47Shop] Initialized with " + shopItems.size() + " items");
     }
 
     /**
-     * Загружает конфигурацию из файла
+     * Загружает конфигурацию (захардкоженную)
      */
     private static void loadConfig() {
-        try {
-            // Получаем путь к конфигу (в корне игры/сервера)
-            File configDir = new File(CONFIG_DIR);
-            File configFile = new File(configDir, CONFIG_FILE);
-
-            // Создаем директорию, если не существует
-            if (!configDir.exists()) {
-                configDir.mkdirs();
-                System.out.println("[Agent47Shop] Created config directory: " + configDir.getAbsolutePath());
-            }
-
-            if (!configFile.exists()) {
-                // Создаем конфигурацию по умолчанию
-                createDefaultConfig();
-                saveConfig();
-                System.out.println("[Agent47Shop] Created default config at: " + configFile.getAbsolutePath());
-            } else {
-                // Читаем существующий файл
-                Reader reader = new FileReader(configFile, StandardCharsets.UTF_8);
-                Type listType = new TypeToken<ArrayList<ShopItem>>(){}.getType();
-                shopItems = GSON.fromJson(reader, listType);
-                reader.close();
-
-                System.out.println("[Agent47Shop] Loaded " + shopItems.size() + " items from: " + configFile.getAbsolutePath());
-            }
-
-        } catch (Exception e) {
-            System.err.println("[Agent47Shop] Error loading config: " + e.getMessage());
-            e.printStackTrace();
-            createDefaultConfig();
-        }
-    }
-
-    /**
-     * Сохраняет конфигурацию в файл
-     */
-    private static void saveConfig() {
-        try {
-            File configDir = new File(CONFIG_DIR);
-            File configFile = new File(configDir, CONFIG_FILE);
-
-            Writer writer = new FileWriter(configFile, StandardCharsets.UTF_8);
-            GSON.toJson(shopItems, writer);
-            writer.close();
-            System.out.println("[Agent47Shop] Config saved to: " + configFile.getAbsolutePath());
-        } catch (Exception e) {
-            System.err.println("[Agent47Shop] Error saving config: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Создает конфигурацию по умолчанию
-     */
-    private static void createDefaultConfig() {
         shopItems.clear();
 
         // Дебафы для цели
@@ -231,16 +165,14 @@ public class Agent47ShopConfig {
 
         ShopItem bandage = new ShopItem(
                 "bandage",
-                "§aBинты",
+                "§aБинты",
                 "§7Помогают залечивать раны, восстанавливают 1 хп",
                 25,
                 ShopItemType.ITEM
         );
-        bandage.data = "maniacrevolution:bandage";
+        bandage.data = "maniacrev:bandage";
         bandage.amount = 1;
         shopItems.add(bandage);
-
-        System.out.println("[Agent47Shop] Created default config with " + shopItems.size() + " items");
     }
 
     /**
@@ -379,6 +311,7 @@ public class Agent47ShopConfig {
                             net.minecraft.network.chat.Component.literal("§cОшибка при создании предмета!"),
                             false
                     );
+                    e.printStackTrace();
                     return false;
                 }
                 break;
@@ -434,7 +367,7 @@ public class Agent47ShopConfig {
                 if (nbtData != null && !nbtData.isEmpty()) {
                     try {
                         // Парсим NBT строку
-                        net.minecraft.nbt.CompoundTag nbt = net.minecraft.nbt.TagParser.parseTag(nbtData);
+                        CompoundTag nbt = TagParser.parseTag(nbtData);
                         stack.setTag(nbt);
                     } catch (Exception e) {
                         System.err.println("[Agent47Shop] Error parsing NBT for " + itemId + ": " + e.getMessage());

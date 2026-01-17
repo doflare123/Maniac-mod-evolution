@@ -41,7 +41,7 @@ public class Agent47TabletScreen extends Screen {
 
     private DisplayMode currentMode = DisplayMode.TARGET_INFO;
     private int shopScrollOffset = 0;
-    private static final int ITEMS_PER_PAGE = 4;
+    private static final int ITEMS_PER_PAGE = 3; // Уменьшено до 3 для лучшей читаемости
 
     public Agent47TabletScreen() {
         super(Component.literal("Планшет Агента 47"));
@@ -182,24 +182,24 @@ public class Agent47TabletScreen extends Screen {
             boolean canAfford = playerMoney >= item.price;
             boolean hovered = isMouseOverItem(mouseX, mouseY, yOffset);
 
-            // Фон товара
+            // Фон товара (увеличена высота до 42)
             int bgColor = hovered ? 0x80444444 : 0x60222222;
-            graphics.fill(guiLeft + 10, guiTop + yOffset, guiLeft + GUI_WIDTH - 10, guiTop + yOffset + 35, bgColor);
+            graphics.fill(guiLeft + 10, guiTop + yOffset, guiLeft + GUI_WIDTH - 10, guiTop + yOffset + 42, bgColor);
 
             // Название
             graphics.drawString(this.font, item.name,
                     guiLeft + 15, guiTop + yOffset + 5, 0xFFFFFF, false);
 
-            // Описание
+            // Описание (вторая строка)
             graphics.drawString(this.font, item.description,
                     guiLeft + 15, guiTop + yOffset + 17, 0xAAAAAA, false);
 
-            // Цена
+            // Цена (третья строка)
             String priceColor = canAfford ? "§a" : "§c";
             graphics.drawString(this.font, priceColor + item.price + " монет",
-                    guiLeft + GUI_WIDTH - 90, guiTop + yOffset + 10, 0xFFFFFF, false);
+                    guiLeft + 15, guiTop + yOffset + 29, 0xFFFFFF, false);
 
-            yOffset += 40;
+            yOffset += 45; // Увеличен отступ между товарами
         }
 
         // Индикатор прокрутки
@@ -223,7 +223,7 @@ public class Agent47TabletScreen extends Screen {
      */
     private boolean isMouseOverItem(int mouseX, int mouseY, int itemY) {
         return mouseX >= guiLeft + 10 && mouseX <= guiLeft + GUI_WIDTH - 10 &&
-                mouseY >= guiTop + itemY && mouseY <= guiTop + itemY + 35;
+                mouseY >= guiTop + itemY && mouseY <= guiTop + itemY + 42; // Обновлена высота
     }
 
     @Override
@@ -249,7 +249,7 @@ public class Agent47TabletScreen extends Screen {
 
                 return true;
             }
-            yOffset += 40;
+            yOffset += 45; // Обновлен отступ
         }
 
         return super.mouseClicked(mouseX, mouseY, button);

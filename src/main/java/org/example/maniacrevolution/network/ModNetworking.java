@@ -218,6 +218,12 @@ public class ModNetworking {
                 .consumerMainThread(Agent47UpdateMoneyPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(OpenMedicTabletPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(OpenMedicTabletPacket::decode)
+                .encoder(OpenMedicTabletPacket::encode)
+                .consumerMainThread(OpenMedicTabletPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

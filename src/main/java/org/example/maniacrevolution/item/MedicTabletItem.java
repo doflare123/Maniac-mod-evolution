@@ -13,6 +13,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
+import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.OpenMedicTabletPacket;
 import org.example.maniacrevolution.util.MedicTabletTracker;
 import org.example.maniacrevolution.util.SelectiveGlowingEffect;
 
@@ -33,24 +35,24 @@ public class MedicTabletItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        if (level.isClientSide) {
-            // На клиенте открываем GUI планшета
-            // Здесь нужно будет открыть экран с интерфейсом
-            return InteractionResultHolder.success(player.getItemInHand(hand));
+        ItemStack stack = player.getItemInHand(hand);
+
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+            // Проверяем, смотрит ли игрок на союзника для отображения HP
+            Player targetPlayer = getTargetSurvivor(serverPlayer);
+
+            if (targetPlayer != null) {
+                // Показываем HP союзника
+                showPlayerHealth(serverPlayer, targetPlayer);
+            } else {
+                // Открываем GUI планшета
+                ModNetworking.sendToPlayer(new OpenMedicTabletPacket(), serverPlayer);
+            }
+
+            return InteractionResultHolder.success(stack);
         }
 
-        if (!(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionResultHolder.pass(player.getItemInHand(hand));
-        }
-
-        // Проверяем, смотрит ли игрок на союзника для отображения HP
-        Player targetPlayer = getTargetSurvivor(serverPlayer);
-        if (targetPlayer != null) {
-            showPlayerHealth(serverPlayer, targetPlayer);
-            return InteractionResultHolder.success(player.getItemInHand(hand));
-        }
-
-        return InteractionResultHolder.pass(player.getItemInHand(hand));
+        return InteractionResultHolder.success(stack);
     }
 
     /**

@@ -34,6 +34,7 @@ import org.example.maniacrevolution.potion.ModPotions;
 import org.example.maniacrevolution.brewing.ModBrewingRecipes;
 import org.example.maniacrevolution.character.CharacterRegistry;
 import org.example.maniacrevolution.readiness.ReadinessManager;
+import org.example.maniacrevolution.system.Agent47ShopConfig;
 import org.slf4j.Logger;
 
 @Mod(Maniacrev.MODID)
@@ -75,6 +76,7 @@ public class Maniacrev {
             ShopRegistry.init();
             CosmeticRegistry.init();
             CharacterRegistry.init();
+            Agent47ShopConfig.init();
             LOGGER.info("ManiacRev Mod initialized!");
         });
     }

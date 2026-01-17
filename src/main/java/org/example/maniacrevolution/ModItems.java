@@ -38,6 +38,10 @@ public class ModItems {
             () -> new HookItem(new Item.Properties()));
 
     // Посох некроманта
+    public static final RegistryObject<Item> Scyth = ITEMS.register("death_scyth",
+            () -> new DeathScytheItem(new Item.Properties()));
+
+    // Посох некроманта
     public static final RegistryObject<Item> NECROMANCER_STAFF = ITEMS.register("necromancer_staff",
             () -> new NecromancerStaffItem(new Item.Properties()));
 

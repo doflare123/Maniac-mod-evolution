@@ -168,7 +168,6 @@
   "effect.maniacrev.fear": "Fear",
   "effect.maniacrev.open_wound": "Open Wound",
 
-  "key.categories.maniacrev": "ManiacRev QTE",
   "key.maniacrev.qte1": "QTE Key 1",
   "key.maniacrev.qte2": "QTE Key 2",
   "key.maniacrev.qte3": "QTE Key 3",
@@ -195,7 +194,6 @@
   "item.maniacrev.necromancer_chestplate": "Нагрудник некроча",
   "item.maniacrev.necromancer_leggings": "Штаны некроча",
   "item.maniacrev.necromancer_boots": "Ботинки некроча",
-  "key.maniacrev.qte4": "QTE Key 4",
 
   "effect.maniacrev.slow_regeneration": "Slow Regeneration",
   "effect.maniacrev.weak_weakness": "Minor Weakness",

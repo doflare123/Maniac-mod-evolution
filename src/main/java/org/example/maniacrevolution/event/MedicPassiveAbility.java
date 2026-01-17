@@ -75,7 +75,7 @@ public class MedicPassiveAbility {
         if (scoreboard == null) return false;
 
         try {
-            var objective = scoreboard.getObjective("scoreboardSurvivorClass");
+            var objective = scoreboard.getObjective("SurvivorClass");
             if (objective == null) return false;
 
             // Правильный способ получить счет игрока в 1.20.1

@@ -107,12 +107,6 @@ public class MedicTabletTracker {
                         SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.5F);
                 SelectiveGlowingEffect.removeGlowing(data.target, data.medic);
                 iterator.remove();
-                continue;
-            }
-
-            // Отображаем партиклы пути (каждый тик)
-            if (data.isActive) {
-                showParticlePath(data.medic, data.target);
             }
         }
     }

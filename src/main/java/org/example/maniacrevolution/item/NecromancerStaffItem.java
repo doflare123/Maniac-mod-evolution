@@ -124,43 +124,6 @@ public class NecromancerStaffItem extends Item {
             );
         }
 
-        // Двойная спираль вокруг игрока (ДНК-эффект)
-        double spiralOffset = ticksUsed * 0.1;
-        org.example.maniacrevolution.util.ParticleShapes.drawDoubleHelix(
-                player,
-                net.minecraft.core.particles.ParticleTypes.SOUL,
-                net.minecraft.core.particles.ParticleTypes.ENCHANT,
-                0.7,  // радиус спирали
-                3.0,  // высота
-                30,   // количество точек
-                spiralOffset
-        );
-
-        // Вихрь (торнадо) из темных частиц
-        if (ticksUsed % 2 == 0) {
-            org.example.maniacrevolution.util.ParticleShapes.drawVortex(
-                    player,
-                    net.minecraft.core.particles.ParticleTypes.SMOKE,
-                    1.5,  // радиус внизу
-                    0.3,  // радиус вверху
-                    4.0,  // высота
-                    20,   // слоёв
-                    8,    // точек на слой
-                    spiralOffset * 2
-            );
-        }
-
-        // Руны по кругу (появляются постепенно)
-        int runeCount = Math.min(8, ticksUsed / 10);
-        if (runeCount > 0 && ticksUsed % 5 == 0) {
-            org.example.maniacrevolution.util.ParticleShapes.drawRuneCircle(
-                    player,
-                    net.minecraft.core.particles.ParticleTypes.ENCHANT,
-                    2.0,
-                    runeCount
-            );
-        }
-
         // Столб света в центре (когда ритуал почти завершён)
         if (ticksUsed > 60) {
             org.example.maniacrevolution.util.ParticleShapes.drawLightBeam(
