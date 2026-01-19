@@ -31,7 +31,6 @@ public class CharacterRegistry {
         register(new DeathClass());
         register(new UrsaClass());
         register(new PlagueDoctorClass());
-        register(new FreddyBearClass());
         register(new NecromancerClass());
         register(new DoctorClass());
 

@@ -8,8 +8,9 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.network.packets.*;
-
-import static ca.weblite.objc.Runtime.INSTANCE;
+import org.example.maniacrevolution.network.packet.MapVotingPacket;
+import org.example.maniacrevolution.network.packet.MapVotingResultPacket;
+import org.example.maniacrevolution.network.packet.PlayerVotePacket;
 
 public class ModNetworking {
     private static final String PROTOCOL_VERSION = "1";
@@ -224,10 +225,36 @@ public class ModNetworking {
                 .consumerMainThread(OpenMedicTabletPacket::handle)
                 .add();
 
+        // Пакеты для голосования за карту
+        CHANNEL.messageBuilder(MapVotingPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(MapVotingPacket::encode)
+                .decoder(MapVotingPacket::new)
+                .consumerMainThread(MapVotingPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(MapVotingResultPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(MapVotingResultPacket::encode)
+                .decoder(MapVotingResultPacket::new)
+                .consumerMainThread(MapVotingResultPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(PlayerVotePacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(PlayerVotePacket::encode)
+                .decoder(PlayerVotePacket::new)
+                .consumerMainThread(PlayerVotePacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 
     // Утилитные методы для отправки пакетов
+
+    /**
+     * Отправляет пакет конкретному игроку (Server -> Client)
+     */
+    public static <MSG> void send(MSG message, ServerPlayer player) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
+    }
 
     /**
      * Отправляет пакет конкретному игроку
