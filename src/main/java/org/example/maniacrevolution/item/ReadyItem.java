@@ -7,6 +7,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.Scoreboard;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.ReadyStatusPacket;
@@ -27,10 +30,35 @@ public class ReadyItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
 
         if (!level.isClientSide) {
+            net.minecraft.server.level.ServerPlayer serverPlayer =
+                    (net.minecraft.server.level.ServerPlayer) player;
+
+            // Проверка карты
+            if (!isMapSelected(level, serverPlayer)) {
+                player.displayClientMessage(
+                        Component.literal("§cСначала выбери карту!"), true);
+                return InteractionResultHolder.fail(stack);
+            }
+
+            // Проверка класса
+            if (!isClassSelected(level, serverPlayer)) {
+                player.displayClientMessage(
+                        Component.literal("§cСначала выбери класс!"), true);
+                return InteractionResultHolder.fail(stack);
+            }
+
+            // Проверка перка
+            if (!isPerkSelected(level, serverPlayer)) {
+                player.displayClientMessage(
+                        Component.literal("§cСначала выбери перк!"), true);
+                return InteractionResultHolder.fail(stack);
+            }
+
+            // Если все проверки пройдены, выполняем основную логику
             boolean currentReady = ReadinessManager.isPlayerReady(player);
             boolean newReady = !currentReady;
 
-            ReadinessManager.setPlayerReady((net.minecraft.server.level.ServerPlayer) player, newReady);
+            ReadinessManager.setPlayerReady(serverPlayer, newReady);
 
             // Подсчёт готовых игроков
             int totalPlayers = level.getServer().getPlayerList().getPlayerCount();
@@ -57,6 +85,65 @@ public class ReadyItem extends Item {
         }
 
         return InteractionResultHolder.success(stack);
+    }
+
+    /**
+     * Проверка: выбрана ли карта
+     * Условие: scoreboard Game (псевдоигрок) map = 0 означает что карта НЕ выбрана
+     */
+    private boolean isMapSelected(Level level, net.minecraft.server.level.ServerPlayer player) {
+        Scoreboard scoreboard = level.getServer().getScoreboard();
+        Objective mapObjective = scoreboard.getObjective("map");
+
+        if (mapObjective == null) {
+            return false; // Нет objective - карта не выбрана
+        }
+
+        Score mapScore = scoreboard.getOrCreatePlayerScore("Game", mapObjective);
+        return mapScore.getScore() != 0; // map != 0 означает выбрана
+    }
+
+    /**
+     * Проверка: выбран ли класс
+     * Смотрим scoreboard:
+     * - Если игрок в команде maniac: ищем ManiacClass
+     * - Если игрок в команде survivors: ищем SurvivorClass
+     */
+    private boolean isClassSelected(Level level, net.minecraft.server.level.ServerPlayer player) {
+        Scoreboard scoreboard = level.getServer().getScoreboard();
+        String playerTeam = getPlayerTeam(player);
+
+        String objectiveName = "maniac".equalsIgnoreCase(playerTeam) ? "ManiacClass" : "SurvivorClass";
+        Objective classObjective = scoreboard.getObjective(objectiveName);
+
+        if (classObjective == null) {
+            return false; // Нет objective - класс точно не выбран
+        }
+
+        // Если значение = 0, то класс не выбран
+        // Если значение != 0, то класс выбран
+        Score classScore = scoreboard.getOrCreatePlayerScore(player.getName().getString(), classObjective);
+        return classScore.getScore() != 0;
+    }
+
+    /**
+     * Проверка: выбран ли перк
+     * Смотрим в PlayerData - если выбран хотя бы один перк, то selectedPerks не пуст
+     */
+    private boolean isPerkSelected(Level level, net.minecraft.server.level.ServerPlayer player) {
+        org.example.maniacrevolution.data.PlayerData playerData =
+                org.example.maniacrevolution.data.PlayerDataManager.get(player);
+        return !playerData.getSelectedPerks().isEmpty();
+    }
+
+    /**
+     * Получить команду игрока (maniac или survivor)
+     */
+    private String getPlayerTeam(net.minecraft.server.level.ServerPlayer player) {
+        if (player.getTeam() != null) {
+            return player.getTeam().getName();
+        }
+        return "unknown";
     }
 
     @Override

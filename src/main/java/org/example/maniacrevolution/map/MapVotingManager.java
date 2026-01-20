@@ -2,24 +2,29 @@ package org.example.maniacrevolution.map;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.network.ModNetworking;
-import org.example.maniacrevolution.network.packet.MapVotingPacket;
-import org.example.maniacrevolution.network.packet.MapVotingResultPacket;
+import org.example.maniacrevolution.network.packets.MapVotingPacket;
+import org.example.maniacrevolution.network.packets.MapVotingResultPacket;
 
 import java.util.*;
 
 public class MapVotingManager {
     private static MapVotingManager instance;
+    private static final Random RANDOM = new Random();
 
     private MinecraftServer server;
     private boolean votingActive = false;
     private int timeRemaining = 0;
     private final Map<UUID, String> votes = new HashMap<>();
     private boolean timerLocked = false;
+    private boolean chatMessageSent = false;
+    private String cachedWinnerMapId = null; // Кешируем ID победителя
 
     public static MapVotingManager getInstance() {
         if (instance == null) {
@@ -34,9 +39,16 @@ public class MapVotingManager {
         this.timeRemaining = duration;
         this.votes.clear();
         this.timerLocked = false;
+        this.chatMessageSent = false;
+        this.cachedWinnerMapId = null; // Сбрасываем кеш
 
-        // Отправляем всем игрокам пакет об открытии меню
+        // Выдаем всем игрокам предмет для голосования и открываем меню
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            // Выдаем предмет
+            ItemStack votingTicket = new ItemStack(ModItems.VOTING_TICKET.get());
+            player.getInventory().add(votingTicket);
+
+            // Отправляем пакет об открытии меню
             ModNetworking.send(new MapVotingPacket(true, duration, new HashMap<>()), player);
         }
 
@@ -85,6 +97,7 @@ public class MapVotingManager {
 
         Map<String, Integer> voteCount = getVoteCount();
         String winnerMapId = determineWinner(voteCount);
+        cachedWinnerMapId = winnerMapId; // Сохраняем победителя
         MapData winnerMap = MapRegistry.getMapById(winnerMapId);
 
         // Устанавливаем scoreboard
@@ -92,10 +105,30 @@ public class MapVotingManager {
             setMapScoreboard(winnerMap.getNumericId());
         }
 
+        // Удаляем предметы для голосования у всех игроков
+        removeVotingTickets();
+
         // Отправляем результат всем игрокам
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             ModNetworking.send(new MapVotingResultPacket(winnerMapId, voteCount), player);
         }
+
+        Maniacrev.LOGGER.info("Voting ended. Winner: {} (ID: {})", winnerMapId, winnerMap != null ? winnerMap.getNumericId() : -1);
+    }
+
+    // Вызывается клиентом после завершения анимации
+    public void sendChatMessage() {
+        if (chatMessageSent || server == null) return;
+        chatMessageSent = true;
+
+        // Используем кешированного победителя вместо пересчета
+        String winnerMapId = cachedWinnerMapId;
+        if (winnerMapId == null) {
+            Maniacrev.LOGGER.warn("Winner map ID is null when sending chat message!");
+            return;
+        }
+
+        MapData winnerMap = MapRegistry.getMapById(winnerMapId);
 
         // Отправляем сообщение в чат
         if (winnerMap != null) {
@@ -107,8 +140,17 @@ public class MapVotingManager {
                 player.sendSystemMessage(chatMessage);
             }
         }
+    }
 
-        Maniacrev.LOGGER.info("Voting ended. Winner: {} (ID: {})", winnerMapId, winnerMap != null ? winnerMap.getNumericId() : -1);
+    private void removeVotingTickets() {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            // Удаляем все предметы для голосования из инвентаря
+            player.getInventory().clearOrCountMatchingItems(
+                    stack -> stack.getItem() == ModItems.VOTING_TICKET.get(),
+                    Integer.MAX_VALUE,
+                    player.inventoryMenu.getCraftSlots()
+            );
+        }
     }
 
     private void setMapScoreboard(int mapNumericId) {
@@ -133,7 +175,7 @@ public class MapVotingManager {
         Maniacrev.LOGGER.info("Set scoreboard 'map' for 'Game' to {}", mapNumericId);
     }
 
-    private Map<String, Integer> getVoteCount() {
+    public Map<String, Integer> getVoteCount() {
         Map<String, Integer> count = new HashMap<>();
         for (String mapId : votes.values()) {
             count.put(mapId, count.getOrDefault(mapId, 0) + 1);
@@ -145,7 +187,8 @@ public class MapVotingManager {
         if (voteCount.isEmpty()) {
             // Никто не проголосовал - выбираем рандомную карту
             List<MapData> maps = MapRegistry.getAllMaps();
-            return maps.get(new Random().nextInt(maps.size())).getId();
+            if (maps.isEmpty()) return null;
+            return maps.get(RANDOM.nextInt(maps.size())).getId();
         }
 
         int maxVotes = Collections.max(voteCount.values());
@@ -158,11 +201,16 @@ public class MapVotingManager {
         }
 
         // Если несколько победителей - выбираем рандомно
-        return winners.get(new Random().nextInt(winners.size()));
+        if (winners.isEmpty()) return null;
+        return winners.get(RANDOM.nextInt(winners.size()));
     }
 
     public boolean isVotingActive() {
         return votingActive;
+    }
+
+    public int getTimeRemaining() {
+        return timeRemaining;
     }
 
     public List<String> getTiedMaps() {

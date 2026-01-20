@@ -245,5 +245,7 @@
   "item.maniacrev.bandage":   "Бинт",
   "item.maniacrev.medic_tablet": "Медецинский планшет",
   "item.maniacrev.agent47_tablet": "Планшет агента",
-  "item.maniacrev.death_scythe": "Коса смерти"
+  "item.maniacrev.death_scythe": "Коса смерти",
+
+  "item.maniacrev.voting_ticket": "Билет для голосования"
 }

@@ -8,9 +8,11 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.network.packets.*;
-import org.example.maniacrevolution.network.packet.MapVotingPacket;
-import org.example.maniacrevolution.network.packet.MapVotingResultPacket;
-import org.example.maniacrevolution.network.packet.PlayerVotePacket;
+import org.example.maniacrevolution.network.packets.MapVotingPacket;
+import org.example.maniacrevolution.network.packets.MapVotingResultPacket;
+import org.example.maniacrevolution.network.packets.PlayerVotePacket;
+import org.example.maniacrevolution.network.packets.OpenVotingMenuPacket;
+import org.example.maniacrevolution.network.packets.SendVotingChatPacket;
 
 public class ModNetworking {
     private static final String PROTOCOL_VERSION = "1";
@@ -256,6 +258,18 @@ public class ModNetworking {
                 .encoder(PlayerVotePacket::encode)
                 .decoder(PlayerVotePacket::new)
                 .consumerMainThread(PlayerVotePacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(OpenVotingMenuPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(OpenVotingMenuPacket::encode)
+                .decoder(OpenVotingMenuPacket::new)
+                .consumerMainThread(OpenVotingMenuPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(SendVotingChatPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(SendVotingChatPacket::encode)
+                .decoder(SendVotingChatPacket::new)
+                .consumerMainThread(SendVotingChatPacket::handle)
                 .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);

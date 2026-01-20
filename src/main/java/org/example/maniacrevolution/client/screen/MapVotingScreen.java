@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 import org.example.maniacrevolution.map.MapData;
 import org.example.maniacrevolution.map.MapRegistry;
 import org.example.maniacrevolution.network.ModNetworking;
-import org.example.maniacrevolution.network.packet.PlayerVotePacket;
+import org.example.maniacrevolution.network.packets.PlayerVotePacket;
 
 import java.util.*;
 
@@ -40,9 +40,10 @@ public class MapVotingScreen extends Screen {
     private String winnerMapId;
     private List<String> tiedMaps = new ArrayList<>();
     private float animationTime = 0;
-    private static final float ANIMATION_DURATION = 5.0f;
+    private static final float ANIMATION_DURATION = 8.0f;
     private int resultDisplayTime = 0;
-    private static final int RESULT_DISPLAY_DURATION = 100; // 5 секунд (100 тиков)
+    private static final int RESULT_DISPLAY_DURATION = 200; // 10 секунд (200 тиков)
+    private boolean chatMessageRequested = false;
 
     public MapVotingScreen(int timeRemaining, Map<String, Integer> voteCount) {
         super(Component.literal("Голосование за карту"));
@@ -107,6 +108,13 @@ public class MapVotingScreen extends Screen {
         // Отсчет времени показа результата
         if (showingResult) {
             resultDisplayTime++;
+
+            // Отправляем сообщение в чат после завершения анимации
+            if (!chatMessageRequested && animationTime >= ANIMATION_DURATION) {
+                chatMessageRequested = true;
+                ModNetworking.sendToServer(new org.example.maniacrevolution.network.packets.SendVotingChatPacket());
+            }
+
             if (resultDisplayTime >= RESULT_DISPLAY_DURATION) {
                 this.onClose();
             }
@@ -286,48 +294,85 @@ public class MapVotingScreen extends Screen {
 
         MapData winner = MapRegistry.getMapById(winnerMapId);
 
-        // Анимация только если есть несколько карт с равными голосами
+        // Анимация если есть несколько карт (рандом или ничья)
         if (tiedMaps.size() > 1) {
-            graphics.drawCenteredString(this.font, "Определяем победителя...",
-                    centerX, 50, 0xFFFFFF);
-
             float progress = Math.min(animationTime / ANIMATION_DURATION, 1.0f);
 
-            for (int i = 0; i < tiedMaps.size(); i++) {
-                MapData map = MapRegistry.getMapById(tiedMaps.get(i));
-                if (map == null) continue;
+            // После завершения анимации показываем победителя как при обычной победе
+            if (progress >= 1.0f) {
+                graphics.drawCenteredString(this.font, "Голосование завершено!",
+                        centerX, 50, 0xFFFFFF);
 
-                float angle = (animationTime * 2.0f + i * (360.0f / tiedMaps.size())) % 360.0f;
-                float radius = 100 * (1.0f - progress * 0.8f);
+                if (winner != null) {
+                    // Показываем большую карточку победителя в центре
+                    int cardX = centerX - CARD_WIDTH / 2;
+                    int cardY = centerY - CARD_HEIGHT / 2;
 
-                float x = centerX + (float)Math.cos(Math.toRadians(angle)) * radius;
-                float y = centerY + (float)Math.sin(Math.toRadians(angle)) * radius;
+                    int winnerIndex = maps.indexOf(winner);
+                    // Показываем карту БЕЗ выделения - просто обычная карточка
+                    renderCard(graphics, winner, cardX, cardY, false, false, false, winnerIndex);
 
-                // Прозрачность
-                float alpha = 1.0f;
-                if (progress > 0.6f && !map.getId().equals(winnerMapId)) {
-                    alpha = Math.max(0, 1.0f - (progress - 0.6f) * 2.5f);
+                    graphics.drawCenteredString(this.font, "Победитель: " + winner.getName(),
+                            centerX, cardY + CARD_HEIGHT + 20, 0x00FF00);
+
+                    String closingText = "Закрытие через " + ((RESULT_DISPLAY_DURATION - resultDisplayTime) / 20) + "...";
+                    graphics.drawCenteredString(this.font, closingText,
+                            centerX, cardY + CARD_HEIGHT + 40, 0xAAAAAA);
                 }
+            } else {
+                // Анимация вращения
+                graphics.drawCenteredString(this.font, "Определяем победителя...",
+                        centerX, 50, 0xFFFFFF);
 
-                if (alpha > 0.01f) {
-                    graphics.pose().pushPose();
-                    graphics.pose().translate(x - CARD_WIDTH/4, y - CARD_HEIGHT/4, 0);
-                    graphics.pose().scale(0.5f, 0.5f, 1.0f);
+                // Карты вращаются по окружности большую часть времени
+                float spinPhase = Math.min(progress / 0.7f, 1.0f); // Первые 70% времени - вращение
+                float fadePhase = Math.max(0, (progress - 0.7f) / 0.3f); // Последние 30% - исчезновение
 
-                    renderCard(graphics, map, 0, 0, false, false, map.getId().equals(winnerMapId), i);
+                for (int i = 0; i < tiedMaps.size(); i++) {
+                    MapData map = MapRegistry.getMapById(tiedMaps.get(i));
+                    if (map == null) continue;
 
-                    graphics.pose().popPose();
+                    boolean isWinner = map.getId().equals(winnerMapId);
+
+                    // Вращение вокруг центра с увеличением скорости
+                    float rotationSpeed = 3.0f + spinPhase * 7.0f; // Ускоряется от 3 до 10
+                    float angle = (animationTime * rotationSpeed * 60.0f + i * (360.0f / tiedMaps.size())) % 360.0f;
+
+                    // Победитель постепенно движется к центру
+                    float radius;
+                    if (isWinner) {
+                        radius = 150 * (1.0f - fadePhase); // Победитель идет к центру
+                    } else {
+                        radius = 150 * (1.0f - fadePhase * 0.5f); // Остальные немного приближаются
+                    }
+
+                    float x = centerX + (float)Math.cos(Math.toRadians(angle)) * radius;
+                    float y = centerY + (float)Math.sin(Math.toRadians(angle)) * radius;
+
+                    // Прозрачность - все исчезают кроме победителя в фазе исчезновения
+                    float alpha = 1.0f;
+                    if (fadePhase > 0 && !isWinner) {
+                        alpha = Math.max(0, 1.0f - fadePhase);
+                    }
+
+                    if (alpha > 0.01f) {
+                        graphics.pose().pushPose();
+                        graphics.pose().translate(x - CARD_WIDTH/4, y - CARD_HEIGHT/4, 0);
+
+                        // Масштаб для победителя увеличивается
+                        float scale = 0.5f;
+                        if (isWinner && fadePhase > 0) {
+                            scale = 0.5f + fadePhase * 0.5f; // От 0.5 до 1.0
+                        }
+                        graphics.pose().scale(scale, scale, 1.0f);
+
+                        int winnerIndex = maps.indexOf(map);
+                        // В анимации НЕ показываем выделение - только обычная рамка или зеленая для победителя в конце
+                        renderCard(graphics, map, 0, 0, false, false, false, winnerIndex);
+
+                        graphics.pose().popPose();
+                    }
                 }
-            }
-
-            // Показываем победителя после анимации
-            if (winner != null && animationTime >= ANIMATION_DURATION) {
-                graphics.drawCenteredString(this.font, "Победитель: " + winner.getName(),
-                        centerX, centerY + 120, 0x00FF00);
-
-                String closingText = "Закрытие через " + ((RESULT_DISPLAY_DURATION - resultDisplayTime) / 20) + "...";
-                graphics.drawCenteredString(this.font, closingText,
-                        centerX, centerY + 140, 0xAAAAAA);
             }
         } else {
             // Если победитель один - сразу показываем его карточку (без анимации)
@@ -340,7 +385,8 @@ public class MapVotingScreen extends Screen {
                 int cardY = centerY - CARD_HEIGHT / 2;
 
                 int winnerIndex = maps.indexOf(winner);
-                renderCard(graphics, winner, cardX, cardY, false, false, true, winnerIndex);
+                // Показываем карту БЕЗ выделения - просто обычная карточка
+                renderCard(graphics, winner, cardX, cardY, false, false, false, winnerIndex);
 
                 graphics.drawCenteredString(this.font, "Победитель: " + winner.getName(),
                         centerX, cardY + CARD_HEIGHT + 20, 0x00FF00);
@@ -466,6 +512,7 @@ public class MapVotingScreen extends Screen {
         this.showingResult = true;
         this.animationTime = 0;
         this.resultDisplayTime = 0;
+        this.chatMessageRequested = false;
 
         // Определяем карты с равным количеством голосов
         if (finalVoteCount.isEmpty()) {
@@ -481,6 +528,12 @@ public class MapVotingScreen extends Screen {
                     tiedMaps.add(entry.getKey());
                 }
             }
+        }
+
+        // Если только один победитель - сразу отправляем сообщение в чат
+        if (tiedMaps.size() <= 1) {
+            chatMessageRequested = true;
+            ModNetworking.sendToServer(new org.example.maniacrevolution.network.packets.SendVotingChatPacket());
         }
 
         // Убираем кнопки

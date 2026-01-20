@@ -1,4 +1,4 @@
-package org.example.maniacrevolution.network.packet;
+package org.example.maniacrevolution.network.packets;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;

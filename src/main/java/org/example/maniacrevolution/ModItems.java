@@ -186,6 +186,9 @@ public class ModItems {
     public static final RegistryObject<Item> READY_ITEM_ACTIVE = ITEMS.register("ready_item_active",
             () -> new ReadyItemActive(new Item.Properties()));
 
+    public static final RegistryObject<Item> VOTING_TICKET = ITEMS.register("voting_ticket",
+            () -> new VotingTicketItem(new Item.Properties().stacksTo(1)));
+
     public static final RegistryObject<Item> BANDAGE = ITEMS.register("bandage",
             () -> new BandageItem(new Item.Properties()
                     .stacksTo(4)
