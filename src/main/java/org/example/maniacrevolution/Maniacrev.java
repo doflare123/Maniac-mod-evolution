@@ -107,7 +107,8 @@ public class Maniacrev {
         ClearAttributesCommand.register(event.getDispatcher());
         CharacterMenuCommand.register(event.getDispatcher());
         TestGlowCommand.register(event.getDispatcher());
-        VoteMapCommand.register(event.getDispatcher()); // Добавлено для голосования
+        VoteMapCommand.register(event.getDispatcher());
+        ResourcePackCommand.register(event.getDispatcher());
     }
 
     public static ResourceLocation loc(String path) {

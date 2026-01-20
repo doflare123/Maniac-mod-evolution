@@ -6,6 +6,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.command.ResourcePackCommand;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ResourcePackHandler {
@@ -22,6 +23,13 @@ public class ResourcePackHandler {
     @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            // Проверяем включен ли ресурс-пак
+            if (!ResourcePackCommand.isResourcePackEnabled()) {
+                Maniacrev.LOGGER.info("Resource pack is disabled, skipping for player: {}",
+                        player.getName().getString());
+                return;
+            }
+
             // Сообщение, которое увидит игрок
             Component message = Component.literal(
                     "§6§lManiacRev Ресурс-Пак\n" +
