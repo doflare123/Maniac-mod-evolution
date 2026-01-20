@@ -10,7 +10,7 @@
 		{
 			"from": [8, 0, 8],
 			"to": [9, 26, 9],
-			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.5, 12.5, 8.5]},
 			"faces": {
 				"north": {"uv": [0, 9.5, 2, 16], "texture": "#0"},
 				"east": {"uv": [0, 9.5, 2, 16], "texture": "#0"},
@@ -23,7 +23,7 @@
 		{
 			"from": [4.5, 12, 8],
 			"to": [8, 13, 9],
-			"rotation": {"angle": 0, "axis": "z", "origin": [6, 13, 8]},
+			"rotation": {"angle": 0, "axis": "z", "origin": [8.5, 12.5, 8.5]},
 			"faces": {
 				"north": {"uv": [0, 12.5, 1.5, 14.75], "rotation": 270, "texture": "#0"},
 				"east": {"uv": [0.5, 8.5, 1.5, 10], "rotation": 90, "texture": "#0"},
@@ -36,7 +36,7 @@
 		{
 			"from": [8, 26, 8],
 			"to": [9, 27, 13],
-			"rotation": {"angle": 0, "axis": "y", "origin": [9, 27, 8]},
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.5, 26, 13.5]},
 			"faces": {
 				"north": {"uv": [11, 14.5, 15, 16], "texture": "#0"},
 				"east": {"uv": [5, 14.5, 16, 16], "texture": "#0"},
@@ -47,9 +47,9 @@
 			}
 		},
 		{
-			"from": [8.1, 26, 13],
-			"to": [8.85, 27, 17],
-			"rotation": {"angle": 22.5, "axis": "x", "origin": [9.15, 27, 13]},
+			"from": [8.1, 25.73254, 12.65538],
+			"to": [8.85, 26.73254, 16.65538],
+			"rotation": {"angle": 22.5, "axis": "x", "origin": [8.5, 26, 13.5]},
 			"faces": {
 				"north": {"uv": [5.5, 15.625, 6, 16], "rotation": 90, "texture": "#0"},
 				"east": {"uv": [5, 14.5, 7.5, 16], "rotation": 270, "texture": "#0"},
@@ -60,9 +60,9 @@
 			}
 		},
 		{
-			"from": [8.2, 21.46927, 15.69552],
-			"to": [8.7, 25.46927, 16.69552],
-			"rotation": {"angle": -22.5, "axis": "x", "origin": [9.3, 25.46927, 16.69552]},
+			"from": [8.2, 20.2868, 15.24917],
+			"to": [8.7, 24.2868, 16.24917],
+			"rotation": {"angle": -22.5, "axis": "x", "origin": [8.5, 26, 13.5]},
 			"faces": {
 				"north": {"uv": [5, 14.5, 14.75, 16], "rotation": 180, "texture": "#0"},
 				"east": {"uv": [8.5, 14.5, 12, 16], "rotation": 180, "texture": "#0"},
@@ -97,5 +97,19 @@
 			"translation": [-2.75, -1.75, 0],
 			"scale": [0.57422, 0.57422, 0.57422]
 		}
-	}
+	},
+	"groups": [
+		{
+			"name": "bone_handler",
+			"origin": [6, 13, 8],
+			"color": 0,
+			"children": [0, 1]
+		},
+		{
+			"name": "bone_blade",
+			"origin": [9.3, 25.46927, 16.69552],
+			"color": 0,
+			"children": [2, 3, 4]
+		}
+	]
 }

@@ -8,27 +8,22 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
-import org.example.maniacrevolution.effect.ModEffects;
 
 import java.util.*;
 
 /**
- * Коса Смерти
- * - Двуручное оружие (блокирует вторую руку)
+ * Коса Смерти (с интеграцией BetterCombat)
+ * - Двуручное оружие (через BetterCombat attributes)
  * - Телепортация к случайному выжившему (ПКМ, 30с кд)
- * - Урон: 2 сердца (4.0)
- * - Накладывает эффект "Гонка со смертью" при убийстве
+ * - Урон: 4.0 (2 сердца) - настраивается в BetterCombat
+ * - Эффект "Гонка со смертью" применяется через DeathEventHandler
  */
 public class DeathScytheItem extends SwordItem {
 
@@ -36,12 +31,12 @@ public class DeathScytheItem extends SwordItem {
     private static final Map<UUID, Long> teleportCooldowns = new HashMap<>();
     private static final long TELEPORT_COOLDOWN = 30000; // 30 секунд
 
-    // Урон косы (2 сердца = 4.0 урона)
+    // Базовый урон (BetterCombat переопределит через JSON)
     private static final int SCYTHE_DAMAGE = -2;
-    private static final float SCYTHE_SPEED = -2.4F; // Медленная атака
+    private static final float SCYTHE_SPEED = -2.4F;
 
     public DeathScytheItem(Properties properties) {
-        super(Tiers.NETHERITE, SCYTHE_DAMAGE - 1, SCYTHE_SPEED, properties.stacksTo(1));
+        super(Tiers.NETHERITE, SCYTHE_DAMAGE-1, SCYTHE_SPEED, properties.stacksTo(1));
     }
 
     @Override
@@ -222,95 +217,6 @@ public class DeathScytheItem extends SwordItem {
         Random random = new Random();
         return survivors.get(random.nextInt(survivors.size()));
     }
-
-    @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        // Проверяем, убил ли удар цель
-        if (target.getHealth() <= 0 && attacker instanceof ServerPlayer serverPlayer) {
-            // Проверяем, что атакующий - Смерть (ManiacClass = 10)
-            if (isDeath(serverPlayer) && target instanceof Player) {
-                // Применяем или усиливаем эффект "Гонка со смертью"
-                applyDeathRaceEffect(serverPlayer);
-            }
-        }
-
-        return super.hurtEnemy(stack, target, attacker);
-    }
-
-    /**
-     * Проверяет, является ли игрок Смертью
-     */
-    private boolean isDeath(ServerPlayer player) {
-        var scoreboard = player.getScoreboard();
-        if (scoreboard == null) return false;
-
-        try {
-            var objective = scoreboard.getObjective("ManiacClass");
-            if (objective == null) return false;
-
-            var scoreAccess = scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective);
-
-            return scoreAccess.getScore() == 10; // Смерть имеет класс 10
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * Применяет или усиливает эффект "Гонка со смертью"
-     */
-    private void applyDeathRaceEffect(ServerPlayer death) {
-        MobEffectInstance currentEffect = death.getEffect(ModEffects.DEATH_RACE_EFFECT.get());
-
-        int newAmplifier = 0;
-        if (currentEffect != null) {
-            newAmplifier = currentEffect.getAmplifier() + 1;
-        }
-
-        // Применяем эффект с бесконечной длительностью
-        MobEffectInstance newEffect = new MobEffectInstance(
-                ModEffects.DEATH_RACE_EFFECT.get(),
-                Integer.MAX_VALUE, // Бесконечная длительность
-                newAmplifier,
-                false,
-                true,
-                true
-        );
-
-        death.addEffect(newEffect);
-
-        // Сообщение игроку
-        death.displayClientMessage(
-                Component.literal(String.format("§c§lГОНКА СО СМЕРТЬЮ §f§lУровень %d §7(+%d урона)",
-                        newAmplifier + 1, (newAmplifier + 1) * 2)),
-                true
-        );
-
-        // Звуковой эффект
-        death.level().playSound(null, death.blockPosition(),
-                SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5F, 1.5F);
-
-        // Визуальный эффект усиления
-        if (death.level() instanceof ServerLevel serverLevel) {
-            for (int i = 0; i < 20; i++) {
-                double angle = i * Math.PI / 10;
-                double offsetX = Math.cos(angle) * 1.0;
-                double offsetZ = Math.sin(angle) * 1.0;
-
-                serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
-                        death.getX() + offsetX, death.getY() + 1.0, death.getZ() + offsetZ,
-                        3, 0.1, 0.3, 0.1, 0.02);
-            }
-        }
-    }
-
-    /**
-     * Коса занимает обе руки - блокирует использование второй руки
-     */
-//    @Override
-//    public boolean canEquip(ItemStack stack, EquipmentSlot slot, LivingEntity entity) {
-//        return slot == EquipmentSlot.MAINHAND;
-//    }
 
     /**
      * Очистка кулдаунов при выходе игрока

@@ -65,6 +65,8 @@ public class Agent47TargetManager {
                 net.minecraft.network.chat.Component.literal("§c§lВЫ СТАЛИ ЦЕЛЬЮ АГЕНТА!"),
                 false
         );
+
+        System.out.println("[Agent47] Target set: " + agent.getName().getString() + " -> " + target.getName().getString());
     }
 
     /**
@@ -92,20 +94,33 @@ public class Agent47TargetManager {
     public static ServerPlayer getRandomSurvivor(ServerLevel level, ServerPlayer exclude) {
         List<ServerPlayer> survivors = new ArrayList<>();
 
+        // Получаем команду по имени
+        Team survivorsTeam = level.getScoreboard().getPlayerTeam(SURVIVORS_TEAM);
+
+        if (survivorsTeam == null) {
+            System.err.println("[Agent47] Team '" + SURVIVORS_TEAM + "' not found!");
+            return null;
+        }
+
         for (ServerPlayer player : level.players()) {
             if (player == exclude) continue;
             if (player.isSpectator() || player.isCreative()) continue;
 
-            Team team = player.getTeam();
-            if (team != null && SURVIVORS_TEAM.equalsIgnoreCase(team.getName())) {
+            // Проверяем, состоит ли игрок в нужной команде
+            if (survivorsTeam.equals(player.getTeam())) {
                 survivors.add(player);
             }
         }
 
-        if (survivors.isEmpty()) return null;
+        if (survivors.isEmpty()) {
+            System.out.println("[Agent47] No survivors found in team: " + SURVIVORS_TEAM);
+            return null;
+        }
 
         Random random = new Random();
-        return survivors.get(random.nextInt(survivors.size()));
+        ServerPlayer selected = survivors.get(random.nextInt(survivors.size()));
+        System.out.println("[Agent47] Selected survivor: " + selected.getName().getString());
+        return selected;
     }
 
     /**
@@ -116,10 +131,6 @@ public class Agent47TargetManager {
         if (!(event.getEntity() instanceof ServerPlayer deadPlayer)) return;
         if (deadPlayer.level().isClientSide()) return;
 
-        // Проверяем, была ли у игрока цель
-        if (!deadPlayer.hasEffect(ModEffects.TARGET_EFFECT.get())) return;
-
-        // Игрок умер с эффектом "Цель" - нужно переназначить цель
         ServerLevel level = (ServerLevel) deadPlayer.level();
 
         // Находим агента, для которого этот игрок был целью
@@ -131,27 +142,53 @@ public class Agent47TargetManager {
             }
         }
 
-        if (agentUUID == null) return;
+        if (agentUUID == null) {
+            System.out.println("[Agent47] Dead player was not a target: " + deadPlayer.getName().getString());
+            return;
+        }
 
         ServerPlayer agent = level.getServer().getPlayerList().getPlayer(agentUUID);
-        if (agent == null) return;
+        if (agent == null) {
+            System.out.println("[Agent47] Agent not found for UUID: " + agentUUID);
+            agentTargets.remove(agentUUID);
+            return;
+        }
 
-        // Проверяем, убил ли агент цель сам
-        boolean killedByAgent = event.getSource().getEntity() == agent;
+        // ИСПРАВЛЕНО: Более точная проверка убийцы
+        boolean killedByAgent = false;
+
+        if (event.getSource().getEntity() instanceof ServerPlayer killer) {
+            killedByAgent = killer.getUUID().equals(agentUUID);
+            System.out.println("[Agent47] Killer: " + killer.getName().getString() +
+                    ", is agent: " + killedByAgent);
+        } else {
+            System.out.println("[Agent47] Death source: " + event.getSource().getMsgId());
+        }
+
+        System.out.println("[Agent47] Target died: " + deadPlayer.getName().getString() +
+                ", killed by agent: " + killedByAgent);
 
         if (killedByAgent) {
             // Начисляем деньги агенту
+            int currentMoney = Agent47MoneyManager.getMoney(agent);
             Agent47MoneyManager.addMoney(agent, Agent47ShopConfig.KILL_TARGET_REWARD);
+            int newMoney = Agent47MoneyManager.getMoney(agent);
+
+            System.out.println("[Agent47] Money updated: " + currentMoney + " -> " + newMoney);
 
             agent.displayClientMessage(
                     net.minecraft.network.chat.Component.literal(
-                            String.format("§a§l+%d монет за убийство цели!", Agent47ShopConfig.KILL_TARGET_REWARD)
+                            String.format("§a§l+%d монет за убийство цели! Баланс: %d",
+                                    Agent47ShopConfig.KILL_TARGET_REWARD, newMoney)
                     ),
                     false
             );
+
+            // ВАЖНО: Принудительно синхронизируем деньги с клиентом
+            Agent47MoneyManager.saveMoney(agent);
         }
 
-        // Убираем эффект с мертвого игрока (на всякий случай)
+        // Убираем эффект с мертвого игрока
         deadPlayer.removeEffect(ModEffects.TARGET_EFFECT.get());
 
         // Назначаем новую цель
@@ -170,6 +207,7 @@ public class Agent47TargetManager {
                     net.minecraft.network.chat.Component.literal("§cНет доступных целей."),
                     false
             );
+            System.out.println("[Agent47] No targets available for agent: " + agent.getName().getString());
         }
     }
 
@@ -187,6 +225,7 @@ public class Agent47TargetManager {
             if (target != null) {
                 target.removeEffect(ModEffects.TARGET_EFFECT.get());
             }
+            System.out.println("[Agent47] Agent logged out: " + player.getName().getString());
         }
 
         // Если вышла цель - переназначаем
@@ -201,6 +240,7 @@ public class Agent47TargetManager {
                         agentTargets.remove(entry.getKey());
                     }
                 }
+                System.out.println("[Agent47] Target logged out: " + player.getName().getString());
                 break;
             }
         }

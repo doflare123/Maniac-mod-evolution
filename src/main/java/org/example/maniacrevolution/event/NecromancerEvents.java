@@ -20,18 +20,6 @@ import org.example.maniacrevolution.necromancer.NecromancerProvider;
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class NecromancerEvents {
 
-//    @SubscribeEvent
-//    public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
-//        if (event.getObject() instanceof Player) {
-//            if (!event.getObject().getCapability(NecromancerProvider.NECROMANCER).isPresent()) {
-//                event.addCapability(
-//                        new ResourceLocation(Maniacrev.MODID, "necromancer"),
-//                        new NecromancerProvider()
-//                );
-//            }
-//        }
-//    }
-
     @SubscribeEvent
     public static void onPlayerCloned(PlayerEvent.Clone event) {
         event.getOriginal().getCapability(NecromancerProvider.NECROMANCER).ifPresent(oldStore -> {

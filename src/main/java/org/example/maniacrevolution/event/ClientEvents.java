@@ -13,6 +13,7 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.client.particle.NecromancerParticle;
 import org.example.maniacrevolution.client.renderer.BloodMarkerRenderer;
+import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.effect.client.FearClientHandler;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.gui.GuideScreen;
@@ -81,6 +82,7 @@ public class ClientEvents {
         MinecraftForge.EVENT_BUS.register(FearClientHandler.class);
         event.enqueueWork(() -> {
             // Устанавливаем cutout render type для блока соли
+            HudConfig.load();
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.SALT_BLOCK.get(), RenderType.cutout());
         });
     }

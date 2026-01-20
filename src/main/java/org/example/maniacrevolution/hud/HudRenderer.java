@@ -10,66 +10,92 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.config.HudConfig;
 
+/**
+ * Рендер кастомных HUD элементов
+ * ВАЖНО: Рендерит только если:
+ * 1. Игрок НЕ в креативе/наблюдателе
+ * 2. Кастомный HUD включен
+ */
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public class HudRenderer {
 
     @SubscribeEvent
     public static void onRenderOverlay(RenderGuiOverlayEvent.Post event) {
-        // Рендерим после любого оверлея, но только один раз за кадр
-        if (event.getOverlay() != VanillaGuiOverlay.HOTBAR.type()) return;
-
         Minecraft mc = Minecraft.getInstance();
+
         if (mc.player == null) return;
+
+        if (mc.player.isCreative() || mc.player.isSpectator()) {
+            return;
+        }
+
+        if (!HudConfig.isCustomHudEnabled()) {
+            return;
+        }
+
+        if (event.getOverlay() != VanillaGuiOverlay.HOTBAR.type()) return;
 
         GuiGraphics gui = event.getGuiGraphics();
         int screenW = mc.getWindow().getGuiScaledWidth();
         int screenH = mc.getWindow().getGuiScaledHeight();
 
-        // Рендерим худы без проверки на креатив/спектатор
-        // (если нужна проверка, добавь её внутри самих худов)
         LevelHud.render(gui, 5, 5);
         PerkHud.render(gui, 5, screenH - 70);
         TimerHud.render(gui, screenW / 2, 5);
     }
 
-    // Перехватываем рендер названия предмета и сдвигаем его выше
+    /**
+     * Скрываем ванильные элементы HUD когда активен кастомный
+     */
     @SubscribeEvent
-    public static void onRenderItemName(RenderGuiOverlayEvent.Pre event) {
-        if (event.getOverlay() == VanillaGuiOverlay.ITEM_NAME.type()) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player == null || mc.player.isCreative() || mc.player.isSpectator()) {
-                return;
-            }
+    public static void onRenderOverlayPre(RenderGuiOverlayEvent.Pre event) {
+        Minecraft mc = Minecraft.getInstance();
 
-            // Отменяем стандартный рендер
+        if (mc.player == null) return;
+
+        // В креативе/наблюдателе - показываем стандартный HUD
+        if (mc.player.isCreative() || mc.player.isSpectator()) {
+            return;
+        }
+
+        // Кастомный HUD выключен - показываем стандартный HUD
+        if (!HudConfig.isCustomHudEnabled()) {
+            return;
+        }
+
+        // Кастомный HUD включен И не креатив - СКРЫВАЕМ ванильные элементы
+        // Сравниваем напрямую с .type()
+        if (event.getOverlay() == VanillaGuiOverlay.HOTBAR.type() ||
+                event.getOverlay() == VanillaGuiOverlay.PLAYER_HEALTH.type() ||
+                event.getOverlay() == VanillaGuiOverlay.ARMOR_LEVEL.type() ||
+                event.getOverlay() == VanillaGuiOverlay.FOOD_LEVEL.type() ||
+                event.getOverlay() == VanillaGuiOverlay.AIR_LEVEL.type() ||
+                event.getOverlay() == VanillaGuiOverlay.EXPERIENCE_BAR.type()) {
+
             event.setCanceled(true);
-
-            // Рендерим название выше
-            //renderCustomItemName(event.getGuiGraphics(), mc);
         }
     }
 
-    private static void renderCustomItemName(GuiGraphics gui, Minecraft mc) {
-        int screenW = mc.getWindow().getGuiScaledWidth();
-        int screenH = mc.getWindow().getGuiScaledHeight();
+    @SubscribeEvent
+    public static void onRenderItemName(RenderGuiOverlayEvent.Pre event) {
+        if (event.getOverlay() != VanillaGuiOverlay.ITEM_NAME.type()) {
+            return;
+        }
 
-        ItemStack itemStack = mc.player.getInventory().getSelected();
-        if (itemStack.isEmpty()) return;
+        Minecraft mc = Minecraft.getInstance();
 
-        int duration = mc.gui.getGuiTicks();
-        if (duration <= 0) return;
+        if (mc.player == null) return;
 
-        int opacity = (int) ((float) duration * 256.0F / 10.0F);
-        if (opacity > 255) opacity = 255;
+        if (mc.player.isCreative() || mc.player.isSpectator()) {
+            return;
+        }
 
-        Component name = itemStack.getHoverName();
-        int textWidth = mc.font.width(name);
-        int x = (screenW - textWidth) / 2;
+        if (!HudConfig.isCustomHudEnabled()) {
+            return;
+        }
 
-        // Меняем Y координату - сдвигаем выше твоего HUD
-        int y = screenH - 90;
-
-        gui.drawString(mc.font, name, x, y, 0xFFFFFF | (opacity << 24));
+        event.setCanceled(true);
     }
 }

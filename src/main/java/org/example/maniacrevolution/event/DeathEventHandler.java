@@ -12,6 +12,7 @@ import org.example.maniacrevolution.item.DeathScytheItem;
 
 /**
  * Обработчик событий для Смерти
+ * (Блокировка второй руки теперь через BetterCombat)
  */
 @Mod.EventBusSubscriber
 public class DeathEventHandler {

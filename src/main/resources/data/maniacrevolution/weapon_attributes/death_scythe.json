@@ -1,0 +1,43 @@
+{
+  "parent": "bettercombat:sword",
+  "attributes": {
+    "attack_damage": 0.5,
+    "attack_speed": 2.4,
+    "attack_range": 4.0,
+    "two_handed": true
+  },
+  "combo": {
+    "attacks": [
+      {
+        "animation": "bettercombat:two_handed_slash_horizontal_left",
+        "damage_multiplier": 0.5,
+        "length": 0.4,
+        "upswing": 0.05
+      },
+      {
+        "animation": "bettercombat:two_handed_slash_horizontal_right",
+        "damage_multiplier": 0.5,
+        "length": 0.5,
+        "upswing": 0.1
+      }
+    ],
+    "reset_after_decay": true,
+    "decay_time": 1.5
+  },
+  "sounds": {
+    "hit": [
+      {
+        "sound": "minecraft:entity.player.attack.strong",
+        "pitch": 0.8,
+        "volume": 1.0
+      }
+    ],
+    "miss": [
+      {
+        "sound": "minecraft:entity.player.attack.sweep",
+        "pitch": 1.0,
+        "volume": 0.6
+      }
+    ]
+  }
+}

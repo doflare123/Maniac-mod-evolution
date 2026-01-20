@@ -244,5 +244,6 @@
   "gui.maniacrev.recipe_book": "Рецепты зелий",
   "item.maniacrev.bandage":   "Бинт",
   "item.maniacrev.medic_tablet": "Медецинский планшет",
-  "item.maniacrev.agent47_tablet": "Планшет агента"
+  "item.maniacrev.agent47_tablet": "Планшет агента",
+  "item.maniacrev.death_scythe": "Коса смерти"
 }

@@ -163,6 +163,20 @@ public class ModNetworking {
                 .consumerMainThread(ResurrectPlayerPacket::handle)
                 .add();
 
+        // Запрос списка мёртвых игроков (клиент -> сервер)
+        CHANNEL.messageBuilder(RequestDeadPlayersPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .decoder(RequestDeadPlayersPacket::decode)
+                .encoder(RequestDeadPlayersPacket::encode)
+                .consumerMainThread(RequestDeadPlayersPacket::handle)
+                .add();
+
+    // Синхронизация списка мёртвых игроков (сервер -> клиент)
+        CHANNEL.messageBuilder(SyncDeadPlayersPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(SyncDeadPlayersPacket::decode)
+                .encoder(SyncDeadPlayersPacket::encode)
+                .consumerMainThread(SyncDeadPlayersPacket::handle)
+                .add();
+
         CHANNEL.messageBuilder(OpenCharacterMenuPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(OpenCharacterMenuPacket::encode)
                 .decoder(OpenCharacterMenuPacket::decode)

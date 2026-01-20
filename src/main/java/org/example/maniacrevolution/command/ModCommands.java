@@ -10,6 +10,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -426,22 +427,30 @@ public class ModCommands {
     }
 
     private static int enablePassiveRegen(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
-        ServerPlayer player = context.getSource().getPlayerOrException();
-        ManaUtil.setPassiveRegenEnabled(player, true);
+        ServerLevel level = context.getSource().getLevel();
+
+        // Применяем ко ВСЕМ игрокам на сервере
+        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+            ManaUtil.setPassiveRegenEnabled(player, true);
+        }
 
         context.getSource().sendSuccess(
-                () -> Component.literal("§aPassive mana regeneration enabled"),
+                () -> Component.literal("§aPassive mana regeneration enabled for ALL players"),
                 true
         );
         return 1;
     }
 
     private static int disablePassiveRegen(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
-        ServerPlayer player = context.getSource().getPlayerOrException();
-        ManaUtil.setPassiveRegenEnabled(player, false);
+        ServerLevel level = context.getSource().getLevel();
+
+        // Применяем ко ВСЕМ игрокам на сервере
+        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+            ManaUtil.setPassiveRegenEnabled(player, false);
+        }
 
         context.getSource().sendSuccess(
-                () -> Component.literal("§cPassive mana regeneration disabled"),
+                () -> Component.literal("§cPassive mana regeneration disabled for ALL players"),
                 true
         );
         return 1;

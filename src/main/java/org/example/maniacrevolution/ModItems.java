@@ -38,7 +38,7 @@ public class ModItems {
             () -> new HookItem(new Item.Properties()));
 
     // Посох некроманта
-    public static final RegistryObject<Item> Scyth = ITEMS.register("death_scyth",
+    public static final RegistryObject<Item> Scyth = ITEMS.register("death_scythe",
             () -> new DeathScytheItem(new Item.Properties()));
 
     // Посох некроманта

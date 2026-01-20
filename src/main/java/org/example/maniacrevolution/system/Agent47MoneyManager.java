@@ -66,7 +66,7 @@ public class Agent47MoneyManager {
     /**
      * Сохраняет деньги в NBT игрока
      */
-    private static void saveMoney(Player player) {
+    public static void saveMoney(Player player) {
         if (!(player instanceof ServerPlayer serverPlayer)) return;
 
         CompoundTag persistentData = serverPlayer.getPersistentData();

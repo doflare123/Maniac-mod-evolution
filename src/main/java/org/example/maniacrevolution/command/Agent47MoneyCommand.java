@@ -9,6 +9,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import org.example.maniacrevolution.system.Agent47MoneyManager;
+import org.example.maniacrevolution.system.Agent47TargetManager;
 
 import java.util.Collection;
 
@@ -20,6 +21,19 @@ public class Agent47MoneyCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("maniacrev")
+
+                // /agent47 settarget <агент> <цель>
+                .then(Commands.literal("settarget")
+                        .then(Commands.argument("agent", EntityArgument.player())
+                                .then(Commands.argument("target", EntityArgument.player())
+                                        .executes(Agent47MoneyCommand::setTarget))))
+
+                // /agent47 cleartarget <агент>
+                .then(Commands.literal("cleartarget")
+                        .then(Commands.argument("agent", EntityArgument.player())
+                                .executes(Agent47MoneyCommand::clearTarget)))
+
+
                 .then(Commands.literal("agent_money")
                         .requires(source -> source.hasPermission(2)) // Требуется OP уровень 2
 
@@ -65,6 +79,42 @@ public class Agent47MoneyCommand {
                         )
                 )
         );
+    }
+
+    private static int setTarget(CommandContext<CommandSourceStack> context) {
+        try {
+            ServerPlayer agent = EntityArgument.getPlayer(context, "agent");
+            ServerPlayer target = EntityArgument.getPlayer(context, "target");
+
+            Agent47TargetManager.setTarget(agent, target);
+
+            context.getSource().sendSuccess(
+                    () -> Component.literal("§aЦель установлена: " + agent.getName().getString() +
+                            " → " + target.getName().getString()),
+                    true
+            );
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("§cОшибка: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int clearTarget(CommandContext<CommandSourceStack> context) {
+        try {
+            ServerPlayer agent = EntityArgument.getPlayer(context, "agent");
+
+            Agent47TargetManager.clearTarget(agent);
+
+            context.getSource().sendSuccess(
+                    () -> Component.literal("§aЦель убрана у " + agent.getName().getString()),
+                    true
+            );
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("§cОшибка: " + e.getMessage()));
+            return 0;
+        }
     }
 
     /**

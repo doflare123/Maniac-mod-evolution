@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.fleshheap.ClientFleshHeapData;
@@ -23,11 +24,10 @@ public class CustomHud implements IGuiOverlay {
     private static final int PERK_ICON_SIZE = 32;
     private static final int ABILITY_ICON_SIZE = 32;
     private static final int HOTBAR_SLOT_SIZE = 32;
-    private static final int PENALTY_SLOT_SIZE = 16; // Маленькие слоты для пенальти
+    private static final int PENALTY_SLOT_SIZE = 16;
     private static final int BAR_HEIGHT = 18;
     private static final int BAR_WIDTH = 200;
 
-    // Минимальная ширина экрана для полного отображения
     private static final int MIN_SCREEN_WIDTH = MAIN_PANEL_WIDTH + 120;
 
     // Цвета
@@ -39,10 +39,15 @@ public class CustomHud implements IGuiOverlay {
     private static final int MANA_BG = 0xFF003355;
     private static final int SLOT_BG = 0xFF222222;
     private static final int SLOT_BORDER = 0xFF666666;
-    private static final int PENALTY_SLOT_BG = 0xFF330000; // Красноватый фон для пенальти-слотов
-    private static final int PENALTY_SLOT_BORDER = 0xFFAA0000; // Красная рамка
+    private static final int PENALTY_SLOT_BG = 0xFF330000;
+    private static final int PENALTY_SLOT_BORDER = 0xFFAA0000;
     private static final int SELECTED_SLOT_BORDER = 0xFFFFFFFF;
     private static final int SELECTED_PERK_BORDER = 0xFFFFFF00;
+
+    // Для отображения названия предмета
+    private static ItemStack lastSelectedItem = ItemStack.EMPTY;
+    private static long itemNameShowTime = 0;
+    private static final long ITEM_NAME_DURATION = 5000; // 5 секунд
 
     @Override
     public void render(net.minecraftforge.client.gui.overlay.ForgeGui gui, GuiGraphics guiGraphics,
@@ -52,7 +57,15 @@ public class CustomHud implements IGuiOverlay {
 
         Player player = mc.player;
 
+        // ВАЖНО: Проверяем режим игрока И настройки HUD
         if (player.isCreative() || player.isSpectator()) {
+            // В креативе/наблюдателе показываем только ванильный HUD
+            return;
+        }
+
+        // Проверяем, включен ли кастомный HUD
+        if (!HudConfig.isCustomHudEnabled()) {
+            // Кастомный HUD выключен - не рендерим
             return;
         }
 
@@ -80,7 +93,38 @@ public class CustomHud implements IGuiOverlay {
         int penaltyY = mainY + (MAIN_PANEL_HEIGHT - PENALTY_SLOT_SIZE * 3 - 8) / 2;
         renderPenaltySlots(guiGraphics, penaltyX, penaltyY, player);
 
+        // Отображаем название предмета НАД кастомным HUD
+        renderItemName(guiGraphics, player, scaledWidth, mainY);
+
         guiGraphics.pose().popPose();
+    }
+
+    /**
+     * Отображает название выбранного предмета
+     */
+    private void renderItemName(GuiGraphics gui, Player player, int screenWidth, int hudTopY) {
+        Minecraft mc = Minecraft.getInstance();
+        ItemStack currentItem = player.getInventory().getSelected();
+        long currentTime = System.currentTimeMillis();
+
+        // Обновляем время показа при смене предмета
+        if (!ItemStack.matches(currentItem, lastSelectedItem)) {
+            lastSelectedItem = currentItem.copy();
+            if (!currentItem.isEmpty()) {
+                itemNameShowTime = currentTime;
+            }
+        }
+
+        // Показываем название только если прошло меньше 5 секунд
+        if (!currentItem.isEmpty() && (currentTime - itemNameShowTime) < ITEM_NAME_DURATION) {
+            String itemName = currentItem.getHoverName().getString();
+            int textWidth = mc.font.width(itemName);
+            int textX = (screenWidth - textWidth) / 2;
+            int textY = hudTopY - 25; // НАД HUD
+
+            // Название предмета
+            gui.drawString(mc.font, itemName, textX, textY, 0xFFFFFFFF, true);
+        }
     }
 
     /**
@@ -96,19 +140,15 @@ public class CustomHud implements IGuiOverlay {
         int x = centerX - ICON_SIZE / 2;
         int y = centerY - ICON_SIZE / 2;
 
-        // Рисуем круглую маску для текстуры
         gui.pose().pushPose();
 
-        // Рендерим текстуру с круглой маской
         ResourceLocation texture = new ResourceLocation("maniacrev", "textures/gui/flesh_heap.png");
         RenderSystem.setShaderTexture(0, texture);
         RenderSystem.enableBlend();
 
-        // Рисуем круглую маску поверх текстуры
         gui.blit(texture, x, y, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
 
         RenderSystem.disableBlend();
-        RenderSystem.disableScissor();
 
         // Количество стаков НА иконке
         String stackText = String.valueOf(stacks);
@@ -116,7 +156,7 @@ public class CustomHud implements IGuiOverlay {
         int textX = centerX - textWidth / 2;
         int textY = centerY - 4;
 
-        // Черная обводка для читаемости
+        // Черная обводка
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 if (dx != 0 || dy != 0) {
@@ -125,15 +165,11 @@ public class CustomHud implements IGuiOverlay {
             }
         }
 
-        // Основной текст (белый, жирный)
         gui.drawString(mc.font, "§l" + stackText, textX, textY, 0xFFFFFFFF, false);
 
         gui.pose().popPose();
     }
 
-    /**
-     * Вычисляет масштаб для адаптивного отображения HUD
-     */
     private float calculateScale(int screenWidth) {
         if (screenWidth < MIN_SCREEN_WIDTH) {
             return (float) screenWidth / MIN_SCREEN_WIDTH;
@@ -144,33 +180,27 @@ public class CustomHud implements IGuiOverlay {
     private void renderMainPanel(GuiGraphics gui, int x, int y, Player player) {
         Minecraft mc = Minecraft.getInstance();
 
-        // Фон главной панели
         gui.fill(x, y, x + MAIN_PANEL_WIDTH, y + MAIN_PANEL_HEIGHT, PANEL_BG);
         gui.renderOutline(x, y, MAIN_PANEL_WIDTH, MAIN_PANEL_HEIGHT, PANEL_BORDER);
 
-        // Вертикальное центрирование контента
         int contentHeight = PERK_ICON_SIZE;
         int verticalOffset = (MAIN_PANEL_HEIGHT - contentHeight) / 2;
 
         int currentX = x + 8;
         int currentY = y + verticalOffset;
 
-        // === СЕКЦИЯ 1: ПЕРКИ И СПОСОБНОСТЬ ===
         List<ClientPlayerData.ClientPerkData> perks = ClientPlayerData.getSelectedPerks();
         int activeIndex = ClientPlayerData.getActivePerkIndex();
 
-        // Рендерим 2 перка
         for (int i = 0; i < Math.min(2, perks.size()); i++) {
             ClientPlayerData.ClientPerkData perk = perks.get(i);
             renderPerkSlot(gui, perk, currentX, currentY, i == activeIndex);
             currentX += PERK_ICON_SIZE + 4;
         }
 
-        // Слот под способность (пока пустой)
         renderAbilitySlot(gui, currentX, currentY);
         currentX += ABILITY_ICON_SIZE + 15;
 
-        // === СЕКЦИЯ 2: ЗДОРОВЬЕ И МАНА ===
         int barsY = y + (MAIN_PANEL_HEIGHT - (BAR_HEIGHT * 2 + 4)) / 2;
         renderHealthBar(gui, player, currentX, barsY);
         renderManaBar(gui, currentX, barsY + BAR_HEIGHT + 4);
@@ -179,30 +209,24 @@ public class CustomHud implements IGuiOverlay {
     private void renderPerkSlot(GuiGraphics gui, ClientPlayerData.ClientPerkData perk, int x, int y, boolean selected) {
         Minecraft mc = Minecraft.getInstance();
 
-        // Фон
         int bgColor = getTypeColor(perk.type());
         gui.fill(x, y, x + PERK_ICON_SIZE, y + PERK_ICON_SIZE, bgColor);
 
-        // Рамка (ЖЁЛТАЯ если выбран, серая если нет)
         int borderColor = selected ? SELECTED_PERK_BORDER : 0xFF666666;
 
-        // Рисуем более толстую рамку для выбранного перка
         if (selected) {
             gui.renderOutline(x - 1, y - 1, PERK_ICON_SIZE + 2, PERK_ICON_SIZE + 2, borderColor);
         }
         gui.renderOutline(x, y, PERK_ICON_SIZE, PERK_ICON_SIZE, borderColor);
 
-        // Стрелка над выбранным перком
         if (selected) {
             String arrow = "▼";
             int arrowX = x + (PERK_ICON_SIZE - mc.font.width(arrow)) / 2;
             gui.drawString(mc.font, "§e" + arrow, arrowX, y - 10, 0xFFFFFF, false);
         }
 
-        // Иконка перка
         renderPerkIcon(gui, perk, x, y, PERK_ICON_SIZE);
 
-        // Кулдаун
         if (perk.isOnCooldown()) {
             float cdProgress = perk.getCooldownProgress();
             int cdHeight = (int) (PERK_ICON_SIZE * cdProgress);
@@ -230,23 +254,18 @@ public class CustomHud implements IGuiOverlay {
         float maxHealth = player.getMaxHealth();
         float healthPercent = health / maxHealth;
 
-        // Фон бара
         gui.fill(x, y, x + BAR_WIDTH, y + BAR_HEIGHT, HP_BG);
 
-        // Заполненная часть
         int filledWidth = (int) (BAR_WIDTH * healthPercent);
         gui.fill(x, y, x + filledWidth, y + BAR_HEIGHT, HP_COLOR);
 
-        // Рамка
         gui.renderOutline(x, y, BAR_WIDTH, BAR_HEIGHT, PANEL_BORDER);
 
-        // Текст здоровья
         String hpText = String.format("%.0f / %.0f", health, maxHealth);
         int textX = x + (BAR_WIDTH - mc.font.width(hpText)) / 2;
         int textY = y + (BAR_HEIGHT - 8) / 2;
         gui.drawString(mc.font, hpText, textX, textY, 0xFFFFFFFF, true);
 
-        // Регенерация HP (в правом нижнем углу)
         float hpRegen = ClientHealthData.getHealthRegen();
         if (Math.abs(hpRegen) > 0.01f) {
             String regenText = String.format("%+.1f", hpRegen);
@@ -266,23 +285,18 @@ public class CustomHud implements IGuiOverlay {
         float manaPercent = ClientManaData.getManaPercentage();
         float regenRate = ClientManaData.getRegenRate();
 
-        // Фон бара
         gui.fill(x, y, x + BAR_WIDTH, y + BAR_HEIGHT, MANA_BG);
 
-        // Заполненная часть
         int filledWidth = (int) (BAR_WIDTH * manaPercent);
         gui.fill(x, y, x + filledWidth, y + BAR_HEIGHT, MANA_COLOR);
 
-        // Рамка
         gui.renderOutline(x, y, BAR_WIDTH, BAR_HEIGHT, PANEL_BORDER);
 
-        // Текст маны
         String manaText = String.format("%.0f / %.0f", mana, maxMana);
         int textX = x + (BAR_WIDTH - mc.font.width(manaText)) / 2;
         int textY = y + (BAR_HEIGHT - 8) / 2;
         gui.drawString(mc.font, manaText, textX, textY, 0xFFFFFFFF, true);
 
-        // Регенерация маны (показываем только если > 0)
         if (regenRate > 0.01f) {
             String regenText = String.format("+%.1f", regenRate);
             int regenX = x + BAR_WIDTH - mc.font.width(regenText) - 3;
@@ -295,54 +309,42 @@ public class CustomHud implements IGuiOverlay {
         Minecraft mc = Minecraft.getInstance();
         int selectedSlot = player.getInventory().selected;
 
-        // 6 слотов в 2 ряда (3x2)
         for (int i = 0; i < 6; i++) {
             int slotX = x + (i % 3) * (HOTBAR_SLOT_SIZE + 4);
             int slotY = y + (i / 3) * (HOTBAR_SLOT_SIZE + 4);
 
-            // Фон слота
             gui.fill(slotX, slotY, slotX + HOTBAR_SLOT_SIZE, slotY + HOTBAR_SLOT_SIZE, SLOT_BG);
 
-            // Рамка (белая если выбран)
             boolean isSelected = (i == selectedSlot);
             int borderColor = isSelected ? SELECTED_SLOT_BORDER : SLOT_BORDER;
             gui.renderOutline(slotX, slotY, HOTBAR_SLOT_SIZE, HOTBAR_SLOT_SIZE, borderColor);
 
-            // Предмет
             ItemStack stack = player.getInventory().getItem(i);
             if (!stack.isEmpty()) {
                 gui.renderItem(stack, slotX + 8, slotY + 8);
                 gui.renderItemDecorations(mc.font, stack, slotX + 8, slotY + 8);
             }
 
-            // Номер слота
             String slotNum = String.valueOf(i + 1);
             gui.drawString(mc.font, slotNum, slotX + 2, slotY + 2, 0xFFAAAAAA, true);
         }
     }
 
-    /**
-     * Рендерит пенальти-слоты (7-9) - маленькие слоты с красной рамкой
-     */
     private void renderPenaltySlots(GuiGraphics gui, int x, int y, Player player) {
         Minecraft mc = Minecraft.getInstance();
         int selectedSlot = player.getInventory().selected;
 
-        // 3 маленьких слота вертикально (слоты 6, 7, 8 в индексации)
         for (int i = 0; i < 3; i++) {
-            int slotIndex = 6 + i; // Слоты 6, 7, 8
+            int slotIndex = 6 + i;
             int slotX = x;
             int slotY = y + i * (PENALTY_SLOT_SIZE + 4);
 
-            // Фон слота (красноватый)
             gui.fill(slotX, slotY, slotX + PENALTY_SLOT_SIZE, slotY + PENALTY_SLOT_SIZE, PENALTY_SLOT_BG);
 
-            // Рамка (белая если выбран, красная если нет)
             boolean isSelected = (slotIndex == selectedSlot);
             int borderColor = isSelected ? SELECTED_SLOT_BORDER : PENALTY_SLOT_BORDER;
             gui.renderOutline(slotX, slotY, PENALTY_SLOT_SIZE, PENALTY_SLOT_SIZE, borderColor);
 
-            // Предмет (уменьшенный)
             ItemStack stack = player.getInventory().getItem(slotIndex);
             if (!stack.isEmpty()) {
                 gui.pose().pushPose();
@@ -353,7 +355,6 @@ public class CustomHud implements IGuiOverlay {
                 gui.pose().popPose();
             }
 
-            // Номер слота
             String slotNum = String.valueOf(slotIndex + 1);
             gui.drawString(mc.font, "§c" + slotNum, slotX + 1, slotY + 1, 0xFFFFFF, true);
         }

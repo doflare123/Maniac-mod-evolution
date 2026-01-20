@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.scores.PlayerTeam;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.RequestDeadPlayersPacket;
 import org.example.maniacrevolution.network.packets.ResurrectPlayerPacket;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class ResurrectionScreen extends Screen {
     private static final int FRAME_HEIGHT = 200;
 
     private List<DeadPlayer> deadPlayers = new ArrayList<>();
+    private static List<DeadPlayer> pendingDeadPlayers = new ArrayList<>();
     private int selectedIndex = -1;
     private int scrollOffset = 0;
     private static final int MAX_VISIBLE = 5;
@@ -33,42 +35,53 @@ public class ResurrectionScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        loadDeadPlayers();
+
+        // Очищаем старые данные
+        deadPlayers.clear();
+        pendingDeadPlayers.clear();
+
+        // Запрашиваем список мёртвых игроков с сервера
+        ModNetworking.sendToServer(new RequestDeadPlayersPacket());
+
+        System.out.println("[ResurrectionScreen] Sent request for dead players");
     }
 
-    private void loadDeadPlayers() {
-        deadPlayers.clear();
+    /**
+     * Статический метод для обновления списка (вызывается из пакета)
+     */
+    public static void updateDeadPlayers(List<RequestDeadPlayersPacket.DeadPlayerInfo> players) {
+        pendingDeadPlayers.clear();
 
-        if (minecraft == null || minecraft.level == null) return;
+        System.out.println("[ResurrectionScreen] updateDeadPlayers called with " + players.size() + " players");
 
-        minecraft.level.players().forEach(player -> {
-            if (player.isSpectator()) {
-                // Проверяем команду "survivors"
-                PlayerTeam team = (PlayerTeam) player.getTeam();
-                if (team != null && team.getName().equalsIgnoreCase("survivors")) {
-                    deadPlayers.add(new DeadPlayer(
-                            player.getUUID(),
-                            player.getName().getString(),
-                            player.getScoreboardName()
-                    ));
-                }
-            }
-        });
+        for (var info : players) {
+            pendingDeadPlayers.add(new DeadPlayer(
+                    info.uuid,
+                    info.name,
+                    info.name
+            ));
+            System.out.println("[ResurrectionScreen] Added to pending: " + info.name);
+        }
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics);
+        // Синхронизируем pending список с основным
+        if (!pendingDeadPlayers.isEmpty()) {
+            deadPlayers.clear();
+            deadPlayers.addAll(pendingDeadPlayers);
+            pendingDeadPlayers.clear();
+            System.out.println("[ResurrectionScreen] Loaded " + deadPlayers.size() + " players for display");
+        }
 
+        this.renderBackground(guiGraphics);
         animationTick += partialTick;
 
         int centerX = this.width / 2;
         int centerY = this.height / 2;
 
-        // Рисуем готическую рамку
         renderGothicFrame(guiGraphics, centerX, centerY);
 
-        // Заголовок
         drawCenteredString(
                 guiGraphics,
                 this.font,
@@ -78,10 +91,8 @@ public class ResurrectionScreen extends Screen {
                 0x8B00FF
         );
 
-        // Рисуем список мертвых игроков
         renderPlayerList(guiGraphics, centerX, centerY, mouseX, mouseY);
 
-        // Инструкции
         drawCenteredString(
                 guiGraphics,
                 this.font,
