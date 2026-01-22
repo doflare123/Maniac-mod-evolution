@@ -51,8 +51,8 @@ public class Agent47TargetManager {
                 EFFECT_DURATION,
                 0,
                 false,
-                true,
-                true
+                false,
+                false
         ));
 
         // Сообщения

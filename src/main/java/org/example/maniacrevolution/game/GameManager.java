@@ -5,12 +5,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.data.PlayerData;
@@ -19,16 +23,23 @@ import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.GameStatePacket;
 import org.example.maniacrevolution.perk.PerkPhase;
 
+@Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class GameManager {
     private static MinecraftServer server;
 
     // Таймер
     private static int maxGameTime = 10 * 60 * 20; // 10 минут в тиках
-    private static int currentTime = 0; // Текущее время в тиках
+    private static int currentTime = 0;
     private static boolean timerRunning = false;
+    private static boolean maniacGlowing = false;
 
     // Название scoreboard objective для фазы
     private static final String PHASE_OBJECTIVE = "phaseGame";
+
+    // Константы
+    private static final int GLOWING_THRESHOLD = 2400; // 2 минуты в тиках
+    private static final int GLOWING_DURATION = 2500; // Чуть больше 2 минут, чтобы эффект не пропал
+    private static final String MANIAC_TEAM_NAME = "maniac";
 
     public static void init(MinecraftServer server) {
         GameManager.server = server;
@@ -52,7 +63,6 @@ public class GameManager {
         Objective obj = scoreboard.getObjective(PHASE_OBJECTIVE);
         if (obj == null) return 0;
 
-        // Используем "game" как entity для хранения фазы
         Score score = scoreboard.getOrCreatePlayerScore("game", obj);
         return score.getScore();
     }
@@ -79,18 +89,14 @@ public class GameManager {
         PerkPhase newPhase = PerkPhase.fromScoreboardValue(phase);
         if (newPhase != null) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                // Проигрываем звук смены фазы
                 player.playNotifySound(Maniacrev.PHASE_CHANGE_SOUND.get(), SoundSource.MASTER, 0.5f, 1.0f);
 
-                // Уведомляем перки о смене фазы
                 PlayerData data = PlayerDataManager.get(player);
                 data.onPhaseChange(player, newPhase);
             }
         }
 
-        // Синхронизируем состояние с клиентами
         syncGameState();
-
         Maniacrev.LOGGER.info("Game phase changed from {} to {}", oldPhase, phase);
     }
 
@@ -103,6 +109,7 @@ public class GameManager {
     public static void startTimer() {
         currentTime = maxGameTime;
         timerRunning = true;
+        maniacGlowing = false; // ИСПРАВЛЕНО: Сбрасываем флаг при старте
         syncGameState();
         Maniacrev.LOGGER.info("Timer started: {} seconds", maxGameTime / 20);
     }
@@ -145,11 +152,9 @@ public class GameManager {
     public static void startGame(CommandSourceStack source) {
         if (server == null) return;
 
-        // Устанавливаем фазу 1 (охота)
         setPhase(1);
         startTimer();
 
-        // Вызываем onGameStart для всех игроков (перки с фазой START)
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             PlayerData data = PlayerDataManager.get(player);
             data.onGameStart(player);
@@ -163,8 +168,8 @@ public class GameManager {
         setPhase(0);
         stopTimer();
         currentTime = 0;
+        maniacGlowing = false; // ИСПРАВЛЕНО: Сбрасываем флаг
 
-        // Снимаем перки со всех игроков
         if (server != null) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 PlayerData data = PlayerDataManager.get(player);
@@ -178,7 +183,7 @@ public class GameManager {
     // === Тик ===
 
     @SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (!timerRunning || server == null) return;
 
@@ -192,12 +197,19 @@ public class GameManager {
             );
         }
 
+        // ИСПРАВЛЕНО: Подсветка маньяков в фазе 3 при остатке времени <= 2 минут
+        if (currentTime <= GLOWING_THRESHOLD && getPhaseValue() == 3 && !maniacGlowing) {
+            applyManiacGlowing();
+            maniacGlowing = true;
+
+            Maniacrev.LOGGER.info("Applied glowing to maniacs (time remaining: {} seconds)", currentTime / 20);
+        }
+
         // Проверка на конец времени
         if (currentTime <= 0) {
             currentTime = 0;
             timerRunning = false;
 
-            // Вызываем функцию из датапака
             server.getCommands().performPrefixedCommand(
                     server.createCommandSourceStack().withSuppressedOutput(),
                     "function maniac:game/time_end"
@@ -210,6 +222,50 @@ public class GameManager {
         if (currentTime % 20 == 0) {
             syncGameState();
         }
+    }
+
+    // === Подсветка маньяков ===
+
+    /**
+     * Применяет эффект подсветки ко всем игрокам команды "maniac"
+     */
+    private static void applyManiacGlowing() {
+        if (server == null) return;
+
+        int glowingCount = 0;
+
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            // Проверяем команду игрока
+            if (isInManiacTeam(player)) {
+                // Применяем эффект подсветки на оставшееся время + запас
+                player.addEffect(new MobEffectInstance(
+                        MobEffects.GLOWING,
+                        GLOWING_DURATION, // ~2 минуты + запас
+                        0,
+                        false,
+                        false,
+                        false
+                ));
+
+                glowingCount++;
+            }
+        }
+
+        Maniacrev.LOGGER.info("Applied glowing to {} maniac(s)", glowingCount);
+    }
+
+    /**
+     * Проверяет, находится ли игрок в команде "maniac"
+     */
+    private static boolean isInManiacTeam(ServerPlayer player) {
+        PlayerTeam team = (PlayerTeam) player.getTeam();
+
+        if (team == null) {
+            return false;
+        }
+
+        // ИСПРАВЛЕНО: Правильная проверка имени команды
+        return MANIAC_TEAM_NAME.equalsIgnoreCase(team.getName());
     }
 
     // === Синхронизация ===

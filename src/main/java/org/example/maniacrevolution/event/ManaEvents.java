@@ -32,6 +32,12 @@ public class ManaEvents {
             event.getOriginal().getCapability(ManaProvider.MANA).ifPresent(oldStore -> {
                 event.getEntity().getCapability(ManaProvider.MANA).ifPresent(newStore -> {
                     newStore.copyFrom(oldStore);
+
+                    // ИСПРАВЛЕНИЕ: Сбрасываем бонусный реген при смерти
+                    newStore.setBonusRegenRate(0.0f);
+
+                    System.out.println("[ManaEvents] Reset bonus regen on death for " +
+                            event.getEntity().getName().getString());
                 });
             });
         }

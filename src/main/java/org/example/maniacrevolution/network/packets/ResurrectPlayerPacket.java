@@ -93,19 +93,46 @@ public class ResurrectPlayerPacket {
         // Добавляем эффект замедления 2
         target.addEffect(new MobEffectInstance(
                 MobEffects.MOVEMENT_SLOWDOWN,
-                600, // 30 секунд
+                99999, // 30 секунд
                 0, // Уровень 2
                 false,
-                true
+                false
         ));
 
         // Добавляем эффект слабости для "зомби" ощущения
         target.addEffect(new MobEffectInstance(
                 MobEffects.WEAKNESS,
-                600,
+                99999,
                 0,
                 false,
-                true
+                false
+        ));
+
+        // Добавляем эффект грации
+        target.addEffect(new MobEffectInstance(
+                MobEffects.DOLPHINS_GRACE,
+                99999,
+                0,
+                false,
+                false
+        ));
+
+        // Добавляем эффект дыхания
+        target.addEffect(new MobEffectInstance(
+                MobEffects.WATER_BREATHING,
+                99999,
+                0,
+                false,
+                false
+        ));
+
+        // Добавляем эффект дыхания
+        target.addEffect(new MobEffectInstance(
+                MobEffects.SATURATION,
+                99999,
+                255,
+                false,
+                false
         ));
 
         // Звуки и частицы

@@ -60,6 +60,9 @@ public class FleshHeapData {
         var healthAttr = player.getAttribute(Attributes.MAX_HEALTH);
         if (healthAttr == null) return;
 
+        // Запоминаем старое максимальное здоровье ДО изменения
+        float oldMaxHealth = player.getMaxHealth();
+
         // Удаляем старый модификатор
         AttributeModifier oldModifier = healthAttr.getModifier(HEALTH_MODIFIER_UUID);
         if (oldModifier != null) {
@@ -78,8 +81,28 @@ public class FleshHeapData {
             healthAttr.addPermanentModifier(modifier);
         }
 
-        // Обновляем здоровье
-        player.setHealth(player.getHealth());
+        // Вычисляем разницу в максимальном здоровье
+        float newMaxHealth = player.getMaxHealth();
+        float healthDifference = newMaxHealth - oldMaxHealth;
+
+        // Если максимальное здоровье УВЕЛИЧИЛОСЬ - хилим игрока на эту разницу
+        if (healthDifference > 0) {
+            float currentHealth = player.getHealth();
+            float newHealth = Math.min(currentHealth + healthDifference, newMaxHealth);
+            player.setHealth(newHealth);
+
+            System.out.println("[FleshHeap] " + player.getName().getString() +
+                    " healed by " + healthDifference + " HP (now " + newHealth + "/" + newMaxHealth + ")");
+        }
+        // Если максимальное здоровье УМЕНЬШИЛОСЬ - подгоняем текущее здоровье
+        else if (healthDifference < 0) {
+            float currentHealth = player.getHealth();
+            if (currentHealth > newMaxHealth) {
+                player.setHealth(newMaxHealth);
+                System.out.println("[FleshHeap] " + player.getName().getString() +
+                        " health capped to " + newMaxHealth);
+            }
+        }
 
         // Отправляем пакет клиенту
         org.example.maniacrevolution.network.ModNetworking.sendToPlayer(
@@ -89,12 +112,45 @@ public class FleshHeapData {
     }
 
     /**
-     * Восстановить модификаторы после смерти/релога
+     * Восстановить модификаторы после смерти/релога (БЕЗ хила)
      */
     public static void restoreModifiers(ServerPlayer player) {
         int stacks = getStacks(player);
         if (stacks > 0) {
-            updateHealthModifier(player, stacks);
+            // При восстановлении НЕ хилим, только применяем модификатор
+            restoreModifierWithoutHealing(player, stacks);
         }
+    }
+
+    /**
+     * Восстановить модификатор БЕЗ хила (для респавна/логина)
+     */
+    private static void restoreModifierWithoutHealing(ServerPlayer player, int stacks) {
+        var healthAttr = player.getAttribute(Attributes.MAX_HEALTH);
+        if (healthAttr == null) return;
+
+        // Удаляем старый модификатор
+        AttributeModifier oldModifier = healthAttr.getModifier(HEALTH_MODIFIER_UUID);
+        if (oldModifier != null) {
+            healthAttr.removeModifier(HEALTH_MODIFIER_UUID);
+        }
+
+        // Добавляем новый, если стаки > 0
+        if (stacks > 0) {
+            double bonusHealth = stacks * HEALTH_PER_STACK;
+            AttributeModifier modifier = new AttributeModifier(
+                    HEALTH_MODIFIER_UUID,
+                    MODIFIER_NAME,
+                    bonusHealth,
+                    AttributeModifier.Operation.ADDITION
+            );
+            healthAttr.addPermanentModifier(modifier);
+        }
+
+        // Отправляем пакет клиенту
+        org.example.maniacrevolution.network.ModNetworking.sendToPlayer(
+                new org.example.maniacrevolution.network.FleshHeapSyncPacket(stacks),
+                player
+        );
     }
 }

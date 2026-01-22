@@ -6,9 +6,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import org.example.maniacrevolution.entity.HookEntity;
 import org.example.maniacrevolution.util.ManaUtil;
@@ -18,16 +16,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class HookItem extends Item {
+public class HookItem extends SwordItem {
 
     private static final float MANA_COST = 20.0f;
     private static final int COOLDOWN_TICKS = 20 * 20; // 20 секунд
+    private static final int DAMAGE = 0;
+    private static final float SPEED = -2.4F;
 
     // Хранение кулдаунов по игрокам
     private static final Map<UUID, Long> cooldowns = new HashMap<>();
 
     public HookItem(Properties properties) {
-        super(properties.stacksTo(1)); // Не стакается
+        super(Tiers.NETHERITE, DAMAGE-1, SPEED, properties.stacksTo(1)); // Не стакается
     }
 
     @Override
