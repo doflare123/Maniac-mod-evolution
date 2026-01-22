@@ -7,7 +7,7 @@ public class DoctorClass extends CharacterClass {
     public DoctorClass() {
         super("doctor", "Доктор", CharacterType.SURVIVOR,
                 "Врача вызывали?",
-                5); // ID для scoreboard
+                5, 3); // ID для scoreboard
 
         // Тэги
         addTag("Поддержка");

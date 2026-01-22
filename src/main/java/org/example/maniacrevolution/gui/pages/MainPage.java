@@ -35,6 +35,14 @@ public class MainPage extends GuidePage {
         ));
 
         buttons.add(new MenuButton(
+                centerX - buttonWidth / 2, startY + (buttonHeight + spacing) * 3,
+                buttonWidth, buttonHeight,
+                "§d§l👤 Персонажи",
+                "Все выжившие и маньяки режима",
+                PageType.CHARACTERS // НОВОЕ
+        ));
+
+        buttons.add(new MenuButton(
                 centerX - buttonWidth / 2, startY + buttonHeight + spacing,
                 buttonWidth, buttonHeight,
                 "§a§l⚡ Перки и способности",

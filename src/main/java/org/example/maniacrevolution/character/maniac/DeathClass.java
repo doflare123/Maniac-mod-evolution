@@ -8,7 +8,7 @@ public class DeathClass extends CharacterClass {
     public DeathClass() {
         super("death", "Смерть", CharacterType.MANIAC,
                 "Memento mori",
-                10); // ID для scoreboard
+                10, 5); // ID для scoreboard
 
         // Тэги
         addTag("Прогресс");

@@ -7,7 +7,7 @@ public class PudgeClass extends CharacterClass {
     public PudgeClass() {
         super("pudge", "Мясник", CharacterType.MANIAC,
                 "Свежее мясо!",
-                5); // ID для scoreboard
+                5, 2); // ID для scoreboard
 
         // Тэги
         addTag("Ближний бой");

@@ -20,6 +20,7 @@ public class GuideScreen extends Screen {
     private final PerksPage perksPage;
     private final TutorialPage tutorialPage;
     private final MapsPage mapsPage;
+    private final CharactersPage charactersPage;
 
     public GuideScreen() {
         this(null);
@@ -33,6 +34,7 @@ public class GuideScreen extends Screen {
         this.perksPage = new PerksPage(this);
         this.tutorialPage = new TutorialPage(this);
         this.mapsPage = new MapsPage(this);
+        this.charactersPage = new CharactersPage(this);
 
         // Устанавливаем начальную страницу
         if (initialPage != null) {
@@ -112,6 +114,7 @@ public class GuideScreen extends Screen {
             case PERKS -> perksPage;
             case TUTORIAL -> tutorialPage;
             case MAPS -> mapsPage;
+            case CHARACTERS -> charactersPage;
         };
     }
 

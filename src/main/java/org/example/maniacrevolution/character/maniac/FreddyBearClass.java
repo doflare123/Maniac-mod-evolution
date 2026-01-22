@@ -8,7 +8,7 @@ public class FreddyBearClass extends CharacterClass {
     public FreddyBearClass() {
         super("freddy_bear", "Мишка Фредди", CharacterType.MANIAC,
                 "Оу оу оу оу оу оу оу",
-                12); // ID для scoreboard
+                12, 5); // ID для scoreboard
 
         // Тэги
         addTag("Неожиданность");

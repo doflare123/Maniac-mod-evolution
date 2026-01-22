@@ -18,13 +18,15 @@ public abstract class CharacterClass {
     private final List<String> tags;
     private final List<Feature> features;
     private final List<Item> items;
+    private final int difficulty;
 
-    protected CharacterClass(String id, String name, CharacterType type, String description, int scoreboardId) {
+    protected CharacterClass(String id, String name, CharacterType type, String description, int scoreboardId, int difficulty) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.description = description;
         this.scoreboardId = scoreboardId;
+        this.difficulty = difficulty;
         this.tags = new ArrayList<>();
         this.features = new ArrayList<>();
         this.items = new ArrayList<>();
@@ -35,9 +37,7 @@ public abstract class CharacterClass {
         return id;
     }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
     public CharacterType getType() {
         return type;
@@ -63,11 +63,21 @@ public abstract class CharacterClass {
         return scoreboardId;
     }
 
+    public int getDifficulty() { return difficulty; }
+
     /**
      * Получить путь к текстуре фрески персонажа
      */
     public ResourceLocation getFrescoTexture() {
         return new ResourceLocation(Maniacrev.MODID, "textures/gui/frescos/" + id + ".png");
+    }
+
+    public String getDifficultyStars() {
+        StringBuilder stars = new StringBuilder("§6");
+        for (int i = 0; i < 5; i++) {
+            stars.append(i < difficulty ? "★" : "☆");
+        }
+        return stars.toString();
     }
 
     // Builders для удобного добавления данных

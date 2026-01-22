@@ -8,7 +8,7 @@ public class PlagueDoctorClass extends CharacterClass {
     public PlagueDoctorClass() {
         super("plague_doctor", "Чумной доктор", CharacterType.MANIAC,
                 "Мои снадобья дарят либо жизнь, либо вечный сон",
-                6); // ID для scoreboard
+                6, 1); // ID для scoreboard
 
         // Тэги
         addTag("Периодический урон");

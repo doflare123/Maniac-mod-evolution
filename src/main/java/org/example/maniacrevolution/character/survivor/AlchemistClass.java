@@ -8,7 +8,7 @@ public class AlchemistClass extends CharacterClass {
     public AlchemistClass() {
         super("alchemist", "Алхимик", CharacterType.SURVIVOR,
                 "Я соединю весь мир!",
-                6); // ID для scoreboard
+                6, 4); // ID для scoreboard
 
         // Тэги
         addTag("Поддержка");

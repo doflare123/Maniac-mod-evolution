@@ -7,7 +7,7 @@ public class NecromancerClass extends CharacterClass {
     public NecromancerClass() {
         super("necromancer", "Некромант", CharacterType.SURVIVOR,
                 "Душа ушла к богам, так что тело им не нужно",
-                8); // ID для scoreboard
+                8, 2); // ID для scoreboard
 
         // Тэги
         addTag("Поддержка");

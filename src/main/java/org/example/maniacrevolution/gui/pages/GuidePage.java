@@ -22,7 +22,8 @@ public abstract class GuidePage {
         MAIN,
         PERKS,
         TUTORIAL,
-        MAPS
+        MAPS,
+        CHARACTERS
     }
 
     /**

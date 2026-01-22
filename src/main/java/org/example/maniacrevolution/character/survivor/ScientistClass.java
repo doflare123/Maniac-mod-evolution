@@ -8,7 +8,7 @@ public class ScientistClass extends CharacterClass {
     public ScientistClass() {
         super("scientist", "Учёный", CharacterType.SURVIVOR,
                 "I am perfectly suited for this environment",
-                10); // ID для scoreboard
+                10, 4); // ID для scoreboard
 
         // Тэги
         addTag("Хаккер");

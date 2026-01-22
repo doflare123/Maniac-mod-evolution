@@ -7,7 +7,7 @@ public class AgentClass extends CharacterClass {
     public AgentClass() {
         super("agent", "Агент 47", CharacterType.MANIAC,
                 "Пять врагов - пять наград",
-                4); // ID для scoreboard
+                4, 4); // ID для scoreboard
 
         // Тэги
         addTag("Дальний бой");

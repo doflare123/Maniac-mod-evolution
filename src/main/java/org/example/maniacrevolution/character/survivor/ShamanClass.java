@@ -6,7 +6,7 @@ import org.example.maniacrevolution.character.CharacterType;
 public class ShamanClass extends CharacterClass {
 
     public ShamanClass() {
-        super("shaman", "Шаман", CharacterType.SURVIVOR, "Абуталабашунеба", 1); // ID для scoreboard
+        super("shaman", "Шаман", CharacterType.SURVIVOR, "Абуталабашунеба", 1, 3); // ID для scoreboard
 
         // Тэги
         addTag("Видение");
