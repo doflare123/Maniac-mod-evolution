@@ -13,11 +13,13 @@ public class MapVotingPacket {
     private final boolean open;
     private final int timeRemaining;
     private final Map<String, Integer> voteCount;
+    private final String playerVotedMapId; // ID карты за которую проголосовал игрок (может быть null)
 
-    public MapVotingPacket(boolean open, int timeRemaining, Map<String, Integer> voteCount) {
+    public MapVotingPacket(boolean open, int timeRemaining, Map<String, Integer> voteCount, String playerVotedMapId) {
         this.open = open;
         this.timeRemaining = timeRemaining;
         this.voteCount = voteCount;
+        this.playerVotedMapId = playerVotedMapId;
     }
 
     public MapVotingPacket(FriendlyByteBuf buf) {
@@ -31,6 +33,10 @@ public class MapVotingPacket {
             int count = buf.readInt();
             voteCount.put(mapId, count);
         }
+
+        // Читаем ID карты за которую проголосовал игрок
+        boolean hasVote = buf.readBoolean();
+        this.playerVotedMapId = hasVote ? buf.readUtf() : null;
     }
 
     public void encode(FriendlyByteBuf buf) {
@@ -42,6 +48,12 @@ public class MapVotingPacket {
             buf.writeUtf(entry.getKey());
             buf.writeInt(entry.getValue());
         }
+
+        // Пишем ID карты за которую проголосовал игрок
+        buf.writeBoolean(playerVotedMapId != null);
+        if (playerVotedMapId != null) {
+            buf.writeUtf(playerVotedMapId);
+        }
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
@@ -51,7 +63,7 @@ public class MapVotingPacket {
                 screen.updateVoting(timeRemaining, voteCount);
             } else if (open) {
                 // Открываем экран только если его еще нет
-                Minecraft.getInstance().setScreen(new MapVotingScreen(timeRemaining, voteCount));
+                Minecraft.getInstance().setScreen(new MapVotingScreen(timeRemaining, voteCount, playerVotedMapId));
             }
         });
         return true;

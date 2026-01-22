@@ -9,6 +9,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -36,6 +37,7 @@ import org.example.maniacrevolution.brewing.ModBrewingRecipes;
 import org.example.maniacrevolution.character.CharacterRegistry;
 import org.example.maniacrevolution.readiness.ReadinessManager;
 import org.example.maniacrevolution.system.Agent47ShopConfig;
+import org.example.maniacrevolution.map.MapVotingManager;
 import org.slf4j.Logger;
 
 @Mod(Maniacrev.MODID)
@@ -97,6 +99,14 @@ public class Maniacrev {
         PlayerDataManager.save(event.getServer());
         ReadinessManager.clear();
         LOGGER.info("ManiacRev server data saved");
+    }
+
+    @SubscribeEvent
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            ReadinessManager.tick(event.getServer());
+            MapVotingManager.getInstance().tick();
+        }
     }
 
     @SubscribeEvent

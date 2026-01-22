@@ -23,8 +23,10 @@ public class MapVotingManager {
     private int timeRemaining = 0;
     private final Map<UUID, String> votes = new HashMap<>();
     private boolean timerLocked = false;
-    private boolean chatMessageSent = false;
-    private String cachedWinnerMapId = null; // Кешируем ID победителя
+    private int tickCounter = 0;
+    private String cachedWinnerMapId = null;
+    private int resultDelayTicks = 0;
+    private static final int RESULT_DELAY = 160; // ~8 секунд (длина анимации)
 
     public static MapVotingManager getInstance() {
         if (instance == null) {
@@ -39,45 +41,57 @@ public class MapVotingManager {
         this.timeRemaining = duration;
         this.votes.clear();
         this.timerLocked = false;
-        this.chatMessageSent = false;
-        this.cachedWinnerMapId = null; // Сбрасываем кеш
+        this.tickCounter = 0;
+        this.cachedWinnerMapId = null;
+        this.resultDelayTicks = 0;
 
-        // Выдаем всем игрокам предмет для голосования и открываем меню
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            // Выдаем предмет
             ItemStack votingTicket = new ItemStack(ModItems.VOTING_TICKET.get());
             player.getInventory().add(votingTicket);
-
-            // Отправляем пакет об открытии меню
-            ModNetworking.send(new MapVotingPacket(true, duration, new HashMap<>()), player);
+            ModNetworking.send(new MapVotingPacket(true, duration, new HashMap<>(), null), player);
         }
 
         Maniacrev.LOGGER.info("Map voting started for {} seconds", duration);
     }
 
     public void tick() {
-        if (!votingActive) return;
+        if (!votingActive) {
+            // Обрабатываем отложенную отправку результатов
+            if (cachedWinnerMapId != null && resultDelayTicks > 0) {
+                resultDelayTicks--;
+                if (resultDelayTicks == 0) {
+                    sendDeferredResults();
+                }
+            }
+            return;
+        }
 
-        timeRemaining--;
+        tickCounter++;
 
-        // Проверяем, проголосовали ли все
-        if (!timerLocked && votes.size() == server.getPlayerList().getPlayerCount()) {
-            if (timeRemaining > 5) {
-                timeRemaining = 5;
-                timerLocked = true;
-                Maniacrev.LOGGER.info("All players voted, timer set to 5 seconds");
+        // Уменьшаем таймер раз в 20 тиков (1 секунда)
+        if (tickCounter >= 20) {
+            tickCounter = 0;
+            timeRemaining--;
+
+            if (!timerLocked && votes.size() == server.getPlayerList().getPlayerCount()) {
+                if (timeRemaining > 5) {
+                    timeRemaining = 5;
+                    timerLocked = true;
+                    Maniacrev.LOGGER.info("All players voted, timer set to 5 seconds");
+                }
+            }
+
+            if (timeRemaining <= 0) {
+                endVoting();
+                return;
             }
         }
 
-        // Отправляем обновление всем игрокам (БЕЗ флага открытия)
+        // Отправляем обновление голосов всем игрокам каждый тик
         Map<String, Integer> voteCount = getVoteCount();
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            ModNetworking.send(new MapVotingPacket(false, timeRemaining, voteCount), player);
-        }
-
-        // Голосование закончилось
-        if (timeRemaining <= 0) {
-            endVoting();
+            String playerVote = votes.get(player.getUUID());
+            ModNetworking.send(new MapVotingPacket(false, timeRemaining, voteCount, playerVote), player);
         }
     }
 
@@ -92,59 +106,61 @@ public class MapVotingManager {
         votes.remove(playerId);
     }
 
+    public String getPlayerVote(UUID playerId) {
+        return votes.get(playerId);
+    }
+
     private void endVoting() {
         votingActive = false;
 
         Map<String, Integer> voteCount = getVoteCount();
-        String winnerMapId = determineWinner(voteCount);
-        cachedWinnerMapId = winnerMapId; // Сохраняем победителя
-        MapData winnerMap = MapRegistry.getMapById(winnerMapId);
+        cachedWinnerMapId = determineWinner(voteCount);
 
-        // Устанавливаем scoreboard
-        if (winnerMap != null) {
-            setMapScoreboard(winnerMap.getNumericId());
-        }
-
-        // Удаляем предметы для голосования у всех игроков
         removeVotingTickets();
 
-        // Отправляем результат всем игрокам
+        // Отправляем результат всем игрокам (они будут показывать анимацию)
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            ModNetworking.send(new MapVotingResultPacket(winnerMapId, voteCount), player);
+            ModNetworking.send(new MapVotingResultPacket(cachedWinnerMapId, voteCount), player);
         }
 
-        Maniacrev.LOGGER.info("Voting ended. Winner: {} (ID: {})", winnerMapId, winnerMap != null ? winnerMap.getNumericId() : -1);
+        // Запускаем отложенную отправку результатов (после анимации)
+        resultDelayTicks = RESULT_DELAY;
+
+        Maniacrev.LOGGER.info("Voting ended. Winner: {} (results will be sent in ~8 seconds)",
+                cachedWinnerMapId);
     }
 
-    // Вызывается клиентом после завершения анимации
-    public void sendChatMessage() {
-        if (chatMessageSent || server == null) return;
-        chatMessageSent = true;
-
-        // Используем кешированного победителя вместо пересчета
-        String winnerMapId = cachedWinnerMapId;
-        if (winnerMapId == null) {
-            Maniacrev.LOGGER.warn("Winner map ID is null when sending chat message!");
+    private void sendDeferredResults() {
+        if (server == null || cachedWinnerMapId == null) {
+            Maniacrev.LOGGER.warn("Cannot send deferred results: server or winner is null");
             return;
         }
 
-        MapData winnerMap = MapRegistry.getMapById(winnerMapId);
+        MapData winnerMap = MapRegistry.getMapById(cachedWinnerMapId);
+        if (winnerMap == null) {
+            Maniacrev.LOGGER.warn("Winner map not found: {}", cachedWinnerMapId);
+            return;
+        }
+
+        // Устанавливаем scoreboard
+        setMapScoreboard(winnerMap.getNumericId());
 
         // Отправляем сообщение в чат
-        if (winnerMap != null) {
-            net.minecraft.network.chat.Component chatMessage = net.minecraft.network.chat.Component.literal(
-                    "§6§l[Голосование] §r§aПобедившая карта: §e" + winnerMap.getName() + " §7(ID: " + winnerMap.getNumericId() + ")"
-            );
+        net.minecraft.network.chat.Component chatMessage = net.minecraft.network.chat.Component.literal(
+                "§6§l[Голосование] §r§aПобедившая карта: §e" + winnerMap.getName() + " §7(ID: " + winnerMap.getNumericId() + ")"
+        );
 
-            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                player.sendSystemMessage(chatMessage);
-            }
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            player.sendSystemMessage(chatMessage);
         }
+
+        Maniacrev.LOGGER.info("Deferred results sent. Winner: {}", winnerMap.getName());
+
+        cachedWinnerMapId = null;
     }
 
     private void removeVotingTickets() {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            // Удаляем все предметы для голосования из инвентаря
             player.getInventory().clearOrCountMatchingItems(
                     stack -> stack.getItem() == ModItems.VOTING_TICKET.get(),
                     Integer.MAX_VALUE,
@@ -158,7 +174,6 @@ public class MapVotingManager {
 
         Scoreboard scoreboard = server.getScoreboard();
 
-        // Получаем или создаем objective "map"
         Objective mapObjective = scoreboard.getObjective("map");
         if (mapObjective == null) {
             mapObjective = scoreboard.addObjective(
@@ -169,9 +184,7 @@ public class MapVotingManager {
             );
         }
 
-        // Устанавливаем значение для псевдоигрока "Game"
         scoreboard.getOrCreatePlayerScore("Game", mapObjective).setScore(mapNumericId);
-
         Maniacrev.LOGGER.info("Set scoreboard 'map' for 'Game' to {}", mapNumericId);
     }
 
@@ -185,7 +198,6 @@ public class MapVotingManager {
 
     private String determineWinner(Map<String, Integer> voteCount) {
         if (voteCount.isEmpty()) {
-            // Никто не проголосовал - выбираем рандомную карту
             List<MapData> maps = MapRegistry.getAllMaps();
             if (maps.isEmpty()) return null;
             return maps.get(RANDOM.nextInt(maps.size())).getId();
@@ -200,7 +212,6 @@ public class MapVotingManager {
             }
         }
 
-        // Если несколько победителей - выбираем рандомно
         if (winners.isEmpty()) return null;
         return winners.get(RANDOM.nextInt(winners.size()));
     }

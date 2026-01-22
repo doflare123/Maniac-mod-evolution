@@ -12,7 +12,6 @@ import org.example.maniacrevolution.network.packets.MapVotingPacket;
 import org.example.maniacrevolution.network.packets.MapVotingResultPacket;
 import org.example.maniacrevolution.network.packets.PlayerVotePacket;
 import org.example.maniacrevolution.network.packets.OpenVotingMenuPacket;
-import org.example.maniacrevolution.network.packets.SendVotingChatPacket;
 
 public class ModNetworking {
     private static final String PROTOCOL_VERSION = "1";
@@ -264,12 +263,6 @@ public class ModNetworking {
                 .encoder(OpenVotingMenuPacket::encode)
                 .decoder(OpenVotingMenuPacket::new)
                 .consumerMainThread(OpenVotingMenuPacket::handle)
-                .add();
-
-        CHANNEL.messageBuilder(SendVotingChatPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(SendVotingChatPacket::encode)
-                .decoder(SendVotingChatPacket::new)
-                .consumerMainThread(SendVotingChatPacket::handle)
                 .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);

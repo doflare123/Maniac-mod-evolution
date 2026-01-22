@@ -33,21 +33,14 @@ public class ReadyItem extends Item {
             net.minecraft.server.level.ServerPlayer serverPlayer =
                     (net.minecraft.server.level.ServerPlayer) player;
 
-            // Проверка карты
-            if (!isMapSelected(level, serverPlayer)) {
-                player.displayClientMessage(
-                        Component.literal("§cСначала выбери карту!"), true);
-                return InteractionResultHolder.fail(stack);
-            }
-
-            // Проверка класса
+            // Проверка класса (обязательна)
             if (!isClassSelected(level, serverPlayer)) {
                 player.displayClientMessage(
                         Component.literal("§cСначала выбери класс!"), true);
                 return InteractionResultHolder.fail(stack);
             }
 
-            // Проверка перка
+            // Проверка перка (обязательна)
             if (!isPerkSelected(level, serverPlayer)) {
                 player.displayClientMessage(
                         Component.literal("§cСначала выбери перк!"), true);
@@ -85,22 +78,6 @@ public class ReadyItem extends Item {
         }
 
         return InteractionResultHolder.success(stack);
-    }
-
-    /**
-     * Проверка: выбрана ли карта
-     * Условие: scoreboard Game (псевдоигрок) map = 0 означает что карта НЕ выбрана
-     */
-    private boolean isMapSelected(Level level, net.minecraft.server.level.ServerPlayer player) {
-        Scoreboard scoreboard = level.getServer().getScoreboard();
-        Objective mapObjective = scoreboard.getObjective("map");
-
-        if (mapObjective == null) {
-            return false; // Нет objective - карта не выбрана
-        }
-
-        Score mapScore = scoreboard.getOrCreatePlayerScore("Game", mapObjective);
-        return mapScore.getScore() != 0; // map != 0 означает выбрана
     }
 
     /**

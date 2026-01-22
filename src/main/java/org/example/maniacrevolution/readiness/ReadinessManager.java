@@ -3,6 +3,9 @@ package org.example.maniacrevolution.readiness;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.Scoreboard;
 import org.example.maniacrevolution.Maniacrev;
 
 import java.util.*;
@@ -15,6 +18,7 @@ public class ReadinessManager {
     private static final Map<UUID, Boolean> readyPlayers = new ConcurrentHashMap<>();
     private static CountdownTask countdownTask = null;
     private static MinecraftServer server = null;
+    private static boolean waitingForMap = false; // Флаг: ждём выбора карты
 
     /**
      * Установить сервер для выполнения команд
@@ -60,12 +64,27 @@ public class ReadinessManager {
             // Сбросить всех
             readyPlayers.clear();
             cancelCountdown();
+            waitingForMap = false;
             Maniacrev.LOGGER.info("All players readiness reset");
         } else {
             // Сбросить конкретного игрока
             readyPlayers.put(player.getUUID(), false);
             checkAllPlayersReady(player.getServer());
             Maniacrev.LOGGER.info("Player {} readiness reset", player.getName().getString());
+        }
+    }
+
+    /**
+     * Вызывается каждый тик для проверки карты (только когда ждём карту)
+     */
+    public static void tick(MinecraftServer minecraftServer) {
+        if (minecraftServer == null || !waitingForMap) return;
+
+        // Если ждём карту и карта появилась
+        if (isMapSelected(minecraftServer)) {
+            waitingForMap = false;
+            Maniacrev.LOGGER.info("Map selected! Starting countdown...");
+            startCountdown(minecraftServer);
         }
     }
 
@@ -77,6 +96,7 @@ public class ReadinessManager {
 
         if (players.isEmpty()) {
             cancelCountdown();
+            waitingForMap = false;
             return;
         }
 
@@ -89,14 +109,48 @@ public class ReadinessManager {
         }
 
         if (allReady) {
-            startCountdown(server);
+            // Все нажали готово - проверяем карту
+            if (isMapSelected(server)) {
+                // Карта уже выбрана - запускаем отсчёт сразу
+                startCountdown(server);
+                waitingForMap = false;
+            } else {
+                // Карты ещё нет - ждём её выбора каждый тик
+                waitingForMap = true;
+                cancelCountdown();
+                broadcastMessage("§eИгра начнётся, когда будет выбрана карта");
+                Maniacrev.LOGGER.info("All players ready but map not selected - waiting for map...");
+            }
         } else {
+            // Не все готовы - отменяем отсчёт и перестаём ждать карту
             cancelCountdown();
+            waitingForMap = false;
         }
     }
 
     /**
-     * Начать 10-секундный отсчёт
+     * Проверить: выбрана ли карта
+     * Условие: scoreboard Game (псевдоигрок) map != 0 означает что карта выбрана
+     */
+    private static boolean isMapSelected(MinecraftServer server) {
+        try {
+            Scoreboard scoreboard = server.getScoreboard();
+            Objective mapObjective = scoreboard.getObjective("map");
+
+            if (mapObjective == null) {
+                return false; // Нет objective - карта не выбрана
+            }
+
+            Score mapScore = scoreboard.getOrCreatePlayerScore("Game", mapObjective);
+            return mapScore.getScore() != 0; // map != 0 означает выбрана
+        } catch (Exception e) {
+            Maniacrev.LOGGER.error("Error checking map selection", e);
+            return false;
+        }
+    }
+
+    /**
+     * Начать 5-секундный отсчёт
      */
     private static void startCountdown(MinecraftServer server) {
         if (countdownTask != null && countdownTask.isRunning()) {
@@ -106,7 +160,7 @@ public class ReadinessManager {
         countdownTask = new CountdownTask(server);
         countdownTask.start();
 
-        Maniacrev.LOGGER.info("Countdown started - all players ready!");
+        Maniacrev.LOGGER.info("Countdown started - all players ready and map selected!");
     }
 
     /**
@@ -136,5 +190,21 @@ public class ReadinessManager {
     public static void clear() {
         readyPlayers.clear();
         cancelCountdown();
+        waitingForMap = false;
+    }
+
+    /**
+     * Отправить сообщение всем игрокам
+     */
+    private static void broadcastMessage(String message) {
+        if (server == null) return;
+
+        server.execute(() -> {
+            net.minecraft.network.chat.Component component =
+                    net.minecraft.network.chat.Component.literal(message);
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                player.sendSystemMessage(component);
+            }
+        });
     }
 }

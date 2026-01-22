@@ -29,10 +29,12 @@ public class OpenVotingMenuPacket {
 
                 // Открываем меню только если голосование активно
                 if (manager.isVotingActive()) {
+                    String playerVote = manager.getPlayerVote(player.getUUID());
                     ModNetworking.send(new MapVotingPacket(
                             true,
                             manager.getTimeRemaining(),
-                            manager.getVoteCount()
+                            manager.getVoteCount(),
+                            playerVote
                     ), player);
                 }
             }
