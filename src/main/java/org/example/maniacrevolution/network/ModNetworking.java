@@ -265,6 +265,12 @@ public class ModNetworking {
                 .consumerMainThread(OpenVotingMenuPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(OpenGuidePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(OpenGuidePacket::decode)
+                .encoder(OpenGuidePacket::encode)
+                .consumerMainThread(OpenGuidePacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 
