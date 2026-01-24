@@ -247,5 +247,11 @@
   "item.maniacrev.agent47_tablet": "Планшет агента",
   "item.maniacrev.death_scythe": "Коса смерти",
 
-  "item.maniacrev.voting_ticket": "Билет для голосования"
+  "item.maniacrev.voting_ticket": "Билет для голосования",
+
+  "key.categories.maniacrev": "Maniac Revolution",
+  "key.maniacrev.activate_perk": "Активировать перк",
+  "key.maniacrev.activate_armor_ability": "Активировать способность брони",
+
+  "item.maniacrev.medical_mask": "Медицинская маска"
 }

@@ -69,6 +69,14 @@ public class ModKeybinds {
             CATEGORY
     );
 
+    public static final KeyMapping ACTIVATE_ARMOR_ABILITY = new KeyMapping(
+            "key.maniacrev.activate_armor_ability",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_V, // По умолчанию клавиша V
+            CATEGORY
+    );
+
     // Этот метод теперь пустой, но оставляем для совместимости
     public static void register() {
         Maniacrev.LOGGER.debug("Keybinds initialized");
@@ -83,6 +91,7 @@ public class ModKeybinds {
         event.register(QTE_KEY_2);
         event.register(QTE_KEY_3);
         event.register(QTE_KEY_4);
+        event.register(ACTIVATE_ARMOR_ABILITY);
         Maniacrev.LOGGER.info("Keybinds registered");
     }
 }

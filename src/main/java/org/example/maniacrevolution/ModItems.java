@@ -13,6 +13,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.item.*;
+import org.example.maniacrevolution.item.armor.MedicalMaskItem;
 import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.item.CharacterSelectionItem;
 import org.example.maniacrevolution.item.ReadyItem;
@@ -200,6 +201,9 @@ public class ModItems {
                     .stacksTo(1)
                     .rarity(Rarity.RARE)
             ));
+
+    public static final RegistryObject<Item> MEDICAL_MASK = ITEMS.register("medical_mask",
+            MedicalMaskItem::new);
 
     public static final RegistryObject<Item> AGENT47_TABLET = ITEMS.register("agent47_tablet",
             () -> new Agent47TabletItem(new Item.Properties()

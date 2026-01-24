@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class Config
 {
 
-    private static int hackQTEReward = 10; // Значение по умолчанию
+    private static int hackQTEReward = 650; // Значение по умолчанию
 
     public static int getHackQTEReward() {
         return hackQTEReward;

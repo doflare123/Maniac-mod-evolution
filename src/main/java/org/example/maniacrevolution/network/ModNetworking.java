@@ -271,6 +271,18 @@ public class ModNetworking {
                 .consumerMainThread(OpenGuidePacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(ActivateArmorAbilityPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .decoder(ActivateArmorAbilityPacket::decode)
+                .encoder(ActivateArmorAbilityPacket::encode)
+                .consumerMainThread(ActivateArmorAbilityPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(SyncAbilityCooldownPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(SyncAbilityCooldownPacket::decode)
+                .encoder(SyncAbilityCooldownPacket::encode)
+                .consumerMainThread(SyncAbilityCooldownPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

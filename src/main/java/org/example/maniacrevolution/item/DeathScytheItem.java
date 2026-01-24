@@ -1,7 +1,9 @@
 package org.example.maniacrevolution.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -12,10 +14,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
+import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.client.ClientAbilityData;
+import org.example.maniacrevolution.item.armor.IActivatableArmor;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -25,7 +32,7 @@ import java.util.*;
  * - Урон: 4.0 (2 сердца) - настраивается в BetterCombat
  * - Эффект "Гонка со смертью" применяется через DeathEventHandler
  */
-public class DeathScytheItem extends SwordItem {
+public class DeathScytheItem extends SwordItem implements IItemWithAbility {
 
     // Кулдауны телепортации для каждого игрока
     private static final Map<UUID, Long> teleportCooldowns = new HashMap<>();
@@ -218,16 +225,6 @@ public class DeathScytheItem extends SwordItem {
         return survivors.get(random.nextInt(survivors.size()));
     }
 
-    /**
-     * Очистка кулдаунов при выходе игрока
-     */
-    public static void onPlayerLogout(UUID playerId) {
-        teleportCooldowns.remove(playerId);
-    }
-
-    /**
-     * Получает оставшееся время кулдауна в секундах
-     */
     public static int getCooldownSeconds(UUID playerId) {
         Long lastUse = teleportCooldowns.get(playerId);
         if (lastUse == null) return 0;
@@ -240,5 +237,50 @@ public class DeathScytheItem extends SwordItem {
         }
 
         return (int) ((TELEPORT_COOLDOWN - elapsed) / 1000);
+    }
+
+    /**
+     * Очистка кулдаунов при выходе игрока
+     */
+    public static void onPlayerLogout(UUID playerId) {
+        teleportCooldowns.remove(playerId);
+    }
+
+    @Override
+    public ResourceLocation getAbilityIcon() {
+        return new ResourceLocation(Maniacrev.MODID, "textures/gui/abilities/death_scythe.png");
+    }
+
+    @Override
+    public String getAbilityName() {
+        return "Телепортация к жертве";
+    }
+
+    @Override
+    public float getManaCost() {
+        return 0; // Не требует маны
+    }
+
+    @Override
+    public int getCooldownSeconds(Player player) {
+        if (player.level().isClientSide) {
+            return ClientAbilityData.getCooldownSeconds(this);
+        }
+        return DeathScytheItem.getCooldownSeconds(player.getUUID());
+    }
+
+    @Override
+    public int getMaxCooldownSeconds() {
+        return 30; // 30 секунд
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.literal(""));
+        tooltip.add(Component.literal("§6Способность: §5" + getAbilityName()).withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.literal("§7ПКМ: Телепортация к случайному выжившему").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal("§9Кулдаун: §b" + getMaxCooldownSeconds() + "с").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.literal(""));
+        super.appendHoverText(stack, level, tooltip, flag);
     }
 }

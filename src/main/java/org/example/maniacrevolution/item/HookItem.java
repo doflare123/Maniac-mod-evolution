@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -11,6 +12,7 @@ import net.minecraft.world.level.Level;
 import org.example.maniacrevolution.entity.HookEntity;
 import org.example.maniacrevolution.util.ManaUtil;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +20,7 @@ import java.util.UUID;
 
 public class HookItem extends SwordItem {
 
-    private static final float MANA_COST = 20.0f;
+    private static final float MANA_COST = 10.0f;
     private static final int COOLDOWN_TICKS = 20 * 20; // 20 секунд
     private static final int DAMAGE = 0;
     private static final float SPEED = -2.4F;
@@ -84,11 +86,12 @@ public class HookItem extends SwordItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("§7Притягивает к себе игрока"));
-        tooltip.add(Component.literal("§7Дальность: §e10 блоков"));
-        tooltip.add(Component.literal("§Стоимость: §b20 маны"));
-        tooltip.add(Component.literal("§Перезарядка: §e20 секунд"));
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.literal(""));
+        tooltip.add(Component.literal("§6Способность: §e" + "И куда собрался?").withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.literal("§7" + "Киньте хук (дальность 12 блоков) и притяните к себе существо").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal(""));
+        tooltip.add(Component.literal("§9Стоимость: §b" + (int)MANA_COST + " маны").withStyle(ChatFormatting.AQUA));
     }
 
     // Статический метод для очистки кулдаунов (можно вызвать при выходе игрока)

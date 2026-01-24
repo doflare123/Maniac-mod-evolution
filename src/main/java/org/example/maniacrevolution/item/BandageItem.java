@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -10,10 +11,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -28,6 +31,13 @@ public class BandageItem extends Item {
         ItemStack itemStack = player.getItemInHand(hand);
         player.startUsingItem(hand);
         return InteractionResultHolder.consume(itemStack);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.literal(""));
+        tooltip.add(Component.literal("§6Способность: §e" + "Бинт в беде не бросит").withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.literal("При применении на союзника восстанавливает ему 4 хп, если применить на себя (направив в пустоту) восстановить 2 хп"));
     }
 
     @Override
@@ -106,7 +116,7 @@ public class BandageItem extends Item {
 
         // Лечим цель или себя
         if (targetPlayer != null) {
-            targetPlayer.heal(2.0F); // 1 сердце = 2 HP
+            targetPlayer.heal(4.0F); // 1 сердце = 2 HP
             level.playSound(null, targetPlayer.blockPosition(), SoundEvents.PLAYER_LEVELUP,
                     SoundSource.PLAYERS, 0.5F, 1.5F);
             player.displayClientMessage(Component.literal("§aВы вылечили " + targetPlayer.getName().getString()), true);

@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -8,11 +9,15 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import org.example.maniacrevolution.mana.ManaProvider;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.OpenResurrectionGuiPacket;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class NecromancerStaffItem extends Item {
     private static final int USE_DURATION = 100; // 5 секунд (20 тиков = 1 секунда)
@@ -24,6 +29,17 @@ public class NecromancerStaffItem extends Item {
 
     public NecromancerStaffItem(Properties properties) {
         super(properties.durability(MAX_DURABILITY));
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.literal(""));
+        tooltip.add(Component.literal("§6Способность: §e" + "Воскрешение мертвых").withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.literal("§7" + "Если ваш союзник пал - не беда! Почему бы не раскопать его могилу с помощью магии и поставить вновь на ноги? Это же точно по закону?...(магия слишком нестабильная, ваш посох может просто не выдержать)").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal(""));
+        tooltip.add(Component.literal("§9Стоимость: §b" + (int)MANA_COST + " маны" + " и 30 прочности").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.literal(""));
+        tooltip.add(Component.literal("при неудачном касте (прерывании) посох повреждается на 10 прочности"));
     }
 
     @Override

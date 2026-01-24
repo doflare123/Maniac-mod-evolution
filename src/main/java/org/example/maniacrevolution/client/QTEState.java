@@ -63,7 +63,7 @@ public class QTEState {
         int screenHeight = mc.getWindow().getGuiScaledHeight();
 
         int centerX = screenWidth / 2;
-        int centerY = screenHeight - 90;
+        int centerY = screenHeight - 135;
 
         int boxX = centerX - BOX_SIZE / 2;
         int boxY = centerY - BOX_SIZE / 2;

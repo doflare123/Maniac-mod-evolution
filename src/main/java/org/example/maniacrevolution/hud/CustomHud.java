@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
@@ -11,6 +12,10 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.fleshheap.ClientFleshHeapData;
+import org.example.maniacrevolution.item.IItemWithAbility;
+import org.example.maniacrevolution.item.ITimedAbility;
+import org.example.maniacrevolution.item.armor.MedicalMaskItem;
+import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.mana.ClientManaData;
 import org.example.maniacrevolution.perk.PerkType;
 
@@ -198,13 +203,73 @@ public class CustomHud implements IGuiOverlay {
             currentX += PERK_ICON_SIZE + 4;
         }
 
-        renderAbilitySlot(gui, currentX, currentY);
+        // НОВОЕ: Рендер способности предмета
+        IItemWithAbility itemAbility = findItemWithAbility(player);
+        if (itemAbility != null) {
+            renderAbilitySlot(gui, currentX, currentY, itemAbility, player);
+        }
         currentX += ABILITY_ICON_SIZE + 15;
 
         int barsY = y + (MAIN_PANEL_HEIGHT - (BAR_HEIGHT * 2 + 4)) / 2;
         renderHealthBar(gui, player, currentX, barsY);
         renderManaBar(gui, currentX, barsY + BAR_HEIGHT + 4);
     }
+
+    /**
+     * НОВОЕ: Поиск предмета со способностью у игрока
+     */
+    /**
+     * ИСПРАВЛЕНО: Поиск предмета со способностью с учетом условий
+     */
+    private IItemWithAbility findItemWithAbility(Player player) {
+        // Проверяем основную руку
+        ItemStack mainHand = player.getMainHandItem();
+        if (mainHand.getItem() instanceof IItemWithAbility ability) {
+            return ability;
+        }
+
+        // Проверяем броню с УСЛОВИЯМИ
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            if (slot.getType() != EquipmentSlot.Type.ARMOR) continue;
+
+            ItemStack armorPiece = player.getItemBySlot(slot);
+            if (armorPiece.isEmpty()) continue;
+
+            // ИСПРАВЛЕНО: Проверяем условия для брони
+            if (armorPiece.getItem() instanceof IItemWithAbility ability) {
+                // Для брони некроманта - нужен полный сет
+                if (armorPiece.getItem() instanceof NecromancerArmorItem) {
+                    if (!hasFullNecromancerSet(player)) {
+                        continue; // Пропускаем, если нет полного сета
+                    }
+                }
+
+                // Для медицинской маски - должна быть в слоте шлема
+                if (armorPiece.getItem() instanceof MedicalMaskItem) {
+                    if (slot != EquipmentSlot.HEAD) {
+                        continue;
+                    }
+                }
+
+                return ability;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * НОВОЕ: Проверка полного сета некроманта
+     */
+    private boolean hasFullNecromancerSet(Player player) {
+        for (ItemStack armorSlot : player.getArmorSlots()) {
+            if (!(armorSlot.getItem() instanceof NecromancerArmorItem)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     private void renderPerkSlot(GuiGraphics gui, ClientPlayerData.ClientPerkData perk, int x, int y, boolean selected) {
         Minecraft mc = Minecraft.getInstance();
@@ -239,12 +304,126 @@ public class CustomHud implements IGuiOverlay {
         }
     }
 
-    private void renderAbilitySlot(GuiGraphics gui, int x, int y) {
+    private void renderAbilitySlot(GuiGraphics gui, int x, int y, IItemWithAbility ability, Player player) {
+        Minecraft mc = Minecraft.getInstance();
+
+        // Фон
         gui.fill(x, y, x + ABILITY_ICON_SIZE, y + ABILITY_ICON_SIZE, SLOT_BG);
         gui.renderOutline(x, y, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, SLOT_BORDER);
 
-        Minecraft mc = Minecraft.getInstance();
-        gui.drawString(mc.font, "?", x + ABILITY_ICON_SIZE / 2 - 3, y + ABILITY_ICON_SIZE / 2 - 4, 0xFF666666, false);
+        // Иконка способности
+        ResourceLocation icon = ability.getAbilityIcon();
+        try {
+            RenderSystem.setShaderTexture(0, icon);
+            RenderSystem.enableBlend();
+            gui.blit(icon, x, y, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
+            RenderSystem.disableBlend();
+        } catch (Exception e) {
+            gui.drawString(mc.font, "?", x + ABILITY_ICON_SIZE / 2 - 3, y + ABILITY_ICON_SIZE / 2 - 4, 0xFFFFFF, false);
+        }
+
+        // ИСПРАВЛЕНО: Индикатор активности с прогресс-баром
+        if (ability instanceof ITimedAbility timedAbility && timedAbility.isAbilityActive(player)) {
+            float durationProgress = timedAbility.getDurationProgress(player);
+
+            // Круговой прогресс-бар (ободок)
+            renderCircularProgress(gui, x, y, ABILITY_ICON_SIZE, durationProgress, 0xFF55FF55);
+
+            // Опционально: оставшееся время
+            int remainingSec = timedAbility.getRemainingDurationSeconds(player);
+            if (remainingSec > 0) {
+                String timeText = remainingSec + "с";
+                int textX = x + (ABILITY_ICON_SIZE - mc.font.width(timeText)) / 2;
+                int textY = y + ABILITY_ICON_SIZE + 2;
+                gui.drawString(mc.font, "§a" + timeText, textX, textY, 0xFFFFFF, true);
+            }
+        }
+        // Кулдаун (только если способность НЕ активна)
+        else if (ability.isOnCooldown(player)) {
+            float cdProgress = ability.getCooldownProgress(player);
+            int cdHeight = (int) (ABILITY_ICON_SIZE * cdProgress);
+
+            // Затемнение
+            gui.fill(x, y + ABILITY_ICON_SIZE - cdHeight, x + ABILITY_ICON_SIZE, y + ABILITY_ICON_SIZE, 0xBB000000);
+
+            // Текст кулдауна
+            int cooldownSec = ability.getCooldownSeconds(player);
+            String cdText = cooldownSec + "с";
+            int textX = x + (ABILITY_ICON_SIZE - mc.font.width(cdText)) / 2;
+            int textY = y + ABILITY_ICON_SIZE / 2 - 4;
+            gui.drawString(mc.font, "§c" + cdText, textX, textY, 0xFFFFFF, true);
+        }
+
+        // Стоимость маны
+        float manaCost = ability.getManaCost();
+        if (manaCost > 0 && !ability.isOnCooldown(player)) {
+            String costText = String.format("%.0f", manaCost);
+            int costX = x + ABILITY_ICON_SIZE - mc.font.width(costText) - 2;
+            int costY = y + ABILITY_ICON_SIZE - 10;
+
+            gui.fill(costX - 1, costY - 1, costX + mc.font.width(costText) + 1, costY + 9, 0xAA000000);
+
+            float currentMana = ClientManaData.getMana();
+            int color = currentMana >= manaCost ? 0xFF00AAFF : 0xFFFF5555;
+            gui.drawString(mc.font, costText, costX, costY, color, false);
+        }
+    }
+
+    /**
+     * НОВОЕ: Круговой прогресс-бар (ободок вокруг иконки)
+     */
+    private void renderCircularProgress(GuiGraphics gui, int x, int y, int size, float progress, int color) {
+        int borderWidth = 3;
+
+        // Рисуем 4 стороны с учетом прогресса
+        float totalLength = (size * 4) - 4; // Периметр минус углы
+        float currentLength = totalLength * (1.0f - progress); // Инвертируем для убывания
+
+        // Верх (слева направо)
+        if (currentLength > 0) {
+            int topLength = Math.min((int)currentLength, size);
+            gui.fill(x, y - borderWidth, x + topLength, y, color);
+            currentLength -= size;
+        }
+
+        // Право (сверху вниз)
+        if (currentLength > 0) {
+            int rightLength = Math.min((int)currentLength, size);
+            gui.fill(x + size, y, x + size + borderWidth, y + rightLength, color);
+            currentLength -= size;
+        }
+
+        // Низ (справа налево)
+        if (currentLength > 0) {
+            int bottomLength = Math.min((int)currentLength, size);
+            gui.fill(x + size - bottomLength, y + size, x + size, y + size + borderWidth, color);
+            currentLength -= size;
+        }
+
+        // Лево (снизу вверх)
+        if (currentLength > 0) {
+            int leftLength = Math.min((int)currentLength, size);
+            gui.fill(x - borderWidth, y + size - leftLength, x, y + size, color);
+        }
+    }
+
+    /**
+     * НОВОЕ: Пульсирующая рамка для активной способности
+     */
+    private void drawPulsingBorder(GuiGraphics gui, int x, int y, int size) {
+        long time = System.currentTimeMillis();
+        float pulse = (float) Math.sin(time / 200.0) * 0.3f + 0.7f; // 0.4 - 1.0
+
+        int alpha = (int) (pulse * 255);
+        int color = (alpha << 24) | 0x00FF00;
+
+        // Верх и низ
+        gui.fill(x - 1, y - 2, x + size + 1, y - 1, color);
+        gui.fill(x - 1, y + size + 1, x + size + 1, y + size + 2, color);
+
+        // Лево и право
+        gui.fill(x - 2, y - 1, x - 1, y + size + 1, color);
+        gui.fill(x + size + 1, y - 1, x + size + 2, y + size + 1, color);
     }
 
     private void renderHealthBar(GuiGraphics gui, Player player, int x, int y) {

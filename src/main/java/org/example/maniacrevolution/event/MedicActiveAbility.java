@@ -1,56 +1,52 @@
 package org.example.maniacrevolution.event;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.example.maniacrevolution.ModItems;
+import org.example.maniacrevolution.item.armor.MedicalMaskItem;
+import org.example.maniacrevolution.mana.ManaProvider;
 
 import java.util.List;
 
 /**
- * Пассивная способность медика: разделение урона с ближайшим союзником
- * Если медика атакуют и рядом (в радиусе 4 блоков) есть союзник,
- * урон делится поровну между медиком и одним союзником
+ * АКТИВНАЯ способность медика: разделение урона при ношении маски
  */
 @Mod.EventBusSubscriber
-public class MedicPassiveAbility {
+public class MedicActiveAbility {
 
     private static final double DAMAGE_SHARE_RADIUS = 4.0;
     private static final String SURVIVORS_TEAM = "survivors";
+    private static final String NBT_KEY_ACTIVE = "MedicAbilityActive";
+    private static final float MANA_COST_PER_ACTIVATION = 30.0f;
 
     @SubscribeEvent
     public static void onPlayerHurt(LivingHurtEvent event) {
-        // Проверяем, что пострадавший - игрок
         if (!(event.getEntity() instanceof ServerPlayer victim)) return;
 
-        // Проверяем, что это медик (scoreboardSurvivorClass == 5)
-        if (!isMedic(victim)) return;
+        // ИСПРАВЛЕНО: Используем статический метод из MedicalMaskItem
+        if (!MedicalMaskItem.isAbilityActive(victim)) return;
 
-        // Проверяем, что медик не в spectator/creative
         if (victim.isSpectator() || victim.isCreative()) return;
 
-        // Ищем ближайшего союзника в радиусе 4 блоков
         ServerPlayer nearestAlly = findNearestAlly(victim);
         if (nearestAlly == null) return;
 
-        // Делим урон поровну
         float originalDamage = event.getAmount();
         float sharedDamage = originalDamage * 0.5F;
 
-        // Уменьшаем урон медику
         event.setAmount(sharedDamage);
-
-        // Наносим урон союзнику
         nearestAlly.hurt(victim.damageSources().generic(), sharedDamage);
 
-        // Визуальные эффекты
         showDamageShareEffect(victim, nearestAlly);
 
-        // Сообщения игрокам
         victim.displayClientMessage(
                 net.minecraft.network.chat.Component.literal(
                         String.format("§6Урон разделен с %s (%.1f❤)",
@@ -68,36 +64,89 @@ public class MedicPassiveAbility {
     }
 
     /**
-     * Проверяет, является ли игрок медиком
+     * НОВОЕ: Активация способности (вызывается из перка или команды)
      */
-    private static boolean isMedic(ServerPlayer player) {
-        Scoreboard scoreboard = player.getScoreboard();
-        if (scoreboard == null) return false;
-
-        try {
-            var objective = scoreboard.getObjective("SurvivorClass");
-            if (objective == null) return false;
-
-            // Правильный способ получить счет игрока в 1.20.1
-            var scoreAccess = scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective);
-
-            return scoreAccess.getScore() == 5;
-        } catch (Exception e) {
+    public static boolean activateAbility(ServerPlayer player, int durationTicks) {
+        // Проверка маски
+        if (!isWearingMask(player)) {
+            player.displayClientMessage(
+                    net.minecraft.network.chat.Component.literal("§cНаденьте медицинскую маску!"),
+                    true
+            );
             return false;
         }
+
+        // Проверка маны
+        boolean success = player.getCapability(ManaProvider.MANA).map(mana -> {
+            if (!mana.consumeMana(MANA_COST_PER_ACTIVATION)) {
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal(
+                                String.format("§cНедостаточно маны! (Нужно: %.0f)", MANA_COST_PER_ACTIVATION)
+                        ),
+                        true
+                );
+                return false;
+            }
+            return true;
+        }).orElse(false);
+
+        if (!success) return false;
+
+        // Активируем способность
+        CompoundTag data = player.getPersistentData();
+        data.putInt(NBT_KEY_ACTIVE, player.getServer().getTickCount() + durationTicks);
+
+        player.displayClientMessage(
+                net.minecraft.network.chat.Component.literal(
+                        "§aСпособность медика активирована! (" + (durationTicks / 20) + "с)"
+                ),
+                false
+        );
+
+        return true;
     }
 
     /**
-     * Проверяет, является ли игрок валидным союзником
+     * НОВОЕ: Деактивация способности
      */
-    private static boolean isValidAlly(Player player, Player medic) {
-        // Не может быть сам медик
-        if (player == medic) return false;
+    public static void deactivateAbility(ServerPlayer player) {
+        player.getPersistentData().remove(NBT_KEY_ACTIVE);
+        player.displayClientMessage(
+                net.minecraft.network.chat.Component.literal("§cСпособность медика деактивирована"),
+                true
+        );
+    }
 
-        // Не в spectator/creative
+    /**
+     * НОВОЕ: Проверка активности способности
+     */
+    public static boolean isAbilityActive(ServerPlayer player) {
+        CompoundTag data = player.getPersistentData();
+        if (!data.contains(NBT_KEY_ACTIVE)) return false;
+
+        int expiryTick = data.getInt(NBT_KEY_ACTIVE);
+        int currentTick = player.getServer().getTickCount();
+
+        if (currentTick >= expiryTick) {
+            data.remove(NBT_KEY_ACTIVE);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * НОВОЕ: Проверка наличия маски
+     */
+    private static boolean isWearingMask(ServerPlayer player) {
+        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
+        return helmet.getItem() == ModItems.MEDICAL_MASK.get();
+    }
+
+    private static boolean isValidAlly(Player player, Player medic) {
+        if (player == medic) return false;
         if (player.isSpectator() || player.isCreative()) return false;
 
-        // Должен быть в команде survivors
         Team team = player.getTeam();
         if (team == null || !SURVIVORS_TEAM.equalsIgnoreCase(team.getName())) {
             return false;
@@ -106,9 +155,6 @@ public class MedicPassiveAbility {
         return true;
     }
 
-    /**
-     * Находит ближайшего союзника в радиусе
-     */
     private static ServerPlayer findNearestAlly(ServerPlayer medic) {
         AABB searchBox = medic.getBoundingBox().inflate(DAMAGE_SHARE_RADIUS);
         List<ServerPlayer> nearbyPlayers = medic.level().getEntitiesOfClass(
@@ -119,7 +165,6 @@ public class MedicPassiveAbility {
 
         if (nearbyPlayers.isEmpty()) return null;
 
-        // Находим ближайшего
         ServerPlayer nearest = null;
         double minDistance = Double.MAX_VALUE;
 
@@ -134,15 +179,11 @@ public class MedicPassiveAbility {
         return nearest;
     }
 
-    /**
-     * Показывает визуальный эффект разделения урона
-     */
     private static void showDamageShareEffect(ServerPlayer medic, ServerPlayer ally) {
         if (!(medic.level() instanceof net.minecraft.server.level.ServerLevel serverLevel)) {
             return;
         }
 
-        // Партиклы между медиком и союзником
         net.minecraft.world.phys.Vec3 medicPos = medic.position().add(0, 1, 0);
         net.minecraft.world.phys.Vec3 allyPos = ally.position().add(0, 1, 0);
         net.minecraft.world.phys.Vec3 direction = allyPos.subtract(medicPos).normalize();
@@ -161,7 +202,6 @@ public class MedicPassiveAbility {
             );
         }
 
-        // Звуковой эффект
         serverLevel.playSound(null, medic.blockPosition(),
                 net.minecraft.sounds.SoundEvents.SHIELD_BLOCK,
                 net.minecraft.sounds.SoundSource.PLAYERS, 0.5F, 1.2F);

@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.item.armor;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -9,6 +10,8 @@ import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.item.IItemWithAbility;
 import org.example.maniacrevolution.necromancer.NecromancerProvider;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +21,7 @@ import java.util.List;
  * Броня некроманта, которая предоставляет пассивную защиту от смерти
  * При использовании пассивки броня может получить урон или сломаться
  */
-public class NecromancerArmorItem extends ArmorItem {
+public class NecromancerArmorItem extends ArmorItem implements IItemWithAbility {
 
     public NecromancerArmorItem(ArmorMaterial material, Type type, Properties properties) {
         super(material, type, properties);
@@ -120,5 +123,31 @@ public class NecromancerArmorItem extends ArmorItem {
                     float currentBonus = mana.getBonusRegenRate();
                     mana.setBonusRegenRate(Math.max(0, currentBonus - 0.5f));
                 });
+    }
+
+    @Override
+    public ResourceLocation getAbilityIcon() {
+        return new ResourceLocation(Maniacrev.MODID, "textures/gui/abilities/necromancer_armor.png");
+    }
+
+    @Override
+    public String getAbilityName() {
+        return "Защита от смерти";
+    }
+
+    @Override
+    public float getManaCost() {
+        return 0;
+    }
+
+    @Override
+    public int getCooldownSeconds(Player player) {
+        // Если броня некроманта имеет кулдаун, реализуйте здесь
+        return 0;
+    }
+
+    @Override
+    public int getMaxCooldownSeconds() {
+        return 0;
     }
 }

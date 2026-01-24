@@ -246,5 +246,11 @@
   "item.maniacrev.agent47_tablet": "Agent tablet",
   "item.maniacrev.death_scythe": "Death scythe",
 
-  "item.maniacrev.voting_ticket": "Билет для голосования"
+  "item.maniacrev.voting_ticket": "Билет для голосования",
+
+  "key.categories.maniacrev": "Maniac Revolution",
+  "key.maniacrev.activate_perk": "Activate Perk",
+  "key.maniacrev.activate_armor_ability": "Activate Armor Ability",
+
+  "item.maniacrev.medical_mask": "Medical Mask"
 }
