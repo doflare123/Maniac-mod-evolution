@@ -16,6 +16,7 @@ import org.example.maniacrevolution.item.IItemWithAbility;
 import org.example.maniacrevolution.item.ITimedAbility;
 import org.example.maniacrevolution.item.armor.MedicalMaskItem;
 import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
+import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.mana.ClientManaData;
 import org.example.maniacrevolution.perk.PerkType;
 
@@ -97,6 +98,9 @@ public class CustomHud implements IGuiOverlay {
         int penaltyX = mainX + MAIN_PANEL_WIDTH + 5 + (HOTBAR_SLOT_SIZE + 4) * 3 + 8;
         int penaltyY = mainY + (MAIN_PANEL_HEIGHT - PENALTY_SLOT_SIZE * 3 - 8) / 2;
         renderPenaltySlots(guiGraphics, penaltyX, penaltyY, player);
+
+        // НОВОЕ: Подсказки по клавишам слева от HUD
+        renderPerkKeybindHints(guiGraphics, mainX - 125, mainY + 20);
 
         // Отображаем название предмета НАД кастомным HUD
         renderItemName(guiGraphics, player, scaledWidth, mainY);
@@ -302,6 +306,12 @@ public class CustomHud implements IGuiOverlay {
             int textY = y + PERK_ICON_SIZE / 2 - 4;
             gui.drawString(mc.font, cdText, textX, textY, 0xFFFFFF, true);
         }
+
+        String typeText = getTypeShort(perk.type());
+        int typeColor = getTypeFontColor(perk.type());
+        int typeX = x + (PERK_ICON_SIZE - mc.font.width(typeText)) / 2;
+        int typeY = y + PERK_ICON_SIZE + 2;
+        gui.drawString(mc.font, typeText, typeX, typeY, typeColor, false);
     }
 
     private void renderAbilitySlot(GuiGraphics gui, int x, int y, IItemWithAbility ability, Player player) {
@@ -554,12 +564,64 @@ public class CustomHud implements IGuiOverlay {
         }
     }
 
+    /**
+     * НОВОЕ: Отображение подсказок по клавишам управления перками
+     */
+    private void renderPerkKeybindHints(GuiGraphics gui, int x, int y) {
+        Minecraft mc = Minecraft.getInstance();
+
+        // Получаем названия клавиш
+        String activateKey = ModKeybinds.ACTIVATE_PERK.getTranslatedKeyMessage().getString();
+        String switchKey = ModKeybinds.SWITCH_PERK.getTranslatedKeyMessage().getString();
+
+        int hintY = y + (MAIN_PANEL_HEIGHT / 2) - 10;
+
+        // Формируем строки подсказок
+        String activateText = "§7[" + activateKey + "] Активация";
+        String switchText = "§7[" + switchKey + "] Сменить";
+
+        // Вычисляем X координаты с учетом ширины текста (выравнивание по правой стороне)
+        int activateX = x + 120 - mc.font.width(activateText);
+        int switchX = x + 120 - mc.font.width(switchText);
+
+        // Подсказка активации
+        gui.drawString(mc.font, activateText, activateX, hintY, 0xFFAAAAAA, false);
+
+        // Подсказка смены перка
+        gui.drawString(mc.font, switchText, switchX, hintY + 12, 0xFFAAAAAA, false);
+    }
+
+
     private int getTypeColor(PerkType type) {
         return switch (type) {
             case PASSIVE -> 0xFF3355FF;
             case ACTIVE -> 0xFFFF5533;
             case HYBRID -> 0xFFAA55FF;
             case PASSIVE_COOLDOWN -> 0xFF3355FF;
+        };
+    }
+
+    /**
+     * НОВОЕ: Получение цвета текста для типа перка
+     */
+    private int getTypeFontColor(PerkType type) {
+        return switch (type) {
+            case PASSIVE -> 0xFF5555FF;
+            case ACTIVE -> 0xFFFF5555;
+            case HYBRID -> 0xFFFF55FF;
+            case PASSIVE_COOLDOWN -> 0xFF5555FF;
+        };
+    }
+
+    /**
+     * НОВОЕ: Получение короткого названия типа перка
+     */
+    private String getTypeShort(PerkType type) {
+        return switch (type) {
+            case PASSIVE -> "П";
+            case ACTIVE -> "А";
+            case HYBRID -> "Г";
+            case PASSIVE_COOLDOWN -> "ПК";
         };
     }
 }

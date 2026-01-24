@@ -12,8 +12,8 @@ import org.example.maniacrevolution.gui.pages.*;
 public class GuideScreen extends Screen {
     private GuidePage currentPage;
     private int guiLeft, guiTop;
-    private static final int GUI_WIDTH = 400;
-    private static final int GUI_HEIGHT = 260;
+    private static final int GUI_WIDTH = 600;
+    private static final int GUI_HEIGHT = 300;
 
     // Страницы
     private final MainPage mainPage;
