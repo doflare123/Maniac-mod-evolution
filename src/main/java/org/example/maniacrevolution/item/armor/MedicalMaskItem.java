@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.item.armor;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,14 +20,12 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.client.ClientAbilityData;
 import org.example.maniacrevolution.item.IItemWithAbility;
 import org.example.maniacrevolution.item.ITimedAbility;
-import org.example.maniacrevolution.item.armor.ArmorAbilityCooldownManager;
-import org.example.maniacrevolution.item.armor.IActivatableArmor;
 import org.example.maniacrevolution.mana.ManaProvider;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, IItemWithAbility, ITimedAbility {
+public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITimedAbility {
 
     private static final MedicalMaskMaterial MATERIAL = new MedicalMaskMaterial();
 
@@ -34,7 +33,10 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, IIt
     private static final float MANA_COST = 30.0f;
     private static final int DURATION_TICKS = 20 * 15; // 15 секунд
     private static final int COOLDOWN_TICKS = 20 * 60; // 60 секунд
-    private static final String NBT_KEY_ACTIVE = "MedicMaskActive";
+
+    // ИСПРАВЛЕНО: Используем timestamp вместо тиков
+    private static final String NBT_KEY_ACTIVE_TIMESTAMP = "MedicMaskActiveTimestamp";
+    private static final String NBT_KEY_ACTIVE_DURATION = "MedicMaskActiveDuration";
 
     public MedicalMaskItem() {
         super(MATERIAL, Type.HELMET, new Properties()
@@ -61,8 +63,6 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, IIt
         tooltip.add(Component.literal("§8Нажмите [V] для активации").withStyle(ChatFormatting.DARK_GRAY));
     }
 
-    // === Реализация IActivatableArmor ===
-
     @Override
     public boolean activateAbility(ServerPlayer player) {
         if (!canActivate(player)) {
@@ -87,11 +87,12 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, IIt
         // Устанавливаем кулдаун
         ArmorAbilityCooldownManager.setCooldown(player, this, COOLDOWN_TICKS);
 
-        // Активируем способность
-        player.getPersistentData().putInt(NBT_KEY_ACTIVE,
-                player.getServer().getTickCount() + DURATION_TICKS);
+        // ИСПРАВЛЕНО: Активируем способность используя timestamp
+        long currentTime = System.currentTimeMillis();
+        player.getPersistentData().putLong(NBT_KEY_ACTIVE_TIMESTAMP, currentTime);
+        player.getPersistentData().putInt(NBT_KEY_ACTIVE_DURATION, DURATION_TICKS);
 
-        // ИСПРАВЛЕНО: Синхронизируем с клиентом с длительностью
+        // Синхронизируем с клиентом
         ArmorAbilityCooldownManager.syncToClient(player, this, DURATION_TICKS / 20);
 
         player.displayClientMessage(
@@ -107,13 +108,11 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, IIt
 
     @Override
     public boolean canActivate(ServerPlayer player) {
-        // Проверка надета ли маска
         ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
         if (helmet.getItem() != this) {
             return false;
         }
 
-        // Проверка кулдауна
         if (ArmorAbilityCooldownManager.isOnCooldown(player, this)) {
             int remaining = ArmorAbilityCooldownManager.getRemainingCooldown(player, this);
             player.displayClientMessage(
@@ -123,7 +122,6 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, IIt
             return false;
         }
 
-        // Проверка активности
         if (isAbilityActive(player)) {
             player.displayClientMessage(
                     Component.literal("§cСпособность уже активна!"),
@@ -161,21 +159,28 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, IIt
     }
 
     /**
-     * Проверка активности способности
+     * ИСПРАВЛЕНО: Проверка активности способности через timestamp
      */
     public static boolean isAbilityActive(ServerPlayer player) {
-        if (!player.getPersistentData().contains(NBT_KEY_ACTIVE)) {
+        CompoundTag data = player.getPersistentData();
+
+        if (!data.contains(NBT_KEY_ACTIVE_TIMESTAMP) || !data.contains(NBT_KEY_ACTIVE_DURATION)) {
             return false;
         }
 
-        int expiryTick = player.getPersistentData().getInt(NBT_KEY_ACTIVE);
-        int currentTick = player.getServer().getTickCount();
+        long timestamp = data.getLong(NBT_KEY_ACTIVE_TIMESTAMP);
+        int durationTicks = data.getInt(NBT_KEY_ACTIVE_DURATION);
 
-        if (currentTick >= expiryTick) {
-            // ИСПРАВЛЕНО: При окончании способности обновляем кулдаун
-            player.getPersistentData().remove(NBT_KEY_ACTIVE);
+        long currentTime = System.currentTimeMillis();
+        long elapsed = currentTime - timestamp;
+        long elapsedTicks = elapsed / 50; // 50 мс = 1 тик
 
-            // Синхронизируем с клиентом (длительность = 0, кулдаун актуальный)
+        if (elapsedTicks >= durationTicks) {
+            // Способность закончилась
+            data.remove(NBT_KEY_ACTIVE_TIMESTAMP);
+            data.remove(NBT_KEY_ACTIVE_DURATION);
+
+            // Синхронизируем с клиентом
             ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
             if (helmet.getItem() instanceof MedicalMaskItem mask) {
                 ArmorAbilityCooldownManager.syncToClient(player, mask, 0);
@@ -199,7 +204,6 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, IIt
     @Override
     public int getCooldownSeconds(Player player) {
         if (!(player instanceof ServerPlayer serverPlayer)) {
-            // На клиенте используем клиентский кулдаун (если есть)
             return ClientAbilityData.getCooldownSeconds(this);
         }
         return ArmorAbilityCooldownManager.getRemainingCooldown(serverPlayer, this) / 20;
@@ -218,18 +222,23 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, IIt
     @Override
     public int getRemainingDurationSeconds(Player player) {
         if (!(player instanceof ServerPlayer serverPlayer)) {
-            // На клиенте используем клиентские данные
             return ClientAbilityData.getRemainingDuration(this);
         }
 
-        if (!serverPlayer.getPersistentData().contains(NBT_KEY_ACTIVE)) {
+        CompoundTag data = serverPlayer.getPersistentData();
+
+        if (!data.contains(NBT_KEY_ACTIVE_TIMESTAMP) || !data.contains(NBT_KEY_ACTIVE_DURATION)) {
             return 0;
         }
 
-        int expiryTick = serverPlayer.getPersistentData().getInt(NBT_KEY_ACTIVE);
-        int currentTick = serverPlayer.getServer().getTickCount();
-        int remainingTicks = Math.max(0, expiryTick - currentTick);
+        long timestamp = data.getLong(NBT_KEY_ACTIVE_TIMESTAMP);
+        int durationTicks = data.getInt(NBT_KEY_ACTIVE_DURATION);
 
+        long currentTime = System.currentTimeMillis();
+        long elapsed = currentTime - timestamp;
+        long elapsedTicks = elapsed / 50;
+
+        int remainingTicks = Math.max(0, (int)(durationTicks - elapsedTicks));
         return remainingTicks / 20;
     }
 
@@ -238,7 +247,6 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, IIt
         if (player instanceof ServerPlayer serverPlayer) {
             return isAbilityActive(serverPlayer);
         }
-        // На клиенте проверяем по длительности
         return getRemainingDurationSeconds(player) > 0;
     }
 

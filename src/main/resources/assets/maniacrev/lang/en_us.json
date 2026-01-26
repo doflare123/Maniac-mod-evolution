@@ -252,5 +252,8 @@
   "key.maniacrev.activate_perk": "Activate Perk",
   "key.maniacrev.activate_armor_ability": "Activate Armor Ability",
 
-  "item.maniacrev.medical_mask": "Medical Mask"
+  "item.maniacrev.medical_mask": "Medical Mask",
+  "effect.maniacrev.mana_flow": "Восстановление маны",
+  "effect.maniacrev.target": "Цель",
+  "effect.maniacrev.death_race": "Гонка со смертью"
 }

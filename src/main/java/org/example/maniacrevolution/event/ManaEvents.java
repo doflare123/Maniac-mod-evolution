@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.event;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -12,14 +13,32 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.item.DeathScytheItem;
+import org.example.maniacrevolution.item.HookItem;
+import org.example.maniacrevolution.item.IItemWithAbility;
 import org.example.maniacrevolution.item.ITimedAbility;
 import org.example.maniacrevolution.item.armor.ArmorAbilityCooldownManager;
 import org.example.maniacrevolution.mana.ManaProvider;
 import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.SyncAbilityCooldownPacket;
 import org.example.maniacrevolution.network.packets.SyncManaPacket;
+
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class ManaEvents {
+
+    @SubscribeEvent
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            UUID playerId = player.getUUID();
+
+            // Очищаем кэши
+            ArmorAbilityCooldownManager.onPlayerLogout(player);
+            DeathScytheItem.onPlayerLogout(playerId);
+            HookItem.clearCooldown(playerId);
+        }
+    }
 
     @SubscribeEvent
     public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
@@ -68,17 +87,35 @@ public class ManaEvents {
     }
 
     /**
-     * НОВОЕ: Синхронизация активных способностей брони
+     * ОБНОВЛЕНО: Синхронизация активных способностей брони и оружия
      */
     private static void syncActiveArmorAbilities(ServerPlayer player) {
+        // Броня
         for (ItemStack armorSlot : player.getArmorSlots()) {
             if (armorSlot.getItem() instanceof ITimedAbility timedAbility) {
-                if (timedAbility.isAbilityActive(player)) {
-                    int remaining = timedAbility.getRemainingDurationSeconds(player);
-                    int cooldown = timedAbility.getCooldownSeconds(player);
+                int remaining = timedAbility.getRemainingDurationSeconds(player);
+                int cooldown = timedAbility.getCooldownSeconds(player);
 
+                if (remaining > 0 || cooldown > 0) {
                     ArmorAbilityCooldownManager.syncToClient(player, armorSlot.getItem(), remaining);
                 }
+            }
+        }
+
+        // Оружие в руках
+        ItemStack mainHand = player.getMainHandItem();
+        if (mainHand.getItem() instanceof IItemWithAbility ability) {
+            int cooldown = ability.getCooldownSeconds(player);
+            if (cooldown > 0) {
+                ModNetworking.sendToPlayer(
+                        new SyncAbilityCooldownPacket(
+                                mainHand.getItem(),
+                                cooldown,
+                                ability.getMaxCooldownSeconds(),
+                                0
+                        ),
+                        player
+                );
             }
         }
     }
@@ -86,16 +123,17 @@ public class ManaEvents {
     @SubscribeEvent
     public static void onPlayerDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+                mana.setBonusRegenRate(0.0f);
+            });
+
+            // НОВОЕ: Очищаем активные способности брони
+            CompoundTag data = player.getPersistentData();
+            data.remove("MedicMaskActiveTimestamp");
+            data.remove("MedicMaskActiveDuration");
+
             // Очищаем кулдауны брони при смерти
             ArmorAbilityCooldownManager.clearAllCooldowns(player);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            // Очищаем кэш при выходе
-            ArmorAbilityCooldownManager.onPlayerLogout(player);
         }
     }
 }

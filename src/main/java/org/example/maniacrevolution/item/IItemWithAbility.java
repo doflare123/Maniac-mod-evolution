@@ -21,6 +21,8 @@ public interface IItemWithAbility {
      */
     String getAbilityName();
 
+    String getAbilityDescription();
+
     /**
      * Получить стоимость активации (0 если не требует маны)
      */

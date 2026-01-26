@@ -136,6 +136,11 @@ public class NecromancerArmorItem extends ArmorItem implements IItemWithAbility 
     }
 
     @Override
+    public String getAbilityDescription() {
+        return "";
+    }
+
+    @Override
     public float getManaCost() {
         return 0;
     }

@@ -21,6 +21,7 @@ import net.minecraft.world.scores.Team;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.client.ClientAbilityData;
 import org.example.maniacrevolution.item.armor.IActivatableArmor;
+import org.example.maniacrevolution.util.ManaUtil;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -34,6 +35,7 @@ import java.util.*;
  */
 public class DeathScytheItem extends SwordItem implements IItemWithAbility {
 
+    private static final float MANA_COST = 7.0f;
     // Кулдауны телепортации для каждого игрока
     private static final Map<UUID, Long> teleportCooldowns = new HashMap<>();
     private static final long TELEPORT_COOLDOWN = 30000; // 30 секунд
@@ -113,6 +115,8 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
                 SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 0.8F);
         death.level().playSound(null, targetPos.x, targetPos.y, targetPos.z,
                 SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.2F);
+
+        ManaUtil.consumeMana(death, MANA_COST);
 
         death.displayClientMessage(
                 Component.literal("§5Вы телепортировались к " + target.getName().getString()),
@@ -252,13 +256,18 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
     }
 
     @Override
+    public float getManaCost() {
+        return MANA_COST;
+    }
+
+    @Override
     public String getAbilityName() {
         return "Телепортация к жертве";
     }
 
     @Override
-    public float getManaCost() {
-        return 0; // Не требует маны
+    public String getAbilityDescription() {
+        return "";
     }
 
     @Override
@@ -279,6 +288,7 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
         tooltip.add(Component.literal(""));
         tooltip.add(Component.literal("§6Способность: §5" + getAbilityName()).withStyle(ChatFormatting.GOLD));
         tooltip.add(Component.literal("§7ПКМ: Телепортация к случайному выжившему").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal("§9Стоимость: §b" + (int)MANA_COST + " маны").withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal("§9Кулдаун: §b" + getMaxCooldownSeconds() + "с").withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal(""));
         super.appendHoverText(stack, level, tooltip, flag);

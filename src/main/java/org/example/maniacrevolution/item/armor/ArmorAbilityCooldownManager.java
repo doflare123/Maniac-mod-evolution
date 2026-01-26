@@ -17,45 +17,70 @@ import java.util.UUID;
 public class ArmorAbilityCooldownManager {
 
     private static final String NBT_KEY_PREFIX = "ArmorAbilityCooldown_";
+    private static final String NBT_KEY_TIMESTAMP_PREFIX = "ArmorAbilityCooldownTimestamp_"; // НОВОЕ
 
     // Кэш кулдаунов на сервере (для оптимизации)
-    private static final Map<UUID, Map<Item, Long>> cooldownCache = new HashMap<>();
+    private static final Map<UUID, Map<Item, CooldownData>> cooldownCache = new HashMap<>();
+
+    // НОВОЕ: Класс для хранения данных кулдауна
+    private static class CooldownData {
+        long timestamp; // Время в миллисекундах когда был установлен кулдаун
+        int durationTicks; // Длительность кулдауна в тиках
+
+        CooldownData(long timestamp, int durationTicks) {
+            this.timestamp = timestamp;
+            this.durationTicks = durationTicks;
+        }
+
+        // Получить оставшееся время в тиках
+        int getRemaining() {
+            long currentTime = System.currentTimeMillis();
+            long elapsed = currentTime - timestamp;
+            long elapsedTicks = elapsed / 50; // 50 мс = 1 тик
+
+            return Math.max(0, (int)(durationTicks - elapsedTicks));
+        }
+
+        boolean isExpired() {
+            return getRemaining() <= 0;
+        }
+    }
 
     /**
      * Проверить, на кулдауне ли способность
      */
     public static boolean isOnCooldown(ServerPlayer player, Item armorItem) {
-        long expiryTime = getCooldownExpiry(player, armorItem);
-        long currentTime = player.getServer().getTickCount();
-
-        return currentTime < expiryTime;
+        CooldownData data = getCooldownData(player, armorItem);
+        return data != null && !data.isExpired();
     }
 
     /**
      * Получить оставшееся время кулдауна в тиках
      */
     public static int getRemainingCooldown(ServerPlayer player, Item armorItem) {
-        long expiryTime = getCooldownExpiry(player, armorItem);
-        long currentTime = player.getServer().getTickCount();
-
-        return Math.max(0, (int)(expiryTime - currentTime));
+        CooldownData data = getCooldownData(player, armorItem);
+        return data != null ? data.getRemaining() : 0;
     }
 
     /**
      * Установить кулдаун
      */
     public static void setCooldown(ServerPlayer player, Item armorItem, int cooldownTicks) {
-        long expiryTime = player.getServer().getTickCount() + cooldownTicks;
+        long currentTime = System.currentTimeMillis();
+        CooldownData data = new CooldownData(currentTime, cooldownTicks);
 
         // Сохраняем в NBT
-        CompoundTag data = player.getPersistentData();
-        String key = NBT_KEY_PREFIX + getItemKey(armorItem);
-        data.putLong(key, expiryTime);
+        CompoundTag nbtData = player.getPersistentData();
+        String timestampKey = NBT_KEY_TIMESTAMP_PREFIX + getItemKey(armorItem);
+        String durationKey = NBT_KEY_PREFIX + getItemKey(armorItem);
+
+        nbtData.putLong(timestampKey, currentTime);
+        nbtData.putInt(durationKey, cooldownTicks);
 
         // Обновляем кэш
         cooldownCache
                 .computeIfAbsent(player.getUUID(), k -> new HashMap<>())
-                .put(armorItem, expiryTime);
+                .put(armorItem, data);
     }
 
     /**
@@ -63,12 +88,16 @@ public class ArmorAbilityCooldownManager {
      */
     public static void clearCooldown(ServerPlayer player, Item armorItem) {
         CompoundTag data = player.getPersistentData();
-        String key = NBT_KEY_PREFIX + getItemKey(armorItem);
-        data.remove(key);
+        String timestampKey = NBT_KEY_TIMESTAMP_PREFIX + getItemKey(armorItem);
+        String durationKey = NBT_KEY_PREFIX + getItemKey(armorItem);
 
-        cooldownCache
-                .computeIfAbsent(player.getUUID(), k -> new HashMap<>())
-                .remove(armorItem);
+        data.remove(timestampKey);
+        data.remove(durationKey);
+
+        Map<Item, CooldownData> playerCache = cooldownCache.get(player.getUUID());
+        if (playerCache != null) {
+            playerCache.remove(armorItem);
+        }
     }
 
     /**
@@ -78,32 +107,55 @@ public class ArmorAbilityCooldownManager {
         CompoundTag data = player.getPersistentData();
 
         // Удаляем все ключи с префиксом
-        data.getAllKeys().removeIf(key -> key.startsWith(NBT_KEY_PREFIX));
+        data.getAllKeys().removeIf(key ->
+                key.startsWith(NBT_KEY_PREFIX) || key.startsWith(NBT_KEY_TIMESTAMP_PREFIX)
+        );
 
         cooldownCache.remove(player.getUUID());
     }
 
     /**
-     * Получить время истечения кулдауна
+     * ИСПРАВЛЕНО: Получить данные кулдауна
      */
-    private static long getCooldownExpiry(ServerPlayer player, Item armorItem) {
+    private static CooldownData getCooldownData(ServerPlayer player, Item armorItem) {
         // Проверяем кэш
-        Map<Item, Long> playerCache = cooldownCache.get(player.getUUID());
+        Map<Item, CooldownData> playerCache = cooldownCache.get(player.getUUID());
         if (playerCache != null && playerCache.containsKey(armorItem)) {
-            return playerCache.get(armorItem);
+            CooldownData cached = playerCache.get(armorItem);
+            // Если кулдаун истек, очищаем
+            if (cached.isExpired()) {
+                clearCooldown(player, armorItem);
+                return null;
+            }
+            return cached;
         }
 
         // Читаем из NBT
-        CompoundTag data = player.getPersistentData();
-        String key = NBT_KEY_PREFIX + getItemKey(armorItem);
-        long expiry = data.getLong(key);
+        CompoundTag nbtData = player.getPersistentData();
+        String timestampKey = NBT_KEY_TIMESTAMP_PREFIX + getItemKey(armorItem);
+        String durationKey = NBT_KEY_PREFIX + getItemKey(armorItem);
+
+        if (!nbtData.contains(timestampKey) || !nbtData.contains(durationKey)) {
+            return null;
+        }
+
+        long timestamp = nbtData.getLong(timestampKey);
+        int durationTicks = nbtData.getInt(durationKey);
+
+        CooldownData data = new CooldownData(timestamp, durationTicks);
+
+        // Проверяем не истек ли
+        if (data.isExpired()) {
+            clearCooldown(player, armorItem);
+            return null;
+        }
 
         // Обновляем кэш
         cooldownCache
                 .computeIfAbsent(player.getUUID(), k -> new HashMap<>())
-                .put(armorItem, expiry);
+                .put(armorItem, data);
 
-        return expiry;
+        return data;
     }
 
     /**
@@ -120,6 +172,9 @@ public class ArmorAbilityCooldownManager {
         cooldownCache.remove(player.getUUID());
     }
 
+    /**
+     * Синхронизировать кулдаун с клиентом
+     */
     public static void syncToClient(ServerPlayer player, Item item, int remainingDuration) {
         int remaining = getRemainingCooldown(player, item);
 
