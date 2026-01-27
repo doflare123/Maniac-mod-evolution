@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -172,19 +173,27 @@ public class ModCommands {
                                 .then(Commands.argument("enabled", BoolArgumentType.bool())
                                         .executes(ModCommands::setHitboxDebug))))
 
-                // Mana команды
+                // Mana команды с поддержкой селекторов
                 .then(Commands.literal("mana")
                         .then(Commands.literal("regen")
                                 .then(Commands.literal("enable")
-                                        .executes(ModCommands::enablePassiveRegen))
+                                        .executes(ModCommands::enablePassiveRegenSelf) // Для себя
+                                        .then(Commands.argument("targets", EntityArgument.players())
+                                                .executes(ModCommands::enablePassiveRegenTargets))) // Для других
                                 .then(Commands.literal("disable")
-                                        .executes(ModCommands::disablePassiveRegen)))
+                                        .executes(ModCommands::disablePassiveRegenSelf) // Для себя
+                                        .then(Commands.argument("targets", EntityArgument.players())
+                                                .executes(ModCommands::disablePassiveRegenTargets)))) // Для других
                         .then(Commands.literal("set")
                                 .then(Commands.argument("amount", FloatArgumentType.floatArg(0))
-                                        .executes(ModCommands::setMana)))
+                                        .executes(ModCommands::setManaSelf) // Для себя
+                                        .then(Commands.argument("targets", EntityArgument.players())
+                                                .executes(ModCommands::setManaTargets)))) // Для других
                         .then(Commands.literal("add")
                                 .then(Commands.argument("amount", FloatArgumentType.floatArg(0))
-                                        .executes(ModCommands::addMana))))
+                                        .executes(ModCommands::addManaSelf) // Для себя
+                                        .then(Commands.argument("targets", EntityArgument.players())
+                                                .executes(ModCommands::addManaTargets))))) // Для других
 
                 // /maniacrev guide
                 .then(Commands.literal("guide")
@@ -426,43 +435,76 @@ public class ModCommands {
         return enabled ? 1 : 0;
     }
 
-    private static int enablePassiveRegen(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
-        ServerLevel level = context.getSource().getLevel();
+    // ============================================
+// PASSIVE REGEN ENABLE
+// ============================================
 
-        // Применяем ко ВСЕМ игрокам на сервере
-        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+    private static int enablePassiveRegenSelf(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        ManaUtil.setPassiveRegenEnabled(player, true);
+
+        context.getSource().sendSuccess(
+                () -> Component.literal("§aPassive mana regeneration enabled"),
+                true
+        );
+        return 1;
+    }
+
+    private static int enablePassiveRegenTargets(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Collection<ServerPlayer> targets = EntityArgument.getPlayers(context, "targets");
+
+        for (ServerPlayer player : targets) {
             ManaUtil.setPassiveRegenEnabled(player, true);
         }
 
+        int count = targets.size();
         context.getSource().sendSuccess(
-                () -> Component.literal("§aPassive mana regeneration enabled for ALL players"),
+                () -> Component.literal("§aPassive mana regeneration enabled for " + count + " player(s)"),
+                true
+        );
+        return count;
+    }
+
+// ============================================
+// PASSIVE REGEN DISABLE
+// ============================================
+
+    private static int disablePassiveRegenSelf(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        ManaUtil.setPassiveRegenEnabled(player, false);
+
+        context.getSource().sendSuccess(
+                () -> Component.literal("§cPassive mana regeneration disabled"),
                 true
         );
         return 1;
     }
 
-    private static int disablePassiveRegen(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
-        ServerLevel level = context.getSource().getLevel();
+    private static int disablePassiveRegenTargets(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Collection<ServerPlayer> targets = EntityArgument.getPlayers(context, "targets");
 
-        // Применяем ко ВСЕМ игрокам на сервере
-        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+        for (ServerPlayer player : targets) {
             ManaUtil.setPassiveRegenEnabled(player, false);
         }
 
+        int count = targets.size();
         context.getSource().sendSuccess(
-                () -> Component.literal("§cPassive mana regeneration disabled for ALL players"),
+                () -> Component.literal("§cPassive mana regeneration disabled for " + count + " player(s)"),
                 true
         );
-        return 1;
+        return count;
     }
 
-    private static int setMana(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+// ============================================
+// SET MANA
+// ============================================
+
+    private static int setManaSelf(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         float amount = FloatArgumentType.getFloat(context, "amount");
 
         player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
             mana.setMana(amount);
-            // Сразу синхронизируем с клиентом
             ModNetworking.sendToPlayer(
                     new SyncManaPacket(mana.getMana(), mana.getMaxMana(), mana.getTotalRegenRate()),
                     player
@@ -476,13 +518,38 @@ public class ModCommands {
         return 1;
     }
 
-    private static int addMana(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+    private static int setManaTargets(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Collection<ServerPlayer> targets = EntityArgument.getPlayers(context, "targets");
+        float amount = FloatArgumentType.getFloat(context, "amount");
+
+        for (ServerPlayer player : targets) {
+            player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+                mana.setMana(amount);
+                ModNetworking.sendToPlayer(
+                        new SyncManaPacket(mana.getMana(), mana.getMaxMana(), mana.getTotalRegenRate()),
+                        player
+                );
+            });
+        }
+
+        int count = targets.size();
+        context.getSource().sendSuccess(
+                () -> Component.literal("§aMana set to §e" + amount + " §afor " + count + " player(s)"),
+                true
+        );
+        return count;
+    }
+
+// ============================================
+// ADD MANA
+// ============================================
+
+    private static int addManaSelf(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         float amount = FloatArgumentType.getFloat(context, "amount");
 
         player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
             mana.addMana(amount);
-            // Сразу синхронизируем с клиентом
             ModNetworking.sendToPlayer(
                     new SyncManaPacket(mana.getMana(), mana.getMaxMana(), mana.getTotalRegenRate()),
                     player
@@ -494,5 +561,27 @@ public class ModCommands {
                 true
         );
         return 1;
+    }
+
+    private static int addManaTargets(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Collection<ServerPlayer> targets = EntityArgument.getPlayers(context, "targets");
+        float amount = FloatArgumentType.getFloat(context, "amount");
+
+        for (ServerPlayer player : targets) {
+            player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+                mana.addMana(amount);
+                ModNetworking.sendToPlayer(
+                        new SyncManaPacket(mana.getMana(), mana.getMaxMana(), mana.getTotalRegenRate()),
+                        player
+                );
+            });
+        }
+
+        int count = targets.size();
+        context.getSource().sendSuccess(
+                () -> Component.literal("§aAdded §e" + amount + " §amana for " + count + " player(s)"),
+                true
+        );
+        return count;
     }
 }

@@ -8,7 +8,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.fleshheap.ClientFleshHeapData;
@@ -383,7 +382,7 @@ public class CustomHud implements IGuiOverlay {
      * НОВОЕ: Круговой прогресс-бар (ободок вокруг иконки)
      */
     private void renderCircularProgress(GuiGraphics gui, int x, int y, int size, float progress, int color) {
-        int borderWidth = 3;
+        int borderWidth = 1;
 
         // Рисуем 4 стороны с учетом прогресса
         float totalLength = (size * 4) - 4; // Периметр минус углы

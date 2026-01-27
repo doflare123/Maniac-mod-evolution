@@ -52,7 +52,7 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal(""));
+        String keyName = getActivationKeyName();
         tooltip.add(Component.literal("§6Способность: §e" + getAbilityName()).withStyle(ChatFormatting.GOLD));
         tooltip.add(Component.literal("§7" + getAbilityDescription()).withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.literal(""));
@@ -60,7 +60,7 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
         tooltip.add(Component.literal("§9Длительность: §b" + (DURATION_TICKS / 20) + "с").withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal("§9Кулдаун: §b" + (COOLDOWN_TICKS / 20) + "с").withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal(""));
-        tooltip.add(Component.literal("§8Нажмите [V] для активации").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.literal("§8Нажмите [" + keyName + "] для активации").withStyle(ChatFormatting.DARK_GRAY));
     }
 
     @Override
@@ -151,6 +151,19 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
     @Override
     public String getAbilityName() {
         return "Разделение урона";
+    }
+
+    private String getActivationKeyName() {
+        try {
+            // Получаем KeyMapping
+            net.minecraft.client.KeyMapping keyMapping = org.example.maniacrevolution.keybind.ModKeybinds.ACTIVATE_ARMOR_ABILITY;
+
+            // Получаем локализованное название клавиши
+            return keyMapping.getTranslatedKeyMessage().getString();
+        } catch (Exception e) {
+            // Если не удалось получить (например, на сервере), возвращаем дефолт
+            return "V";
+        }
     }
 
     @Override

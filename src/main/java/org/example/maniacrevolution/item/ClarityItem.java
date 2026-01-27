@@ -17,7 +17,7 @@ import java.util.List;
 
 public class ClarityItem extends Item {
 
-    private static final int EFFECT_DURATION = 20 * 30; // 30 секунд
+    private static final int EFFECT_DURATION = 20 * 6; // 30 секунд
     private static final int EFFECT_AMPLIFIER = 1; // Уровень 1 (индекс 0)
 
     public ClarityItem(Properties properties) {
@@ -74,8 +74,6 @@ public class ClarityItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("§7Drink to enhance mana flow"));
-        tooltip.add(Component.literal("§9+2.0 mana/sec for 30 seconds"));
-        tooltip.add(Component.literal("§9Works even with passive regen disabled"));
+        tooltip.add(Component.literal("§7Напиток богов"));
     }
 }

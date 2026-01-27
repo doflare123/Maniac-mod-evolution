@@ -286,7 +286,7 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal(""));
-        tooltip.add(Component.literal("§6Способность: §5" + getAbilityName()).withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.literal("§6Способность: §5" + getAbilityName() + " (Правый клик)").withStyle(ChatFormatting.GOLD));
         tooltip.add(Component.literal("§7ПКМ: Телепортация к случайному выжившему").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.literal("§9Стоимость: §b" + (int)MANA_COST + " маны").withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal("§9Кулдаун: §b" + getMaxCooldownSeconds() + "с").withStyle(ChatFormatting.AQUA));

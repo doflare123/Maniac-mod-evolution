@@ -23,7 +23,7 @@ public class NecromancerStaffItem extends Item {
     private static final int USE_DURATION = 100; // 5 секунд (20 тиков = 1 секунда)
     private static final float MANA_COST = 50.0f;
 
-    private static final int MAX_DURABILITY = 100;
+    private static final int MAX_DURABILITY = 90;
     private static final int DAMAGE_ON_SUCCESS = 30;
     private static final int DAMAGE_ON_INTERRUPT = 10;
 
@@ -34,7 +34,7 @@ public class NecromancerStaffItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal(""));
-        tooltip.add(Component.literal("§6Способность: §e" + "Воскрешение мертвых").withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.literal("§6Способность: §e" + "Воскрешение мертвых" + " (Зажимать)").withStyle(ChatFormatting.GOLD));
         tooltip.add(Component.literal("§7" + "Если ваш союзник пал - не беда! Почему бы не раскопать его могилу с помощью магии и поставить вновь на ноги? Это же точно по закону?...(магия слишком нестабильная, ваш посох может просто не выдержать)").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.literal(""));
         tooltip.add(Component.literal("§9Стоимость: §b" + (int)MANA_COST + " маны" + " и 30 прочности").withStyle(ChatFormatting.AQUA));

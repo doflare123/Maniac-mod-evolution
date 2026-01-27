@@ -3,7 +3,7 @@ package org.example.maniacrevolution.mana;
 public class ClientManaData {
     private static float mana = 100.0f;
     private static float maxMana = 100.0f;
-    private static float regenRate = 1.0f;
+    private static float regenRate = 0.0f;
     private static float lastMana = 100.0f;
     private static int tickCounter = 0;
     private static float measuredRegen = 0.0f;

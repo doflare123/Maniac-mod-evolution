@@ -47,8 +47,8 @@ public class MimicPerk extends Perk {
         level.addFreshEntity(mimicEntity);
 
         // Делаем игрока невидимым и неуязвимым
-        player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 7 * 20, 0, false, false));
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 7 * 20, 255, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 4 * 20, 0, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 4 * 20, 255, false, false));
 
         // КРИТИЧНО: Устанавливаем позу SWIMMING для уменьшения хитбокса
         // Это уменьшает размер до 0.6 x 0.6 (как при плавании)
@@ -57,7 +57,7 @@ public class MimicPerk extends Perk {
         // Сохраняем данные
         ACTIVE_MIMICS.put(player.getUUID(), new MimicData(
                 mimicEntity.getUUID(),
-                System.currentTimeMillis() + 7000
+                System.currentTimeMillis() + 5000
         ));
 
         player.displayClientMessage(

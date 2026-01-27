@@ -22,16 +22,16 @@ public class Agent47MoneyCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("maniacrev")
 
-                // /agent47 settarget <агент> <цель>
+                // /agent47 settarget <агенты> <цели>
                 .then(Commands.literal("settarget")
-                        .then(Commands.argument("agent", EntityArgument.player())
-                                .then(Commands.argument("target", EntityArgument.player())
-                                        .executes(Agent47MoneyCommand::setTarget))))
+                        .then(Commands.argument("agents", EntityArgument.players())
+                                .then(Commands.argument("targets", EntityArgument.players())
+                                        .executes(Agent47MoneyCommand::setTargets))))
 
-                // /agent47 cleartarget <агент>
+                // /agent47 cleartarget <агенты>
                 .then(Commands.literal("cleartarget")
-                        .then(Commands.argument("agent", EntityArgument.player())
-                                .executes(Agent47MoneyCommand::clearTarget)))
+                        .then(Commands.argument("agents", EntityArgument.players())
+                                .executes(Agent47MoneyCommand::clearTargets)))
 
 
                 .then(Commands.literal("agent_money")
@@ -81,36 +81,93 @@ public class Agent47MoneyCommand {
         );
     }
 
-    private static int setTarget(CommandContext<CommandSourceStack> context) {
+    private static int setTargets(CommandContext<CommandSourceStack> context) {
         try {
-            ServerPlayer agent = EntityArgument.getPlayer(context, "agent");
-            ServerPlayer target = EntityArgument.getPlayer(context, "target");
+            Collection<ServerPlayer> agents = EntityArgument.getPlayers(context, "agents");
+            Collection<ServerPlayer> targets = EntityArgument.getPlayers(context, "targets");
 
-            Agent47TargetManager.setTarget(agent, target);
+            int successCount = 0;
 
-            context.getSource().sendSuccess(
-                    () -> Component.literal("§aЦель установлена: " + agent.getName().getString() +
-                            " → " + target.getName().getString()),
-                    true
-            );
-            return 1;
+            // Если несколько агентов и одна цель - всем агентам назначаем эту цель
+            if (targets.size() == 1) {
+                ServerPlayer singleTarget = targets.iterator().next();
+
+                for (ServerPlayer agent : agents) {
+                    Agent47TargetManager.setTarget(agent, singleTarget);
+                    successCount++;
+                }
+
+                int finalSuccessCount = successCount;
+                context.getSource().sendSuccess(
+                        () -> Component.literal("§aЦель §e" + singleTarget.getName().getString() +
+                                " §aустановлена для §e" + finalSuccessCount + " §aагента(ов)"),
+                        true
+                );
+            }
+            // Если один агент и несколько целей - ошибка (нельзя установить несколько целей одному)
+            else if (agents.size() == 1 && targets.size() > 1) {
+                context.getSource().sendFailure(
+                        Component.literal("§cОшибка: Нельзя установить несколько целей одному агенту. " +
+                                "Укажите только одну цель.")
+                );
+                return 0;
+            }
+            // Если количество совпадает - назначаем попарно
+            else if (agents.size() == targets.size()) {
+                var agentIterator = agents.iterator();
+                var targetIterator = targets.iterator();
+
+                while (agentIterator.hasNext() && targetIterator.hasNext()) {
+                    ServerPlayer agent = agentIterator.next();
+                    ServerPlayer target = targetIterator.next();
+
+                    Agent47TargetManager.setTarget(agent, target);
+                    successCount++;
+                }
+
+                int finalSuccessCount1 = successCount;
+                context.getSource().sendSuccess(
+                        () -> Component.literal("§aЦели установлены для §e" + finalSuccessCount1 + " §aагента(ов)"),
+                        true
+                );
+            }
+            // Иначе - несоответствие количества
+            else {
+                context.getSource().sendFailure(
+                        Component.literal("§cОшибка: Количество агентов (" + agents.size() +
+                                ") и целей (" + targets.size() + ") не совпадает. " +
+                                "Укажите либо одну цель для всех агентов, либо равное количество.")
+                );
+                return 0;
+            }
+
+            return successCount;
+
         } catch (Exception e) {
             context.getSource().sendFailure(Component.literal("§cОшибка: " + e.getMessage()));
             return 0;
         }
     }
 
-    private static int clearTarget(CommandContext<CommandSourceStack> context) {
+    private static int clearTargets(CommandContext<CommandSourceStack> context) {
         try {
-            ServerPlayer agent = EntityArgument.getPlayer(context, "agent");
+            Collection<ServerPlayer> agents = EntityArgument.getPlayers(context, "agents");
 
-            Agent47TargetManager.clearTarget(agent);
+            int successCount = 0;
 
+            for (ServerPlayer agent : agents) {
+                Agent47TargetManager.clearTarget(agent);
+                successCount++;
+            }
+
+            int finalCount = successCount;
             context.getSource().sendSuccess(
-                    () -> Component.literal("§aЦель убрана у " + agent.getName().getString()),
+                    () -> Component.literal("§aЦели убраны у §e" + finalCount + " §aагента(ов)"),
                     true
             );
-            return 1;
+
+            return successCount;
+
         } catch (Exception e) {
             context.getSource().sendFailure(Component.literal("§cОшибка: " + e.getMessage()));
             return 0;
