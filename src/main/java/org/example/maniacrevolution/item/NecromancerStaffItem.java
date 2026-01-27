@@ -21,7 +21,7 @@ import java.util.List;
 
 public class NecromancerStaffItem extends Item {
     private static final int USE_DURATION = 100; // 5 секунд (20 тиков = 1 секунда)
-    private static final float MANA_COST = 50.0f;
+    private static final float MANA_COST = 60.0f;
 
     private static final int MAX_DURABILITY = 90;
     private static final int DAMAGE_ON_SUCCESS = 30;

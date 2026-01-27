@@ -74,12 +74,34 @@ public class Agent47ShopConfig {
     private static void loadConfig() {
         shopItems.clear();
 
+        ShopItem pistolAmmo = new ShopItem(
+                "pistol_ammo",
+                "§fПатроны для пистолета",
+                "§7Нужны для стрельбы из пистолета",
+                50,
+                ShopItemType.ITEM
+        );
+        pistolAmmo.data = "cgm:basic_bullet";
+        pistolAmmo.amount = 3;
+        shopItems.add(pistolAmmo);
+
+        ShopItem bandage = new ShopItem(
+                "bandage",
+                "§aБинты",
+                "§7Помогают залечивать раны, восстанавливают 1 хп",
+                25,
+                ShopItemType.ITEM
+        );
+        bandage.data = "maniacrev:bandage";
+        bandage.amount = 4;
+        shopItems.add(bandage);
+
         // Дебафы для цели
         ShopItem glowDebuff = new ShopItem(
                 "debuff_glow",
                 "§eПодсветка цели",
                 "§7Подсвечивает текущую цель на 5 секунд",
-                50,
+                25,
                 ShopItemType.DEBUFF_GLOW
         );
         glowDebuff.duration = 5;
@@ -89,7 +111,7 @@ public class Agent47ShopConfig {
                 "debuff_slow",
                 "§bЗамедление I",
                 "§7Замедляет цель на 15 секунд",
-                75,
+                50,
                 ShopItemType.DEBUFF_SLOW
         );
         slowDebuff.duration = 15;
@@ -100,7 +122,7 @@ public class Agent47ShopConfig {
                 "debuff_weak",
                 "§cСлабость I",
                 "§7Ослабляет цель на 10 секунд",
-                75,
+                25,
                 ShopItemType.DEBUFF_WEAK
         );
         weakDebuff.duration = 10;
@@ -112,67 +134,45 @@ public class Agent47ShopConfig {
                 "shotgun",
                 "§6Дробовик",
                 "§7Для больших городов",
-                250,
+                150,
                 ShopItemType.ITEM
         );
         shotgun.data = "cgm:shotgun{AmmoCount:1,Color:1908001}";
         shotgun.amount = 1;
         shopItems.add(shotgun);
 
-        ShopItem pistolAmmo = new ShopItem(
-                "pistol_ammo",
-                "§fПатроны для пистолета",
-                "§7Нужны для стрельбы из пистолета",
-                50,
-                ShopItemType.ITEM
-        );
-        pistolAmmo.data = "cgm:basic_bullet";
-        pistolAmmo.amount = 2;
-        shopItems.add(pistolAmmo);
-
         ShopItem shotgunAmmo = new ShopItem(
                 "shotgun_ammo",
                 "§6Патроны для дробовика",
                 "§7Чтобы устраивать большие города",
-                100,
+                75,
                 ShopItemType.ITEM
         );
         shotgunAmmo.data = "cgm:shell";
-        shotgunAmmo.amount = 1;
+        shotgunAmmo.amount = 2;
         shopItems.add(shotgunAmmo);
-
-        ShopItem sniperAmmo = new ShopItem(
-                "sniper_ammo",
-                "§eПатроны для снайперки",
-                "§7Почувствуй себя снайпером",
-                150,
-                ShopItemType.ITEM
-        );
-        sniperAmmo.data = "cgm:advanced_bullet";
-        sniperAmmo.amount = 1;
-        shopItems.add(sniperAmmo);
 
         ShopItem rifle = new ShopItem(
                 "rifle",
                 "§eСнайперка",
                 "§7Подходит для стрельбы с дальних дистанций",
-                300,
+                225,
                 ShopItemType.ITEM
         );
         rifle.data = "cgm:rifle{AmmoCount:1,Color:1908001}";
         rifle.amount = 1;
         shopItems.add(rifle);
 
-        ShopItem bandage = new ShopItem(
-                "bandage",
-                "§aБинты",
-                "§7Помогают залечивать раны, восстанавливают 1 хп",
-                25,
+        ShopItem sniperAmmo = new ShopItem(
+                "sniper_ammo",
+                "§eПатроны для снайперки",
+                "§7Почувствуй себя снайпером",
+                125,
                 ShopItemType.ITEM
         );
-        bandage.data = "maniacrev:bandage";
-        bandage.amount = 1;
-        shopItems.add(bandage);
+        sniperAmmo.data = "cgm:advanced_bullet";
+        sniperAmmo.amount = 1;
+        shopItems.add(sniperAmmo);
     }
 
     /**

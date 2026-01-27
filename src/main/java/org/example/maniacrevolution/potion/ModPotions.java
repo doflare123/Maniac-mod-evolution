@@ -25,9 +25,9 @@ public class ModPotions {
     public static final RegistryObject<Potion> SPEED_POTION = POTIONS.register("speed",
             () -> new Potion("speed", new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 100, 1)));
 
-    // Замедление уровень 3 (5 секунд для взрывного)
+    // Замедление уровень 3 (10 секунд для взрывного)
     public static final RegistryObject<Potion> SLOWNESS_POTION = POTIONS.register("slowness",
-            () -> new Potion("slowness", new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2)));
+            () -> new Potion("slowness", new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 2)));
 
     // Плавное падение (30 секунд для взрывного)
     public static final RegistryObject<Potion> SLOW_FALLING_POTION = POTIONS.register("slow_falling",
@@ -45,9 +45,9 @@ public class ModPotions {
     public static final RegistryObject<Potion> BLINDNESS_POTION = POTIONS.register("blindness",
             () -> new Potion("blindness", new MobEffectInstance(MobEffects.BLINDNESS, 200, 0)));
 
-    // Подсветка (5 секунд для взрывного)
+    // Подсветка (15 секунд для взрывного)
     public static final RegistryObject<Potion> GLOWING_POTION = POTIONS.register("glowing",
-            () -> new Potion("glowing", new MobEffectInstance(MobEffects.GLOWING, 100, 0)));
+            () -> new Potion("glowing", new MobEffectInstance(MobEffects.GLOWING, 300, 0)));
 
     public static void register(IEventBus eventBus) {
         POTIONS.register(eventBus);
