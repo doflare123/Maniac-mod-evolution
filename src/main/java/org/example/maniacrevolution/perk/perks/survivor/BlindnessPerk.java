@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class BlindnessPerk extends Perk {
 
-    private static final double PASSIVE_RADIUS = 2.0;
+    private static final double PASSIVE_RADIUS = 1.5;
     private static final int PASSIVE_DURATION_TICKS = 60; // 1 секунда
     private static final int ACTIVE_DURATION_TICKS = 200; // 1 секунда
     private static final int COOLDOWN_SECONDS = 120;

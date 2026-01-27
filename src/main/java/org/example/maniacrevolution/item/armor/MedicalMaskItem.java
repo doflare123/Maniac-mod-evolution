@@ -150,7 +150,7 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
 
     @Override
     public String getAbilityName() {
-        return "Разделение урона";
+        return "Спасибо папаша";
     }
 
     private String getActivationKeyName() {

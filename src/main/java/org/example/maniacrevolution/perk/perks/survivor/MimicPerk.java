@@ -39,7 +39,7 @@ public class MimicPerk extends Perk {
         BlockPos pos = player.blockPosition();
 
         // Находим самый распространённый блок в радиусе 7
-        Block mostCommon = findMostCommonBlock(level, pos, 7);
+        Block mostCommon = findMostCommonBlock(level, pos, 2);
         BlockState blockState = mostCommon.defaultBlockState();
 
         // Создаём энтити-блок
