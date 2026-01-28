@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
@@ -23,44 +24,38 @@ public class FirstJoinHandler {
 
     private static final String NBT_KEY = "HasSeenGuide";
 
-    // НОВОЕ: Очередь игроков, ожидающих открытия гайда
     private static final Map<UUID, Integer> pendingGuideOpens = new HashMap<>();
-    private static final int DELAY_TICKS = 60; // 3 секунды задержки для загрузки текстурпака
+    // ИСПРАВЛЕНО: Увеличена задержка до 10 секунд для загрузки текстурпака
+    private static final int DELAY_TICKS = 200; // 10 секунд задержки
 
-    @SubscribeEvent
+    // ИСПРАВЛЕНО: Добавлен LOWEST приоритет - выполнится последним
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
         CompoundTag persistentData = player.getPersistentData();
 
-        // Проверяем, видел ли игрок гайд
         if (!persistentData.getBoolean(NBT_KEY)) {
-            // Помечаем как увиденный
             persistentData.putBoolean(NBT_KEY, true);
 
-            // ИСПРАВЛЕНО: Добавляем в очередь с задержкой вместо немедленной отправки
+            // Добавляем в очередь с увеличенной задержкой
             pendingGuideOpens.put(player.getUUID(), DELAY_TICKS);
 
-            System.out.println("[FirstJoin] Scheduled guide opening for new player: " +
-                    player.getName().getString() + " in " + DELAY_TICKS + " ticks");
+            Maniacrev.LOGGER.info("[FirstJoin] Scheduled guide opening for new player: {} in {} ticks ({}s)",
+                    player.getName().getString(), DELAY_TICKS, DELAY_TICKS / 20);
         }
     }
 
-    /**
-     * НОВОЕ: Тикер для отложенного открытия гайда
-     */
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (event.getServer() == null) return;
 
-        // Обрабатываем очередь
         pendingGuideOpens.entrySet().removeIf(entry -> {
             UUID playerId = entry.getKey();
             int remainingTicks = entry.getValue() - 1;
 
             if (remainingTicks <= 0) {
-                // Время истекло - открываем гайд
                 ServerPlayer player = event.getServer().getPlayerList().getPlayer(playerId);
 
                 if (player != null) {
@@ -68,21 +63,17 @@ public class FirstJoinHandler {
                             new OpenGuidePacket(GuidePage.PageType.TUTORIAL),
                             player
                     );
-                    System.out.println("[FirstJoin] Opened guide for: " + player.getName().getString());
+                    Maniacrev.LOGGER.info("[FirstJoin] Opened guide for: {}", player.getName().getString());
                 }
 
-                return true; // Удаляем из очереди
+                return true;
             } else {
-                // Обновляем оставшееся время
                 entry.setValue(remainingTicks);
-                return false; // Оставляем в очереди
+                return false;
             }
         });
     }
 
-    /**
-     * НОВОЕ: Очистка очереди при выходе игрока
-     */
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
@@ -90,9 +81,6 @@ public class FirstJoinHandler {
         }
     }
 
-    /**
-     * Клиентская обработка
-     */
     @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = Maniacrev.MODID)
     public static class ClientHandler {
 
