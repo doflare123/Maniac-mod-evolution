@@ -4,7 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.Config;
-import org.example.maniacrevolution.perk.perks.CatchMistakesPerk;
+import org.example.maniacrevolution.perk.perks.maniac.CatchMistakesPerk;
 import org.example.maniacrevolution.util.ScoreboardUtil;
 
 import java.util.function.Supplier;
