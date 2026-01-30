@@ -91,7 +91,7 @@
   "perk.maniacrev.megamind.desc": "Получайте на 20% больше опыта в конце игры",
 
   "perk.maniacrev.gto_medal.name": "Золотая медаль ГТО",
-  "perk.maniacrev.gto_medal.desc": "Мощный рывок вперёд: толкает на 1 блок вверх и 4 блока вперёд",
+  "perk.maniacrev.gto_medal.desc": "Мощный рывок вперёд",
 
   "perk.maniacrev.fear_wave.name": "Волна ужаса",
   "perk.maniacrev.fear_wave.desc": "Выпускаете волну страха в радиусе 10 блоков, которая пугает ВСЕХ, даже союзников, на короткое время (3 секунды)",
@@ -121,10 +121,10 @@
   "perk.maniacrev.catch_mistakes.desc": "Если при проверке игрока на реакцию он не проходит ее успешно, то этот выживший подсвечивается (4 секунды)",
 
   "perk.maniacrev.computer_breaker.name": "Компьютер раскрафтер",
-  "perk.maniacrev.computer_breaker.desc": "Уменьшает прогресс взлома у не взломанного компьютера на 6000 ед, который имеет самый большой прогресс",
+  "perk.maniacrev.computer_breaker.desc": "Уменьшает прогресс взлома у не взломанного компьютера на 50% от цели хака, который имеет самый большой прогресс",
 
   "perk.maniacrev.highlight.name": "Не наебывай меня Тони",
-  "perk.maniacrev.highlight.desc": "Подсвечивает рандомного выжившего при взломе компьютера (3 секунды)",
+  "perk.maniacrev.highlight.desc": "Подсвечивает рандомного выжившего при взломе компьютера (6 секунды)",
 
   "effect.maniacrev.fear": "Страх",
   "effect.maniacrev.open_wound": "Открытая рана",

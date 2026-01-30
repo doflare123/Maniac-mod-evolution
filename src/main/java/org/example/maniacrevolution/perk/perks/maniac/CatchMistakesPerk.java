@@ -1,4 +1,4 @@
-package org.example.maniacrevolution.perk.perks;
+package org.example.maniacrevolution.perk.perks.maniac;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;

@@ -19,6 +19,7 @@ public class ComputerBreakerPerk extends Perk {
     private static final int COOLDOWN_SECONDS = 180;
     private static final int POINTS_TO_REMOVE = 6000;
 
+
     // Максимальное количество компьютеров (можно увеличить при необходимости)
     private static final int MAX_COMPUTERS = 9;
 
@@ -47,21 +48,20 @@ public class ComputerBreakerPerk extends Perk {
             System.out.println("[ComputerBreaker] ERROR: hack or hackGoal objective not found!");
             return;
         }
+        String goalName = "Game";
+        // Получаем цель
+        Score goalScore = scoreboard.getOrCreatePlayerScore(goalName, hackGoalObjective);
+        int goal = goalScore.getScore();
 
         // Собираем информацию о всех компьютерах
         List<ComputerInfo> computers = new ArrayList<>();
 
         for (int i = 1; i <= MAX_COMPUTERS; i++) {
             String progressName = "Progress" + i;
-            String goalName = "comp" + i;
 
             // Получаем текущий прогресс
             Score progressScore = scoreboard.getOrCreatePlayerScore(progressName, hackObjective);
             int currentProgress = progressScore.getScore();
-
-            // Получаем цель
-            Score goalScore = scoreboard.getOrCreatePlayerScore(goalName, hackGoalObjective);
-            int goal = goalScore.getScore();
 
             // Пропускаем компьютеры с нулевой целью (возможно не существуют)
             if (currentProgress == 0) {
@@ -104,7 +104,7 @@ public class ComputerBreakerPerk extends Perk {
                 targetComputer.id, targetComputer.currentProgress, targetComputer.goal));
 
         // Отнимаем очки
-        int newProgress = Math.max(0, targetComputer.currentProgress - POINTS_TO_REMOVE);
+        int newProgress = Math.max(0, targetComputer.currentProgress - goal/2);
         Score progressScore = scoreboard.getOrCreatePlayerScore(targetComputer.progressName, hackObjective);
         progressScore.setScore(newProgress);
 

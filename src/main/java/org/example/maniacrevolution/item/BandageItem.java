@@ -38,6 +38,8 @@ public class BandageItem extends Item {
         tooltip.add(Component.literal(""));
         tooltip.add(Component.literal("§6Способность: §e" + "Бинт в беде не бросит").withStyle(ChatFormatting.GOLD));
         tooltip.add(Component.literal("При применении на союзника восстанавливает ему 4 хп, если применить на себя (направив в пустоту) восстановить 2 хп"));
+        tooltip.add(Component.literal(""));
+        tooltip.add(Component.literal("P.S. Наводиться только на тело или ноги, другие части тела не считает"));
     }
 
     @Override

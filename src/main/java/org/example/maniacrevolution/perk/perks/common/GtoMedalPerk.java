@@ -17,7 +17,7 @@ import org.example.maniacrevolution.perk.*;
  */
 public class GtoMedalPerk extends Perk {
 
-    private static final double FORWARD_POWER = 1.0; // 4 блока вперёд
+    private static final double FORWARD_POWER = 0.8; // 4 блока вперёд
     private static final double UPWARD_POWER = .5;  // 1 блок вверх
 
     public GtoMedalPerk() {

@@ -1,7 +1,6 @@
 package org.example.maniacrevolution.perk;
 
 import org.example.maniacrevolution.Maniacrev;
-import org.example.maniacrevolution.perk.perks.CatchMistakesPerk;
 import org.example.maniacrevolution.perk.perks.common.*;
 import org.example.maniacrevolution.perk.perks.maniac.*;
 import org.example.maniacrevolution.perk.perks.survivor.*;
