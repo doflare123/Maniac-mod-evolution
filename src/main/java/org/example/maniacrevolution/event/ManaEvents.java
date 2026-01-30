@@ -13,6 +13,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.item.DeathScytheItem;
 import org.example.maniacrevolution.item.HookItem;
 import org.example.maniacrevolution.item.IItemWithAbility;
@@ -70,6 +71,17 @@ public class ManaEvents {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && !event.player.level().isClientSide()) {
             event.player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+                // ИСПРАВЛЕНО: Проверяем и очищаем некорректный бонусный реген
+                if (!mana.isPassiveRegenEnabled() && mana.getBonusRegenRate() > 0) {
+                    // Если пассивный реген отключен, но есть бонусный - проверяем источник
+                    // Если нет активных эффектов - очищаем
+                    if (!hasActiveRegenEffects(event.player)) {
+                        mana.setBonusRegenRate(0.0f);
+                        System.out.println("[ManaEvents] Cleared invalid bonus regen for " +
+                                event.player.getName().getString());
+                    }
+                }
+
                 mana.regenerate(0.05f);
 
                 // Синхронизация маны каждые 10 тиков
@@ -79,11 +91,21 @@ public class ManaEvents {
                             (ServerPlayer) event.player
                     );
 
-                    // НОВОЕ: Синхронизируем активные способности брони
                     syncActiveArmorAbilities((ServerPlayer) event.player);
                 }
             });
         }
+    }
+
+    /**
+     * НОВОЕ: Проверка активных эффектов, влияющих на реген маны
+     */
+    private static boolean hasActiveRegenEffects(Player player) {
+        // Проверяем эффекты зелий
+        if (player.hasEffect(ModEffects.MANA_FLOW.get())) {
+            return true;
+        }
+        return false;
     }
 
     /**

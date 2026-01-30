@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.network.PacketDistributor;
+import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.config.GameRulesConfig;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.PlayerData;
@@ -484,7 +485,24 @@ public class ModCommands {
         Collection<ServerPlayer> targets = EntityArgument.getPlayers(context, "targets");
 
         for (ServerPlayer player : targets) {
-            ManaUtil.setPassiveRegenEnabled(player, false);
+            player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+                // НОВОЕ: Логирование
+                Maniacrev.LOGGER.info("Disabling passive regen for {}: base={}, bonus={}, passive={}",
+                        player.getName().getString(),
+                        mana.getBaseRegenRate(),
+                        mana.getBonusRegenRate(),
+                        mana.isPassiveRegenEnabled());
+
+                mana.setPassiveRegenEnabled(false);
+
+                // НОВОЕ: Принудительно сбрасываем базовый реген
+                mana.setBaseRegenRate(0.0f);
+
+                ModNetworking.sendToPlayer(
+                        new SyncManaPacket(mana.getMana(), mana.getMaxMana(), mana.getTotalRegenRate()),
+                        player
+                );
+            });
         }
 
         int count = targets.size();

@@ -18,7 +18,7 @@ public class ManaData {
     }
 
     public ManaData() {
-        this(100.0f, 1.0f); // Дефолтные значения: 100 маны, 1 ед/сек
+        this(100.0f, 0.0f); // Дефолтные значения: 100 маны, 1 ед/сек
     }
 
     public float getMana() {
@@ -37,6 +37,7 @@ public class ManaData {
         return bonusRegenRate;
     }
 
+
     public float getTotalRegenRate() {
         float total = bonusRegenRate; // Бонус всегда работает
         if (passiveRegenEnabled) {
@@ -51,6 +52,9 @@ public class ManaData {
 
     public void setPassiveRegenEnabled(boolean enabled) {
         this.passiveRegenEnabled = enabled;
+        if (!enabled && baseRegenRate > 0) {
+            System.out.println("[ManaData] Passive regen disabled, baseRegenRate was: " + baseRegenRate);
+        }
     }
 
     public void setMana(float mana) {
@@ -70,6 +74,9 @@ public class ManaData {
 
     public void setBonusRegenRate(float bonusRegenRate) {
         this.bonusRegenRate = Math.max(0, bonusRegenRate);
+        if (bonusRegenRate != this.bonusRegenRate) {
+            System.out.println("[ManaData] Bonus regen changed: " + this.bonusRegenRate + " -> " + bonusRegenRate);
+        }
     }
 
     public boolean consumeMana(float amount) {

@@ -30,7 +30,7 @@ public class HookEntity extends Projectile {
     private static final EntityDataAccessor<Boolean> DATA_RETURNING =
             SynchedEntityData.defineId(HookEntity.class, EntityDataSerializers.BOOLEAN);
 
-    private static final double HOOK_SPEED = 1.5;
+    private static final double HOOK_SPEED = 3.5;
     private static final double MAX_DISTANCE = 12.0;
     private static final double PULL_SPEED = 0.8;
 

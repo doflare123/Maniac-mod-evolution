@@ -38,7 +38,7 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
     private static final float MANA_COST = 7.0f;
     // Кулдауны телепортации для каждого игрока
     private static final Map<UUID, Long> teleportCooldowns = new HashMap<>();
-    private static final long TELEPORT_COOLDOWN = 30000; // 30 секунд
+    private static final long TELEPORT_COOLDOWN = 60000; // 30 секунд
 
     // Базовый урон (BetterCombat переопределит через JSON)
     private static final int SCYTHE_DAMAGE = -2;
