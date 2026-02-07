@@ -104,6 +104,20 @@ public class CustomHud implements IGuiOverlay {
         // Отображаем название предмета НАД кастомным HUD
         renderItemName(guiGraphics, player, scaledWidth, mainY);
 
+        // ========================================
+        // ГЕНЕРАТОР - ПРАВЫЙ НИЖНИЙ УГОЛ
+        // ========================================
+        int generatorX = scaledWidth - 60;  // 75 пикселей от правого края
+        int generatorY = scaledHeight - 75; // 50 пикселей от низа
+        boolean generatorExists = GeneratorChargeHud.render(guiGraphics, generatorX, generatorY);
+
+        if (generatorExists) {
+            String genLabel = "§6Генератор";
+            int labelX = generatorX + 15 - mc.font.width(genLabel) / 2;
+            int labelY = generatorY - 12;
+            guiGraphics.drawString(mc.font, genLabel, labelX, labelY, 0xFFFFFF, true);
+        }
+
         guiGraphics.pose().popPose();
     }
 

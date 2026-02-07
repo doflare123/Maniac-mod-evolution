@@ -24,6 +24,15 @@ public class ModBlocks {
                     .dynamicShape()
             ));
 
+    public static final RegistryObject<Block> FNAF_GENERATOR = BLOCKS.register("generator",
+            () -> new FNAFGeneratorBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(5.0f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()
+            ));
+
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
     }

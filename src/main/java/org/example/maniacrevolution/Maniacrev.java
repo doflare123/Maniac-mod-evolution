@@ -19,6 +19,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.example.maniacrevolution.block.ModBlocks;
+import org.example.maniacrevolution.block.entity.ModBlockEntities;
 import org.example.maniacrevolution.client.model.HookModel;
 import org.example.maniacrevolution.client.renderer.HookRenderer;
 import org.example.maniacrevolution.command.*;
@@ -64,6 +65,7 @@ public class Maniacrev {
         ModEntities.ENTITIES.register(modEventBus);
         ModEffects.MOB_EFFECTS.register(modEventBus);
         ModPotions.POTIONS.register(modEventBus);
+        ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         // =========================================================
 
         MinecraftForge.EVENT_BUS.register(this);
@@ -119,6 +121,7 @@ public class Maniacrev {
         TestGlowCommand.register(event.getDispatcher());
         VoteMapCommand.register(event.getDispatcher());
         ResourcePackCommand.register(event.getDispatcher());
+        GeneratorCommand.register(event.getDispatcher());
     }
 
     public static ResourceLocation loc(String path) {

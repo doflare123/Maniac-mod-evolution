@@ -2,15 +2,13 @@ package org.example.maniacrevolution;
 
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.item.*;
 import org.example.maniacrevolution.item.armor.MedicalMaskItem;
@@ -31,6 +29,9 @@ public class ModItems {
 
     public static final RegistryObject<Item> SALT = ITEMS.register("salt",
             () -> new SaltItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> GENERATOR = ITEMS.register("generator",
+            () -> new BlockItem(ModBlocks.FNAF_GENERATOR.get(), new Item.Properties()));
 
     public static final RegistryObject<Item> CLARITY = ITEMS.register("clarity",
             () -> new ClarityItem(new Item.Properties().stacksTo(16)));

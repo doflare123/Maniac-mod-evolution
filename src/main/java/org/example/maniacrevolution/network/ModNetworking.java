@@ -283,6 +283,12 @@ public class ModNetworking {
                 .consumerMainThread(SyncAbilityCooldownPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(SyncGeneratorPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(SyncGeneratorPacket::new)
+                .encoder(SyncGeneratorPacket::encode)
+                .consumerMainThread(SyncGeneratorPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 
