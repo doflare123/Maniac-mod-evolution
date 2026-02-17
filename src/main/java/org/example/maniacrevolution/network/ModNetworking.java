@@ -12,6 +12,10 @@ import org.example.maniacrevolution.network.packets.MapVotingPacket;
 import org.example.maniacrevolution.network.packets.MapVotingResultPacket;
 import org.example.maniacrevolution.network.packets.PlayerVotePacket;
 import org.example.maniacrevolution.network.packets.OpenVotingMenuPacket;
+import org.example.maniacrevolution.network.packets.OpenSettingsMenuPacket;
+import org.example.maniacrevolution.network.packets.SyncSettingsPacket;
+import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
+import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
     private static final String PROTOCOL_VERSION = "1";
@@ -287,6 +291,30 @@ public class ModNetworking {
                 .decoder(SyncGeneratorPacket::new)
                 .encoder(SyncGeneratorPacket::encode)
                 .consumerMainThread(SyncGeneratorPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(OpenSettingsMenuPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OpenSettingsMenuPacket::encode)
+                .decoder(OpenSettingsMenuPacket::decode)
+                .consumerMainThread(OpenSettingsMenuPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(SyncSettingsPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SyncSettingsPacket::encode)
+                .decoder(SyncSettingsPacket::decode)
+                .consumerMainThread(SyncSettingsPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(UpdateSettingsPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(UpdateSettingsPacket::encode)
+                .decoder(UpdateSettingsPacket::decode)
+                .consumerMainThread(UpdateSettingsPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(GiveSettingsToAllPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(GiveSettingsToAllPacket::encode)
+                .decoder(GiveSettingsToAllPacket::decode)
+                .consumerMainThread(GiveSettingsToAllPacket::handle)
                 .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);

@@ -15,6 +15,7 @@ import org.example.maniacrevolution.item.armor.MedicalMaskItem;
 import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.item.CharacterSelectionItem;
 import org.example.maniacrevolution.item.ReadyItem;
+import org.example.maniacrevolution.item.SettingsItem;
 
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
@@ -67,6 +68,11 @@ public class ModItems {
     // Материал для крафта (опционально)
     public static final RegistryObject<Item> SOUL_ESSENCE = ITEMS.register("soul_essence",
             () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> SETTINGS_ITEM = ITEMS.register("settings_item",
+            () -> new SettingsItem(new Item.Properties()
+                    .stacksTo(1)
+                    .rarity(Rarity.EPIC)));
 
     public enum ModArmorMaterials implements ArmorMaterial {
         NECROMANCER(

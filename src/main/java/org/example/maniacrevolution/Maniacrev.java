@@ -39,6 +39,9 @@ import org.example.maniacrevolution.character.CharacterRegistry;
 import org.example.maniacrevolution.readiness.ReadinessManager;
 import org.example.maniacrevolution.system.Agent47ShopConfig;
 import org.example.maniacrevolution.map.MapVotingManager;
+import org.example.maniacrevolution.command.SettingsCommand;
+import org.example.maniacrevolution.command.HpBoostCommand;
+import org.example.maniacrevolution.command.ApplySettingsCommand;
 import org.slf4j.Logger;
 
 @Mod(Maniacrev.MODID)
@@ -122,6 +125,10 @@ public class Maniacrev {
         VoteMapCommand.register(event.getDispatcher());
         ResourcePackCommand.register(event.getDispatcher());
         GeneratorCommand.register(event.getDispatcher());
+
+        SettingsCommand.register(event.getDispatcher());
+        HpBoostCommand.register(event.getDispatcher());
+        ApplySettingsCommand.register(event.getDispatcher());
     }
 
     public static ResourceLocation loc(String path) {

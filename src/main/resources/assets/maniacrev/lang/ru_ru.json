@@ -218,5 +218,7 @@
   "effect.maniacrev.mana_flow": "Восстановление маны",
   "effect.maniacrev.target": "Цель",
   "effect.maniacrev.death_race": "Гонка со смертью",
-  "item.maniacrev.clarity": "Балтика 9"
+  "item.maniacrev.clarity": "Балтика 9",
+
+  "item.maniacrev.settings_item": "Настройки"
 }
