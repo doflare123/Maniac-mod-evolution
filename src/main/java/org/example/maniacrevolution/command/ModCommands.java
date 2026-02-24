@@ -199,6 +199,8 @@ public class ModCommands {
                 // /maniacrev guide
                 .then(Commands.literal("guide")
                         .executes(ctx -> openGuide(ctx)))
+
+                .then(DownedCommand.build())
         );
     }
 

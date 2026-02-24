@@ -6,6 +6,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -25,6 +27,8 @@ import org.example.maniacrevolution.client.renderer.HookRenderer;
 import org.example.maniacrevolution.command.*;
 import org.example.maniacrevolution.cosmetic.CosmeticRegistry;
 import org.example.maniacrevolution.data.PlayerDataManager;
+import org.example.maniacrevolution.downed.DownedData;
+import org.example.maniacrevolution.downed.DownedEventHandler;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.game.GameManager;
@@ -74,10 +78,12 @@ public class Maniacrev {
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new GameManager());
         MinecraftForge.EVENT_BUS.register(new PlayerDataManager());
+        MinecraftForge.EVENT_BUS.register(new DownedEventHandler());
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
+            CapabilityManager.get(new CapabilityToken<DownedData>() {});
             ModNetworking.register();
             ModBrewingRecipes.register();
             PerkRegistry.init();
