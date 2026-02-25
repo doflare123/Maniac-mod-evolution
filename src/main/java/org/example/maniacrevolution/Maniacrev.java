@@ -27,6 +27,7 @@ import org.example.maniacrevolution.client.renderer.HookRenderer;
 import org.example.maniacrevolution.command.*;
 import org.example.maniacrevolution.cosmetic.CosmeticRegistry;
 import org.example.maniacrevolution.data.PlayerDataManager;
+import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.downed.DownedData;
 import org.example.maniacrevolution.downed.DownedEventHandler;
 import org.example.maniacrevolution.effect.ModEffects;
@@ -73,6 +74,7 @@ public class Maniacrev {
         ModEffects.MOB_EFFECTS.register(modEventBus);
         ModPotions.POTIONS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
+        DownedCapability.register(modEventBus);
         // =========================================================
 
         MinecraftForge.EVENT_BUS.register(this);

@@ -7,6 +7,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.downed.DownedHudPacket;
 import org.example.maniacrevolution.network.packets.*;
 import org.example.maniacrevolution.network.packets.MapVotingPacket;
 import org.example.maniacrevolution.network.packets.MapVotingResultPacket;
@@ -315,6 +316,12 @@ public class ModNetworking {
                 .encoder(GiveSettingsToAllPacket::encode)
                 .decoder(GiveSettingsToAllPacket::decode)
                 .consumerMainThread(GiveSettingsToAllPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(DownedHudPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(DownedHudPacket::encode)
+                .decoder(DownedHudPacket::decode)
+                .consumerMainThread(DownedHudPacket::handle)
                 .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);

@@ -2,8 +2,8 @@ package org.example.maniacrevolution.downed;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.server.level.ServerPlayer;
+import org.example.maniacrevolution.network.ModNetworking;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Pose;
@@ -40,10 +40,15 @@ public class DownedEventHandler {
     private static final Map<UUID, UUID> DOWNED_STANDS = new HashMap<>();
 
     /**
-     * UUID игрока который тащит → UUID лежачего которого он тащит.
-     * Обновляется каждый тик в tickServerDrag.
+     * UUID лежачего → UUID тащащего его врага.
      */
     private static final Map<UUID, UUID> DRAGGING = new HashMap<>();
+
+    /**
+     * UUID лежачего → уровень замедления (amplifier) назначенный при начале тащения.
+     * Нужен чтобы каждый тик восстанавливать эффект с тем же уровнем.
+     */
+    private static final Map<UUID, Integer> DRAGGING_AMPLIFIER = new HashMap<>();
 
     // ══════════════════════════════════════════════════════════════════════
     // 0. БЛОКИРОВКА УРОНА ДЛЯ ЛЕЖАЧЕГО
@@ -149,21 +154,15 @@ public class DownedEventHandler {
         // ── Визуальные индикаторы для окружающих игроков ─────────────────
         // Каждые 10 тиков показываем частицы у ног и текст над головой
         if (data.getDownedTicksElapsed() % 10 == 0) {
-            showDownedIndicators(player, data);
+            sendHudPackets(player, data);
         }
 
-        // ── Таймер и обратный отсчёт ─────────────────────────────────────
-        data.incrementDownedTicks();
+        // ── Таймер — стоит на паузе пока кто-то поднимает ──────────────
+        boolean beingRevived = data.getReviverUUID() != null;
+        if (!beingRevived) {
+            data.incrementDownedTicks();
+        }
         int remaining = DownedData.DOWNED_TIMEOUT_TICKS - data.getDownedTicksElapsed();
-
-        if (remaining == 30 * 20 || remaining == 15 * 20 || remaining == 10 * 20
-                || remaining == 5 * 20 || remaining == 3 * 20 || remaining == 2 * 20
-                || remaining == 20) {
-            player.displayClientMessage(
-                    Component.literal("§c☠ Вы умрёте через §e" + (remaining / 20) + " сек§c!"),
-                    true
-            );
-        }
 
         if (data.getDownedTicksElapsed() >= DownedData.DOWNED_TIMEOUT_TICKS) {
             killDowned(player, data);
@@ -206,8 +205,17 @@ public class DownedEventHandler {
             );
         }
 
-        // Синхронизируем позицию ArmorStand-маунта
-        updateStandPosition(downed);
+        // Обновляем замедление каждый тик пока тащит (не спадает)
+        int currentAmplifier = -1;
+        MobEffectInstance existing = dragger.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+        if (existing != null) {
+            // Берём базовый уровень замедления от тащения (сохранён в DRAGGING_AMPLIFIER)
+            currentAmplifier = DRAGGING_AMPLIFIER.getOrDefault(downed.getUUID(), existing.getAmplifier());
+        } else {
+            currentAmplifier = DRAGGING_AMPLIFIER.getOrDefault(downed.getUUID(), -1);
+        }
+        dragger.addEffect(new MobEffectInstance(
+                MobEffects.MOVEMENT_SLOWDOWN, 10, currentAmplifier, false, false));
     }
 
     private static void tickWeakened(ServerPlayer player, DownedData data) {
@@ -289,30 +297,24 @@ public class DownedEventHandler {
      * Само физическое перемещение происходит в tickDrag каждый тик.
      */
     private static void handleEnemyStartDrag(ServerPlayer enemy, ServerPlayer target) {
-        // Регистрируем пару: этот враг тащит этого лежачего
+        // Проверяем что enemy и target из разных команд (фикс — двойная проверка)
+        if (areSameTeam(enemy, target)) return;
+
+        // Регистрируем пару
         DRAGGING.put(target.getUUID(), enemy.getUUID());
 
-        // Замедление = текущий уровень + 2
-        // amplifier 0 = Slowness I, поэтому currentAmplifier начинаем с -1 если эффекта нет
-        int currentAmplifier = -1;
+        // Замедление = базовое замедление врага (без нашего эффекта) + 2
+        int baseAmplifier = -1;
         MobEffectInstance existing = enemy.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
-        if (existing != null) {
-            currentAmplifier = existing.getAmplifier();
+        // Если уже тащил — берём сохранённый базовый уровень, не суммируем повторно
+        if (DRAGGING_AMPLIFIER.containsKey(target.getUUID())) {
+            baseAmplifier = DRAGGING_AMPLIFIER.get(target.getUUID());
+        } else if (existing != null) {
+            baseAmplifier = existing.getAmplifier() + 2;
+        } else {
+            baseAmplifier = 1; // Slowness II по умолчанию (amplifier 1 = Slowness II)
         }
-        int newAmplifier = currentAmplifier + 2; // +2 уровня сверху текущего
-
-        enemy.addEffect(new MobEffectInstance(
-                MobEffects.MOVEMENT_SLOWDOWN,
-                60, // 3 секунды — обновляется при следующем клике
-                newAmplifier,
-                false, false
-        ));
-
-        enemy.displayClientMessage(
-                Component.literal("§6Вы тащите §e" + target.getName().getString()
-                        + " §7(замедление ×" + (newAmplifier + 1) + ")"),
-                true
-        );
+        DRAGGING_AMPLIFIER.put(target.getUUID(), baseAmplifier);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -329,9 +331,13 @@ public class DownedEventHandler {
             var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
             if (server == null) return true;
             ServerPlayer downed = (ServerPlayer) server.getPlayerList().getPlayer(entry.getKey());
-            if (downed == null) return true;
+            if (downed == null) { DRAGGING_AMPLIFIER.remove(entry.getKey()); return true; }
             DownedData data = DownedCapability.get(downed);
-            return data == null || data.getState() != DownedState.DOWNED;
+            if (data == null || data.getState() != DownedState.DOWNED) {
+                DRAGGING_AMPLIFIER.remove(entry.getKey());
+                return true;
+            }
+            return false;
         });
     }
 
@@ -377,6 +383,8 @@ public class DownedEventHandler {
         removeDownedEffects(target);
         removeStandForPlayer(target.getUUID());
         DRAGGING.remove(target.getUUID());
+        DRAGGING_AMPLIFIER.remove(target.getUUID());
+        clearHudForNearby(target);
 
         // Восстанавливаем полное здоровье (без урезания)
         AttributeInstance maxHp = target.getAttribute(Attributes.MAX_HEALTH);
@@ -424,6 +432,8 @@ public class DownedEventHandler {
         removeDownedEffects(target);
         removeStandForPlayer(target.getUUID());
         DRAGGING.remove(target.getUUID());
+        DRAGGING_AMPLIFIER.remove(target.getUUID());
+        clearHudForNearby(target);
 
         // Сохраняем оригинальный макс HP и урезаем вдвое
         AttributeInstance maxHp = target.getAttribute(Attributes.MAX_HEALTH);
@@ -459,6 +469,8 @@ public class DownedEventHandler {
         removeDownedEffects(player);
         removeStandForPlayer(player.getUUID());
         DRAGGING.remove(player.getUUID());
+        DRAGGING_AMPLIFIER.remove(player.getUUID());
+        clearHudForNearby(player);
 
         player.hurt(player.level().damageSources().magic(), Float.MAX_VALUE);
 
@@ -495,58 +507,61 @@ public class DownedEventHandler {
 
     // ── Визуальные индикаторы ────────────────────────────────────────────────
 
-    private static void showDownedIndicators(ServerPlayer downed, DownedData data) {
+    private static void sendHudPackets(ServerPlayer downed, DownedData data) {
         if (downed.getServer() == null) return;
 
         int remaining = DownedData.DOWNED_TIMEOUT_TICKS - data.getDownedTicksElapsed();
-        int remainingSec = remaining / 20;
+        boolean beingRevived = data.getReviverUUID() != null;
+        float reviveProgress = beingRevived ? data.getReviveProgress() : 0f;
+        String downedName = downed.getName().getString();
 
-        // Частицы сердца у ног лежачего — видны всем рядом
-        // Спавним через ServerLevel чтобы были видны всем (true = видны даже издалека)
-        net.minecraft.server.level.ServerLevel level = (net.minecraft.server.level.ServerLevel) downed.level();
-        double x = downed.getX();
-        double y = downed.getY() + 0.1; // чуть выше пола
-        double z = downed.getZ();
-
-        // Красные частицы сердца — "нужна помощь"
+        // Частицы у ног — видны всем рядом
+        net.minecraft.server.level.ServerLevel level =
+                (net.minecraft.server.level.ServerLevel) downed.level();
+        double x = downed.getX(), y = downed.getY(), z = downed.getZ();
         level.sendParticles(ParticleTypes.HEART, x, y + 0.5, z, 1, 0.3, 0.1, 0.3, 0);
-        // Красные частицы дыма у ног — указывают куда нажимать
         level.sendParticles(ParticleTypes.DAMAGE_INDICATOR, x, y + 0.15, z, 2, 0.2, 0.05, 0.2, 0);
 
-        // ActionBar для самого лежачего — таймер
-        String bar = buildTimerBar(remaining);
-        downed.connection.send(new ClientboundSetActionBarTextPacket(
-                Component.literal("§c☠ " + bar + " §e" + remainingSec + "с")));
+        // Пакет самому лежачему
+        ModNetworking.sendToPlayer(
+                new DownedHudPacket(DownedHudPacket.ROLE_SELF, downedName,
+                        remaining, reviveProgress, beingRevived),
+                downed);
 
-        // ActionBar для союзников рядом (в радиусе 8 блоков) — подсказка
+        // Пакеты игрокам рядом (радиус 8 блоков)
         for (ServerPlayer nearby : downed.getServer().getPlayerList().getPlayers()) {
             if (nearby == downed) continue;
-            if (nearby.distanceTo(downed) > 8.0) continue;
-
+            if (nearby.distanceTo(downed) > 8.0) {
+                // Если был в зоне — отправляем clear
+                ModNetworking.sendToPlayer(DownedHudPacket.clear(), nearby);
+                continue;
+            }
             DownedData nearbyData = DownedCapability.get(nearby);
             if (nearbyData != null && nearbyData.getState() == DownedState.DOWNED) continue;
 
-            boolean ally = areSameTeam(nearby, downed);
-            if (ally) {
-                // Союзнику — подсказка про подъём
-                nearby.connection.send(new ClientboundSetActionBarTextPacket(
-                        Component.literal("§a[ПКМ у ног] §eПоднять §f" + downed.getName().getString()
-                                + " §7(" + remainingSec + "с)")));
-            } else {
-                // Врагу — подсказка про тащение
-                nearby.connection.send(new ClientboundSetActionBarTextPacket(
-                        Component.literal("§6[ПКМ у ног] §eТащить §f" + downed.getName().getString())));
-            }
+            int role = areSameTeam(nearby, downed)
+                    ? DownedHudPacket.ROLE_ALLY
+                    : DownedHudPacket.ROLE_ENEMY;
+
+            // Для союзника показываем его прогресс подъёма если он поднимает
+            float allyProgress = (role == DownedHudPacket.ROLE_ALLY && beingRevived
+                    && nearby.getUUID().equals(data.getReviverUUID()))
+                    ? reviveProgress : 0f;
+
+            ModNetworking.sendToPlayer(
+                    new DownedHudPacket(role, downedName, remaining, allyProgress, beingRevived),
+                    nearby);
         }
     }
 
-    /** Строит полоску таймера из символов: ████░░░░ */
-    private static String buildTimerBar(int remainingTicks) {
-        int total = DownedData.DOWNED_TIMEOUT_TICKS;
-        int filled = (int) Math.round(8.0 * remainingTicks / total);
-        filled = Math.max(0, Math.min(8, filled));
-        String bar = "§c" + "█".repeat(filled) + "§8" + "█".repeat(8 - filled);
-        return bar;
+    /** Отправляет clear-пакет всем рядом когда лежачий поднялся/умер */
+    public static void clearHudForNearby(ServerPlayer downed) {
+        if (downed.getServer() == null) return;
+        ModNetworking.sendToPlayer(DownedHudPacket.clear(), downed);
+        for (ServerPlayer nearby : downed.getServer().getPlayerList().getPlayers()) {
+            if (nearby == downed) continue;
+            ModNetworking.sendToPlayer(DownedHudPacket.clear(), nearby);
+        }
     }
 
     // ── Эффекты ───────────────────────────────────────────────────────────
