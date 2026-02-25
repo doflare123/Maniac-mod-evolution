@@ -34,6 +34,12 @@ public class DownedData {
      */
     private boolean usedSecondChance = false;
 
+    /**
+     * Оригинальный макс HP до урезания (сохраняем при подъёме союзником).
+     * -1 означает что HP не были урезаны (подъём командой или ещё не поднят).
+     */
+    private double originalMaxHp = -1;
+
     // ── Геттеры / Сеттеры ─────────────────────────────────────────────────
     public DownedState getState() { return state; }
     public void setState(DownedState state) { this.state = state; }
@@ -52,6 +58,10 @@ public class DownedData {
     public boolean hasUsedSecondChance() { return usedSecondChance; }
     public void setUsedSecondChance(boolean v) { this.usedSecondChance = v; }
 
+    public double getOriginalMaxHp() { return originalMaxHp; }
+    public void setOriginalMaxHp(double hp) { this.originalMaxHp = hp; }
+    public boolean hasHpPenalty() { return originalMaxHp > 0; }
+
     // ── Утилиты ───────────────────────────────────────────────────────────
 
     /** Сбросить всё в начальное состояние (для команды reset) */
@@ -61,6 +71,7 @@ public class DownedData {
         reviverUUID = null;
         reviveProgressTicks = 0;
         usedSecondChance = false;
+        originalMaxHp = -1;
     }
 
     /** Прервать текущий прогресс подъёма, не меняя состояние */
@@ -80,6 +91,7 @@ public class DownedData {
         tag.putString("state", state.name());
         tag.putInt("downedTicks", downedTicksElapsed);
         tag.putBoolean("usedSecondChance", usedSecondChance);
+        tag.putDouble("originalMaxHp", originalMaxHp);
         // reviverUUID и reviveProgressTicks не сохраняем — они сессионные
         return tag;
     }
@@ -92,6 +104,7 @@ public class DownedData {
         }
         downedTicksElapsed = tag.getInt("downedTicks");
         usedSecondChance = tag.getBoolean("usedSecondChance");
+        originalMaxHp = tag.contains("originalMaxHp") ? tag.getDouble("originalMaxHp") : -1;
         reviverUUID = null;
         reviveProgressTicks = 0;
     }
