@@ -43,6 +43,14 @@ public class ModEntities {
                     .updateInterval(1)
                     .build("hook"));
 
+    public static final RegistryObject<EntityType<PlagueOrbEntity>> PLAGUE_ORB =
+            ENTITIES.register("plague_orb", () ->
+                    EntityType.Builder.<PlagueOrbEntity>of(PlagueOrbEntity::new, MobCategory.MISC)
+                            .sized(0.5f, 0.5f)          // хитбокс
+                            .clientTrackingRange(64)     // дальность отслеживания клиентом
+                            .updateInterval(1)           // обновление каждый тик (важно для снарядов)
+                            .build("plague_orb"));
+
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
     }

@@ -218,6 +218,9 @@ public class ModItems {
                     .rarity(Rarity.RARE)
             ));
 
+    public static final RegistryObject<Item> PLAGUE_LANTERN =
+         ITEMS.register("plague_lantern", () -> new PlagueLanternItem(new Item.Properties()));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

@@ -8,6 +8,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import org.example.maniacrevolution.client.ClientPlagueData;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.fleshheap.ClientFleshHeapData;
@@ -62,15 +63,11 @@ public class CustomHud implements IGuiOverlay {
 
         Player player = mc.player;
 
-        // ВАЖНО: Проверяем режим игрока И настройки HUD
         if (player.isCreative() || player.isSpectator()) {
-            // В креативе/наблюдателе показываем только ванильный HUD
             return;
         }
 
-        // Проверяем, включен ли кастомный HUD
         if (!HudConfig.isCustomHudEnabled()) {
-            // Кастомный HUD выключен - не рендерим
             return;
         }
 
@@ -84,9 +81,7 @@ public class CustomHud implements IGuiOverlay {
         int mainX = (scaledWidth - MAIN_PANEL_WIDTH) / 2;
         int mainY = scaledHeight - MAIN_PANEL_HEIGHT - 5;
 
-        // Рендерим Flesh Heap ВЫШЕ главной панели
         renderFleshHeap(guiGraphics, scaledWidth / 2, mainY - 10);
-
         renderMainPanel(guiGraphics, mainX, mainY, player);
         LevelHud.render(guiGraphics, 5, 5);
         TimerHud.render(guiGraphics, screenWidth / 2, 5);
@@ -98,17 +93,11 @@ public class CustomHud implements IGuiOverlay {
         int penaltyY = mainY + (MAIN_PANEL_HEIGHT - PENALTY_SLOT_SIZE * 3 - 8) / 2;
         renderPenaltySlots(guiGraphics, penaltyX, penaltyY, player);
 
-        // НОВОЕ: Подсказки по клавишам слева от HUD
         renderPerkKeybindHints(guiGraphics, mainX - 125, mainY + 20);
-
-        // Отображаем название предмета НАД кастомным HUD
         renderItemName(guiGraphics, player, scaledWidth, mainY);
 
-        // ========================================
-        // ГЕНЕРАТОР - ПРАВЫЙ НИЖНИЙ УГОЛ
-        // ========================================
-        int generatorX = scaledWidth - 60;  // 75 пикселей от правого края
-        int generatorY = scaledHeight - 75; // 50 пикселей от низа
+        int generatorX = scaledWidth - 60;
+        int generatorY = scaledHeight - 75;
         boolean generatorExists = GeneratorChargeHud.render(guiGraphics, generatorX, generatorY);
 
         if (generatorExists) {
@@ -449,6 +438,10 @@ public class CustomHud implements IGuiOverlay {
         gui.fill(x + size + 1, y - 1, x + size + 2, y + size + 1, color);
     }
 
+    // ════════════════════════════════════════════════════════════════════════════
+//  ЗАМЕНИТЕ существующий метод renderHealthBar в CustomHud.java на этот:
+// ════════════════════════════════════════════════════════════════════════════
+
     private void renderHealthBar(GuiGraphics gui, Player player, int x, int y) {
         Minecraft mc = Minecraft.getInstance();
 
@@ -456,18 +449,49 @@ public class CustomHud implements IGuiOverlay {
         float maxHealth = player.getMaxHealth();
         float healthPercent = health / maxHealth;
 
+        // ── Фон полосы хп ────────────────────────────────────────────────────
         gui.fill(x, y, x + BAR_WIDTH, y + BAR_HEIGHT, HP_BG);
 
+        // ── Основная красная полоска хп ───────────────────────────────────────
         int filledWidth = (int) (BAR_WIDTH * healthPercent);
         gui.fill(x, y, x + filledWidth, y + BAR_HEIGHT, HP_COLOR);
 
+        // ── Наложение чумы поверх хп-полосы ──────────────────────────────────
+        float plagueProgress = ClientPlagueData.getProgress(); // 0.0 .. 1.0
+        if (plagueProgress > 0f) {
+            // Зелёная полоска заполняется слева направо по мере накопления чумы
+            // и не превышает текущий уровень хп
+            int plagueWidth = (int) (filledWidth * plagueProgress);
+
+            // Цвет: тёмно-зелёный -> ярко-зелёный при приближении к порогу
+            // lerp от 0x1A3D00 (тёмный) до 0x4CFF00 (яркий)
+            int plagueColor = lerpColor(0xFF1A5C00, 0xFF55FF00, plagueProgress);
+
+            // Рисуем поверх красной полоски
+            gui.fill(x, y, x + plagueWidth, y + BAR_HEIGHT, plagueColor);
+
+            // Слабый пульс на границе (мигающая линия-разделитель)
+            if (plagueProgress > 0.05f) {
+                long time = System.currentTimeMillis();
+                float pulse = (float)(Math.sin(time / 250.0) * 0.5 + 0.5); // 0 .. 1
+                int pulseAlpha = (int)(pulse * 200) + 55; // 55 .. 255
+                int pulseColor = (pulseAlpha << 24) | 0x00FF44;
+
+                // Вертикальная линия на правой границе зелёной полоски
+                gui.fill(x + plagueWidth - 1, y, x + plagueWidth + 1, y + BAR_HEIGHT, pulseColor);
+            }
+        }
+
+        // ── Рамка ─────────────────────────────────────────────────────────────
         gui.renderOutline(x, y, BAR_WIDTH, BAR_HEIGHT, PANEL_BORDER);
 
+        // ── Текст хп ──────────────────────────────────────────────────────────
         String hpText = String.format("%.0f / %.0f", health, maxHealth);
         int textX = x + (BAR_WIDTH - mc.font.width(hpText)) / 2;
         int textY = y + (BAR_HEIGHT - 8) / 2;
         gui.drawString(mc.font, hpText, textX, textY, 0xFFFFFFFF, true);
 
+        // ── Регенерация хп ────────────────────────────────────────────────────
         float hpRegen = ClientHealthData.getHealthRegen();
         if (Math.abs(hpRegen) > 0.01f) {
             String regenText = String.format("%+.1f", hpRegen);
@@ -478,6 +502,29 @@ public class CustomHud implements IGuiOverlay {
             gui.drawString(mc.font, regenText, regenX, regenY, regenColor, false);
         }
     }
+
+    /**
+     * Линейная интерполяция между двумя ARGB-цветами.
+     * @param t прогресс от 0.0 (colorA) до 1.0 (colorB)
+     */
+    private static int lerpColor(int colorA, int colorB, float t) {
+        int aA = (colorA >> 24) & 0xFF, rA = (colorA >> 16) & 0xFF,
+                gA = (colorA >> 8)  & 0xFF, bA =  colorA        & 0xFF;
+        int aB = (colorB >> 24) & 0xFF, rB = (colorB >> 16) & 0xFF,
+                gB = (colorB >> 8)  & 0xFF, bB =  colorB        & 0xFF;
+
+        int a = (int)(aA + (aB - aA) * t);
+        int r = (int)(rA + (rB - rA) * t);
+        int g = (int)(gA + (gB - gA) * t);
+        int b = (int)(bA + (bB - bA) * t);
+
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  ДОБАВЬТЕ импорт в начало CustomHud.java:
+// ════════════════════════════════════════════════════════════════════════════
+//
 
     private void renderManaBar(GuiGraphics gui, int x, int y) {
         Minecraft mc = Minecraft.getInstance();

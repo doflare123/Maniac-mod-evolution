@@ -324,6 +324,14 @@ public class ModNetworking {
                 .consumerMainThread(DownedHudPacket::handle)
                 .add();
 
+        CHANNEL.registerMessage(
+                     packetId++,
+                     SyncPlaguePacket.class,
+                     SyncPlaguePacket::encode,
+                     SyncPlaguePacket::decode,
+                     SyncPlaguePacket::handle
+                 );
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

@@ -37,6 +37,9 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> DEATH_RACE_EFFECT = MOB_EFFECTS.register("death_race",
             DeathRaceEffect::new);
 
+    public static final RegistryObject<MobEffect> PLAGUE =
+            MOB_EFFECTS.register("plague", PlagueEffect::new);
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }

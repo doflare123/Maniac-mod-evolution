@@ -50,7 +50,7 @@ public class GeneratorChargeHud {
         if (chargePercent > 0) {
             drawChargeSegments(guiGraphics, x, y, activeSegments, chargePercent);
         }
-        
+
         // Рисуем процент
         String percentText = String.format("%.0f%%", chargePercent * 100);
         int textX = x + BATTERY_WIDTH / 2 - mc.font.width(percentText) / 2;
