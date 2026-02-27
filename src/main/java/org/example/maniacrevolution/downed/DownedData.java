@@ -29,6 +29,12 @@ public class DownedData {
     private int reviveProgressTicks = 0;
 
     /**
+     * Серверный тик последнего клика хелпера.
+     * Если текущий тик - lastReviveInteractTick > 5 — хелпер отпустил ПКМ, сбрасываем.
+     */
+    private long lastReviveInteractTick = -1;
+
+    /**
      * Использован ли уже второй шанс.
      * Если true — следующая смерть фатальна даже в состоянии WEAKENED.
      */
@@ -58,6 +64,9 @@ public class DownedData {
     public boolean hasUsedSecondChance() { return usedSecondChance; }
     public void setUsedSecondChance(boolean v) { this.usedSecondChance = v; }
 
+    public long getLastReviveInteractTick() { return lastReviveInteractTick; }
+    public void setLastReviveInteractTick(long tick) { this.lastReviveInteractTick = tick; }
+
     public double getOriginalMaxHp() { return originalMaxHp; }
     public void setOriginalMaxHp(double hp) { this.originalMaxHp = hp; }
     public boolean hasHpPenalty() { return originalMaxHp > 0; }
@@ -72,12 +81,14 @@ public class DownedData {
         reviveProgressTicks = 0;
         usedSecondChance = false;
         originalMaxHp = -1;
+        lastReviveInteractTick = -1;
     }
 
     /** Прервать текущий прогресс подъёма, не меняя состояние */
     public void cancelRevive() {
         reviverUUID = null;
         reviveProgressTicks = 0;
+        lastReviveInteractTick = -1;
     }
 
     /** Прогресс подъёма от 0.0 до 1.0 */

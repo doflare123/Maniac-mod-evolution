@@ -157,6 +157,23 @@ public class DownedEventHandler {
             sendHudPackets(player, data);
         }
 
+        // ── Сброс подъёма если хелпер перестал кликать (>5 тиков без клика) ────
+        if (data.getReviverUUID() != null) {
+            long serverTick = player.getServer() != null ? player.getServer().getTickCount() : 0;
+            long lastClick = data.getLastReviveInteractTick();
+            if (lastClick >= 0 && serverTick - lastClick > 5) {
+                // Хелпер отпустил ПКМ — сбрасываем прогресс
+                UUID reviverUUID = data.getReviverUUID();
+                data.cancelRevive();
+                // Уведомляем хелпера
+                ServerPlayer reviver = (ServerPlayer) player.getServer().getPlayerList().getPlayer(reviverUUID);
+                if (reviver != null) {
+                    reviver.displayClientMessage(
+                            Component.literal("§cПодъём прерван!"), true);
+                }
+            }
+        }
+
         // ── Таймер — стоит на паузе пока кто-то поднимает ──────────────
         boolean beingRevived = data.getReviverUUID() != null;
         if (!beingRevived) {
@@ -267,6 +284,9 @@ public class DownedEventHandler {
         }
 
         targetData.incrementReviveProgress();
+        // Обновляем тик последнего клика — пока хелпер кликает, таймер живёт
+        targetData.setLastReviveInteractTick(
+                target.getServer() != null ? target.getServer().getTickCount() : 0);
 
         // Прогресс каждую секунду
         if (targetData.getReviveProgressTicks() % 20 == 0) {
@@ -441,7 +461,8 @@ public class DownedEventHandler {
             data.setOriginalMaxHp(maxHp.getBaseValue()); // запоминаем для восстановления
             double newMax = Math.max(2.0, maxHp.getBaseValue() / 2.0);
             maxHp.setBaseValue(newMax);
-            target.setHealth((float) Math.min(4.0, newMax));
+            // Ставим полное HP от нового урезанного максимума
+            target.setHealth((float) newMax);
         }
 
         applyWeakenedEffects(target);
