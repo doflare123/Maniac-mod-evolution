@@ -74,6 +74,12 @@ public class ModItems {
                     .stacksTo(1)
                     .rarity(Rarity.EPIC)));
 
+    public static final RegistryObject<Item> PRE_GAME_READY_ITEM = ITEMS.register("pre_game_ready_item",
+            () -> new PreGameReadyItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> PRE_GAME_READY_ITEM_ACTIVE = ITEMS.register("pre_game_ready_item_active",
+            () -> new PreGameReadyItemActive(new Item.Properties()));
+
     public enum ModArmorMaterials implements ArmorMaterial {
         NECROMANCER(
                 "necromancer",

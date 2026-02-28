@@ -37,6 +37,7 @@ import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.map.MapRegistry;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.perk.PerkRegistry;
+import org.example.maniacrevolution.pregame.PreGameReadyManager;
 import org.example.maniacrevolution.shop.ShopRegistry;
 import org.example.maniacrevolution.potion.ModPotions;
 import org.example.maniacrevolution.brewing.ModBrewingRecipes;
@@ -103,6 +104,7 @@ public class Maniacrev {
         GameManager.init(event.getServer());
         PlayerDataManager.load(event.getServer());
         ReadinessManager.setServer(event.getServer());
+        PreGameReadyManager.setServer(event.getServer());
         LOGGER.info("Character system initialized");
         LOGGER.info("ManiacRev server data loaded");
     }
@@ -137,6 +139,7 @@ public class Maniacrev {
         SettingsCommand.register(event.getDispatcher());
         HpBoostCommand.register(event.getDispatcher());
         ApplySettingsCommand.register(event.getDispatcher());
+        PreGameReadyCommand.register(event.getDispatcher());
     }
 
     public static ResourceLocation loc(String path) {
