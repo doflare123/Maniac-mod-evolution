@@ -39,16 +39,7 @@ public class DownedEventHandler {
      */
     private static final Map<UUID, UUID> DOWNED_STANDS = new HashMap<>();
 
-    /**
-     * UUID лежачего → UUID тащащего его врага.
-     */
-    private static final Map<UUID, UUID> DRAGGING = new HashMap<>();
 
-    /**
-     * UUID лежачего → уровень замедления (amplifier) назначенный при начале тащения.
-     * Нужен чтобы каждый тик восстанавливать эффект с тем же уровнем.
-     */
-    private static final Map<UUID, Integer> DRAGGING_AMPLIFIER = new HashMap<>();
 
     // ══════════════════════════════════════════════════════════════════════
     // 0. БЛОКИРОВКА УРОНА ДЛЯ ЛЕЖАЧЕГО
@@ -146,11 +137,6 @@ public class DownedEventHandler {
         // иначе камера примагничивается и голову не повернуть.
         player.setPose(Pose.SLEEPING);
 
-        // ── Тащение: проверяем каждый тик кто держит ПКМ рядом ──────────
-        // (EntityInteract срабатывает только на одиночный клик,
-        //  поэтому логику тащения переносим в серверный тик)
-        tickDrag(player, data);
-
         // ── Визуальные индикаторы для окружающих игроков ─────────────────
         // Каждые 10 тиков показываем частицы у ног и текст над головой
         if (data.getDownedTicksElapsed() % 10 == 0) {
@@ -186,54 +172,7 @@ public class DownedEventHandler {
         }
     }
 
-    /**
-     * Логика тащения — вызывается каждый тик для лежачего игрока.
-     * Ищем игрока из другой команды который смотрит на лежачего и
-     * нажимает ПКМ (определяем через UseItemInputPacket — недоступен напрямую,
-     * поэтому используем proximity + DRAGGING Map которую заполняет EntityInteract).
-     */
-    private static void tickDrag(ServerPlayer downed, DownedData data) {
-        UUID draggerUUID = DRAGGING.get(downed.getUUID());
-        if (draggerUUID == null) return;
 
-        ServerPlayer dragger = (ServerPlayer) downed.getServer().getPlayerList().getPlayer(draggerUUID);
-        if (dragger == null || !dragger.isAlive()) {
-            DRAGGING.remove(downed.getUUID());
-            return;
-        }
-
-        // Если враг слишком далеко — прекращаем тащение
-        if (dragger.distanceTo(downed) > 5.0) {
-            DRAGGING.remove(downed.getUUID());
-            return;
-        }
-
-        // Тащим лежачего к врагу (0.08 блока за тик = ~1.6 б/сек)
-        double dx = dragger.getX() - downed.getX();
-        double dz = dragger.getZ() - downed.getZ();
-        double dist = Math.sqrt(dx * dx + dz * dz);
-
-        if (dist > 1.2) {
-            double step = 0.08;
-            downed.teleportTo(
-                    downed.getX() + (dx / dist) * step,
-                    downed.getY(),
-                    downed.getZ() + (dz / dist) * step
-            );
-        }
-
-        // Обновляем замедление каждый тик пока тащит (не спадает)
-        int currentAmplifier = -1;
-        MobEffectInstance existing = dragger.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
-        if (existing != null) {
-            // Берём базовый уровень замедления от тащения (сохранён в DRAGGING_AMPLIFIER)
-            currentAmplifier = DRAGGING_AMPLIFIER.getOrDefault(downed.getUUID(), existing.getAmplifier());
-        } else {
-            currentAmplifier = DRAGGING_AMPLIFIER.getOrDefault(downed.getUUID(), -1);
-        }
-        dragger.addEffect(new MobEffectInstance(
-                MobEffects.MOVEMENT_SLOWDOWN, 10, currentAmplifier, false, false));
-    }
 
     private static void tickWeakened(ServerPlayer player, DownedData data) {
         if (data.getDownedTicksElapsed() % 10 == 0) {
@@ -243,9 +182,7 @@ public class DownedEventHandler {
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // 3. ПКМ ПО ЛЕЖАЧЕМУ — одиночный клик
-    //    Союзник: начинает / продолжает прогресс подъёма
-    //    Враг: регистрирует в DRAGGING + замедление
+    // 3. ПКМ ПО ЛЕЖАЧЕМУ — только союзник может поднять
     // ══════════════════════════════════════════════════════════════════════
 
     @SubscribeEvent
@@ -257,13 +194,32 @@ public class DownedEventHandler {
         if (targetData == null) return;
         if (targetData.getState() != DownedState.DOWNED) return;
 
-        event.setCanceled(true);
+        // Только союзники могут взаимодействовать с лежачим
+        if (!areSameTeam(helper, target)) return;
 
-        if (areSameTeam(helper, target)) {
-            handleAllyRevive(helper, target, targetData);
-        } else {
-            handleEnemyStartDrag(helper, target);
+        event.setCanceled(true);
+        handleAllyRevive(helper, target, targetData);
+    }
+
+    /**
+     * Возвращает нужное количество тиков для подъёма.
+     * Обычный союзник: 6 сек (120 тиков).
+     * Медик (команда survivors + SurvivorClass=5): 3 сек (60 тиков).
+     */
+    private static int getReviveTicks(ServerPlayer helper) {
+        Team team = helper.getTeam();
+        if (team != null && team.getName().equalsIgnoreCase("survivors")) {
+            net.minecraft.world.scores.Objective obj = helper.getScoreboard()
+                    .getObjective("SurvivorClass");
+            if (obj != null) {
+                net.minecraft.world.scores.Score score = helper.getScoreboard()
+                        .getOrCreatePlayerScore(helper.getScoreboardName(), obj);
+                if (score.getScore() == 5) {
+                    return 3 * 20; // медик — 3 сек
+                }
+            }
         }
+        return 6 * 20; // обычный — 6 сек
     }
 
     private static void handleAllyRevive(ServerPlayer helper, ServerPlayer target, DownedData targetData) {
@@ -276,11 +232,7 @@ public class DownedEventHandler {
         if (targetData.getReviverUUID() == null) {
             targetData.setReviverUUID(helper.getUUID());
             targetData.setReviveProgressTicks(0);
-            helper.displayClientMessage(
-                    Component.literal("§aПоднимаете §e" + target.getName().getString()
-                            + "§a... Держите ПКМ 5 сек"),
-                    true
-            );
+            targetData.setRequiredReviveTicks(getReviveTicks(helper));
         }
 
         targetData.incrementReviveProgress();
@@ -288,81 +240,22 @@ public class DownedEventHandler {
         targetData.setLastReviveInteractTick(
                 target.getServer() != null ? target.getServer().getTickCount() : 0);
 
-        // Прогресс каждую секунду
-        if (targetData.getReviveProgressTicks() % 20 == 0) {
-            int pct = (int) (targetData.getReviveProgress() * 100);
-            helper.displayClientMessage(
-                    Component.literal("§aПодъём: §e" + pct + "%"),
-                    true
-            );
-        }
-
         // Прерываем если хелпер отошёл
         if (helper.distanceTo(target) > 3.0) {
             targetData.cancelRevive();
-            helper.displayClientMessage(
-                    Component.literal("§cПодъём прерван — вы отошли слишком далеко!"),
-                    true
-            );
             return;
         }
 
-        if (targetData.getReviveProgressTicks() >= DownedData.REVIVE_HOLD_TICKS) {
+        if (targetData.getReviveProgressTicks() >= targetData.getRequiredReviveTicks()) {
             revivePlayer(target, targetData, helper);
         }
     }
 
-    /**
-     * Враг начинает тащить: регистрируем пару dragger→downed и даём замедление.
-     * Само физическое перемещение происходит в tickDrag каждый тик.
-     */
-    private static void handleEnemyStartDrag(ServerPlayer enemy, ServerPlayer target) {
-        // Проверяем что enemy и target из разных команд (фикс — двойная проверка)
-        if (areSameTeam(enemy, target)) return;
 
-        // Регистрируем пару
-        DRAGGING.put(target.getUUID(), enemy.getUUID());
-
-        // Замедление = базовое замедление врага (без нашего эффекта) + 2
-        int baseAmplifier = -1;
-        MobEffectInstance existing = enemy.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
-        // Если уже тащил — берём сохранённый базовый уровень, не суммируем повторно
-        if (DRAGGING_AMPLIFIER.containsKey(target.getUUID())) {
-            baseAmplifier = DRAGGING_AMPLIFIER.get(target.getUUID());
-        } else if (existing != null) {
-            baseAmplifier = existing.getAmplifier() + 2;
-        } else {
-            baseAmplifier = 1; // Slowness II по умолчанию (amplifier 1 = Slowness II)
-        }
-        DRAGGING_AMPLIFIER.put(target.getUUID(), baseAmplifier);
-    }
 
     // ══════════════════════════════════════════════════════════════════════
-    // 4. СЕРВЕРНЫЙ ТИК — общая очистка DRAGGING
     // ══════════════════════════════════════════════════════════════════════
-
-    @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-
-        // Очищаем устаревшие записи из DRAGGING
-        // (игрок вышел, умер, или уже не лежит)
-        DRAGGING.entrySet().removeIf(entry -> {
-            var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
-            if (server == null) return true;
-            ServerPlayer downed = (ServerPlayer) server.getPlayerList().getPlayer(entry.getKey());
-            if (downed == null) { DRAGGING_AMPLIFIER.remove(entry.getKey()); return true; }
-            DownedData data = DownedCapability.get(downed);
-            if (data == null || data.getState() != DownedState.DOWNED) {
-                DRAGGING_AMPLIFIER.remove(entry.getKey());
-                return true;
-            }
-            return false;
-        });
-    }
-
-    // ══════════════════════════════════════════════════════════════════════
-    // 5. РЕСПАУН — копируем Capability
+    // 4. РЕСПАУН — копируем Capability
     // ══════════════════════════════════════════════════════════════════════
 
     @SubscribeEvent
@@ -402,8 +295,6 @@ public class DownedEventHandler {
 
         removeDownedEffects(target);
         removeStandForPlayer(target.getUUID());
-        DRAGGING.remove(target.getUUID());
-        DRAGGING_AMPLIFIER.remove(target.getUUID());
         clearHudForNearby(target);
 
         // Восстанавливаем полное здоровье (без урезания)
@@ -430,7 +321,6 @@ public class DownedEventHandler {
             removeWeakenedEffects(player);
         }
 
-        DRAGGING.values().remove(player.getUUID());
         data.fullReset();
 
         player.displayClientMessage(
@@ -451,8 +341,6 @@ public class DownedEventHandler {
 
         removeDownedEffects(target);
         removeStandForPlayer(target.getUUID());
-        DRAGGING.remove(target.getUUID());
-        DRAGGING_AMPLIFIER.remove(target.getUUID());
         clearHudForNearby(target);
 
         // Сохраняем оригинальный макс HP и урезаем вдвое
@@ -489,8 +377,6 @@ public class DownedEventHandler {
         data.cancelRevive();
         removeDownedEffects(player);
         removeStandForPlayer(player.getUUID());
-        DRAGGING.remove(player.getUUID());
-        DRAGGING_AMPLIFIER.remove(player.getUUID());
         clearHudForNearby(player);
 
         player.hurt(player.level().damageSources().magic(), Float.MAX_VALUE);
@@ -592,7 +478,7 @@ public class DownedEventHandler {
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 255, false, false));
         // JUMP_BOOST 128 (signed -128) — невозможность прыгнуть
         player.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 128, false, false));
-        player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 40, 0, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 400, 0, false, false));
         player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 255, false, false));
     }
 
@@ -617,13 +503,9 @@ public class DownedEventHandler {
         DownedData data = DownedCapability.get(player);
         AttributeInstance maxHp = player.getAttribute(Attributes.MAX_HEALTH);
         if (maxHp == null) return;
-
-        if (data != null && data.hasHpPenalty()) {
-            // Восстанавливаем точное значение которое было до урезания
-            maxHp.setBaseValue(data.getOriginalMaxHp());
-            data.setOriginalMaxHp(-1);
-        }
-        // Если originalMaxHp не был задан (подъём командой) — ничего не меняем
+        // Всегда восстанавливаем базовые 20 HP (ванильный дефолт)
+        maxHp.setBaseValue(20.0);
+        if (data != null) data.setOriginalMaxHp(-1);
     }
 
     // ── Утилиты ───────────────────────────────────────────────────────────

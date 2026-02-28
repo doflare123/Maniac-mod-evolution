@@ -29,6 +29,13 @@ public class DownedData {
     private int reviveProgressTicks = 0;
 
     /**
+     * Сколько тиков нужно для подъёма (зависит от класса хелпера).
+     * 120 = 6 сек (обычный), 60 = 3 сек (медик).
+     * Устанавливается при начале подъёма.
+     */
+    private int requiredReviveTicks = 120;
+
+    /**
      * Серверный тик последнего клика хелпера.
      * Если текущий тик - lastReviveInteractTick > 5 — хелпер отпустил ПКМ, сбрасываем.
      */
@@ -60,6 +67,8 @@ public class DownedData {
     public int getReviveProgressTicks() { return reviveProgressTicks; }
     public void setReviveProgressTicks(int t) { this.reviveProgressTicks = t; }
     public void incrementReviveProgress() { reviveProgressTicks++; }
+    public int getRequiredReviveTicks() { return requiredReviveTicks; }
+    public void setRequiredReviveTicks(int t) { this.requiredReviveTicks = t; }
 
     public boolean hasUsedSecondChance() { return usedSecondChance; }
     public void setUsedSecondChance(boolean v) { this.usedSecondChance = v; }
@@ -88,12 +97,14 @@ public class DownedData {
     public void cancelRevive() {
         reviverUUID = null;
         reviveProgressTicks = 0;
+        requiredReviveTicks = 120;
         lastReviveInteractTick = -1;
     }
 
     /** Прогресс подъёма от 0.0 до 1.0 */
     public float getReviveProgress() {
-        return (float) reviveProgressTicks / REVIVE_HOLD_TICKS;
+        if (requiredReviveTicks <= 0) return 0f;
+        return (float) reviveProgressTicks / requiredReviveTicks;
     }
 
     // ── NBT ───────────────────────────────────────────────────────────────
