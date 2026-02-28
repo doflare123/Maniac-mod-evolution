@@ -13,11 +13,6 @@ public class PerkRegistry {
 
     public static void init() {
         // Общие перки (5 штук)
-//        register(new BerserkerPerk());
-//        register(new VampirePerk());
-//        register(new SpeedsterPerk());
-//        register(new FortressPerk());
-//        register(new ScoutPerk());
         register(new BigmoneyPerk());
         register(new MegamindPerk());
         register(new GtoMedalPerk());
@@ -26,21 +21,12 @@ public class PerkRegistry {
 
         // Перки выживших (5 штук)
         register(new MimicPerk());
-//        register(new MedicPerk());
-//        register(new TrapperSurvivorPerk());
-//        register(new HackerPerk());
-//        register(new DecoyPerk());
         register(new WallhackPerk());
         register(new LastBreathPerk());
         register(new QuickReflexesPerk());
         register(new BlindnessPerk());
 
         // Перки маньяка (5 штук)
-//        register(new PredatorPerk());
-//        register(new TerrorPerk());
-//        register(new TrapperManiacPerk());
-//        register(new ExecutionerPerk());
-//        register(new ShadowPerk());
         register(new BloodflowPerk());
         register(new IAmSpeedPerk());
         register(new CatchMistakesPerk());

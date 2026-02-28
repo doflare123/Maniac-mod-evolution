@@ -1,7 +1,6 @@
 package org.example.maniacrevolution.event;
 
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -104,8 +103,8 @@ public class PlagueLanternEventHandler {
                     EFFECT_DURATION_TICKS,
                     0,          // amplifier 0
                     false,      // не из маяка
-                    true,       // показывать частицы
-                    true        // показывать иконку
+                    false,       // показывать частицы
+                    false        // показывать иконку
             ));
         }
     }

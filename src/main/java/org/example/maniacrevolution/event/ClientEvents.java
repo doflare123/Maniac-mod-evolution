@@ -17,7 +17,6 @@ import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.effect.client.FearClientHandler;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.gui.GuideScreen;
-import org.example.maniacrevolution.init.ModParticles;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.ActivatePerkPacket;

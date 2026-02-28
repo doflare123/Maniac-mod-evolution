@@ -181,7 +181,7 @@ public class PlagueOrbEntity extends Projectile {
         // Только режим Adventure
         if (((ServerPlayer)target).gameMode.getGameModeForPlayer()
                 != net.minecraft.world.level.GameType.ADVENTURE) {
-            continue;
+            return false;
         }
 
         // Только команда survivors
