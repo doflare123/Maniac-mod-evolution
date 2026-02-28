@@ -220,5 +220,7 @@
   "effect.maniacrev.death_race": "Гонка со смертью",
   "item.maniacrev.clarity": "Балтика 9",
 
-  "item.maniacrev.settings_item": "Настройки"
+  "item.maniacrev.settings_item": "Настройки",
+  "item.maniacrev.plague_lantern": "Чумная лампа",
+  "effect.maniacrev.plague": "Чума"
 }

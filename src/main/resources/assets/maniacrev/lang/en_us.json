@@ -256,5 +256,7 @@
   "effect.maniacrev.mana_flow": "mana flow",
   "effect.maniacrev.target": "target",
   "effect.maniacrev.death_race": "death race",
-  "item.maniacrev.clarity": "clarity"
+  "item.maniacrev.clarity": "clarity",
+  "item.maniacrev.plague_lantern": "Plague lantern",
+  "effect.maniacrev.plague": "Plague"
 }

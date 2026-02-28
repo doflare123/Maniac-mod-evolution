@@ -9,9 +9,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.entity.PlagueOrbEntity;
 import org.example.maniacrevolution.mana.ManaData;
 import org.example.maniacrevolution.mana.ManaProvider;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import java.util.UUID;
 
 public class PlagueLanternItem extends Item implements ITimedAbility {
 
@@ -19,6 +28,38 @@ public class PlagueLanternItem extends Item implements ITimedAbility {
     public static final int COOLDOWN_TICKS = 400;
     public static final int COOLDOWN_SECONDS = 20;
     private static final String NBT_COOLDOWN_KEY = "PlagueLanternCooldownTick";
+    // Добавь эти константы в класс:
+    private static final UUID ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
+    private static final UUID ATTACK_SPEED_UUID  = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
+        if (slot == EquipmentSlot.MAINHAND) {
+            ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
+
+            // Урон: базовый урон игрока = 1, модификатор = 0 → итого 1 урон (0.5 сердца)
+            // Если хочешь ровно 1 сердце (2 HP) — поставь 1.0 вместо 0.0
+            builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(
+                    ATTACK_DAMAGE_UUID,
+                    "Weapon modifier",
+                    -0.5,  // 1 - 0.5 базового = 0.5 сердца урона. Поставь 0.0 для 1 сердца
+                    AttributeModifier.Operation.ADDITION
+            ));
+
+            // Скорость атаки: стандарт = 4.0, чем меньше — тем медленнее
+            // 0.5 = очень медленно (как у кирки с зачарованием усталости)
+            builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(
+                    ATTACK_SPEED_UUID,
+                    "Weapon modifier",
+                    -3.6,  // 4.0 + (-3.6) = 0.4 — очень медленно
+                    AttributeModifier.Operation.ADDITION
+            ));
+
+            return builder.build();
+        }
+        return super.getAttributeModifiers(slot, stack);
+    }
+
 
     public PlagueLanternItem(Properties properties) {
         super(properties);
@@ -53,7 +94,7 @@ public class PlagueLanternItem extends Item implements ITimedAbility {
 
     @Override
     public ResourceLocation getAbilityIcon() {
-        return new ResourceLocation("maniacrev", "textures/gui/ability/plague_lantern.png");
+        return new ResourceLocation(Maniacrev.MODID, "textures/gui/abilities/plague_lantern.png");
     }
 
     @Override public String getAbilityName() { return "Сгусток чумы"; }
