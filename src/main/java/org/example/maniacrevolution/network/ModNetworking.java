@@ -332,6 +332,12 @@ public class ModNetworking {
                      SyncPlaguePacket::handle
                  );
 
+        CHANNEL.registerMessage(packetId++, SyncAddictionPacket.class,
+                SyncAddictionPacket::encode, SyncAddictionPacket::decode, SyncAddictionPacket::handle);
+
+        CHANNEL.registerMessage(packetId++, SyncAddictionVisibilityPacket.class,
+                SyncAddictionVisibilityPacket::encode, SyncAddictionVisibilityPacket::decode, SyncAddictionVisibilityPacket::handle);
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

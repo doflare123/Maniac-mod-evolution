@@ -136,31 +136,30 @@ public class PlagueOrbEntity extends Projectile {
     @Override
     protected void onHitEntity(EntityHitResult result) {
         if (level().isClientSide()) return;
-
         if (!(result.getEntity() instanceof ServerPlayer target)) return;
-
-        // Проверяем условия цели
         if (!isValidTarget(target)) return;
 
-        // Мгновенно заполняем шкалу чумы до порога
         PlagueCapability cap = PlagueCapabilityProvider.get(target);
         if (cap == null) return;
 
-        cap.setAccumulatedTicks(PlagueCapability.THRESHOLD_TICKS);
+        // Сразу наносим урон — не ждём следующего тика
+        target.hurt(
+                target.level().damageSources().magic(),
+                PlagueCapability.PLAGUE_DAMAGE
+        );
+
+        // Сбрасываем счётчик в 0 после урона
+        cap.setAccumulatedTicks(0);
         cap.syncToClient(target);
 
-        // Взрыв частиц при попадании
+        // Частицы попадания
         if (level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(
-                    ParticleTypes.COMPOSTER,
+            serverLevel.sendParticles(ParticleTypes.COMPOSTER,
                     target.getX(), target.getY() + 1.0, target.getZ(),
-                    40, 0.5, 0.8, 0.5, 0.15
-            );
-            serverLevel.sendParticles(
-                    ParticleTypes.EFFECT,
+                    40, 0.5, 0.8, 0.5, 0.15);
+            serverLevel.sendParticles(ParticleTypes.EFFECT,
                     target.getX(), target.getY() + 1.0, target.getZ(),
-                    20, 0.3, 0.5, 0.3, 0.05
-            );
+                    20, 0.3, 0.5, 0.3, 0.05);
         }
     }
 

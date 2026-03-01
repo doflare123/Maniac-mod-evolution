@@ -222,5 +222,7 @@
 
   "item.maniacrev.settings_item": "Настройки",
   "item.maniacrev.plague_lantern": "Чумная лампа",
-  "effect.maniacrev.plague": "Чума"
+  "effect.maniacrev.plague": "Чума",
+  "item.maniacrev.bong":    "Бонк",
+  "item.maniacrev.syringe": "Шприц мефедрона"
 }

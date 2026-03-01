@@ -92,6 +92,11 @@ public class CustomHud implements IGuiOverlay {
         int penaltyX = mainX + MAIN_PANEL_WIDTH + 5 + (HOTBAR_SLOT_SIZE + 4) * 3 + 8;
         int penaltyY = mainY + (MAIN_PANEL_HEIGHT - PENALTY_SLOT_SIZE * 3 - 8) / 2;
         renderPenaltySlots(guiGraphics, penaltyX, penaltyY, player);
+        // Шкала зависимости — правее слотов штрафа
+        int addX = penaltyX + PENALTY_SLOT_SIZE + 4;
+        int addY = mainY + 5;
+        int addH = MAIN_PANEL_HEIGHT - 10;
+        AddictionHud.render(guiGraphics, addX, addY, addH);
 
         renderPerkKeybindHints(guiGraphics, mainX - 125, mainY + 20);
         renderItemName(guiGraphics, player, scaledWidth, mainY);
@@ -461,7 +466,7 @@ public class CustomHud implements IGuiOverlay {
         if (plagueProgress > 0f) {
             // Зелёная полоска заполняется слева направо по мере накопления чумы
             // и не превышает текущий уровень хп
-            int plagueWidth = (int) (filledWidth * plagueProgress);
+            int plagueWidth = (int) (BAR_WIDTH * plagueProgress);
 
             // Цвет: тёмно-зелёный -> ярко-зелёный при приближении к порогу
             // lerp от 0x1A3D00 (тёмный) до 0x4CFF00 (яркий)

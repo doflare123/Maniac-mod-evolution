@@ -1,0 +1,13 @@
+{
+  "heartbeat": {
+    "subtitle": "Стук сердца",
+    "sounds": [
+      {
+        "name": "maniacrev:heartbeat",
+        "volume": 1.0,
+        "pitch": 1.0,
+        "type": "file"
+      }
+    ]
+  }
+}

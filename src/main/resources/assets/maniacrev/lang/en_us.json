@@ -258,5 +258,7 @@
   "effect.maniacrev.death_race": "death race",
   "item.maniacrev.clarity": "clarity",
   "item.maniacrev.plague_lantern": "Plague lantern",
-  "effect.maniacrev.plague": "Plague"
+  "effect.maniacrev.plague": "Plague",
+  "item.maniacrev.bong":    "Bong",
+  "item.maniacrev.syringe": "Adrenaline Syringe"
 }

@@ -227,6 +227,12 @@ public class ModItems {
     public static final RegistryObject<Item> PLAGUE_LANTERN =
          ITEMS.register("plague_lantern", () -> new PlagueLanternItem(new Item.Properties()));
 
+    public static final RegistryObject<Item> BONG =
+            ITEMS.register("bong", () -> new BongItem(new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> SYRINGE =
+            ITEMS.register("syringe", () -> new SyringeItem(new Item.Properties().stacksTo(16)));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

@@ -43,6 +43,7 @@ import org.example.maniacrevolution.potion.ModPotions;
 import org.example.maniacrevolution.brewing.ModBrewingRecipes;
 import org.example.maniacrevolution.character.CharacterRegistry;
 import org.example.maniacrevolution.readiness.ReadinessManager;
+import org.example.maniacrevolution.sound.ModSounds;
 import org.example.maniacrevolution.system.Agent47ShopConfig;
 import org.example.maniacrevolution.map.MapVotingManager;
 import org.example.maniacrevolution.command.SettingsCommand;
@@ -76,6 +77,7 @@ public class Maniacrev {
         ModPotions.POTIONS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         DownedCapability.register(modEventBus);
+        ModSounds.SOUND_EVENTS.register(modEventBus);
         // =========================================================
 
         MinecraftForge.EVENT_BUS.register(this);
