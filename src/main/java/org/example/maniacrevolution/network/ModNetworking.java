@@ -338,6 +338,11 @@ public class ModNetworking {
         CHANNEL.registerMessage(packetId++, SyncAddictionVisibilityPacket.class,
                 SyncAddictionVisibilityPacket::encode, SyncAddictionVisibilityPacket::decode, SyncAddictionVisibilityPacket::handle);
 
+        CHANNEL.registerMessage(packetId++, SyncFurySwipesPacket.class,
+                SyncFurySwipesPacket::encode, SyncFurySwipesPacket::decode, SyncFurySwipesPacket::handle);
+        CHANNEL.registerMessage(packetId++, SyncFurySwipesTargetPacket.class,
+                SyncFurySwipesTargetPacket::encode, SyncFurySwipesTargetPacket::decode, SyncFurySwipesTargetPacket::handle);
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

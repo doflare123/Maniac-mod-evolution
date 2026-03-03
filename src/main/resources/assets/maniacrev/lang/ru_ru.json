@@ -224,5 +224,9 @@
   "item.maniacrev.plague_lantern": "Чумная лампа",
   "effect.maniacrev.plague": "Чума",
   "item.maniacrev.bong":    "Бонк",
-  "item.maniacrev.syringe": "Шприц мефедрона"
+  "item.maniacrev.syringe": "Шприц мефедрона",
+
+  "item.maniacrev.beast_claw":   "Коготь зверя",
+  "item.maniacrev.beehive_food": "Улей",
+  "entity.maniacrev.rage_bee":   "Разъярённая пчела"
 }

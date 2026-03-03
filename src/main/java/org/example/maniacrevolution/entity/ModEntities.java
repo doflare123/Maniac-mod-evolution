@@ -51,6 +51,11 @@ public class ModEntities {
                             .updateInterval(1)           // обновление каждый тик (важно для снарядов)
                             .build("plague_orb"));
 
+    public static final RegistryObject<EntityType<RageBeeEntity>> RAGE_BEE =
+            ENTITIES.register("rage_bee", () -> EntityType.Builder
+                    .<RageBeeEntity>of(RageBeeEntity::new, MobCategory.CREATURE)
+                    .sized(0.7f, 0.6f).clientTrackingRange(8).build("rage_bee"));
+
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
     }

@@ -82,6 +82,7 @@ public class CustomHud implements IGuiOverlay {
         int mainY = scaledHeight - MAIN_PANEL_HEIGHT - 5;
 
         renderFleshHeap(guiGraphics, scaledWidth / 2, mainY - 10);
+        FurySwipesHud.render(guiGraphics, scaledWidth / 2, mainY - 10);
         renderMainPanel(guiGraphics, mainX, mainY, player);
         LevelHud.render(guiGraphics, 5, 5);
         TimerHud.render(guiGraphics, screenWidth / 2, 5);

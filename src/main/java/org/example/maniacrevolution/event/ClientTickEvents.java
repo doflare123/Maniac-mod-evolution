@@ -6,6 +6,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.client.ClientFurySwipesData;
 import org.example.maniacrevolution.hud.ClientHealthData;
 import org.example.maniacrevolution.mana.ClientManaData;
 
@@ -24,5 +25,7 @@ public class ClientTickEvents {
 
         // Обновляем данные маны
         ClientManaData.tick();
+
+        if (mc.level != null) ClientFurySwipesData.clientTick(mc.level.getGameTime());
     }
 }

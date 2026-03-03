@@ -16,6 +16,8 @@ public class ClientSetupEvents {
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.MIMIC_BLOCK.get(), MimicBlockRenderer::new);
         event.registerEntityRenderer(ModEntities.PLAGUE_ORB.get(), PlagueOrbRenderer::new);
+        event.registerEntityRenderer(ModEntities.RAGE_BEE.get(),
+                ctx -> new net.minecraft.client.renderer.entity.BeeRenderer(ctx));
     }
 
 }
