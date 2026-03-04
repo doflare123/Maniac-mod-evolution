@@ -224,6 +224,8 @@ public class ModItems {
                     .rarity(Rarity.RARE)
             ));
 
+    public static final RegistryObject<Item> MICROPHONE = ITEMS.register("microphone", () -> new MicrophoneItem(new Item.Properties().stacksTo(1)));
+
     public static final RegistryObject<Item> BEAST_CLAW =  ITEMS.register("beast_claw", () -> new BeastClawItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> BEEHIVE_FOOD = ITEMS.register("beehive_food", () -> new BeehiveItem(
        new Item.Properties().food(BeehiveItem.FOOD).stacksTo(16)));
