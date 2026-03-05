@@ -264,5 +264,9 @@
 
   "item.maniacrev.beast_claw":   "beast claw",
   "item.maniacrev.beehive_food": "beehive",
-  "entity.maniacrev.rage_bee":   "rage bee"
+  "entity.maniacrev.rage_bee":   "rage bee",
+
+  "item.maniacrev.ancestor_soul":      "Soul",
+  "item.maniacrev.totem_spawn_item":   "Totem",
+  "entity.maniacrev.shaman_totem":     "Totem"
 }

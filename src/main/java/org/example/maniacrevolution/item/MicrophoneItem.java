@@ -96,11 +96,6 @@ public class MicrophoneItem extends Item implements IItemWithAbility {
 
         // Частицы волны — расходящиеся кольца из нот
         spawnWaveParticles(caster, level);
-
-        String msg = hit > 0
-                ? "§bВолна! §7Станули §f" + hit + " §7выживших"
-                : "§7Волна прошла мимо...";
-        caster.displayClientMessage(Component.literal(msg), true);
     }
 
     private void spawnWaveParticles(ServerPlayer caster, ServerLevel level) {

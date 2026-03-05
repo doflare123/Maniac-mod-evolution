@@ -9,6 +9,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.event.TickEvent;
@@ -23,7 +24,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.block.entity.ModBlockEntities;
 import org.example.maniacrevolution.client.model.HookModel;
+import org.example.maniacrevolution.client.model.TotemModel;
 import org.example.maniacrevolution.client.renderer.HookRenderer;
+import org.example.maniacrevolution.client.renderer.TotemRenderer;
 import org.example.maniacrevolution.command.*;
 import org.example.maniacrevolution.cosmetic.CosmeticRegistry;
 import org.example.maniacrevolution.data.PlayerDataManager;
@@ -32,6 +35,7 @@ import org.example.maniacrevolution.downed.DownedData;
 import org.example.maniacrevolution.downed.DownedEventHandler;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.entity.ModEntities;
+import org.example.maniacrevolution.entity.TotemEntity;
 import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.map.MapRegistry;
@@ -137,6 +141,7 @@ public class Maniacrev {
         VoteMapCommand.register(event.getDispatcher());
         ResourcePackCommand.register(event.getDispatcher());
         GeneratorCommand.register(event.getDispatcher());
+        ShamanCommands.register(event.getDispatcher());
 
         SettingsCommand.register(event.getDispatcher());
         HpBoostCommand.register(event.getDispatcher());
@@ -160,11 +165,28 @@ public class Maniacrev {
         @SubscribeEvent
         public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(ModEntities.HOOK.get(), HookRenderer::new);
+            event.registerEntityRenderer(ModEntities.SHAMAN_TOTEM.get(), TotemRenderer::new);
         }
 
         @SubscribeEvent
         public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
             event.registerLayerDefinition(HookModel.LAYER_LOCATION, HookModel::createBodyLayer);
+            event.registerLayerDefinition(TotemModel.LAYER_LOCATION, TotemModel::createBodyLayer);
+        }
+    }
+
+    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ModEntityEvents {
+
+        @SubscribeEvent
+        public static void onAttributeCreate(EntityAttributeCreationEvent event) {
+            // RageBee — расширяет ванильную Bee, нужны её атрибуты
+            event.put(ModEntities.RAGE_BEE.get(),
+                    net.minecraft.world.entity.animal.Bee.createAttributes().build());
+
+            // Тотем шамана
+            event.put(ModEntities.SHAMAN_TOTEM.get(),
+                    TotemEntity.createAttributes().build());
         }
     }
 }

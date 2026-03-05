@@ -228,5 +228,9 @@
 
   "item.maniacrev.beast_claw":   "Коготь зверя",
   "item.maniacrev.beehive_food": "Улей",
-  "entity.maniacrev.rage_bee":   "Разъярённая пчела"
+  "entity.maniacrev.rage_bee":   "Разъярённая пчела",
+
+  "item.maniacrev.ancestor_soul":      "Душа предков",
+  "item.maniacrev.totem_spawn_item":   "Тотем шамана",
+  "entity.maniacrev.shaman_totem":     "Тотем шамана"
 }

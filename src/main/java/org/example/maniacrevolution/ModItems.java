@@ -239,6 +239,13 @@ public class ModItems {
     public static final RegistryObject<Item> SYRINGE =
             ITEMS.register("syringe", () -> new SyringeItem(new Item.Properties().stacksTo(16)));
 
+    public static final RegistryObject<Item> ANCESTOR_SOUL =   ITEMS.register("ancestor_soul", () -> new AncestorSoulItem(
+       new Item.Properties().stacksTo(16)));
+
+    public static final RegistryObject<Item> TOTEM_SPAWN_ITEM =
+            ITEMS.register("totem_spawn_item", () -> new TotemSpawnItem(
+                    new Item.Properties().stacksTo(16)));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

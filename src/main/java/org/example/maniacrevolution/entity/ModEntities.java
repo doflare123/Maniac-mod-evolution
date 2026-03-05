@@ -2,13 +2,14 @@ package org.example.maniacrevolution.entity;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.example.maniacrevolution.Maniacrev;
-
-import static net.minecraftforge.registries.ForgeRegistries.Keys.ENTITY_TYPES;
 
 public class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES =
@@ -55,6 +56,14 @@ public class ModEntities {
             ENTITIES.register("rage_bee", () -> EntityType.Builder
                     .<RageBeeEntity>of(RageBeeEntity::new, MobCategory.CREATURE)
                     .sized(0.7f, 0.6f).clientTrackingRange(8).build("rage_bee"));
+
+    public static final RegistryObject<EntityType<TotemEntity>> SHAMAN_TOTEM =
+            ENTITIES.register("shaman_totem", () -> EntityType.Builder
+                    .<TotemEntity>of(TotemEntity::new, MobCategory.MISC)
+                    .sized(1.0f, 2.2f)
+                    .clientTrackingRange(16)
+                    .updateInterval(3)
+                    .build("shaman_totem"));
 
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
