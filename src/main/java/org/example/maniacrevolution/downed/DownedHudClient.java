@@ -45,9 +45,8 @@ public class DownedHudClient {
         int y = sh / 2 + 12;
 
         switch (role) {
-            case DownedHudPacket.ROLE_SELF  -> renderSelf(gui, font, cx, y);
-            case DownedHudPacket.ROLE_ALLY  -> renderAlly(gui, font, cx, y);
-            case DownedHudPacket.ROLE_ENEMY -> renderEnemy(gui, font, cx, y);
+            case DownedHudPacket.ROLE_SELF -> renderSelf(gui, font, cx, y);
+            case DownedHudPacket.ROLE_ALLY -> renderAlly(gui, font, cx, y);
         }
     }
 
@@ -65,30 +64,30 @@ public class DownedHudClient {
         }
     }
 
-    // ── Союзник — подсказка + прогресс если поднимает ────────────────────
+    // ── Союзник ───────────────────────────────────────────────────────────
 
     private static void renderAlly(GuiGraphics gui, Font font, int cx, int y) {
         if (reviveProgress > 0f) {
-            // Этот игрок поднимает
+            // Этот игрок активно поднимает — показываем прогресс
             int pct = (int)(reviveProgress * 100);
-            drawCentered(gui, font, cx, y,      "§aПодъём " + downedName + ": " + pct + "%");
-            drawCentered(gui, font, cx, y + 10, "§7Удерживайте §aПКМ");
+            String bar = buildBar(reviveProgress, 8);
+            drawCentered(gui, font, cx, y,      "§a" + bar + " §f" + pct + "%");
+            drawCentered(gui, font, cx, y + 10, "§7Поднимаете §e" + downedName);
         } else if (isPaused) {
             // Кто-то другой поднимает
             drawCentered(gui, font, cx, y, "§e" + downedName + " §7поднимают...");
         } else {
             // Никто не поднимает
             int sec = remainingTicks / 20;
-            drawCentered(gui, font, cx, y,      "§c" + downedName + " §7упал  §e" + sec + "с");
+            String col = sec > 20 ? "§e" : sec > 10 ? "§6" : "§c";
+            drawCentered(gui, font, cx, y,      "§c" + downedName + " §7упал  " + col + sec + "с");
             drawCentered(gui, font, cx, y + 10, "§7Удерживайте §aПКМ у ног");
         }
     }
 
-    // ── Враг — подсказка про тащение ─────────────────────────────────────
-
-    private static void renderEnemy(GuiGraphics gui, Font font, int cx, int y) {
-        drawCentered(gui, font, cx, y, "§6" + downedName + " §7лежит");
-        drawCentered(gui, font, cx, y + 10, "§7Удерживайте §6ПКМ §7чтобы тащить");
+    private static String buildBar(float progress, int len) {
+        int filled = Math.round(progress * len);
+        return "§a" + "█".repeat(filled) + "§8" + "█".repeat(len - filled);
     }
 
     // ── Утилита ───────────────────────────────────────────────────────────

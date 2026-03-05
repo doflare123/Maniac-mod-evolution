@@ -54,6 +54,10 @@ import org.example.maniacrevolution.command.SettingsCommand;
 import org.example.maniacrevolution.command.HpBoostCommand;
 import org.example.maniacrevolution.command.ApplySettingsCommand;
 import org.slf4j.Logger;
+import net.minecraft.world.level.GameType;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 
 @Mod(Maniacrev.MODID)
 public class Maniacrev {
@@ -147,6 +151,16 @@ public class Maniacrev {
         HpBoostCommand.register(event.getDispatcher());
         ApplySettingsCommand.register(event.getDispatcher());
         PreGameReadyCommand.register(event.getDispatcher());
+    }
+
+    @SubscribeEvent
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        if (!GameManager.isTimerRunning()) return;
+
+        player.setGameMode(GameType.SPECTATOR);
+        player.sendSystemMessage(Component.literal("§7Игра уже идёт. Вы переведены в режим наблюдателя."));
+        LOGGER.info("Player {} joined during active game — set to spectator", player.getName().getString());
     }
 
     public static ResourceLocation loc(String path) {

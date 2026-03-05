@@ -133,9 +133,21 @@ public class DownedEventHandler {
         player.setDeltaMovement(0, Math.min(vy, 0), 0);
 
         // ── Поза SLEEPING — горизонтальное лежание ──────────────────────
-        // Просто setPose каждый тик — без setSleepingPos и setForcedPose,
-        // иначе камера примагничивается и голову не повернуть.
+        // setPose каждый тик на сервере.
+        // Дополнительно каждые 2 тика принудительно синхронизируем EntityData с клиентом —
+        // иначе клиент периодически сбрасывает позу (видно как вставание/падение).
         player.setPose(Pose.SLEEPING);
+        // Каждые 2 тика принудительно шлём клиенту обновление данных сущности
+        // чтобы поза не мерцала (клиент иногда сбрасывает её локально)
+        if (data.getDownedTicksElapsed() % 2 == 0) {
+            net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket posePacket =
+                    new net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket(
+                            player.getId(), player.getEntityData().getNonDefaultValues()
+                    );
+            if (posePacket.packedItems() != null && !posePacket.packedItems().isEmpty()) {
+                player.connection.send(posePacket);
+            }
+        }
 
         // ── Визуальные индикаторы для окружающих игроков ─────────────────
         // Каждые 10 тиков показываем частицы у ног и текст над головой
@@ -143,19 +155,40 @@ public class DownedEventHandler {
             sendHudPackets(player, data);
         }
 
-        // ── Сброс подъёма если хелпер перестал кликать (>5 тиков без клика) ────
+        // ── Тиковый прогресс подъёма ─────────────────────────────────────
         if (data.getReviverUUID() != null) {
             long serverTick = player.getServer() != null ? player.getServer().getTickCount() : 0;
             long lastClick = data.getLastReviveInteractTick();
+
             if (lastClick >= 0 && serverTick - lastClick > 5) {
                 // Хелпер отпустил ПКМ — сбрасываем прогресс
                 UUID reviverUUID = data.getReviverUUID();
                 data.cancelRevive();
-                // Уведомляем хелпера
                 ServerPlayer reviver = (ServerPlayer) player.getServer().getPlayerList().getPlayer(reviverUUID);
                 if (reviver != null) {
-                    reviver.displayClientMessage(
-                            Component.literal("§cПодъём прерван!"), true);
+                    reviver.displayClientMessage(Component.literal("§cПодъём прерван!"), true);
+                }
+            } else {
+                // Хелпер удерживает ПКМ — накапливаем прогресс каждый тик
+                ServerPlayer reviver = (ServerPlayer) player.getServer().getPlayerList().getPlayer(data.getReviverUUID());
+                if (reviver != null && reviver.distanceTo(player) <= 3.0) {
+                    data.incrementReviveProgress();
+
+                    // Отправляем HUD пакет хелперу каждый тик чтобы прогресс был плавным
+                    int remaining = DownedData.DOWNED_TIMEOUT_TICKS - data.getDownedTicksElapsed();
+                    ModNetworking.sendToPlayer(
+                            new DownedHudPacket(DownedHudPacket.ROLE_ALLY,
+                                    player.getName().getString(),
+                                    remaining, data.getReviveProgress(), true),
+                            reviver);
+
+                    if (data.getReviveProgressTicks() >= data.getRequiredReviveTicks()) {
+                        revivePlayer(player, data, reviver);
+                        return;
+                    }
+                } else if (reviver == null || reviver.distanceTo(player) > 3.0) {
+                    // Отошёл — сбрасываем
+                    data.cancelRevive();
                 }
             }
         }
@@ -229,26 +262,16 @@ public class DownedEventHandler {
             targetData.cancelRevive();
         }
 
+        // Регистрируем хелпера — прогресс будет накапливаться в tickDowned каждый тик
         if (targetData.getReviverUUID() == null) {
             targetData.setReviverUUID(helper.getUUID());
             targetData.setReviveProgressTicks(0);
             targetData.setRequiredReviveTicks(getReviveTicks(helper));
         }
 
-        targetData.incrementReviveProgress();
-        // Обновляем тик последнего клика — пока хелпер кликает, таймер живёт
+        // Обновляем тик последнего клика — пока удерживает ПКМ, тик обновляется
         targetData.setLastReviveInteractTick(
                 target.getServer() != null ? target.getServer().getTickCount() : 0);
-
-        // Прерываем если хелпер отошёл
-        if (helper.distanceTo(target) > 3.0) {
-            targetData.cancelRevive();
-            return;
-        }
-
-        if (targetData.getReviveProgressTicks() >= targetData.getRequiredReviveTicks()) {
-            revivePlayer(target, targetData, helper);
-        }
     }
 
 
@@ -446,17 +469,15 @@ public class DownedEventHandler {
             DownedData nearbyData = DownedCapability.get(nearby);
             if (nearbyData != null && nearbyData.getState() == DownedState.DOWNED) continue;
 
-            int role = areSameTeam(nearby, downed)
-                    ? DownedHudPacket.ROLE_ALLY
-                    : DownedHudPacket.ROLE_ENEMY;
+            // Только союзникам показываем HUD
+            if (!areSameTeam(nearby, downed)) continue;
 
-            // Для союзника показываем его прогресс подъёма если он поднимает
-            float allyProgress = (role == DownedHudPacket.ROLE_ALLY && beingRevived
-                    && nearby.getUUID().equals(data.getReviverUUID()))
+            // Показываем прогресс если этот союзник поднимает
+            float allyProgress = (beingRevived && nearby.getUUID().equals(data.getReviverUUID()))
                     ? reviveProgress : 0f;
 
             ModNetworking.sendToPlayer(
-                    new DownedHudPacket(role, downedName, remaining, allyProgress, beingRevived),
+                    new DownedHudPacket(DownedHudPacket.ROLE_ALLY, downedName, remaining, allyProgress, beingRevived),
                     nearby);
         }
     }
@@ -492,7 +513,7 @@ public class DownedEventHandler {
     }
 
     private static void applyWeakenedEffects(ServerPlayer player) {
-        player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 0, false, false));
+        // Слабость после подъёма убрана
     }
 
     private static void removeWeakenedEffects(ServerPlayer player) {
