@@ -37,6 +37,9 @@ import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.entity.TotemEntity;
 import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.hack.HackCommands;
+import org.example.maniacrevolution.hack.HackManager;
+import org.example.maniacrevolution.hack.ModHackRegistry;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.map.MapRegistry;
 import org.example.maniacrevolution.network.ModNetworking;
@@ -86,6 +89,9 @@ public class Maniacrev {
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         DownedCapability.register(modEventBus);
         ModSounds.SOUND_EVENTS.register(modEventBus);
+        ModHackRegistry.BLOCKS.register(modEventBus);
+        ModHackRegistry.BLOCK_ENTITIES.register(modEventBus);
+        ModHackRegistry.ITEMS.register(modEventBus);
         // =========================================================
 
         MinecraftForge.EVENT_BUS.register(this);
@@ -115,6 +121,7 @@ public class Maniacrev {
         PlayerDataManager.load(event.getServer());
         ReadinessManager.setServer(event.getServer());
         PreGameReadyManager.setServer(event.getServer());
+        HackManager.reset();
         LOGGER.info("Character system initialized");
         LOGGER.info("ManiacRev server data loaded");
     }
@@ -146,6 +153,7 @@ public class Maniacrev {
         ResourcePackCommand.register(event.getDispatcher());
         GeneratorCommand.register(event.getDispatcher());
         ShamanCommands.register(event.getDispatcher());
+        HackCommands.register(event.getDispatcher());
 
         SettingsCommand.register(event.getDispatcher());
         HpBoostCommand.register(event.getDispatcher());

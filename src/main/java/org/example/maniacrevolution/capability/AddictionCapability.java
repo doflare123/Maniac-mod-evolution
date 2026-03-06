@@ -26,7 +26,7 @@ public class AddictionCapability {
     public static final float SYRINGE_REDUCE_PCT   = 0.20f;
     public static final int   SYRINGE_WINDOW_TICKS = 400;
     public static final int   DEATH_CHECK_INTERVAL = 20;
-    public static final float STAGE3_DEATH_CHANCE  = 0.10f;
+    public static final float STAGE3_DEATH_CHANCE  = 0.01f;
 
     // ── Данные ────────────────────────────────────────────────────────────────
     private float addiction         = 0f;

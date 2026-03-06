@@ -1,14 +1,23 @@
 package org.example.maniacrevolution.network.packets;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.Config;
+import org.example.maniacrevolution.hack.HackConfig;
+import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.perk.perks.maniac.CatchMistakesPerk;
 import org.example.maniacrevolution.util.ScoreboardUtil;
 
 import java.util.function.Supplier;
 
+/**
+ * Пакет нажатия клавиши QTE. Client → Server.
+ *
+ * Изменение: при успешном QTE теперь добавляет бонус к взлому компьютера
+ * (HackConfig.QTE_SUCCESS_BONUS очков), если игрок участвует в активной сессии.
+ */
 public class QTEKeyPressPacket {
     private final int keyIndex;
     private final int generatorNumber;
@@ -27,22 +36,14 @@ public class QTEKeyPressPacket {
     }
 
     public static QTEKeyPressPacket decode(FriendlyByteBuf buf) {
-        return new QTEKeyPressPacket(
-                buf.readInt(),
-                buf.readInt(),
-                buf.readBoolean()
-        );
+        return new QTEKeyPressPacket(buf.readInt(), buf.readInt(), buf.readBoolean());
     }
 
     public static void handle(QTEKeyPressPacket packet, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
-            if (player == null) {
-                System.out.println("[QTE] ERROR: Player is null!");
-                return;
-            }
+            if (player == null) return;
 
-            // ОТЛАДКА
             System.out.println("=== QTE Packet Received ===");
             System.out.println("Player: " + player.getName().getString());
             System.out.println("KeyIndex: " + packet.keyIndex);
@@ -51,25 +52,29 @@ public class QTEKeyPressPacket {
             System.out.println("===========================");
 
             if (packet.success) {
-                System.out.println("[QTE] Success branch - updating scoreboard");
-
-                // Успешный хак - добавляем очки напрямую в скорборд
+                // Старый путь: scoreboard для генераторов
                 int rewardAmount = Config.getHackQTEReward();
                 ScoreboardUtil.addHackProgress(player, packet.generatorNumber, rewardAmount);
 
-            } else {
-                System.out.println("[QTE] Fail branch - checking Catch Mistakes perk");
-                // Промах - активируем перк "Ловля на ошибках"
-                boolean perkActivated = CatchMistakesPerk.onQTEFailed(player);
+                // Новый путь: бонус к взлому компьютера
+                // Ищем активную сессию в которой участвует этот игрок
+                applyComputerHackBonus(player);
 
-                if (perkActivated) {
-                    System.out.println("[QTE] Catch Mistakes perk activated! Player " +
-                            player.getName().getString() + " is now glowing!");
-                } else {
-                    System.out.println("[QTE] Catch Mistakes perk NOT activated (no ready holders or wrong team)");
-                }
+            } else {
+                boolean perkActivated = CatchMistakesPerk.onQTEFailed(player);
+                System.out.println("[QTE] Catch Mistakes perk: " + perkActivated);
             }
         });
         ctx.get().setPacketHandled(true);
+    }
+
+    /**
+     * Добавляет QTE_SUCCESS_BONUS к активной сессии взлома компьютера,
+     * если игрок является хакером или помощником.
+     */
+    private static void applyComputerHackBonus(ServerPlayer player) {
+        // HackManager хранит сессии по BlockPos.
+        // Ищем сессию где этот игрок — хакер.
+        HackManager.get().applyQTEBonus(player);
     }
 }

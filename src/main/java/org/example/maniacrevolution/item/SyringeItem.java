@@ -70,7 +70,7 @@ public class SyringeItem extends Item {
         cap.setLastSyringeTick(now);
 
         // ── Смерть от передоза: 3 подряд ─────────────────────────────────────
-        if (cap.getConsecSyringes() >= 3) {
+        if (cap.getConsecSyringes() >= 4) {
             cap.setConsecSyringes(0);
             cap.setTotalSyringeCount(cap.getTotalSyringeCount() + 1);
             cap.syncToClient(sp);
@@ -181,7 +181,7 @@ public class SyringeItem extends Item {
         // Опасность
         tooltip.add(Component.literal("§4☠ Опасность:")
                 .withStyle(ChatFormatting.DARK_RED));
-        tooltip.add(Component.literal("  §c3 шприца подряд §7(< 20 сек) = §4СМЕРТЬ")
+        tooltip.add(Component.literal("  §c4 шприца подряд §7(< 20 сек) = §4СМЕРТЬ")
                 .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.literal("  §cСтадия 3 + 3 общих §7= 10%/сек шанс смерти")
                 .withStyle(ChatFormatting.GRAY));
@@ -189,8 +189,8 @@ public class SyringeItem extends Item {
         tooltip.add(Component.empty());
 
         // Подсказка по ускорению ломки
-        tooltip.add(Component.literal("§8⟳ Каждый шприц ускоряет ломку на §c"
+        tooltip.add(Component.literal("§c4⟳ Каждый шприц ускоряет ломку на §c"
                         + (int)(AddictionCapability.SYRINGE_SPEED_BONUS * 100) + "%")
-                .withStyle(ChatFormatting.DARK_GRAY));
+                .withStyle(ChatFormatting.GRAY));
     }
 }

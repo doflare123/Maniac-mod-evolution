@@ -268,5 +268,6 @@
 
   "item.maniacrev.ancestor_soul":      "Soul",
   "item.maniacrev.totem_spawn_item":   "Totem",
-  "entity.maniacrev.shaman_totem":     "Totem"
+  "entity.maniacrev.shaman_totem":     "Totem",
+  "block.maniacrev.computer": "Computer"
 }

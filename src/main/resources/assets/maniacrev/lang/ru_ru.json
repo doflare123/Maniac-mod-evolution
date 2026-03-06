@@ -232,5 +232,6 @@
 
   "item.maniacrev.ancestor_soul":      "Душа предков",
   "item.maniacrev.totem_spawn_item":   "Тотем шамана",
-  "entity.maniacrev.shaman_totem":     "Тотем шамана"
+  "entity.maniacrev.shaman_totem":     "Тотем шамана",
+  "block.maniacrev.computer": "Компьютер"
 }
