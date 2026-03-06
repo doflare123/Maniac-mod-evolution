@@ -86,6 +86,16 @@ public class DownedEventHandler {
         // Уже лежит — не вмешиваемся (страховка)
         if (data.getState() == DownedState.DOWNED) return;
 
+        // Только игроки из команды survivors могут лечь
+        Team team = player.getTeam();
+        if (team == null || !team.getName().equalsIgnoreCase("survivors")) return;
+
+        // Если этот игрок — единственный живой (не spectator) в своей команде, сразу умирает
+        if (isLastAliveSurvivor(player, team)) {
+            Maniacrev.LOGGER.info("[Downed] {} — последний выживший, умирает сразу", player.getName().getString());
+            return; // не отменяем событие — смерть фатальна
+        }
+
         event.setCanceled(true);
 
         data.setState(DownedState.DOWNED);
@@ -100,6 +110,28 @@ public class DownedEventHandler {
         broadcastMessage(player,
                 "§c☠ " + player.getName().getString() + " §cупал! Помогите ему в течение §e60 сек§c!");
         Maniacrev.LOGGER.info("[Downed] {} -> DOWNED", player.getName().getString());
+    }
+
+    /**
+     * Возвращает true если player — единственный в своей команде кто не в spectator режиме
+     * и не лежит (т.е. некому его поднять).
+     */
+    private static boolean isLastAliveSurvivor(ServerPlayer player, Team team) {
+        if (player.getServer() == null) return false;
+        for (ServerPlayer other : player.getServer().getPlayerList().getPlayers()) {
+            if (other == player) continue;
+            // Только игроки из той же команды
+            Team otherTeam = other.getTeam();
+            if (otherTeam == null || !otherTeam.getName().equals(team.getName())) continue;
+            // Если игрок не в spectator и не лежит — есть кому поднять
+            if (!other.isSpectator()) {
+                DownedData otherData = DownedCapability.get(other);
+                if (otherData == null || otherData.getState() != DownedState.DOWNED) {
+                    return false;
+                }
+            }
+        }
+        return true; // все остальные в spectator или лежат
     }
 
     // ══════════════════════════════════════════════════════════════════════
