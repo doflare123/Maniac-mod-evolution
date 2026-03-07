@@ -169,7 +169,7 @@ public class HackSession {
             double pz = center.z + Math.sin(angle) * r;
             level.sendParticles(
                     ParticleTypes.END_ROD,
-                    px, center.y, pz,
+                    px, center.y-1, pz,
                     1, 0, 0.05, 0, 0.01);
         }
         // Внутренний круг хакера

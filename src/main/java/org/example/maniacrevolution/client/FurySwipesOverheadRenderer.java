@@ -34,8 +34,6 @@ public class FurySwipesOverheadRenderer {
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
-
-        // Только для маньяка класса 7
         if (!isLocalPlayerManiac(mc)) return;
 
         int stacks = ClientFurySwipesData.getTargetStackCount(target.getUUID());
@@ -46,17 +44,17 @@ public class FurySwipesOverheadRenderer {
 
         poseStack.pushPose();
 
-        // Матрица RenderNameTagEvent стоит в центре AABB (Y=0 = центр сущности, не ноги).
-        // Ванильный nametag: entity.getBbHeight() + 0.5 от центра сущности.
-        // Встаём ещё на +0.28 выше таблички с именем.
-        double y = (target.getBbHeight() / 2.0) + 0.5 + 0.28;
-        poseStack.translate(0.0, y, 0.0);
+        // В Forge 1.20.1 RenderNameTagEvent: PoseStack стоит У НОГ сущности.
+        // Ванильный nametag рисуется на высоте getBbHeight() + 0.5.
+        // Мы рисуем ещё на 0.3 выше таблички с именем.
+        float nameTagY = target.getBbHeight() + 0.5f + 0.3f;
+        poseStack.translate(0.0, nameTagY, 0.0);
 
         // Billboard — разворачиваемся к камере
         poseStack.mulPose(mc.getEntityRenderDispatcher().cameraOrientation());
         poseStack.scale(-0.025f, -0.025f, 0.025f);
 
-        String label = "\u00a76\u00a7l" + stacks + "\u00a7r \u00a7cfury";
+        String label = "§6§l" + stacks + "§r §cfury";
         float textWidth = mc.font.width(label);
         int bgColor = (int)(0.25f * 255) << 24;
 
@@ -66,10 +64,15 @@ public class FurySwipesOverheadRenderer {
                 0xFFFFFFFF, false,
                 poseStack.last().pose(),
                 bufferSource,
-                net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH,
+                net.minecraft.client.gui.Font.DisplayMode.NORMAL,
                 bgColor,
                 0xF000F0
         );
+
+        // Важно: сбрасываем буфер чтобы текст отрендерился в этом кадре
+        if (bufferSource instanceof MultiBufferSource.BufferSource immediate) {
+            immediate.endBatch();
+        }
 
         poseStack.popPose();
     }
