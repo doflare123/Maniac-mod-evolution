@@ -35,7 +35,7 @@ public class ComputerBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     // Хитбокс чуть меньше блока (компьютер занимает не весь блок)
-    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 16, 16);
+    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 20, 16);
 
     public ComputerBlock(Properties props) {
         super(props);

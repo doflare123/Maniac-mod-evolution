@@ -117,6 +117,8 @@ public class HackCommands {
 
     private static int setGoal(CommandSourceStack src, int count) {
         HackConfig.COMPUTERS_NEEDED_FOR_WIN = count;
+        // Сохраняем и синхронизируем клиентам немедленно
+        HackManager.get().saveAndSync(src.getServer());
         src.sendSuccess(() -> Component.literal(
                 "§aЦель изменена: нужно взломать §e" + count + " §aкомпьютеров."), true);
         return 1;
@@ -124,6 +126,7 @@ public class HackCommands {
 
     private static int setPoints(CommandSourceStack src, float points) {
         HackConfig.HACK_POINTS_REQUIRED = points;
+        HackManager.get().saveAndSync(src.getServer());
         src.sendSuccess(() -> Component.literal(
                 "§aОчков для взлома изменено: §e" + points), true);
         return 1;

@@ -76,20 +76,9 @@ public class ClearAttributesCommand {
             int count = 0;
 
             for (ServerPlayer player : targets) {
-                int stacks = FleshHeapData.getStacks(player);
                 FleshHeapData.clearStacks(player);
-
-                player.sendSystemMessage(Component.literal(
-                        "§cВаши Flesh Heap были сброшены! §7(Потеряно: " + stacks + ")"
-                ));
                 count++;
             }
-
-            int finalCount = count;
-            context.getSource().sendSuccess(() -> Component.literal(
-                    "§aСброшены атрибуты у " + finalCount + " игрок(ов)"
-            ), true);
-
             return count;
         } catch (Exception e) {
             context.getSource().sendFailure(Component.literal("§cОшибка при выполнении команды"));

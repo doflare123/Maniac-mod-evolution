@@ -11,6 +11,18 @@ import javax.annotation.Nullable;
 
 /**
  * BlockEntity для компьютера.
+ *
+ * Хранит:
+ *   - computerId (задаётся в creative)
+ *   - hackProgress (0.0 .. 1.0) — для рендеринга
+ *   - isHacked (boolean)
+ *
+ * Синхронизируется с клиентом через getUpdatePacket() / onDataPacket().
+ *
+ * Регистрация в ModBlockEntities:
+ *   BLOCK_ENTITIES.register("computer", () -> BlockEntityType.Builder
+ *       .of(ComputerBlockEntity::new, ModBlocks.COMPUTER.get())
+ *       .build(null));
  */
 public class ComputerBlockEntity extends BlockEntity {
 
@@ -113,27 +125,8 @@ public class ComputerBlockEntity extends BlockEntity {
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        computerId = tag.getInt("ComputerId");
-        // hackProgress и isHacked НЕ читаем из NBT —
-        // они будут синхронизированы из HackManager в onLoad().
-        // Это предотвращает показ старого прогресса после перезагрузки мира.
-        hackProgress = 0f;
-        isHacked = false;
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        // Вызывается после загрузки чанка на сервере.
-        // Синхронизируем отображаемый прогресс с HackManager.
-        if (level != null && !level.isClientSide()) {
-            org.example.maniacrevolution.hack.HackManager mgr =
-                    org.example.maniacrevolution.hack.HackManager.get();
-            float pts = mgr.getProgress(computerId);
-            float max = org.example.maniacrevolution.hack.HackConfig.HACK_POINTS_REQUIRED;
-            hackProgress = (max > 0) ? pts / max : 0f;
-            isHacked = mgr.isHacked(computerId);
-            syncToClient();
-        }
+        computerId   = tag.getInt("ComputerId");
+        hackProgress = tag.getFloat("HackProgress");
+        isHacked     = tag.getBoolean("IsHacked");
     }
 }

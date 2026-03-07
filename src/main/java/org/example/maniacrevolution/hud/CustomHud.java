@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import org.example.maniacrevolution.client.ClientPlagueData;
 import org.example.maniacrevolution.config.HudConfig;
+import org.example.maniacrevolution.data.ClientGameState;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.fleshheap.ClientFleshHeapData;
 import org.example.maniacrevolution.item.IItemWithAbility;
@@ -111,6 +112,14 @@ public class CustomHud implements IGuiOverlay {
             int labelX = generatorX + 15 - mc.font.width(genLabel) / 2;
             int labelY = generatorY - 12;
             guiGraphics.drawString(mc.font, genLabel, labelX, labelY, 0xFFFFFF, true);
+        }
+
+        // Блок взлома компьютеров — показывается только когда идёт игра
+        if (ClientGameState.isGameRunning()) {
+            // Правый нижний угол, небольшой отступ
+            int hackHudX = scaledWidth - ComputerHackHud.WIDTH - 5;
+            int hackHudY = scaledHeight - ComputerHackHud.HEIGHT - 5;
+            ComputerHackHud.render(guiGraphics, hackHudX, hackHudY);
         }
 
         guiGraphics.pose().popPose();

@@ -22,21 +22,28 @@ public class QTEKeyPressPacket {
     private final int keyIndex;
     private final int generatorNumber;
     private final boolean success;
+    private final boolean critical;
 
     public QTEKeyPressPacket(int keyIndex, int generatorNumber, boolean success) {
+        this(keyIndex, generatorNumber, success, false);
+    }
+
+    public QTEKeyPressPacket(int keyIndex, int generatorNumber, boolean success, boolean critical) {
         this.keyIndex = keyIndex;
         this.generatorNumber = generatorNumber;
         this.success = success;
+        this.critical = critical;
     }
 
     public static void encode(QTEKeyPressPacket packet, FriendlyByteBuf buf) {
         buf.writeInt(packet.keyIndex);
         buf.writeInt(packet.generatorNumber);
         buf.writeBoolean(packet.success);
+        buf.writeBoolean(packet.critical);
     }
 
     public static QTEKeyPressPacket decode(FriendlyByteBuf buf) {
-        return new QTEKeyPressPacket(buf.readInt(), buf.readInt(), buf.readBoolean());
+        return new QTEKeyPressPacket(buf.readInt(), buf.readInt(), buf.readBoolean(), buf.readBoolean());
     }
 
     public static void handle(QTEKeyPressPacket packet, Supplier<NetworkEvent.Context> ctx) {
@@ -57,8 +64,9 @@ public class QTEKeyPressPacket {
                 ScoreboardUtil.addHackProgress(player, packet.generatorNumber, rewardAmount);
 
                 // Новый путь: бонус к взлому компьютера
-                // Ищем активную сессию в которой участвует этот игрок
-                applyComputerHackBonus(player);
+                applyComputerHackBonus(player, packet.critical);
+
+                System.out.println("[QTE] " + (packet.critical ? "CRIT hit!" : "Normal hit"));
 
             } else {
                 boolean perkActivated = CatchMistakesPerk.onQTEFailed(player);
@@ -72,9 +80,7 @@ public class QTEKeyPressPacket {
      * Добавляет QTE_SUCCESS_BONUS к активной сессии взлома компьютера,
      * если игрок является хакером или помощником.
      */
-    private static void applyComputerHackBonus(ServerPlayer player) {
-        // HackManager хранит сессии по BlockPos.
-        // Ищем сессию где этот игрок — хакер.
-        HackManager.get().applyQTEBonus(player);
+    private static void applyComputerHackBonus(ServerPlayer player, boolean critical) {
+        HackManager.get().applyQTEBonus(player, critical);
     }
 }

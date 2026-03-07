@@ -332,6 +332,13 @@ public class ModNetworking {
                      SyncPlaguePacket::handle
                  );
 
+        CHANNEL.registerMessage(
+                packetId++,
+                SyncHackDataPacket.class,
+                SyncHackDataPacket::encode,
+                SyncHackDataPacket::decode,
+                SyncHackDataPacket::handle);
+
         CHANNEL.registerMessage(packetId++, SyncAddictionPacket.class,
                 SyncAddictionPacket::encode, SyncAddictionPacket::decode, SyncAddictionPacket::handle);
 

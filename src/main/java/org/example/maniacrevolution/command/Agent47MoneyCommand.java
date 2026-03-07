@@ -218,12 +218,6 @@ public class Agent47MoneyCommand {
 
             for (ServerPlayer player : targets) {
                 Agent47MoneyManager.setMoney(player, amount);
-
-                // Сообщение игроку
-                player.displayClientMessage(
-                        Component.literal(String.format("§eБаланс установлен: %d монет", amount)),
-                        false
-                );
             }
 
             // Сообщение отправителю команды
@@ -254,13 +248,6 @@ public class Agent47MoneyCommand {
 
                 if (success) {
                     successCount++;
-                    int newBalance = Agent47MoneyManager.getMoney(player);
-
-                    // Сообщение игроку
-                    player.displayClientMessage(
-                            Component.literal(String.format("§c-%d монет. Баланс: %d", amount, newBalance)),
-                            false
-                    );
                 } else {
                     // Недостаточно денег
                     player.displayClientMessage(
@@ -296,12 +283,6 @@ public class Agent47MoneyCommand {
 
             for (ServerPlayer player : targets) {
                 Agent47MoneyManager.setMoney(player, 0);
-
-                // Сообщение игроку
-                player.displayClientMessage(
-                        Component.literal("§cВаш баланс обнулен!"),
-                        false
-                );
             }
 
             // Сообщение отправителю команды

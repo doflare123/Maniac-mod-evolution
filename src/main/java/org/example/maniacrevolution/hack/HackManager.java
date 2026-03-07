@@ -115,12 +115,9 @@ public class HackManager {
         // Функция датапака после каждого взлома
         executeCommand(server, "function " + HackConfig.DATAPACK_FUNCTION_ON_HACK);
 
-        // Уведомление всем
-        server.getPlayerList().broadcastSystemMessage(
-                net.minecraft.network.chat.Component.literal(
-                        "§6[Взлом] §fКомпьютер §e#" + computerId + " §fвзломан! (" +
-                                totalHacked + "/" + HackConfig.COMPUTERS_NEEDED_FOR_WIN + ")"),
-                false);
+
+        // Синхронизируем HUD клиентам
+        sendSyncPacket(server);
 
         // Достигли цели?
         if (totalHacked >= HackConfig.COMPUTERS_NEEDED_FOR_WIN) {
@@ -139,6 +136,7 @@ public class HackManager {
         hackProgress.clear();
         hackedComputers.clear();
         totalHacked = 0;
+        sendResetPacket(server);
     }
 
     /** Сбросить конкретный computerId */
@@ -223,17 +221,133 @@ public class HackManager {
      * Добавляет QTE_SUCCESS_BONUS к сессии где этот игрок является хакером.
      * Вызывается из QTEKeyPressPacket при успешном QTE.
      */
-    public void applyQTEBonus(net.minecraft.server.level.ServerPlayer player) {
+    public void applyQTEBonus(net.minecraft.server.level.ServerPlayer player, boolean critical) {
         for (HackSession session : activeSessions.values()) {
             if (session.hacker.getUUID().equals(player.getUUID())) {
+                float bonus = critical
+                        ? HackConfig.QTE_CRIT_BONUS
+                        : HackConfig.QTE_SUCCESS_BONUS;
                 session.currentPoints = Math.min(
-                        session.currentPoints + HackConfig.QTE_SUCCESS_BONUS,
+                        session.currentPoints + bonus,
                         HackConfig.HACK_POINTS_REQUIRED);
-                System.out.println("[HackManager] QTE bonus +" + HackConfig.QTE_SUCCESS_BONUS +
-                        " для " + player.getName().getString() +
+                System.out.println("[HackManager] QTE " + (critical ? "CRIT" : "normal") +
+                        " bonus +" + bonus + " для " + player.getName().getString() +
                         " -> " + session.currentPoints);
                 return;
             }
         }
+    }
+
+    /** Совместимость */
+    public void applyQTEBonus(net.minecraft.server.level.ServerPlayer player) {
+        applyQTEBonus(player, false);
+    }
+
+    // ── Персистентность ───────────────────────────────────────────────────────
+
+    /**
+     * Сохраняет прогресс взломов в файл.
+     * Вызывать из ServerLifecycleHooks.SERVER_STOPPING или периодически.
+     */
+    public void save(net.minecraft.server.MinecraftServer server) {
+        try {
+            java.io.File file = getDataFile(server);
+            net.minecraft.nbt.CompoundTag root = new net.minecraft.nbt.CompoundTag();
+            net.minecraft.nbt.CompoundTag progress = new net.minecraft.nbt.CompoundTag();
+            for (var e : hackProgress.entrySet()) {
+                progress.putFloat("p_" + e.getKey(), e.getValue());
+            }
+            net.minecraft.nbt.CompoundTag hacked = new net.minecraft.nbt.CompoundTag();
+            for (var e : hackedComputers.entrySet()) {
+                hacked.putBoolean("h_" + e.getKey(), e.getValue());
+            }
+            root.put("progress", progress);
+            root.put("hacked", hacked);
+            root.putInt("totalHacked", totalHacked);
+            // Сохраняем настройки конфига чтобы они пережили рестарт
+            root.putInt("goal", HackConfig.COMPUTERS_NEEDED_FOR_WIN);
+            root.putFloat("pointsRequired", HackConfig.HACK_POINTS_REQUIRED);
+            net.minecraft.nbt.NbtIo.writeCompressed(root, file);
+        } catch (Exception e) {
+            System.err.println("[HackManager] Save error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Загружает прогресс взломов из файла.
+     * Вызывать из ServerLifecycleHooks.SERVER_STARTED после HackManager.reset().
+     */
+    public void load(net.minecraft.server.MinecraftServer server) {
+        try {
+            java.io.File file = getDataFile(server);
+            if (!file.exists()) return;
+            net.minecraft.nbt.CompoundTag root = net.minecraft.nbt.NbtIo.readCompressed(file);
+            net.minecraft.nbt.CompoundTag progress = root.getCompound("progress");
+            for (String key : progress.getAllKeys()) {
+                int id = Integer.parseInt(key.substring(2));
+                hackProgress.put(id, progress.getFloat(key));
+            }
+            net.minecraft.nbt.CompoundTag hacked = root.getCompound("hacked");
+            for (String key : hacked.getAllKeys()) {
+                int id = Integer.parseInt(key.substring(2));
+                hackedComputers.put(id, hacked.getBoolean(key));
+            }
+            totalHacked = root.getInt("totalHacked");
+            // Восстанавливаем настройки конфига
+            if (root.contains("goal")) {
+                HackConfig.COMPUTERS_NEEDED_FOR_WIN = root.getInt("goal");
+            }
+            if (root.contains("pointsRequired")) {
+                HackConfig.HACK_POINTS_REQUIRED = root.getFloat("pointsRequired");
+            }
+
+            System.out.println("[HackManager] Loaded: totalHacked=" + totalHacked
+                    + " computers=" + hackProgress.size()
+                    + " goal=" + HackConfig.COMPUTERS_NEEDED_FOR_WIN);
+
+            // Синхронизируем HUD клиентам (goal мог измениться)
+            sendSyncPacket(server);
+        } catch (Exception e) {
+            System.err.println("[HackManager] Load error: " + e.getMessage());
+        }
+    }
+
+    private static java.io.File getDataFile(net.minecraft.server.MinecraftServer server) {
+        java.io.File worldDir = server.getWorldPath(
+                net.minecraft.world.level.storage.LevelResource.ROOT).toFile();
+        java.io.File modDir = new java.io.File(worldDir, "maniacrev");
+        if (!modDir.exists()) modDir.mkdirs();
+        return new java.io.File(modDir, "hackdata.dat");
+    }
+
+    /** Рассылает актуальный прогресс взломов всем клиентам для HUD. */
+    private void sendSyncPacket(net.minecraft.server.MinecraftServer server) {
+        var packet = new org.example.maniacrevolution.network.packets.SyncHackDataPacket(
+                totalHacked, HackConfig.COMPUTERS_NEEDED_FOR_WIN);
+        for (net.minecraft.server.level.ServerPlayer player :
+                server.getPlayerList().getPlayers()) {
+            org.example.maniacrevolution.network.ModNetworking.CHANNEL.send(
+                    net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                    packet);
+        }
+    }
+
+    /** Вызывается при сбросе — обнуляем HUD у всех клиентов. */
+    private void sendResetPacket(net.minecraft.server.MinecraftServer server) {
+        if (server == null) return;
+        var packet = new org.example.maniacrevolution.network.packets.SyncHackDataPacket(
+                0, HackConfig.COMPUTERS_NEEDED_FOR_WIN);
+        for (net.minecraft.server.level.ServerPlayer player :
+                server.getPlayerList().getPlayers()) {
+            org.example.maniacrevolution.network.ModNetworking.CHANNEL.send(
+                    net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
+                    packet);
+        }
+    }
+
+    /** Сохраняет данные и немедленно синхронизирует HUD всем клиентам. */
+    public void saveAndSync(net.minecraft.server.MinecraftServer server) {
+        save(server);
+        sendSyncPacket(server);
     }
 }
