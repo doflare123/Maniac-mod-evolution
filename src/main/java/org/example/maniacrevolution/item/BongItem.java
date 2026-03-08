@@ -1,43 +1,35 @@
 package org.example.maniacrevolution.item;
 
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import org.example.maniacrevolution.capability.AddictionCapability;
 import org.example.maniacrevolution.capability.AddictionCapabilityProvider;
+import org.example.maniacrevolution.entity.BongCloudEntity;
 import org.example.maniacrevolution.mana.ManaProvider;
-
-import java.util.List;
 
 /**
  * Бонк.
  *
- * ПКМ: создаёт облако дыма радиусом CLOUD_RADIUS блоков.
- *   - Всем игрокам (кроме владельца) в облаке: плавное падение 4 сек
+ * ПКМ: создаёт облако дыма (BongCloudEntity) радиусом 5 блоков на 5 секунд.
+ *   - Все игроки (кроме владельца), кто окажется в облаке, получают
+ *     плавное падение на 5 сек (эффект обновляется каждый тик пока внутри)
  *   - Владельцу: пауза шкалы зависимости на BONG_PAUSE_TICKS тиков
- *
- * Модель: ваш bong.json (parent: maniacweapons:custom/bong)
- * Текстуры: bong_text.png, bong_text2.png (в maniacweapons:block/)
  */
 public class BongItem extends Item implements IItemWithAbility {
 
-    // ── Настройте под себя ────────────────────────────────────────────────────
-    public static final float MANA_COST       = 20f;
-    public static final int   COOLDOWN_TICKS  = 300;   // 15 секунд
-    public static final int   COOLDOWN_SECS   = 15;
-    private static final double CLOUD_RADIUS  = 4.0;
-    private static final int   SLOW_FALL_TICKS = 80;   // 4 секунды
+    // ── Настройки ─────────────────────────────────────────────────────────────
+    public static final float MANA_COST      = 20f;
+    public static final int   COOLDOWN_TICKS = 300;  // 15 секунд
+    public static final int   COOLDOWN_SECS  = 15;
+    // Радиус и длительность облака — см. BongCloudEntity
 
     private static final String NBT_CD = "BongCooldownTick";
 
@@ -60,50 +52,21 @@ public class BongItem extends Item implements IItemWithAbility {
             return InteractionResultHolder.fail(stack);
         }
 
-        // Частицы дыма
-        if (level instanceof ServerLevel sl) spawnCloud(sl, player);
+        // Спавним длящееся облако (5 сек, радиус 5 блоков)
+        if (level instanceof ServerLevel sl) {
+            BongCloudEntity.spawn(sl, player);
+        }
 
-        // Эффекты
-        applyEffects(sp, level);
+        // Пауза шкалы зависимости для владельца
+        AddictionCapability cap = AddictionCapabilityProvider.get(sp);
+        if (cap != null) {
+            cap.setBongPauseTicks(AddictionCapability.BONG_PAUSE_TICKS);
+            cap.syncToClient(sp);
+        }
 
         // Кулдаун в NBT
         stack.getOrCreateTag().putLong(NBT_CD, level.getGameTime() + COOLDOWN_TICKS);
         return InteractionResultHolder.consume(stack);
-    }
-
-    private void spawnCloud(ServerLevel level, Player owner) {
-        for (int i = 0; i < 90; i++) {
-            double angle = Math.random() * Math.PI * 2;
-            double r     = Math.random() * CLOUD_RADIUS;
-            level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
-                    owner.getX() + Math.cos(angle) * r,
-                    owner.getY() + Math.random() * 2.5,
-                    owner.getZ() + Math.sin(angle) * r,
-                    1, 0, 0.03, 0, 0.01);
-        }
-    }
-
-    private void applyEffects(ServerPlayer owner, Level level) {
-        // Плавное падение всем вокруг кроме владельца
-        List<Player> nearby = level.getEntitiesOfClass(Player.class,
-                new AABB(
-                        owner.getX() - CLOUD_RADIUS, owner.getY() - 1,
-                        owner.getZ() - CLOUD_RADIUS,
-                        owner.getX() + CLOUD_RADIUS, owner.getY() + 3,
-                        owner.getZ() + CLOUD_RADIUS));
-
-        for (Player p : nearby) {
-            if (p == owner) continue;
-            p.addEffect(new MobEffectInstance(
-                    MobEffects.SLOW_FALLING, SLOW_FALL_TICKS, 0, false, true, true));
-        }
-
-        // Пауза шкалы зависимости для владельца
-        AddictionCapability cap = AddictionCapabilityProvider.get(owner);
-        if (cap != null) {
-            cap.setBongPauseTicks(AddictionCapability.BONG_PAUSE_TICKS);
-            cap.syncToClient(owner);
-        }
     }
 
     // ── IItemWithAbility ─────────────────────────────────────────────────────
@@ -112,7 +75,9 @@ public class BongItem extends Item implements IItemWithAbility {
         return new ResourceLocation("maniacrev", "textures/gui/ability/bong.png");
     }
     @Override public String getAbilityName()        { return "Облако дыма"; }
-    @Override public String getAbilityDescription() { return "Расслабляет окружающих, замедляет зависимость"; }
+    @Override public String getAbilityDescription() {
+        return "Создаёт облако дыма на 5 сек. Все в радиусе 5 блоков получают плавное падение.";
+    }
     @Override public float  getManaCost()           { return MANA_COST; }
     @Override public int    getMaxCooldownSeconds() { return COOLDOWN_SECS; }
 

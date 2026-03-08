@@ -65,6 +65,14 @@ public class ModEntities {
                     .updateInterval(3)
                     .build("shaman_totem"));
 
+    public static final RegistryObject<EntityType<BongCloudEntity>> BONG_CLOUD =
+            ENTITIES.register("bong_cloud", () ->
+                    EntityType.Builder.<BongCloudEntity>of(BongCloudEntity::new, MobCategory.MISC)
+                            .sized(0.1f, 0.1f)       // минимальный хитбокс — физически не мешает
+                            .clientTrackingRange(64)  // клиент должен получать тики для частиц
+                            .updateInterval(1)
+                            .build("bong_cloud"));
+
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
     }

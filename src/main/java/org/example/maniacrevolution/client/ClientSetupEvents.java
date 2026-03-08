@@ -21,6 +21,9 @@ public class ClientSetupEvents {
         event.registerEntityRenderer(ModEntities.RAGE_BEE.get(),
                 ctx -> new net.minecraft.client.renderer.entity.BeeRenderer(ctx));
 
+        event.registerEntityRenderer(ModEntities.BONG_CLOUD.get(),
+                context -> new net.minecraft.client.renderer.entity.NoopRenderer<>(context));
+
         net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
                 ModHackRegistry.COMPUTER_BLOCK_ENTITY.get(),
                 ComputerBlockRenderer::new);

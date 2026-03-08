@@ -118,7 +118,7 @@ public class CustomHud implements IGuiOverlay {
         if (ClientGameState.isGameRunning()) {
             // Правый нижний угол, небольшой отступ
             int hackHudX = scaledWidth - ComputerHackHud.WIDTH - 5;
-            int hackHudY = scaledHeight - ComputerHackHud.HEIGHT - 5;
+            int hackHudY = (scaledHeight - ComputerHackHud.HEIGHT) / 2;
             ComputerHackHud.render(guiGraphics, hackHudX, hackHudY);
         }
 
