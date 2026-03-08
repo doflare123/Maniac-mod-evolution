@@ -138,7 +138,13 @@ public class PerkInstance {
             return ActivationResult.ON_COOLDOWN;
         }
 
+        // Проверка маны
+        if (!perk.hasMana(player)) {
+            return ActivationResult.NOT_ENOUGH_MANA;
+        }
+
         // Активация
+        perk.consumeMana(player); // тратим ману
         perk.onActivate(player);
         startCooldown();
         return ActivationResult.SUCCESS;
@@ -200,6 +206,7 @@ public class PerkInstance {
         ON_COOLDOWN,
         WRONG_PHASE,
         WRONG_GAMEMODE,
-        NOT_ACTIVE_PERK
+        NOT_ACTIVE_PERK,
+        NOT_ENOUGH_MANA
     }
 }

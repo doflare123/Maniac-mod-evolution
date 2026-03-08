@@ -3,6 +3,7 @@ package org.example.maniacrevolution.perk;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import org.example.maniacrevolution.mana.ManaProvider;
 
 import java.util.List;
 import java.util.Set;
@@ -16,6 +17,7 @@ public abstract class Perk {
     private final Set<PerkPhase> activePhases;
     private final int cooldownTicks;
     private final ResourceLocation icon;
+    private final float manaCost;
 
     protected Perk(Builder builder) {
         this.id = builder.id;
@@ -25,6 +27,7 @@ public abstract class Perk {
         this.team = builder.team;
         this.activePhases = builder.activePhases;
         this.cooldownTicks = builder.cooldownTicks;
+        this.manaCost = builder.manaCost;
         this.icon = builder.icon != null ? builder.icon :
                 new ResourceLocation("maniacrev", "textures/perks/" + id + ".png");
     }
@@ -114,6 +117,10 @@ public abstract class Perk {
                         Component.literal("КД: " + (cooldownTicks / 20) + " сек")
                                 .withStyle(net.minecraft.ChatFormatting.RED) :
                         Component.empty(),
+                manaCost > 0 ?
+                        Component.literal("Мана: " + (int) manaCost)
+                                .withStyle(net.minecraft.ChatFormatting.AQUA) :
+                        Component.empty(),
                 Component.empty(),
                 getDescription().copy().withStyle(net.minecraft.ChatFormatting.WHITE)
         );
@@ -140,6 +147,7 @@ public abstract class Perk {
         private Set<PerkPhase> activePhases = Set.of(PerkPhase.ANY);
         private int cooldownTicks = 0;
         private ResourceLocation icon;
+        private float manaCost = 0f;
 
         public Builder(String id) {
             this.id = id;
@@ -169,5 +177,32 @@ public abstract class Perk {
             this.icon = icon;
             return this;
         }
+
+        public Builder manaCost(float mana) {
+            this.manaCost = mana;
+            return this;
+        }
+    }
+
+    public float getManaCost() { return manaCost; }
+
+    /** Проверяет и тратит ману. Возвращает true если хватило. */
+    public boolean consumeMana(ServerPlayer player) {
+        if (manaCost <= 0) return true;
+        return player.getCapability(ManaProvider.MANA).map(mana -> {
+            if (mana.getMana() >= manaCost) {
+                mana.consumeMana(manaCost);
+                return true;
+            }
+            return false;
+        }).orElse(false);
+    }
+
+    /** Просто проверяет наличие маны без траты */
+    public boolean hasMana(ServerPlayer player) {
+        if (manaCost <= 0) return true;
+        return player.getCapability(ManaProvider.MANA)
+                .map(m -> m.getMana() >= manaCost)
+                .orElse(false);
     }
 }

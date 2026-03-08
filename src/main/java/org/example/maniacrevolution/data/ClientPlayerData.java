@@ -46,7 +46,8 @@ public class ClientPlayerData {
                     perk.id(),
                     perk.cooldown(),
                     perk.maxCooldown(),
-                    PerkType.values()[perk.typeOrdinal()]
+                    PerkType.values()[perk.typeOrdinal()],
+                    perk.manaCost()
             ));
         }
 
@@ -86,12 +87,13 @@ public class ClientPlayerData {
         return null;
     }
 
-    public record ClientPerkData(String id, int cooldown, int maxCooldown, PerkType type) {
+    public record ClientPerkData(String id, int cooldown, int maxCooldown, PerkType type, float manaCost) {
         public boolean isOnCooldown() { return cooldown > 0; }
         public int getCooldownSeconds() { return (cooldown + 19) / 20; }
         public float getCooldownProgress() {
             return maxCooldown > 0 ? (float) cooldown / maxCooldown : 0;
         }
+        public boolean hasManaCost() { return manaCost > 0; }
 
         public String getDisplayName() {
             var perk = PerkRegistry.getPerk(id);
@@ -102,5 +104,7 @@ public class ClientPlayerData {
             return new ResourceLocation("maniacrev", "textures/perks/" + id + ".png");
         }
     }
+
+
 }
 

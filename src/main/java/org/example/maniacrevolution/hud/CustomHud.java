@@ -324,6 +324,17 @@ public class CustomHud implements IGuiOverlay {
             gui.drawString(mc.font, cdText, textX, textY, 0xFFFFFF, true);
         }
 
+        // Стоимость маны — правый нижний угол
+        if (perk.hasManaCost()) {
+            String manaText = (int) perk.manaCost() + "";
+            boolean hasEnough = ClientManaData.getMana() >= perk.manaCost();
+            int manaColor = hasEnough ? 0xFF5599FF : 0xFFFF3333;
+
+            int textX = x + PERK_ICON_SIZE - mc.font.width(manaText) - 2;
+            int textY = y + PERK_ICON_SIZE - 9;
+            gui.drawString(mc.font, manaText, textX, textY, manaColor, true);
+        }
+
         String typeText = getTypeShort(perk.type());
         int typeColor = getTypeFontColor(perk.type());
         int typeX = x + (PERK_ICON_SIZE - mc.font.width(typeText)) / 2;

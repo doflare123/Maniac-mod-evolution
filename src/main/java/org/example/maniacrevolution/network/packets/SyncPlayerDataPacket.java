@@ -38,7 +38,8 @@ public class SyncPlayerDataPacket {
                     inst.getPerk().getId(),
                     inst.getCooldownRemaining(),
                     inst.getPerk().getCooldownTicks(),
-                    inst.getPerk().getType().ordinal()
+                    inst.getPerk().getType().ordinal(),
+                    inst.getPerk().getManaCost()  // <-- новое
             ));
         }
 
@@ -82,6 +83,7 @@ public class SyncPlayerDataPacket {
             buf.writeInt(perk.cooldown);
             buf.writeInt(perk.maxCooldown);
             buf.writeInt(perk.typeOrdinal);
+            buf.writeFloat(perk.manaCost);
         }
 
         // Пресеты
@@ -120,7 +122,7 @@ public class SyncPlayerDataPacket {
         List<PerkSyncData> perks = new ArrayList<>();
         for (int i = 0; i < perkCount; i++) {
             perks.add(new PerkSyncData(
-                    buf.readUtf(64), buf.readInt(), buf.readInt(), buf.readInt()
+                    buf.readUtf(64), buf.readInt(), buf.readInt(), buf.readInt(), buf.readFloat()
             ));
         }
 
@@ -164,6 +166,6 @@ public class SyncPlayerDataPacket {
         ctx.get().setPacketHandled(true);
     }
 
-    public record PerkSyncData(String id, int cooldown, int maxCooldown, int typeOrdinal) {}
+    public record PerkSyncData(String id, int cooldown, int maxCooldown, int typeOrdinal, float manaCost) {}
     public record PresetSyncData(String name, List<String> perkIds) {}
 }

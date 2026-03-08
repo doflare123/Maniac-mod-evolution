@@ -42,8 +42,19 @@ public class DownedEventHandler {
 
 
     // ══════════════════════════════════════════════════════════════════════
-    // 0. БЛОКИРОВКА УРОНА ДЛЯ ЛЕЖАЧЕГО
+    // 0. БЛОКИРОВКА УРОНА И АТАКИ ДЛЯ ЛЕЖАЧЕГО
     // ══════════════════════════════════════════════════════════════════════
+
+    /** Лежачий игрок не может атаковать */
+    @SubscribeEvent
+    public static void onAttack(net.minecraftforge.event.entity.player.AttackEntityEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        DownedData data = DownedCapability.get(player);
+        if (data == null) return;
+        if (data.getState() == DownedState.DOWNED) {
+            event.setCanceled(true);
+        }
+    }
 
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
@@ -165,21 +176,9 @@ public class DownedEventHandler {
         player.setDeltaMovement(0, Math.min(vy, 0), 0);
 
         // ── Поза SLEEPING — горизонтальное лежание ──────────────────────
-        // setPose каждый тик на сервере.
-        // Дополнительно каждые 2 тика принудительно синхронизируем EntityData с клиентом —
-        // иначе клиент периодически сбрасывает позу (видно как вставание/падение).
+        // Поза форсируется на клиенте через DownedHudClient.onClientTick.
+        // На сервере просто ставим позу для корректной синхронизации с другими игроками.
         player.setPose(Pose.SLEEPING);
-        // Каждые 2 тика принудительно шлём клиенту обновление данных сущности
-        // чтобы поза не мерцала (клиент иногда сбрасывает её локально)
-        if (data.getDownedTicksElapsed() % 2 == 0) {
-            net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket posePacket =
-                    new net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket(
-                            player.getId(), player.getEntityData().getNonDefaultValues()
-                    );
-            if (posePacket.packedItems() != null && !posePacket.packedItems().isEmpty()) {
-                player.connection.send(posePacket);
-            }
-        }
 
         // ── Визуальные индикаторы для окружающих игроков ─────────────────
         // Каждые 10 тиков показываем частицы у ног и текст над головой
@@ -540,7 +539,6 @@ public class DownedEventHandler {
         player.removeEffect(MobEffects.JUMP);
         player.removeEffect(MobEffects.BLINDNESS);
         player.removeEffect(MobEffects.WEAKNESS);
-        // Сбрасываем позу лежания
         player.setPose(Pose.STANDING);
     }
 

@@ -59,6 +59,18 @@ public class PerkHud {
                         perkY + ICON_SIZE / 2 - 3, 0xFFFFFF, true);
             }
 
+            // Стоимость маны — правый нижний угол
+            System.out.println("ZXC " + perk.hasManaCost());
+            if (perk.hasManaCost()) {
+                String manaText = (int) perk.manaCost() + "";
+                boolean hasEnough = org.example.maniacrevolution.mana.ClientManaData.getMana() >= perk.manaCost();
+                int manaColor = hasEnough ? 0xFF5599FF : 0xFFFF3333;
+
+                int textX = perkX + ICON_SIZE - mc.font.width(manaText) - 1;
+                int textY = perkY + ICON_SIZE - 9;
+                gui.drawString(mc.font, manaText, textX, textY, manaColor, true);
+            }
+
             // Тип перка под иконкой
             String typeText = getTypeShort(perk.type());
             int typeColor = getTypeFontColor(perk.type());
