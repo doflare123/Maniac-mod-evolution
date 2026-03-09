@@ -41,6 +41,7 @@ public class FearWavePerk extends Perk {
                 .type(PerkType.ACTIVE)
                 .team(PerkTeam.ALL)
                 .phases(PerkPhase.MIDGAME, PerkPhase.REVERSAL)
+                .manaCost(10f)
                 .cooldown(70)); // 60 секунд КД
     }
 

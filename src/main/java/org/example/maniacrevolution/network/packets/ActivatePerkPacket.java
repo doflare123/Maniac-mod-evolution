@@ -53,6 +53,8 @@ public class ActivatePerkPacket {
                         Component.literal("§cПерки работают только в режиме Приключения!"), true);
                 case NOT_ACTIVE_PERK -> player.displayClientMessage(
                         Component.literal("§eВыберите активный перк!"), true);
+                case NOT_ENOUGH_MANA -> player.displayClientMessage(
+                        Component.literal("§b\uD83D\uDE30 Недостаточно маны для активации перка!"), true);
             }
 
             PlayerDataManager.syncToClient(player);

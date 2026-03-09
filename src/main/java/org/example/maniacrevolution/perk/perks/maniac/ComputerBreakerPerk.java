@@ -28,6 +28,7 @@ public class ComputerBreakerPerk extends Perk {
                 .type(PerkType.ACTIVE)
                 .team(PerkTeam.MANIAC)
                 .phases(PerkPhase.MIDGAME)
+                .manaCost(10f)
                 .cooldown(COOLDOWN_SECONDS)
         );
     }

@@ -27,6 +27,7 @@ public class BlindnessPerk extends Perk {
                 .type(PerkType.HYBRID)
                 .team(PerkTeam.SURVIVOR)
                 .phases(PerkPhase.HUNT, PerkPhase.MIDGAME)
+                .manaCost(10f)
                 .cooldown(COOLDOWN_SECONDS)
         );
     }

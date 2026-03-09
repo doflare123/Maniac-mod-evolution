@@ -257,9 +257,16 @@ public class PerkSelectionScreen extends Screen {
             gui.blit(texture, x, y, 0, 0, size, size, size, size);
             RenderSystem.disableBlend();
         } catch (Exception e) {
-            // Заглушка
             String initial = perk.getId().substring(0, 2).toUpperCase();
             gui.drawCenteredString(font, initial, x + size / 2, y + size / 2 - 4, 0xFFFFFF);
+        }
+
+        // Стоимость маны — правый нижний угол, всегда синим
+        if (perk.getManaCost() > 0) {
+            String manaText = (int) perk.getManaCost() + "";
+            int textX = x + size - font.width(manaText) - 1;
+            int textY = y + size - 9;
+            gui.drawString(font, "§b" + manaText, textX, textY, 0x55AAFF, true);
         }
     }
 

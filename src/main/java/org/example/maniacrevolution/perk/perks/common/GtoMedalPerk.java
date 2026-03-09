@@ -25,7 +25,7 @@ public class GtoMedalPerk extends Perk {
                 .type(PerkType.ACTIVE)
                 .team(PerkTeam.ALL)
                 .phases(PerkPhase.ANY)
-                .manaCost(25f)
+                .manaCost(5f)
                 .cooldown(45)); // 80 секунд
     }
 

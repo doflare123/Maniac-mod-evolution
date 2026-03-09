@@ -136,6 +136,13 @@ public class PerksPage extends GuidePage {
             String cd = "КД: " + (perk.getCooldownTicks() / 20) + "с";
             gui.drawString(font, "§c" + cd, x + width - font.width(cd) - 5, y + 5, 0xFF5555, false);
         }
+
+        // Стоимость маны
+        if (perk.getManaCost() > 0) {
+            String manaText = (int) perk.getManaCost() + " ед. маны";
+            gui.drawString(font, "§b" + manaText,
+                    x + width - font.width(manaText) - 5, y + 17, 0x55AAFF, false);
+        }
     }
 
     private void renderPerkIcon(GuiGraphics gui, Perk perk, int x, int y, int size) {
@@ -182,6 +189,11 @@ public class PerksPage extends GuidePage {
 
         if (selectedPerk.getCooldownTicks() > 0) {
             gui.drawString(font, "§cКулдаун: " + (selectedPerk.getCooldownTicks() / 20) + " секунд", x, y, 0xFFFFFF, false);
+            y += 14;
+        }
+
+        if (selectedPerk.getManaCost() > 0) {
+            gui.drawString(font, "§bМана: " + (int) selectedPerk.getManaCost(), x, y, 0xFFFFFF, false);
             y += 14;
         }
 
