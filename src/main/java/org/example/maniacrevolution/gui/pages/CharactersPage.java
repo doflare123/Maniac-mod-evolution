@@ -11,7 +11,9 @@ import org.example.maniacrevolution.character.TagRegistry;
 import org.example.maniacrevolution.gui.GuideScreen;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CharactersPage extends GuidePage {
@@ -22,7 +24,15 @@ public class CharactersPage extends GuidePage {
     private CharacterClass selectedCharacter = null;
     private int detailScrollOffset = 0;
 
-    // Размеры фрески
+    // ── Доп. секции для конкретных персонажей ────────────────────────────────
+    // Заполняются один раз при первом обращении
+    private static final Map<String, List<ExtraSection>> EXTRA_SECTIONS = new HashMap<>();
+
+    static {
+        buildExtraSections();
+    }
+
+    // ── Размеры фрески ────────────────────────────────────────────────────────
     private static final int FRESCO_WIDTH = 200;
     private static final int FRESCO_HEIGHT = 500;
     private static final float FRESCO_SCALE = 0.3f; // Масштаб для списка
@@ -51,6 +61,290 @@ public class CharactersPage extends GuidePage {
             renderCharacterList(gui, mouseX, mouseY);
         }
     }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  ДОПОЛНИТЕЛЬНЫЕ СЕКЦИИ ДЛЯ ПЕРСОНАЖЕЙ
+    // ═════════════════════════════════════════════════════════════════════════
+
+    private static void buildExtraSections() {
+
+        // ── agent ─────────────────────────────────────────────────────────────
+        {
+            List<ExtraSection> s = new ArrayList<>();
+            s.add(new ExtraHeader("§e§l📱 Планшет агента"));
+            s.add(new ExtraText(
+                    "Агент использует планшет для просмотра заказов и взаимодействия с магазином."));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/agent47_tablet.png", 400, 220,
+                    "Планшет — основной инструмент агента"));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/agent_hunt.png", 400, 220,
+                    "Вкладка охоты: показывает текущую цель"));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/agent_shop.png", 400, 220,
+                    "Открытое меню магазина"));
+            s.add(new ExtraSpacer(6));
+            s.add(new ExtraHeader("§e§l👁 Вид со стороны цели"));
+            s.add(new ExtraText(
+                    "Когда вы получаете метку цели, на вашем экране появляется следующий элемент:"));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/agent_effect.png", 400, 220,
+                    "Так выглядит экран у цели при получении метки"));
+            EXTRA_SECTIONS.put("agent", s);
+        }
+
+        // ── freddy_bear ───────────────────────────────────────────────────────
+        {
+            List<ExtraSection> s = new ArrayList<>();
+            s.add(new ExtraHeader("§e§l⚡ Генератор Фредди"));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/generator_fnaf.png", 300, 150,
+                    "Индикатор заряда генератора — правый угол экрана"));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/generator.png", 400, 220,
+                    "Как выглядит генератор Фредди в мире"));
+            EXTRA_SECTIONS.put("freddy_bear", s);
+        }
+
+        // ── plague_doctor ─────────────────────────────────────────────────────
+        {
+            List<ExtraSection> s = new ArrayList<>();
+            s.add(new ExtraHeader("§e§l☣ Индикатор чумы"));
+            s.add(new ExtraText(
+                    "Как понять, что на вас была наложена чума и какой прогресс болезни? " +
+                            "Посмотрите на своё здоровье: полоска будет заполняться §aзелёным цветом§r — " +
+                            "это индикатор того, сколько ещё нужно до получения урона."));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/plague.png", 400, 180,
+                    "Зелёный прогресс на полоске HP = накопленная чума"));
+            EXTRA_SECTIONS.put("plague_doctor", s);
+        }
+
+        // ── alchemist ─────────────────────────────────────────────────────────
+        {
+            List<ExtraSection> s = new ArrayList<>();
+            s.add(new ExtraHeader("§e§l🧪 Подсветка зельеварок"));
+            s.add(new ExtraText(
+                    "Не знаете где находятся зельеварки? Не проблема — " +
+                            "алхимику они подсвечиваются на протяжении всей игры."));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/alch.png", 400, 220,
+                    "Подсветка зельеварок на карте"));
+            EXTRA_SECTIONS.put("alchemist", s);
+        }
+
+        // ── doctor ────────────────────────────────────────────────────────────
+        {
+            List<ExtraSection> s = new ArrayList<>();
+            s.add(new ExtraHeader("§e§l🩺 Планшет доктора"));
+            s.add(new ExtraText(
+                    "Пульс при открытии планшета показывает состояние выживших: " +
+                            "§cчем быстрее ритм сердца — тем меньше у игрока HP§r. " +
+                            "Если HP ниже 50%, вы можете отследить игрока и прийти к нему на помощь."));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/medic_tablet.png", 400, 220,
+                    "Планшет доктора с пульсом игроков"));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/medic_interface.png", 400, 220,
+                    "Полный интерфейс доктора"));
+            EXTRA_SECTIONS.put("doctor", s);
+        }
+
+        // ── mefedronshchik ──────────────────────────────────────────────────────
+        {
+            List<ExtraSection> s = new ArrayList<>();
+            s.add(new ExtraHeader("§e§l⚠ Система зависимости"));
+            s.add(new ExtraText(
+                    "§cОсторожно, вы зависимый! Следите за своим состоянием."));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/addiction.png", 400, 180,
+                    "Шкала зависимости"));
+            s.add(new ExtraSpacer(6));
+            s.add(new ExtraHeader("§e§lСтадии ломки"));
+            s.add(new ExtraText("§70 стадия§r — точка отсчёта, никакого эффекта."));
+            s.add(new ExtraText("§71 стадия§r — небольшая слабость."));
+            s.add(new ExtraText("§72 стадия§r — замедление."));
+            s.add(new ExtraText("§73 стадия§r — потемнение в глазах."));
+            s.add(new ExtraSpacer(8));
+            s.add(new ExtraText(
+                    "Ломку можно снимать и останавливать с помощью §bбонга§r и §bшприцов адреналина§r."));
+            s.add(new ExtraText(
+                    "§c§l⚠ Внимательно прочитайте действие шприца!"));
+            s.add(new ExtraSpacer(8));
+            // ── Описание шприца ──
+            s.add(new ExtraHeader("§b§l⚡ Шприц адреналина"));
+            s.add(new ExtraText("§b● §fСнижает шкалу зависимости §aна 20%§f."));
+            s.add(new ExtraText("§b● §fДаёт скорость §7(эффекты складываются)§f."));
+            s.add(new ExtraSpacer(4));
+            s.add(new ExtraText("§e⚠ Деградация эффекта:"));
+            s.add(new ExtraText("  §71-й шприц:§f Скорость 3 §7на §f8 сек§f."));
+            s.add(new ExtraText("  §7Каждый следующий:§c -1 сек §7длительности."));
+            s.add(new ExtraText("  §7Каждые 3 шприца:§c -1 уровень §7скорости."));
+            s.add(new ExtraSpacer(4));
+            s.add(new ExtraDangerText("§4☠ Опасность:"));
+            s.add(new ExtraDangerText("  §c4 шприца подряд §7(< 20 сек) = §4§lСМЕРТЬ"));
+            s.add(new ExtraDangerText("  §cСтадия 3 + 3 общих §7= §c10%/сек шанс смерти"));
+            s.add(new ExtraSpacer(4));
+            s.add(new ExtraText("§7Каждый шприц ускоряет ломку."));
+            EXTRA_SECTIONS.put("mefedronshchik", s);
+        }
+    }
+
+    // ── Рендер доп. секций ────────────────────────────────────────────────────
+
+    /**
+     * Рендерит дополнительные секции для персонажа и возвращает новый Y.
+     */
+    private int renderExtraSections(GuiGraphics gui, String characterId, int startY, int maxWidth) {
+        List<ExtraSection> sections = EXTRA_SECTIONS.get(characterId);
+        if (sections == null) return startY;
+
+        int y = startY;
+        for (ExtraSection sec : sections) {
+            y = sec.render(gui, font, guiLeft + 15, y, maxWidth);
+        }
+        return y;
+    }
+
+    /**
+     * Подсчёт высоты доп. секций для расчёта maxScroll.
+     */
+    private int extraSectionsHeight(String characterId, int maxWidth) {
+        List<ExtraSection> sections = EXTRA_SECTIONS.get(characterId);
+        if (sections == null) return 0;
+        int h = 0;
+        for (ExtraSection sec : sections) h += sec.height(font, maxWidth);
+        return h;
+    }
+
+    // ── Вспомогательные классы секций ────────────────────────────────────────
+
+    private abstract static class ExtraSection {
+        abstract int height(net.minecraft.client.gui.Font font, int maxWidth);
+        /** Рендерит секцию и возвращает следующий Y. */
+        abstract int render(GuiGraphics gui, net.minecraft.client.gui.Font font, int x, int y, int maxWidth);
+    }
+
+    private static class ExtraHeader extends ExtraSection {
+        final String text;
+        ExtraHeader(String text) { this.text = text; }
+
+        @Override int height(net.minecraft.client.gui.Font f, int w) { return 18; }
+
+        @Override
+        int render(GuiGraphics gui, net.minecraft.client.gui.Font f, int x, int y, int w) {
+            gui.fill(x, y + 13, x + w, y + 14, 0xFF444444);
+            gui.drawString(f, text, x, y, 0xFFFFFF, false);
+            return y + 18;
+        }
+    }
+
+    private static class ExtraText extends ExtraSection {
+        final String text;
+        ExtraText(String text) { this.text = text; }
+
+        private List<String> lines(net.minecraft.client.gui.Font f, int w) {
+            List<String> result = new ArrayList<>();
+            String[] words = text.split(" ");
+            StringBuilder line = new StringBuilder();
+            for (String word : words) {
+                String test = line.length() > 0 ? line + " " + word : word;
+                if (f.width(test) > w) {
+                    if (line.length() > 0) { result.add(line.toString()); line = new StringBuilder(word); }
+                    else result.add(word);
+                } else line = new StringBuilder(test);
+            }
+            if (line.length() > 0) result.add(line.toString());
+            return result;
+        }
+
+        @Override int height(net.minecraft.client.gui.Font f, int w) { return lines(f, w).size() * 11 + 2; }
+
+        @Override
+        int render(GuiGraphics gui, net.minecraft.client.gui.Font f, int x, int y, int w) {
+            List<String> ls = lines(f, w);
+            for (int i = 0; i < ls.size(); i++) gui.drawString(f, ls.get(i), x, y + i * 11, 0xFFFFFF, false);
+            return y + ls.size() * 11 + 2;
+        }
+    }
+
+    /** Красный текст для предупреждений об опасности. */
+    private static class ExtraDangerText extends ExtraSection {
+        final String text;
+        ExtraDangerText(String text) { this.text = text; }
+
+        private List<String> lines(net.minecraft.client.gui.Font f, int w) {
+            List<String> result = new ArrayList<>();
+            String[] words = text.split(" ");
+            StringBuilder line = new StringBuilder();
+            for (String word : words) {
+                String test = line.length() > 0 ? line + " " + word : word;
+                if (f.width(test) > w) {
+                    if (line.length() > 0) { result.add(line.toString()); line = new StringBuilder(word); }
+                    else result.add(word);
+                } else line = new StringBuilder(test);
+            }
+            if (line.length() > 0) result.add(line.toString());
+            return result;
+        }
+
+        @Override int height(net.minecraft.client.gui.Font f, int w) { return lines(f, w).size() * 11 + 2; }
+
+        @Override
+        int render(GuiGraphics gui, net.minecraft.client.gui.Font f, int x, int y, int w) {
+            // Фон-предупреждение
+            int totalH = lines(f, w).size() * 11 + 2;
+            gui.fill(x - 2, y - 1, x + w + 2, y + totalH, 0x55FF0000);
+            List<String> ls = lines(f, w);
+            for (int i = 0; i < ls.size(); i++) gui.drawString(f, ls.get(i), x, y + i * 11, 0xFF5555FF, false);
+            return y + totalH;
+        }
+    }
+
+    private static class ExtraImageCaption extends ExtraSection {
+        final String path;
+        final int imgW, imgH;
+        final String caption;
+
+        ExtraImageCaption(String path, int imgW, int imgH, String caption) {
+            this.path = path; this.imgW = imgW; this.imgH = imgH; this.caption = caption;
+        }
+
+        @Override int height(net.minecraft.client.gui.Font f, int w) { return imgH + 6 + 13; }
+
+        @Override
+        int render(GuiGraphics gui, net.minecraft.client.gui.Font f, int x, int y, int maxWidth) {
+            int w = Math.min(imgW, maxWidth);
+            int h = imgW > maxWidth ? (int)(imgH * ((float) maxWidth / imgW)) : imgH;
+            int imgX = x + (maxWidth - w) / 2;
+
+            ResourceLocation tex = new ResourceLocation("maniacrev", "textures/gui/" + path);
+            try {
+                RenderSystem.setShaderTexture(0, tex);
+                RenderSystem.enableBlend();
+                gui.blit(tex, imgX, y, 0, 0, w, h, w, h);
+                RenderSystem.disableBlend();
+            } catch (Exception e) {
+                gui.fill(imgX, y, imgX + w, y + h, 0xFF2a2a2a);
+                gui.renderOutline(imgX, y, w, h, 0xFF555555);
+                gui.drawString(f, "§8" + path, imgX + 4, y + h / 2 - 4, 0x888888, false);
+            }
+            // Подпись
+            gui.drawCenteredString(f, "§8§o" + caption, x + maxWidth / 2, y + h + 2, 0xAAAAAA);
+            return y + h + 6 + 13;
+        }
+    }
+
+    private static class ExtraSpacer extends ExtraSection {
+        final int h;
+        ExtraSpacer(int h) { this.h = h; }
+        @Override int height(net.minecraft.client.gui.Font f, int w) { return h; }
+        @Override int render(GuiGraphics gui, net.minecraft.client.gui.Font f, int x, int y, int w) { return y + h; }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  END EXTRA SECTIONS
+    // ═════════════════════════════════════════════════════════════════════════
 
     private void renderBackButton(GuiGraphics gui, int mouseX, int mouseY) {
         int btnX = guiLeft + 5;
@@ -311,7 +605,10 @@ public class CharactersPage extends GuidePage {
             calculatedY += 10;
         }
 
-        // ИСПРАВЛЕНО: Рассчитываем максимальный скролл
+        // Дополнительные секции для конкретного персонажа
+        calculatedY += extraSectionsHeight(selectedCharacter.getId(), maxWidth);
+
+        // Рассчитываем максимальный скролл
         int visibleHeight = guiHeight - 65;
         int totalContentHeight = calculatedY;
         int maxScroll = Math.max(0, totalContentHeight - visibleHeight);
@@ -402,6 +699,14 @@ public class CharactersPage extends GuidePage {
                 }
                 y += 5;
             }
+        }
+
+        // ── Дополнительные секции для конкретного персонажа ──────────────────
+        if (EXTRA_SECTIONS.containsKey(selectedCharacter.getId())) {
+            y += 8;
+            gui.fill(guiLeft + 15, y, guiLeft + guiWidth - 15, y + 1, 0xFF555555);
+            y += 6;
+            y = renderExtraSections(gui, selectedCharacter.getId(), y, maxWidth);
         }
 
         gui.disableScissor();
@@ -507,10 +812,47 @@ public class CharactersPage extends GuidePage {
         return false;
     }
 
+    /** Считает полную высоту контента детальной страницы персонажа. */
+    private int calculateDetailHeight(CharacterClass character) {
+        int maxWidth = guiWidth - 30;
+        int h = 0;
+        h += 15; // имя
+        h += 15; // сложность
+        h += wrapText(character.getDescription(), maxWidth).size() * 11 + 10;
+        if (!character.getTags().isEmpty()) {
+            h += 12;
+            for (String tag : character.getTags()) {
+                String desc = TagRegistry.getTagDescription(tag);
+                h += wrapText("● " + tag + ": " + desc, maxWidth - 5).size() * 11;
+            }
+            h += 10;
+        }
+        if (!character.getFeatures().isEmpty()) {
+            h += 12;
+            for (CharacterClass.Feature f : character.getFeatures()) {
+                h += 11;
+                h += wrapText(f.getDescription(), maxWidth - 30).size() * 11 + 5;
+            }
+            h += 10;
+        }
+        if (!character.getItems().isEmpty()) {
+            h += 12;
+            for (CharacterClass.Item item : character.getItems()) {
+                h += 11;
+                h += wrapText(item.getDescription(), maxWidth - 30).size() * 11 + 5;
+            }
+            h += 10;
+        }
+        // Доп. секции
+        int extraH = extraSectionsHeight(character.getId(), maxWidth);
+        if (extraH > 0) h += 8 + 6 + extraH; // разделитель + отступ + контент
+        return h;
+    }
+
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         if (selectedCharacter != null) {
-            int maxScroll = Math.max(0, 800 - (guiHeight - 65));
+            int maxScroll = Math.max(0, calculateDetailHeight(selectedCharacter) - (guiHeight - 65));
             detailScrollOffset = (int) Math.max(0, Math.min(maxScroll, detailScrollOffset - delta * 30));
         } else {
             List<CharacterClass> characters = getFilteredCharacters();

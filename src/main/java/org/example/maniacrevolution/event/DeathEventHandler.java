@@ -75,8 +75,8 @@ public class DeathEventHandler {
                 Integer.MAX_VALUE, // Бесконечная длительность
                 newAmplifier,
                 false,
-                true,
-                true
+                false,
+                false
         );
 
         death.addEffect(newEffect);

@@ -411,7 +411,7 @@ public class TutorialPage extends GuidePage {
             s.add(new HeaderSection("§e§l📊 Индикатор прогресса"));
             s.add(new ImageSection("guide/in_game/count_computers.png", 200, 80));
             s.add(new TextSection(
-                    "В правом нижнем углу экрана отображается счётчик взломанных компьютеров. " +
+                    "В правой части экрана отображается счётчик взломанных компьютеров. " +
                             "Он показывает сколько уже взломано из нужного количества для победы."
             ));
             s.add(new SpacerSection(8));
