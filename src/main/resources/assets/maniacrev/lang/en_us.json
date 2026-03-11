@@ -269,5 +269,9 @@
   "item.maniacrev.ancestor_soul":      "Soul",
   "item.maniacrev.totem_spawn_item":   "Totem",
   "entity.maniacrev.shaman_totem":     "Totem",
-  "block.maniacrev.computer": "Computer"
+  "block.maniacrev.computer": "Computer",
+
+  "perk.maniacrev.mana_break.name": "Разрушитель Маны",
+  "perk.maniacrev.hedgehog_skin.name": "Шкура Ёжика",
+  "effect.maniacrev.thorn": "Шкура Ёжика"
 }

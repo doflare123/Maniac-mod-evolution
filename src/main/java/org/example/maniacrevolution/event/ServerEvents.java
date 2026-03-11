@@ -10,7 +10,6 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.perk.PerkInstance;
-import org.example.maniacrevolution.perk.perks.common.VampirePerk;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class ServerEvents {
@@ -21,12 +20,7 @@ public class ServerEvents {
         if (event.getSource().getEntity() instanceof ServerPlayer attacker) {
             PlayerData data = PlayerDataManager.get(attacker);
 
-            for (PerkInstance inst : data.getSelectedPerks()) {
-                if (inst.getPerk() instanceof VampirePerk) {
-                    VampirePerk.onDamageDealt(attacker, event.getAmount());
-                    break;
-                }
-            }
+
         }
     }
 

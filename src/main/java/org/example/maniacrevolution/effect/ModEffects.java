@@ -40,6 +40,9 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> PLAGUE =
             MOB_EFFECTS.register("plague", PlagueEffect::new);
 
+    public static final RegistryObject<MobEffect> THORN =
+            MOB_EFFECTS.register("thorn", ThornEffect::new);
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }

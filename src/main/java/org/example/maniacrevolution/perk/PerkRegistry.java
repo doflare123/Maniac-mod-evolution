@@ -12,12 +12,14 @@ public class PerkRegistry {
     private static final Map<String, Perk> PERKS = new LinkedHashMap<>();
 
     public static void init() {
-        // Общие перки (5 штук)
+        // Общие перки (7 штук)
         register(new BigmoneyPerk());
         register(new MegamindPerk());
         register(new GtoMedalPerk());
         register(new FearWavePerk());
         register(new StrPerk());
+        register(new ManaBreakPerk());
+        register(new HedgehogSkinPerk());
 
         // Перки выживших (5 штук)
         register(new MimicPerk());
