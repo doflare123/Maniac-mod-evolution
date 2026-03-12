@@ -51,6 +51,7 @@ import org.example.maniacrevolution.brewing.ModBrewingRecipes;
 import org.example.maniacrevolution.character.CharacterRegistry;
 import org.example.maniacrevolution.readiness.ReadinessManager;
 import org.example.maniacrevolution.sound.ModSounds;
+import org.example.maniacrevolution.stats.StatsManager;
 import org.example.maniacrevolution.system.Agent47ShopConfig;
 import org.example.maniacrevolution.map.MapVotingManager;
 import org.example.maniacrevolution.command.SettingsCommand;
@@ -101,6 +102,7 @@ public class Maniacrev {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
+        StatsManager.initDriver(event);
         event.enqueueWork(() -> {
             CapabilityManager.get(new CapabilityToken<DownedData>() {});
             ModNetworking.register();
@@ -154,6 +156,7 @@ public class Maniacrev {
         GeneratorCommand.register(event.getDispatcher());
         ShamanCommands.register(event.getDispatcher());
         HackCommands.register(event.getDispatcher());
+        StatsCommand.register(event.getDispatcher());
 
         SettingsCommand.register(event.getDispatcher());
         HpBoostCommand.register(event.getDispatcher());

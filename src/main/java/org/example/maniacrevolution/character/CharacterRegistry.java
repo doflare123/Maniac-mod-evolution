@@ -33,6 +33,7 @@ public class CharacterRegistry {
         register(new PlagueDoctorClass());
         register(new NecromancerClass());
         register(new DoctorClass());
+        register(new FreddyBearClass());
 
         initialized = true;
     }
