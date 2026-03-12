@@ -14,7 +14,7 @@ public class HackConfig {
     public static float POINTS_PER_PLAYER_PER_SECOND = 0.1f;
 
     /** Прирост очков для игрока с SurvivorClass == SPECIALIST_CLASS */
-    public static float POINTS_PER_SPECIALIST_PER_SECOND = 0.15f;
+    public static float POINTS_PER_SPECIALIST_PER_SECOND = 0.11f;
 
     /** Scoreboard-объектив для определения класса */
     public static String SURVIVOR_CLASS_OBJECTIVE = "SurvivorClass";

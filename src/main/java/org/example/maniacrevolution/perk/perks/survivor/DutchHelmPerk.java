@@ -14,7 +14,7 @@ import org.example.maniacrevolution.perk.*;
 public class DutchHelmPerk extends Perk {
 
     // ── Настройки ─────────────────────────────────────────────────────────
-    public static final float BONUS_PER_PLAYER = 0.04f; // +4% за каждого союзника
+    public static final float BONUS_PER_PLAYER = 1.04f; // +4% за каждого союзника
 
     // Множитель применяется в HackSession через hasThisPerk()
     private static final java.util.Set<java.util.UUID> activePlayers =
