@@ -20,6 +20,7 @@ public class PerkRegistry {
         register(new StrPerk());
         register(new ManaBreakPerk());
         register(new HedgehogSkinPerk());
+        register(new FootballFanPerk());
 
         // Перки выживших (5 штук)
         register(new MimicPerk());
@@ -27,6 +28,8 @@ public class PerkRegistry {
         register(new LastBreathPerk());
         register(new QuickReflexesPerk());
         register(new BlindnessPerk());
+        register(new MentalBondPerk());
+        register(new DutchHelmPerk());
 
         // Перки маньяка (5 штук)
         register(new BloodflowPerk());

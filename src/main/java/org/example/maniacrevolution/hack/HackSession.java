@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
+import org.example.maniacrevolution.perk.perks.survivor.DutchHelmPerk;
 
 import java.util.*;
 
@@ -100,15 +101,26 @@ public class HackSession {
     private float calcPoints(List<ServerPlayer> supporters) {
         float total = 0;
         int count = 0;
+
+        // Бонус от перка Голландский Штурвал у хакера
+        float dutchBonus = 0f;
+        if (DutchHelmPerk.hasThisPerk(hacker)) {
+            dutchBonus = supporters.size() * DutchHelmPerk.BONUS_PER_PLAYER;
+        }
+
         for (ServerPlayer sp : supporters) {
             if (count >= HackConfig.MAX_BONUS_PLAYERS) break;
-            total += isSpecialist(sp)
+            float points = isSpecialist(sp)
                     ? HackConfig.POINTS_PER_SPECIALIST_PER_SECOND
                     : HackConfig.POINTS_PER_PLAYER_PER_SECOND;
+            total += points;
             count++;
         }
-        // Хакер всегда даёт базовый вклад (он уже в радиусе)
-        total += HackConfig.POINTS_PER_PLAYER_PER_SECOND;
+
+        // Хакер с бонусом от перка
+        float hackerPoints = HackConfig.POINTS_PER_PLAYER_PER_SECOND * (1f + dutchBonus);
+        total += hackerPoints;
+
         return total;
     }
 

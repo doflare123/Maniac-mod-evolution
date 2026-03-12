@@ -273,5 +273,9 @@
 
   "perk.maniacrev.mana_break.name": "Разрушитель Маны",
   "perk.maniacrev.hedgehog_skin.name": "Шкура Ёжика",
-  "effect.maniacrev.thorn": "Шкура Ёжика"
+  "effect.maniacrev.thorn": "Шкура Ёжика",
+  "perk.maniacrev.football_fan.name": "Футбольный фанат",
+  "effect.maniacrev.frozen": "Покупка Балтики",
+  "perk.maniacrev.mental_bond.name": "Мендальная Связь",
+  "perk.maniacrev.dutch_helm.name": "Голландцы"
 }

@@ -43,6 +43,9 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> THORN =
             MOB_EFFECTS.register("thorn", ThornEffect::new);
 
+    public static final RegistryObject<MobEffect> FROZEN =
+            MOB_EFFECTS.register("frozen", FrozenEffect::new);
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }
