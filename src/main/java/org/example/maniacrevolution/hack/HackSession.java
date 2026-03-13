@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
+import org.example.maniacrevolution.perk.perks.survivor.AltruistExePerk;
 import org.example.maniacrevolution.perk.perks.survivor.DutchHelmPerk;
 
 import java.util.*;
@@ -102,24 +103,40 @@ public class HackSession {
         float total = 0;
         int count = 0;
 
-        // Бонус от перка Голландский Штурвал у хакера
-        float dutchBonus = 0f;
-        if (DutchHelmPerk.hasThisPerk(hacker)) {
-            dutchBonus = supporters.size() * DutchHelmPerk.BONUS_PER_PLAYER;
+        // Все участники = хакер + саппортеры
+        List<ServerPlayer> allParticipants = new ArrayList<>(supporters);
+        allParticipants.add(0, hacker);
+
+        // Находим ПЕРВОГО владельца DutchHelmPerk среди участников
+        ServerPlayer dutchOwner = null;
+        for (ServerPlayer sp : allParticipants) {
+            if (DutchHelmPerk.hasThisPerk(sp)) {
+                dutchOwner = sp;
+                break;
+            }
         }
 
-        for (ServerPlayer sp : supporters) {
-            if (count >= HackConfig.MAX_BONUS_PLAYERS) break;
+        for (ServerPlayer sp : allParticipants) {
+            if (sp != hacker && count >= HackConfig.MAX_BONUS_PLAYERS) break;
+
             float points = isSpecialist(sp)
                     ? HackConfig.POINTS_PER_SPECIALIST_PER_SECOND
                     : HackConfig.POINTS_PER_PLAYER_PER_SECOND;
-            total += points;
-            count++;
-        }
 
-        // Хакер с бонусом от перка
-        float hackerPoints = HackConfig.POINTS_PER_PLAYER_PER_SECOND * (1f + dutchBonus);
-        total += hackerPoints;
+            // Голландский Штурвал — только у одного владельца, считает всех кроме себя
+            if (sp == dutchOwner) {
+                int others = allParticipants.size() - 1;
+                points *= (1f + others * DutchHelmPerk.BONUS_PER_PLAYER);
+            }
+
+            // Альтруист.exe
+            if (AltruistExePerk.hasActiveBonus(sp)) {
+                points *= (1f + AltruistExePerk.HACK_BONUS);
+            }
+
+            total += points;
+            if (sp != hacker) count++;
+        }
 
         return total;
     }

@@ -277,5 +277,9 @@
   "perk.maniacrev.football_fan.name": "Футбольный фанат",
   "effect.maniacrev.frozen": "Покупка Балтики",
   "perk.maniacrev.mental_bond.name": "Мендальная Связь",
-  "perk.maniacrev.dutch_helm.name": "Голландцы"
+  "perk.maniacrev.dutch_helm.name": "Голландцы",
+  "perk.maniacrev.independence.name": "Независимость",
+  "perk.maniacrev.altruist_exe.name": "Альтруист.exe",
+  "effect.maniacrev.altruist_boost": "Альтруист.exe",
+  "perk.maniacrev.magic_lover.name": "Любовник Магии"
 }

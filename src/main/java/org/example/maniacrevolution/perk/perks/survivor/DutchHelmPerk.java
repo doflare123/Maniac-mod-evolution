@@ -8,15 +8,15 @@ import org.example.maniacrevolution.perk.*;
 /**
  * Голландский Штурвал (Пассивный) (Выжившие)
  * За каждого союзника заряжающего тот же компьютер — +BONUS_PER_PLAYER% к скорости.
- * Реализация: перк регистрирует игрока как "имеющего перк",
- * HackSession проверяет это при подсчёте очков.
+ * Работает только у одного владельца перка на компьютер (первый найденный).
+ * Не считает самого владельца.
  */
 public class DutchHelmPerk extends Perk {
 
     // ── Настройки ─────────────────────────────────────────────────────────
-    public static final float BONUS_PER_PLAYER = 1.04f; // +4% за каждого союзника
+    // Процент бонуса за каждого союзника (0.04 = 4%)
+    public static final float BONUS_PER_PLAYER = 1.04f;
 
-    // Множитель применяется в HackSession через hasThisPerk()
     private static final java.util.Set<java.util.UUID> activePlayers =
             java.util.Collections.synchronizedSet(new java.util.HashSet<>());
 
@@ -35,7 +35,9 @@ public class DutchHelmPerk extends Perk {
         return Component.literal("За каждого союзника заряжающего тот же компьютер: ")
                 .withStyle(ChatFormatting.WHITE)
                 .append(Component.literal("+" + (int)(BONUS_PER_PLAYER * 100) + "% к скорости зарядки.")
-                        .withStyle(ChatFormatting.GREEN));
+                        .withStyle(ChatFormatting.GREEN))
+                .append(Component.literal(" Работает только у одного владельца перка на компьютер.")
+                        .withStyle(ChatFormatting.GRAY));
     }
 
     // ── Пассивный эффект ──────────────────────────────────────────────────

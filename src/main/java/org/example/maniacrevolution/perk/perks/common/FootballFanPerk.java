@@ -30,7 +30,7 @@ public class FootballFanPerk extends Perk {
     // ── Настройки ─────────────────────────────────────────────────────────
     private static final int DURATION_SURVIVOR = 60;
     private static final int DURATION_MANIAC   = 30;
-    private static final int COOLDOWN_SEC      = 99999; // одноразовый
+    private static final int COOLDOWN_SEC      = 9999; // одноразовый
 
     // Храним команду игрока на момент активации
     private static final Map<UUID, PerkTeam> waitingPlayers = new HashMap<>();
