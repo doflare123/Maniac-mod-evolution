@@ -54,8 +54,7 @@ public class StatsManager {
      *   }
      */
     public static void initDriver(FMLCommonSetupEvent event) {
-        if (!StatsConfig.get().isValid()) {
-            LOGGER.warn("[Stats] stats.env не настроен — статистика отключена.");
+        if (!StatsConfig.isValid()) {
             return;
         }
         // Диагностика: показываем что вообще есть в classpath
@@ -105,7 +104,7 @@ public class StatsManager {
 
     public static CompletableFuture<Integer> sendStats(MinecraftServer server, int winner) {
         if (!driverReady) {
-            LOGGER.error("[Stats] Драйвер не готов. Проверьте stats.env и логи загрузки мода.");
+            LOGGER.error("[Stats] Драйвер не готов. Проверьте логи загрузки мода.");
             return CompletableFuture.completedFuture(-1);
         }
 
@@ -179,8 +178,7 @@ public class StatsManager {
     // ── БД ────────────────────────────────────────────────────────────────
 
     private static Connection openConnection() throws SQLException {
-        StatsConfig cfg = StatsConfig.get();
-        return DriverManager.getConnection(cfg.getJdbcUrl(), cfg.getUser(), cfg.getPass());
+        return DriverManager.getConnection(StatsConfig.JDBC_URL, StatsConfig.USER, StatsConfig.PASS);
     }
 
     private static int insertSnapshot(GameSnapshot s) throws SQLException {
