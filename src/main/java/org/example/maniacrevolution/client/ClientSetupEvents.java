@@ -6,6 +6,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.client.renderer.MimicBlockRenderer;
+import org.example.maniacrevolution.client.renderer.NetherSwapProjectileRenderer;
 import org.example.maniacrevolution.client.renderer.PlagueOrbRenderer;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.hack.ModHackRegistry;
@@ -23,6 +24,9 @@ public class ClientSetupEvents {
 
         event.registerEntityRenderer(ModEntities.BONG_CLOUD.get(),
                 context -> new net.minecraft.client.renderer.entity.NoopRenderer<>(context));
+
+        event.registerEntityRenderer(ModEntities.NETHER_SWAP_PROJECTILE.get(),
+                NetherSwapProjectileRenderer::new);
 
         net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
                 ModHackRegistry.COMPUTER_BLOCK_ENTITY.get(),

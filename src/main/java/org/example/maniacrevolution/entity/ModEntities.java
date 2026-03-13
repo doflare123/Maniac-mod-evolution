@@ -73,6 +73,13 @@ public class ModEntities {
                             .updateInterval(1)
                             .build("bong_cloud"));
 
+    public static final RegistryObject<EntityType<NetherSwapProjectile>> NETHER_SWAP_PROJECTILE =
+            ENTITIES.register("nether_swap_projectile", () ->
+                    EntityType.Builder.<NetherSwapProjectile>of(NetherSwapProjectile::new, MobCategory.MISC)
+                            .sized(0.3f, 0.3f)
+                            .clientTrackingRange(64)
+                            .build("nether_swap_projectile"));
+
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
     }

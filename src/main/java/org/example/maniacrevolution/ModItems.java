@@ -246,6 +246,9 @@ public class ModItems {
             ITEMS.register("totem_spawn_item", () -> new TotemSpawnItem(
                     new Item.Properties().stacksTo(16)));
 
+    public static final RegistryObject<Item> NETHER_SWAP = ITEMS.register("nether_swap",
+            () -> new NetherSwapItem(new Item.Properties().stacksTo(1)));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }
