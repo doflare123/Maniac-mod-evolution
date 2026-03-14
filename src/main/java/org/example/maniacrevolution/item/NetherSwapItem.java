@@ -211,7 +211,7 @@ public class NetherSwapItem extends Item implements IItemWithAbility {
 
     @Override
     public ResourceLocation getAbilityIcon() {
-        return new ResourceLocation(Maniacrev.MODID, "textures/gui/ability/nether_swap.png");
+        return new ResourceLocation(Maniacrev.MODID, "textures/gui/abilities/nether_swap.png");
     }
 
     @Override

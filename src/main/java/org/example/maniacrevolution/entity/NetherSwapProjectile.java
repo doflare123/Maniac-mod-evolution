@@ -3,7 +3,6 @@ package org.example.maniacrevolution.entity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -12,39 +11,39 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
-import org.example.maniacrevolution.item.NetherSwapItem;
+
+import java.util.List;
+import java.util.Optional;
 
 public class NetherSwapProjectile extends Projectile {
 
-    public static final float SPEED = 6.0f; // Блоков за тик — очень быстро
+    public static final float SPEED = 4.0f; // Блоков за тик
 
-    private int ownerEntityId = -1; // Для синхронизации на клиент
+    private int ownerEntityId = -1;
 
     public NetherSwapProjectile(EntityType<? extends Projectile> type, Level level) {
         super(type, level);
-        this.noPhysics = false;
     }
 
     public NetherSwapProjectile(Level level, LivingEntity shooter, Vec3 direction) {
         super(ModEntities.NETHER_SWAP_PROJECTILE.get(), level);
         this.setOwner(shooter);
         this.ownerEntityId = shooter.getId();
-        this.setPos(
-                shooter.getX(),
-                shooter.getEyeY() - 0.1,
-                shooter.getZ()
-        );
-        // Нормализуем направление и умножаем на скорость
+
+        // Стартуем чуть впереди от глаз стрелка
+        Vec3 start = shooter.getEyePosition().add(direction.normalize().scale(1.0));
+        this.setPos(start.x, start.y, start.z);
+
         Vec3 velocity = direction.normalize().scale(SPEED);
         this.setDeltaMovement(velocity);
-        // Разворачиваем в сторону движения
-        this.setYRot((float)(Math.toDegrees(Math.atan2(-velocity.x, velocity.z))));
-        this.setXRot((float)(Math.toDegrees(Math.atan2(-velocity.y,
-                Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z)))));
+
+        this.setYRot((float) Math.toDegrees(Math.atan2(-velocity.x, velocity.z)));
+        this.setXRot((float) Math.toDegrees(Math.atan2(-velocity.y,
+                Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z))));
     }
 
     @Override
@@ -52,86 +51,107 @@ public class NetherSwapProjectile extends Projectile {
 
     @Override
     public void tick() {
-        super.tick();
-        // Удаляемся через 5 секунд если ни в кого не попали
-        if (this.tickCount > 100) {
-            this.discard();
-        }
-    }
+        // Не вызываем super.tick() — вручную контролируем движение и коллизии
+        this.xo = this.getX();
+        this.yo = this.getY();
+        this.zo = this.getZ();
 
-    @Override
-    protected void onHitEntity(EntityHitResult result) {
-        if (this.level().isClientSide()) return;
-
-        Entity hit = result.getEntity();
-        Entity owner = this.getOwner();
-
-        if (!(owner instanceof ServerPlayer shooter)) {
+        if (this.tickCount > 200) {
             this.discard();
             return;
         }
 
-        // Не телепортируемся сами с собой
-        if (hit == shooter) return;
-        // Только игроки
+        Vec3 motion = this.getDeltaMovement();
+        Vec3 from = this.position();
+        Vec3 to = from.add(motion);
+
+        // Проверка коллизий только на сервере
+        if (!this.level().isClientSide()) {
+            Entity owner = this.getOwner();
+
+            // Ищем игроков на пути снаряда
+            AABB scanBox = new AABB(from, to).inflate(1.0);
+            List<Entity> candidates = this.level().getEntities(this, scanBox,
+                    e -> e != owner && e instanceof Player && !e.isSpectator());
+
+            Entity hitEntity = null;
+            double bestDist = Double.MAX_VALUE;
+
+            for (Entity candidate : candidates) {
+                AABB box = candidate.getBoundingBox().inflate(0.2);
+                Optional<Vec3> intersection = box.clip(from, to);
+                if (intersection.isPresent()) {
+                    double dist = from.distanceTo(intersection.get());
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        hitEntity = candidate;
+                    }
+                }
+            }
+
+            if (hitEntity != null) {
+                performSwap(hitEntity);
+                return;
+            }
+
+            // Проверка блоков
+            var blockHit = this.level().clip(new net.minecraft.world.level.ClipContext(
+                    from, to,
+                    net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                    net.minecraft.world.level.ClipContext.Fluid.NONE,
+                    this));
+
+            if (blockHit.getType() == HitResult.Type.BLOCK) {
+                this.discard();
+                return;
+            }
+        }
+
+        // Двигаем снаряд
+        this.setPos(to.x, to.y, to.z);
+    }
+
+    private void performSwap(Entity hit) {
+        Entity owner = this.getOwner();
+        if (!(owner instanceof ServerPlayer shooter)) {
+            this.discard();
+            return;
+        }
         if (!(hit instanceof ServerPlayer target)) {
             this.discard();
             return;
         }
 
-        // Сохраняем позиции
-        Vec3 shooterPos = shooter.position();
-        float shooterYaw = shooter.getYRot();
+        // Сохраняем позиции ДО телепортации
+        Vec3 shooterPos    = shooter.position();
+        float shooterYaw   = shooter.getYRot();
         float shooterPitch = shooter.getXRot();
 
-        Vec3 targetPos = target.position();
-        float targetYaw = target.getYRot();
+        Vec3 targetPos    = target.position();
+        float targetYaw   = target.getYRot();
         float targetPitch = target.getXRot();
 
-        // Телепортируем
+        // Меняем местами
         shooter.teleportTo((ServerLevel) this.level(),
                 targetPos.x, targetPos.y, targetPos.z,
-                java.util.Set.of(),
-                targetYaw, targetPitch);
+                java.util.Set.of(), targetYaw, targetPitch);
         target.teleportTo((ServerLevel) this.level(),
                 shooterPos.x, shooterPos.y, shooterPos.z,
-                java.util.Set.of(),
-                shooterYaw, shooterPitch);
+                java.util.Set.of(), shooterYaw, shooterPitch);
 
-        // Спецэффекты на обеих позициях
         spawnSwapEffects((ServerLevel) this.level(), shooterPos);
         spawnSwapEffects((ServerLevel) this.level(), targetPos);
 
         this.discard();
     }
 
-    @Override
-    protected void onHit(HitResult result) {
-        if (result.getType() == HitResult.Type.BLOCK) {
-            this.discard();
-        }
-        super.onHit(result);
-    }
-
     private void spawnSwapEffects(ServerLevel level, Vec3 pos) {
-        // Фиолетово-синие частицы портала
-        level.sendParticles(
-                net.minecraft.core.particles.ParticleTypes.PORTAL,
-                pos.x, pos.y + 1, pos.z,
-                40, 0.3, 0.8, 0.3, 0.3
-        );
-        // Вспышка
-        level.sendParticles(
-                net.minecraft.core.particles.ParticleTypes.END_ROD,
-                pos.x, pos.y + 1, pos.z,
-                20, 0.2, 0.6, 0.2, 0.05
-        );
-        // Искры
-        level.sendParticles(
-                net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK,
-                pos.x, pos.y + 1, pos.z,
-                15, 0.2, 0.5, 0.2, 0.1
-        );
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL,
+                pos.x, pos.y + 1, pos.z, 40, 0.3, 0.8, 0.3, 0.3);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
+                pos.x, pos.y + 1, pos.z, 20, 0.2, 0.6, 0.2, 0.05);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK,
+                pos.x, pos.y + 1, pos.z, 15, 0.2, 0.5, 0.2, 0.1);
     }
 
     @Override
