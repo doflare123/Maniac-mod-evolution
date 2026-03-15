@@ -18,6 +18,10 @@ public abstract class Perk {
     private final int cooldownTicks;
     private final ResourceLocation icon;
     private final float manaCost;
+    /** Дополнительное условие активации, переопределяется в перках */
+    public boolean meetsActivationCondition(ServerPlayer player) {
+        return true;
+    }
 
     protected Perk(Builder builder) {
         this.id = builder.id;

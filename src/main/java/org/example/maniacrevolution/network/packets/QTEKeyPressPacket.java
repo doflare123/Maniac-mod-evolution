@@ -8,6 +8,7 @@ import org.example.maniacrevolution.Config;
 import org.example.maniacrevolution.hack.HackConfig;
 import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.perk.perks.maniac.CatchMistakesPerk;
+import org.example.maniacrevolution.perk.perks.survivor.IdealychPerk;
 import org.example.maniacrevolution.util.ScoreboardUtil;
 
 import java.util.function.Supplier;
@@ -59,18 +60,20 @@ public class QTEKeyPressPacket {
             System.out.println("===========================");
 
             if (packet.success) {
-                // Старый путь: scoreboard для генераторов
                 int rewardAmount = Config.getHackQTEReward();
                 ScoreboardUtil.addHackProgress(player, packet.generatorNumber, rewardAmount);
-
-                // Новый путь: бонус к взлому компьютера
                 applyComputerHackBonus(player, packet.critical);
 
-                System.out.println("[QTE] " + (packet.critical ? "CRIT hit!" : "Normal hit"));
-
+                // Идеалыч
+                if (packet.critical) {
+                    IdealychPerk.onCriticalHit(player);
+                } else {
+                    IdealychPerk.onNormalHit(player);
+                }
             } else {
                 boolean perkActivated = CatchMistakesPerk.onQTEFailed(player);
-                System.out.println("[QTE] Catch Mistakes perk: " + perkActivated);
+                // Идеалыч
+                IdealychPerk.onMiss(player);
             }
         });
         ctx.get().setPacketHandled(true);

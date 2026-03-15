@@ -9,6 +9,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.perk.perks.survivor.AltruistExePerk;
 import org.example.maniacrevolution.perk.perks.survivor.DutchHelmPerk;
+import org.example.maniacrevolution.perk.perks.survivor.IdealychPerk;
 
 import java.util.*;
 
@@ -134,9 +135,13 @@ public class HackSession {
                 points *= (1f + AltruistExePerk.HACK_BONUS);
             }
 
+            // Идеалыч
+            points *= IdealychPerk.getHackMultiplier(sp);
+
             total += points;
             if (sp != hacker) count++;
         }
+
 
         return total;
     }
@@ -218,6 +223,7 @@ public class HackSession {
 
     private void onHackComplete(MinecraftServer server, ServerLevel level) {
         finished = true;
+        IdealychPerk.resetStacks(hacker);
         currentPoints = HackConfig.HACK_POINTS_REQUIRED;
         updateBlockDisplay(level);
 
@@ -232,6 +238,7 @@ public class HackSession {
 
     private void cancel() {
         finished = true;
+        IdealychPerk.resetStacks(hacker);
         HackManager.sendStopQTE(hacker);
         hacker.displayClientMessage(
                 net.minecraft.network.chat.Component.literal("§cВзлом прерван."), true);

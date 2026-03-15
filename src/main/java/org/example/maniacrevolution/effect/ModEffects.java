@@ -49,6 +49,9 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> ALTRUIST_BOOST =
             MOB_EFFECTS.register("altruist_boost", AltruistBoostEffect::new);
 
+    public static final RegistryObject<MobEffect> SILENCE =
+            MOB_EFFECTS.register("silence", SilenceEffect::new);
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }

@@ -281,5 +281,8 @@
   "perk.maniacrev.independence.name": "Независимость",
   "perk.maniacrev.altruist_exe.name": "Альтруист.exe",
   "effect.maniacrev.altruist_boost": "Альтруист.exe",
-  "perk.maniacrev.magic_lover.name": "Любовник Магии"
+  "perk.maniacrev.magic_lover.name": "Любовник Магии",
+  "perk.maniacrev.idealych.name": "Идеалыч",
+  "perk.maniacrev.silence.name": "Тишина...",
+  "effect.maniacrev.silence": "Ты в муте"
 }

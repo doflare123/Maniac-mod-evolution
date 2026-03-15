@@ -55,6 +55,14 @@ public class IndependencePerk extends Perk {
     // ── Активация ─────────────────────────────────────────────────────────
 
     @Override
+    public boolean meetsActivationCondition(ServerPlayer player) {
+        DownedData data = DownedCapability.get(player);
+        if (data == null || data.getState() != DownedState.DOWNED) return false;
+        int remaining = DownedData.DOWNED_TIMEOUT_TICKS - data.getDownedTicksElapsed();
+        return remaining <= TRIGGER_SECONDS * 20;
+    }
+
+    @Override
     public void onActivate(ServerPlayer player) {
         DownedData data = DownedCapability.get(player);
 

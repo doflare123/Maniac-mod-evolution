@@ -22,7 +22,7 @@ public class PerkRegistry {
         register(new HedgehogSkinPerk());
         register(new FootballFanPerk());
 
-        // Перки выживших (10 штук)
+        // Перки выживших (11 штук)
         register(new MimicPerk());
         register(new WallhackPerk());
         register(new LastBreathPerk());
@@ -33,13 +33,15 @@ public class PerkRegistry {
         register(new IndependencePerk());
         register(new AltruistExePerk());
         register(new MagicLoverPerk());
+        register(new IdealychPerk());
 
-        // Перки маньяка (5 штук)
+        // Перки маньяка (6 штук)
         register(new BloodflowPerk());
         register(new IAmSpeedPerk());
         register(new CatchMistakesPerk());
         register(new ComputerBreakerPerk());
         register(new HighlightPerk());
+        register(new SilencePerk());
 
         Maniacrev.LOGGER.info("Registered {} perks", PERKS.size());
     }

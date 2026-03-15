@@ -143,6 +143,11 @@ public class PerkInstance {
             return ActivationResult.NOT_ENOUGH_MANA;
         }
 
+        // Проверка кастомного условия активации
+        if (!perk.meetsActivationCondition(player)) {
+            return ActivationResult.CONDITION_NOT_MET;
+        }
+
         // Активация
         perk.consumeMana(player); // тратим ману
         perk.onActivate(player);
@@ -207,6 +212,7 @@ public class PerkInstance {
         WRONG_PHASE,
         WRONG_GAMEMODE,
         NOT_ACTIVE_PERK,
-        NOT_ENOUGH_MANA
+        NOT_ENOUGH_MANA,
+        CONDITION_NOT_MET
     }
 }

@@ -40,6 +40,15 @@ public class ActivatePerkPacket {
                 return;
             }
 
+            // Проверка эффекта Тишины — для всех игроков
+            if (player.hasEffect(org.example.maniacrevolution.effect.ModEffects.SILENCE.get())) {
+                int remaining = player.getEffect(org.example.maniacrevolution.effect.ModEffects.SILENCE.get()).getDuration() / 20;
+                player.displayClientMessage(
+                        Component.literal("§c🔇 Тишина! Перки заблокированы ещё " + remaining + " сек."), true);
+                PlayerDataManager.syncToClient(player);
+                return;
+            }
+
             PerkInstance.ActivationResult result = active.tryActivate(player, phase);
 
             switch (result) {
@@ -55,6 +64,8 @@ public class ActivatePerkPacket {
                         Component.literal("§eВыберите активный перк!"), true);
                 case NOT_ENOUGH_MANA -> player.displayClientMessage(
                         Component.literal("§b\uD83D\uDE30 Недостаточно маны для активации перка!"), true);
+                case CONDITION_NOT_MET -> player.displayClientMessage(
+                        Component.literal("§cУсловие не выполнено!"), true);
             }
 
             PlayerDataManager.syncToClient(player);
