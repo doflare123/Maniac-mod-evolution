@@ -284,5 +284,8 @@
   "perk.maniacrev.magic_lover.name": "Любовник Магии",
   "perk.maniacrev.idealych.name": "Идеалыч",
   "perk.maniacrev.silence.name": "Тишина...",
-  "effect.maniacrev.silence": "Ты в муте"
+  "effect.maniacrev.silence": "Ты в муте",
+  "perk.maniacrev.ejection.name": "Выброс",
+  "perk.maniacrev.family_discord.name": "Семейный Раздор",
+  "perk.maniacrev.griefer.name": "Грифер"
 }

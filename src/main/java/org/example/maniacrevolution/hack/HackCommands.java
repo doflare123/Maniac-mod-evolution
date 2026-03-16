@@ -39,7 +39,13 @@ public class HackCommands {
                                         .then(Commands.literal("id")
                                                 .then(Commands.argument("id", IntegerArgumentType.integer(0))
                                                         .executes(ctx -> resetById(ctx.getSource(),
-                                                                IntegerArgumentType.getInteger(ctx, "id"))))))
+                                                                IntegerArgumentType.getInteger(ctx, "id")))))
+
+                                        .then(Commands.literal("blocks")
+                                                .executes(ctx -> resetBlocks(ctx.getSource()))))
+
+                                .then(Commands.literal("unblock")
+                                        .executes(ctx -> unblockAll(ctx.getSource())))
 
                                 // setid <x> <y> <z> <id>
                                 .then(Commands.literal("setid")
@@ -68,10 +74,36 @@ public class HackCommands {
         );
     }
 
+    private static int resetBlocks(CommandSourceStack src) {
+        resetAllBlockEntities(src);
+        src.sendSuccess(() -> Component.literal("§aВизуальное состояние всех компьютеров сброшено."), true);
+        return 1;
+    }
+
+    private static int unblockAll(CommandSourceStack src) {
+        // Снимаем все блокировки
+        for (BlockPos pos : ComputerBlockEntity.getTrackedPositions()) {
+            for (ServerLevel level : src.getServer().getAllLevels()) {
+                if (level.getBlockEntity(pos) instanceof ComputerBlockEntity be) {
+                    be.setBlocked(false);
+                }
+            }
+        }
+        src.sendSuccess(() -> Component.literal("§aВсе блокировки компьютеров сняты."), true);
+        return 1;
+    }
+
     private static int resetAll(CommandSourceStack src) {
         HackManager.get().resetAll(src.getServer());
-        // Сбрасываем прогресс у всех BlockEntity в мирах
         resetAllBlockEntities(src);
+        // Снимаем флаги blocked
+        for (BlockPos pos : ComputerBlockEntity.getTrackedPositions()) {
+            for (ServerLevel level : src.getServer().getAllLevels()) {
+                if (level.getBlockEntity(pos) instanceof ComputerBlockEntity be) {
+                    be.setBlocked(false);
+                }
+            }
+        }
         src.sendSuccess(() -> Component.literal("§aВсе компьютеры сброшены."), true);
         return 1;
     }

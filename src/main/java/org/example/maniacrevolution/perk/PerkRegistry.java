@@ -35,13 +35,16 @@ public class PerkRegistry {
         register(new MagicLoverPerk());
         register(new IdealychPerk());
 
-        // Перки маньяка (6 штук)
+        // Перки маньяка (9 штук)
         register(new BloodflowPerk());
         register(new IAmSpeedPerk());
         register(new CatchMistakesPerk());
         register(new ComputerBreakerPerk());
         register(new HighlightPerk());
         register(new SilencePerk());
+        register(new EjectionPerk());
+        register(new FamilyDiscordPerk());
+        register(new GrieferPerk());
 
         Maniacrev.LOGGER.info("Registered {} perks", PERKS.size());
     }

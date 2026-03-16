@@ -45,6 +45,16 @@ public class HackSession {
         this.nextQTEIntervalTicks = randomQTEInterval();
     }
 
+    /** Публичный геттер участников сессии (хакер + саппортеры) */
+    public List<ServerPlayer> getAllParticipants() {
+        List<ServerPlayer> result = new ArrayList<>();
+        result.add(hacker);
+        result.addAll(getSupporters((ServerLevel) hacker.level()));
+        return result;
+    }
+
+    public BlockPos getPos() { return pos; }
+
     /**
      * Тик сессии. Вызывается раз в секунду (20 тиков) из HackManager.tick().
      * Возвращает false если сессию нужно удалить.

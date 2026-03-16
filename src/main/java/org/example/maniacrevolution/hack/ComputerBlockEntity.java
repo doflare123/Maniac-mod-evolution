@@ -38,6 +38,15 @@ public class ComputerBlockEntity extends BlockEntity {
     private float hackProgress = 0f;   // 0.0 .. 1.0
     private boolean isHacked = false;
 
+    private boolean blocked = false;
+
+    public boolean isBlocked() { return blocked; }
+    public void setBlocked(boolean b) {
+        this.blocked = b;
+        setChanged();
+        syncToClient();
+    }
+
     // Анимационное время (клиент)
     public float animTick = 0f;
 
@@ -120,6 +129,7 @@ public class ComputerBlockEntity extends BlockEntity {
         tag.putInt("ComputerId", computerId);
         tag.putFloat("HackProgress", hackProgress);
         tag.putBoolean("IsHacked", isHacked);
+        tag.putBoolean("Blocked", blocked);
     }
 
     @Override
@@ -128,5 +138,6 @@ public class ComputerBlockEntity extends BlockEntity {
         computerId   = tag.getInt("ComputerId");
         hackProgress = tag.getFloat("HackProgress");
         isHacked     = tag.getBoolean("IsHacked");
+        blocked = tag.getBoolean("Blocked");
     }
 }

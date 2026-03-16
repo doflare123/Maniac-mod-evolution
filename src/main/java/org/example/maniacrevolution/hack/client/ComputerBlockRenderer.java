@@ -92,10 +92,26 @@ public class ComputerBlockRenderer implements BlockEntityRenderer<ComputerBlockE
                                    PoseStack poseStack, MultiBufferSource buffers,
                                    Direction facing) {
         float progress = be.getHackProgress();
-        if (progress <= 0f && !be.isHacked()) return;
+        boolean blocked = be.isBlocked();
 
-        String line1 = be.isHacked() ? "Complete" : (int)(progress * 100) + "%";
-        int textColor = be.isHacked() ? 0x00FF00 : progressColor(progress);
+        if (progress <= 0f && !be.isHacked() && !blocked) return;
+
+        String line1;
+        int textColor;
+
+        if (blocked) {
+            // Мигающий Error
+            long time = System.currentTimeMillis();
+            boolean blink = (time / 500) % 2 == 0;
+            line1 = blink ? "Error" : "";
+            textColor = 0xFF0000;
+        } else if (be.isHacked()) {
+            line1 = "Complete";
+            textColor = 0x00FF00;
+        } else {
+            line1 = (int)(progress * 100) + "%";
+            textColor = progressColor(progress);
+        }
 
         poseStack.pushPose();
 
@@ -136,7 +152,7 @@ public class ComputerBlockRenderer implements BlockEntityRenderer<ComputerBlockE
                 0, LightTexture.FULL_BRIGHT);
 
         // Полоска прогресса
-        if (!be.isHacked() && progress > 0f) {
+        if (!be.isHacked() && !blocked && progress > 0f) {
             int totalBars = 10;
             int filled = Math.round(progress * totalBars);
             StringBuilder bar = new StringBuilder("[");

@@ -1,11 +1,13 @@
 package org.example.maniacrevolution.hack;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
+import org.example.maniacrevolution.perk.perks.maniac.GrieferPerk;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,6 +55,114 @@ public class HackManager {
 
     // ── Публичное API ─────────────────────────────────────────────────────────
 
+    public java.util.Map<BlockPos, HackSession> getActiveSessions() {
+        return java.util.Collections.unmodifiableMap(activeSessions);
+    }
+
+    // Заблокированные компьютеры: computerId -> время разблокировки (мс)
+    private final Map<Integer, Long> blockedComputers = new ConcurrentHashMap<>();
+
+    /** Блокирует компьютер на durationSec секунд */
+    public void blockComputer(int computerId, int durationSec, net.minecraft.server.MinecraftServer server) {
+        blockedComputers.put(computerId, System.currentTimeMillis() + durationSec * 1000L);
+        setBlockedFlag(computerId, true, server);
+        // Запланируем снятие флага — через отдельный тик
+    }
+
+    /** Проверяет заблокирован ли компьютер */
+    public boolean isBlocked(int computerId) {
+        Long until = blockedComputers.get(computerId);
+        if (until == null) return false;
+        if (System.currentTimeMillis() >= until) {
+            blockedComputers.remove(computerId);
+            return false;
+        }
+        return true;
+    }
+
+    /** Возвращает computerId с наибольшим прогрессом (не взломанный и не заблокированный) */
+    public int getMostProgressedComputer() {
+        int bestId = -1;
+        float bestProgress = 0f;
+        for (var entry : hackProgress.entrySet()) {
+            int id = entry.getKey();
+            float progress = entry.getValue();
+            if (Boolean.TRUE.equals(hackedComputers.get(id))) continue;
+            if (isBlocked(id)) continue;
+            if (progress > bestProgress) {
+                bestProgress = progress;
+                bestId = id;
+            }
+        }
+        return bestId;
+    }
+
+    private void setBlockedFlag(int computerId, boolean blocked, net.minecraft.server.MinecraftServer server) {
+        if (server == null) return;
+        for (BlockPos pos : ComputerBlockEntity.getTrackedPositions()) {
+            for (var level : server.getAllLevels()) {
+                if (level.getBlockEntity(pos) instanceof ComputerBlockEntity be
+                        && be.getComputerId() == computerId) {
+                    be.setBlocked(blocked);
+                }
+            }
+        }
+    }
+
+    /**
+     * Откатывает прогресс конкретного компьютера по позиции на rollbackPercent.
+     * Возвращает true если откат был применён.
+     */
+    public boolean rollbackComputer(ServerPlayer player, BlockPos pos, float rollbackPercent) {
+        if (player.getServer() == null) return false;
+
+        for (var level : player.getServer().getAllLevels()) {
+            if (!(level.getBlockEntity(pos) instanceof ComputerBlockEntity be)) continue;
+
+            int computerId = be.getComputerId();
+            if (Boolean.TRUE.equals(hackedComputers.get(computerId))) return false;
+
+            float current = hackProgress.getOrDefault(computerId, 0f);
+            if (current <= 0f) return false;
+
+            float rollback = HackConfig.HACK_POINTS_REQUIRED * rollbackPercent;
+            float newProgress = Math.max(0f, current - rollback);
+            hackProgress.put(computerId, newProgress);
+
+            for (HackSession session : activeSessions.values()) {
+                if (session.computerId == computerId) {
+                    session.currentPoints = newProgress;
+                    break;
+                }
+            }
+
+            be.setHackProgress(newProgress / HackConfig.HACK_POINTS_REQUIRED);
+            be.setChanged();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Откатывает ближайший к игроку компьютер на rollbackPercent.
+     * Использует rollbackComputer() внутри.
+     */
+    public boolean rollbackNearestComputer(ServerPlayer player, float rollbackPercent) {
+        BlockPos nearest = null;
+        double nearestDist = Double.MAX_VALUE;
+
+        for (BlockPos pos : ComputerBlockEntity.getTrackedPositions()) {
+            double dist = player.blockPosition().distSqr(pos);
+            if (dist < nearestDist) {
+                nearestDist = dist;
+                nearest = pos;
+            }
+        }
+
+        if (nearest == null) return false;
+        return rollbackComputer(player, nearest, rollbackPercent);
+    }
+
     /**
      * Игрок кликнул по компьютеру в adventure-режиме.
      * Если сессии нет — создаём. Если уже взломан — ничего.
@@ -62,6 +172,12 @@ public class HackManager {
         if (Boolean.TRUE.equals(hackedComputers.get(computerId))) {
             player.displayClientMessage(
                     net.minecraft.network.chat.Component.literal("§aКомпьютер уже взломан!"), true);
+            return;
+        }
+
+        if (isBlocked(computerId)) {
+            player.displayClientMessage(
+                    Component.literal("§cКомпьютер заблокирован!"), true);
             return;
         }
 
@@ -87,6 +203,13 @@ public class HackManager {
      * Тик менеджера. Вызывать раз в секунду (каждые 20 тиков).
      */
     public void tick(MinecraftServer server) {
+        for (var entry : blockedComputers.entrySet()) {
+            if (System.currentTimeMillis() >= entry.getValue()) {
+                setBlockedFlag(entry.getKey(), false, server);
+            }
+        }
+        blockedComputers.entrySet().removeIf(e -> System.currentTimeMillis() >= e.getValue());
+
         List<BlockPos> toRemove = new ArrayList<>();
 
         for (Map.Entry<BlockPos, HackSession> entry : activeSessions.entrySet()) {
@@ -111,6 +234,9 @@ public class HackManager {
         hackedComputers.put(computerId, true);
         hackProgress.put(computerId, HackConfig.HACK_POINTS_REQUIRED);
         totalHacked++;
+
+        // Грифер
+        GrieferPerk.onComputerHacked(server);
 
         // Функция датапака после каждого взлома
         executeCommand(server, "function " + HackConfig.DATAPACK_FUNCTION_ON_HACK);
