@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NecroDwarf — Dev Group</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="show('home')">
+    <span class="skull">☠</span> NecroDwarf
+  </div>
+  <ul class="nav-links">
+    <li><a onclick="show('home')"      data-p="home">Главная</a></li>
+    <li><a onclick="show('projects')"  data-p="projects">Проекты</a></li>
+    <li><a onclick="show('changelog')" data-p="changelog">Хроники</a></li>
+    <li><a onclick="show('about')"     data-p="about">О гильдии</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-rune-field" id="rune-field"></div>
+
+    <div class="hero-emblem">
+      <img src="logo.png" alt="NecroDwarf"
+           onerror="this.style.display='none'; document.getElementById('emblem-fb').style.display='flex'" />
+      <div id="emblem-fb" class="emblem-fallback">☠</div>
+      <div class="emblem-ring"></div>
+    </div>
+
+    <h1 class="hero-title">Necro<span class="g">Dwarf</span></h1>
+    <p class="hero-tagline">— Гильдия Разработчиков —</p>
+
+    <div class="hero-sep"><span class="hero-sep-sym">✦</span></div>
+
+    <p class="hero-desc">
+      Небольшая некоммерческая группа единомышленников, кующих игры и сервисы
+      в глубинах кода. Мы создаём — потому что нам интересно.
+    </p>
+
+    <div class="hero-cta">
+      <button class="btn btn-gold"  onclick="show('projects')">⚔ Свитки проектов</button>
+      <button class="btn btn-ghost" onclick="show('about')">О гильдии</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head">
+      <span class="sec-label">Активные свитки</span>
+      <h2 class="sec-title">Наши Проекты</h2>
+    </div>
+    <div class="grid">
+      <div class="card" onclick="detail('friendship')">
+        <span class="tag t-active">Активный</span>
+        <span class="card-icon" style="color:#3dcc88">🐑</span>
+        <div class="card-title">FriendSheep</div>
+        <div class="card-sub">Сервис организации мероприятий</div>
+        <p class="card-desc">Мультиплатформенная экосистема для совместного досуга: веб, мобайл и Telegram-бот.</p>
+        <div class="card-links">
+          <a class="clink clink-green" href="https://friendsheep.ru/" target="_blank" onclick="event.stopPropagation()">Сайт →</a>
+          <a class="clink clink-green" href="https://www.rustore.ru/catalog/app/com.anonymous.FriendShip" target="_blank" onclick="event.stopPropagation()">RuStore →</a>
+        </div>
+      </div>
+      <div class="card" onclick="detail('kingdoms')">
+        <span class="tag t-soon">В разработке</span>
+        <span class="card-icon" style="color:#e8b84b">👑</span>
+        <div class="card-title">Kingdoms of Chat</div>
+        <div class="card-sub">Telegram RPG</div>
+        <p class="card-desc">Активность в чате конвертируется в уровень Короля. Поселение, гвардия, данжи, система каравнов.</p>
+        <div class="card-links"><a class="clink clink-gold" onclick="event.stopPropagation(); detail('kingdoms')">Подробнее →</a></div>
+      </div>
+      <div class="card" onclick="detail('diedice')">
+        <span class="tag t-soon">В разработке</span>
+        <span class="card-icon" style="color:#c4935a">🎲</span>
+        <div class="card-title">Die Dice Paradise</div>
+        <div class="card-sub">Рогалик на кубиках</div>
+        <p class="card-desc">D4 до D100, тактические броски, продвижение по доске и покер-дуэль с боссами.</p>
+        <div class="card-links"><a class="clink clink-gold" onclick="event.stopPropagation(); detail('diedice')">Подробнее →</a></div>
+      </div>
+      <div class="card" onclick="detail('minecraft')">
+        <span class="tag t-active">Активный</span>
+        <span class="card-icon" style="color:#e74c3c">⚔</span>
+        <div class="card-title">Maniac</div>
+        <div class="card-sub">Dead by Daylight × Minecraft</div>
+        <p class="card-desc">12 классов, 2 готовые карты, маньяк против выживших на кастомных аренах.</p>
+        <div class="card-links">
+          <a class="clink clink-green" href="https://minecraft-inside.ru/maps/188353-maniac-dbd.html" target="_blank" onclick="event.stopPropagation()">Скачать →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>⚒ ☠ ⚒</span></div>
+
+  <div class="section">
+    <div class="sec-head">
+      <span class="sec-label">Закрытые свитки — Legacy</span>
+      <h2 class="sec-title">Наследие Dota 2</h2>
+    </div>
+    <div class="grid">
+      <div class="card" onclick="detail('tag')">
+        <span class="tag t-legacy">Legacy</span>
+        <span class="card-icon" style="color:#7a6048">🛡</span>
+        <div class="card-title">The Ancient Guardians</div>
+        <div class="card-sub">Dota 2 Custom · до 4 игроков</div>
+        <p class="card-desc">Защита базы от 25 волн. Разработка закрыта, доступно для игры через Workshop.</p>
+        <div class="card-links">
+          <a class="clink clink-green" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3368018086" target="_blank" onclick="event.stopPropagation()">Steam Workshop →</a>
+        </div>
+      </div>
+      <div class="card" onclick="detail('dotaclicker')">
+        <span class="tag t-beta">Beta · Legacy</span>
+        <span class="card-icon" style="color:#8b5e3c">⚡</span>
+        <div class="card-title">Dota: Legend of Creeps</div>
+        <div class="card-sub">TD + Кликер + Экономика</div>
+        <p class="card-desc">Покупай крипов, грабь каравны, разрушить трон. Разработка заморожена, бета доступна.</p>
+        <div class="card-links">
+          <a class="clink clink-green" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3554029726" target="_blank" onclick="event.stopPropagation()">Steam Workshop →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-name">☠ NecroDwarf ☠</div>
+    <div class="footer-runes">ᚾᛖᚲᚱᛟ ᛞᚹᚨᚱᚠ</div>
+    <p>Некоммерческая гильдия разработчиков · Кованы в любви к коду</p>
+  </footer>
+</div>
+
+<!-- ═══════════════ PROJECTS ═══════════════ -->
+<div class="page" id="page-projects">
+  <div class="section">
+    <div class="sec-head">
+      <span class="sec-label">Архив гильдии</span>
+      <h2 class="sec-title">Свитки Проектов</h2>
+    </div>
+
+    <span class="sub-label">— В разработке —</span>
+    <div class="grid" style="margin-bottom:2.5rem;">
+      <div class="card" onclick="detail('friendship')">
+        <span class="tag t-active">Активный</span>
+        <span class="card-icon" style="color:#3dcc88">🐑</span>
+        <div class="card-title">FriendSheep</div>
+        <div class="card-sub">Сервис организации мероприятий</div>
+        <p class="card-desc">Мультиплатформенная экосистема: веб, мобайл (RuStore), Telegram-бот. Дипломный проект NecroDwarf.</p>
+        <div class="card-links">
+          <a class="clink clink-green" href="https://friendsheep.ru/" target="_blank" onclick="event.stopPropagation()">Сайт</a>
+          <a class="clink clink-green" href="https://www.rustore.ru/catalog/app/com.anonymous.FriendShip" target="_blank" onclick="event.stopPropagation()">RuStore</a>
+        </div>
+      </div>
+      <div class="card" onclick="detail('minecraft')">
+        <span class="tag t-active">Активный</span>
+        <span class="card-icon" style="color:#e74c3c">⚔</span>
+        <div class="card-title">Maniac (DBD × MC)</div>
+        <div class="card-sub">Версия 4.0</div>
+        <p class="card-desc">12 классов, 2 карты, датапак + кастомный мод. Маньяк против выживших на кастомных аренах.</p>
+        <div class="card-links">
+          <a class="clink clink-green" href="https://minecraft-inside.ru/maps/188353-maniac-dbd.html" target="_blank" onclick="event.stopPropagation()">Скачать</a>
+        </div>
+      </div>
+      <div class="card" onclick="detail('kingdoms')">
+        <span class="tag t-soon">В разработке</span>
+        <span class="card-icon" style="color:#e8b84b">👑</span>
+        <div class="card-title">Kingdoms of Chat</div>
+        <div class="card-sub">Telegram RPG</div>
+        <p class="card-desc">Поселение, гвардия, данжи, караваны с информационным лагом. Node.js + Go + React.</p>
+        <div class="card-links"><a class="clink clink-gold" onclick="event.stopPropagation(); detail('kingdoms')">Подробнее</a></div>
+      </div>
+      <div class="card" onclick="detail('diedice')">
+        <span class="tag t-soon">В разработке</span>
+        <span class="card-icon" style="color:#c4935a">🎲</span>
+        <div class="card-title">Die Dice Paradise</div>
+        <div class="card-sub">Рогалик на кубиках</div>
+        <p class="card-desc">D4–D100, тактика бросков, талисманы, покер с боссами, прогрессивное раскрытие механик.</p>
+        <div class="card-links"><a class="clink clink-gold" onclick="event.stopPropagation(); detail('diedice')">Подробнее</a></div>
+      </div>
+    </div>
+
+    <div class="divider" style="padding:0; margin-bottom:2.5rem;"><span>⚒ Legacy ⚒</span></div>
+
+    <span class="sub-label">— Наследие (разработка закрыта, можно играть) —</span>
+    <div class="grid">
+      <div class="card" onclick="detail('tag')">
+        <span class="tag t-legacy">Legacy</span>
+        <span class="card-icon" style="color:#7a6048">🛡</span>
+        <div class="card-title">The Ancient Guardians</div>
+        <div class="card-sub">Dota 2 Custom Game</div>
+        <p class="card-desc">Защита базы от 25 волн, сложность масштабируется по числу игроков, прокачанные предметы.</p>
+        <div class="card-links">
+          <a class="clink clink-green" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3368018086" target="_blank" onclick="event.stopPropagation()">Steam Workshop</a>
+        </div>
+      </div>
+      <div class="card" onclick="detail('dotaclicker')">
+        <span class="tag t-beta">Beta · Legacy</span>
+        <span class="card-icon" style="color:#8b5e3c">⚡</span>
+        <div class="card-title">Dota: Legend of Creeps</div>
+        <div class="card-sub">TD + Кликер + Экономика</div>
+        <p class="card-desc">Волны крипов, грабёж каравнов, разрушение трона. Режим против ботов.</p>
+        <div class="card-links">
+          <a class="clink clink-green" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3554029726" target="_blank" onclick="event.stopPropagation()">Steam Workshop</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-name">☠ NecroDwarf ☠</div>
+    <div class="footer-runes">ᚾᛖᚲᚱᛟ ᛞᚹᚨᚱᚠ</div>
+    <p>Некоммерческая гильдия разработчиков · Кованы в любви к коду</p>
+  </footer>
+</div>
+
+<!-- ═══════════════ CHANGELOG ═══════════════ -->
+<div class="page" id="page-changelog">
+  <div class="section">
+    <div class="sec-head">
+      <span class="sec-label">Записи летописца</span>
+      <h2 class="sec-title">Хроники Гильдии</h2>
+    </div>
+      <div class="cl-list">
+        <div class="cl-entry">
+          <div>
+            <div class="cl-date">2025</div><br>
+            <span class="sbadge"><span class="sdot sd-green"></span>Активен</span>
+          </div>
+          <div>
+            <div class="cl-proj">Maniac (DBD × Minecraft)</div>
+            <div class="cl-title">Maniac Reforge v1.0</div>
+            <p class="cl-body">Выпущена новая версия кастомки, которая перерабатывает почти всё, что существовало до этого.</p>
+            <a class="clink clink-green" href="changelog_maniac.html">Подробнее →</a>
+          </div>
+        </div>
+      </div>
+  </div>
+  <footer>
+    <div class="footer-name">☠ NecroDwarf ☠</div>
+    <div class="footer-runes">ᚾᛖᚲᚱᛟ ᛞᚹᚨᚱᚠ</div>
+    <p>Некоммерческая гильдия разработчиков · Кованы в любви к коду</p>
+  </footer>
+</div>
+
+<!-- ═══════════════ ABOUT ═══════════════ -->
+<div class="page" id="page-about">
+  <div class="section" style="max-width:820px;">
+    <div class="sec-head">
+      <span class="sec-label">Летопись гильдии</span>
+      <h2 class="sec-title">О NecroDwarf</h2>
+    </div>
+    <div style="background:var(--stone);border:1px solid var(--border);padding:2.2rem;margin-bottom:2rem;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-15px;right:-10px;font-family:'UnifrakturMaguntia',cursive;font-size:7rem;opacity:0.04;color:var(--green);pointer-events:none;">☠</div>
+      <p style="font-size:1.08rem;color:var(--text);line-height:1.85;font-style:italic;">
+        «Мы — небольшая группа единомышленников, которая занимается программированием
+        для личного пользования и развития сообществ. Не ради денег — ради интереса,
+        опыта и любви к ремеслу.»
+      </p>
+    </div>
+    <div style="background:var(--stone);border:1px solid var(--border);padding:2.2rem;margin-bottom:2rem;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-15px;right:-10px;font-family:'UnifrakturMaguntia',cursive;font-size:7rem;opacity:0.04;color:var(--green);pointer-events:none;">☠</div>
+      <p style="font-size:1.08rem;color:var(--text);line-height:1.85;font-style:italic;">
+        <span>Почему мы этим занимаемся?</span>
+        <p class="about-card-title">
+          Иногда, чтобы по-настоящему наслаждаться игрой, нужно вложить в неё
+          собственные силы. И тогда даже незавершённый проект вызывает живой отклик —
+          а обратная связь от людей, которым это важно, стоит дороже любой награды.
+        </p>
+      </p>
+    </div>
+    <div style="background:var(--stone);border:1px solid var(--border);padding:1.8rem;margin-top:2rem;">
+      <div style="font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;color:var(--gold);margin-bottom:0.8rem;">⚒ Стек гильдии</div>
+      <div class="pills">
+        <span class="pill">Node.js</span><span class="pill">Go</span><span class="pill">React</span>
+        <span class="pill">PostgreSQL</span><span class="pill">Redis</span>
+        <span class="pill">Telegram Bot API</span><span class="pill">Lua (Dota 2)</span>
+        <span class="pill">Minecraft Datapacks</span><span class="pill">React Native</span>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-name">☠ NecroDwarf ☠</div>
+    <div class="footer-runes">ᚾᛖᚲᚱᛟ ᛞᚹᚨᚱᚠ</div>
+    <p>Некоммерческая гильдия разработчиков · Кованы в любви к коду</p>
+  </footer>
+</div>
+
+<!-- ═══════════════ PROJECT DETAIL ═══════════════ -->
+<div class="page" id="page-detail">
+  <div class="detail-wrap">
+    <button class="back-btn" onclick="goBack()">← Назад</button>
+    <div id="detail-content"></div>
+  </div>
+  <footer>
+    <div class="footer-name">☠ NecroDwarf ☠</div>
+    <div class="footer-runes">ᚾᛖᚲᚱᛟ ᛞᚹᚨᚱᚠ</div>
+    <p>Некоммерческая гильдия разработчиков · Кованы в любви к коду</p>
+  </footer>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

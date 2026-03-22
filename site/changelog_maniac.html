@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Хроники — Maniac Revolution</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/changelog.css" />
+</head>
+<body>
+
+    <nav>
+  <div class="nav-logo" onclick="show('home')">
+    <span class="skull">☠</span> NecroDwarf
+  </div>
+  <ul class="nav-links">
+    <a href="index.html#home" style="color:var(--muted);text-decoration:none;">Главная</a>
+    <a href="index.html#projects" style="color:var(--muted);text-decoration:none;">Проекты</a>
+    <a href="index.html#changelog" style="color:var(--muted);text-decoration:none;">Хроники</a>
+    <a href="index.html#about" style="color:var(--muted);text-decoration:none;">О гильдии</a>
+  </ul>
+</nav>
+
+<!-- ══════════ ШАПКА ══════════ -->
+<div class="cl-header">
+  <div class="cl-label">Записи летописца · Maniac (DBD × Minecraft)</div>
+  <h1 class="cl-title">Хроники <span>Обновления</span></h1>
+  <p class="cl-sub">— Переход к новому этапу модинга —</p>
+  <div class="cl-sep">✦ ☠ ✦</div>
+
+  <div class="cl-version-block">
+    <div class="cl-version-codename">Maniac Reforge</div>
+    <div class="cl-version-num">Версия 1.0</div>
+    <div class="cl-version-note">все потому, что мы переходим на нормальную нумерацию версий, теперь не каждая версия мажорная, но каждая версия будет иметь своё кодовое название</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="cl-stats">
+    <div class="stat-item">
+      <span class="stat-num">50+</span>
+      <span class="stat-lbl">новых файлов</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">30+</span>
+      <span class="stat-lbl">изменённых файлов</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">10 000+</span>
+      <span class="stat-lbl">строк кода</span>
+    </div>
+  </div>
+
+  <!-- ═══ ОТКАЗ ОТ МОДА ═══ -->
+  <div class="cl-section red">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">⚰️</span>
+      <span class="cl-section-title">Отказ от мода maniacweaponsRevolution</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="cl-callout">
+        Мы перешли на новый этап модинга — от визуального программирования к полноценному. Все сущности, блоки и предметы из старого мода объединены в один, что даёт значительно больше гибкости и контроля над механиками.
+      </div>
+      <div class="cards">
+        <div class="card del">
+          <div class="card-head"><span class="badge badge-del">ПЕРЕНЕСЕНО</span> Сущности и предметы</div>
+          <p>Все сущности и предметы из maniacweaponsRevolution перенесены и переработаны в рамках единого мода. Визуальный редактор больше не используется.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ НОВЫЕ МЕХАНИКИ ═══ -->
+  <div class="cl-section green">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">⚙️</span>
+      <span class="cl-section-title">Новые системы и механики</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="cards">
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Система лежания</div>
+          <p>Полноценная механика нокдауна для выживших:</p>
+          <ul>
+            <li>Второй шанс при смерти — один раз за игру</li>
+            <li>Союзники поднимают правой кнопкой (6 сек обычный, 3 сек медик)</li>
+            <li>60 секунд до автосмерти</li>
+            <li>После подъёма — штраф −50% HP</li>
+            <li>HUD-индикаторы для всех игроков</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Система зависимости <span class="badge badge-note">Мефедронщик</span></div>
+          <p>Механика зависимости, добавленная специально для класса «Мефедронщик»:</p>
+          <ul>
+            <li>Шкала с 4 стадиями ломки и дебафами</li>
+            <li>Шприцы адреналина дают ускорение и частично сбрасывают шкалу</li>
+            <li>Бонг приостанавливает нарастание зависимости</li>
+            <li>На 3-й стадии есть шанс смерти</li>
+          </ul>
+        </div>
+
+        <div class="card mod">
+          <div class="card-head"><span class="badge badge-mod">ПЕРЕРАБОТАНО</span> Система чумы</div>
+          <p>Ключевое изменение: добавлена HUD-индикация прогресса чумы. Теперь не нужно гадать «сколько мне осталось».</p>
+          <ul>
+            <li>Визуальная шкала прогресса на экране</li>
+            <li>Чумная лампа, радиус 5 блоков, урон каждые 8 сек</li>
+          </ul>
+        </div>
+
+        <div class="card mod">
+          <div class="card-head"><span class="badge badge-mod">ПЕРЕРАБОТАНО</span> Тотем шамана</div>
+          <p>Переработана механика тотема:</p>
+          <ul>
+            <li>Подсвечивает маньяков, пробегающих рядом, <strong>только для поставившего тотем</strong> игрока</li>
+            <li>Умирает от количества ударов, а не имеет HP — 3 удара до смерти независимо от урона</li>
+            <li>Радиус действия: 5 блоков</li>
+          </ul>
+        </div>
+
+        <div class="card mod">
+          <div class="card-head"><span class="badge badge-mod">ПЕРЕРАБОТАНО</span> Улей</div>
+          <p>Предмет «Улей» стал значительно полезнее. Теперь кроме ярости (которая даёт 80% резист) выпускает разъярённых пчёл, атакующих выживших. Наконец-то не бесполезный предмет.</p>
+        </div>
+
+        <div class="card mod">
+          <div class="card-head"><span class="badge badge-mod">ПЕРЕРАБОТАНО</span> Звериные когти</div>
+          <p>В «Звериные когти» перенесён прыжок урсы — теперь немного переработан: не прыгает так далеко, но при приземлении наносит урон в области.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ НАЧАЛО ИГРЫ ═══ -->
+  <div class="cl-section">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">🎮</span>
+      <span class="cl-section-title">Начало и настройка игры</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="cl-callout">
+        Вся система подготовки и настройки игры полностью перенесена в мод. Теперь всё работает более гибко и стабильно — старая схема на датапаке осталась в прошлом.
+      </div>
+      <div class="cards">
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Прелобби и готовность</div>
+          <ul>
+            <li>Система подтверждения готовности до старта</li>
+            <li>Автоматическая выдача стартовых предметов</li>
+            <li>Гибкое управление через команды</li>
+          </ul>
+        </div>
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Переработанный гайд</div>
+          <ul>
+            <li>8 отдельных тем вместо одного длинного списка</li>
+            <li>Описание механик отдельно для каждого класса</li>
+            <li>Разделы: HUD и мана, нокдаун, взлом компьютеров, перки</li>
+          </ul>
+        </div>
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-mod">ПЕРЕНЕСЕНО</span> Предметы из старого мода</div>
+          <ul>
+            <li>Микрофон</li>
+            <li>Звериные когти</li>
+            <li>Чумная лампа <em style="color:var(--muted);font-size:0.88em;">— реворк модели: коса → лампа</em></li>
+            <li>Бонг &amp; Шприц адреналина</li>
+            <li>Душа предка</li>
+            <li>Обмен измерений</li>
+            <li>Спавнер тотема</li>
+            <li>Предмет настроек</li>
+          </ul>
+        </div>
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Новые эффекты</div>
+          <ul>
+            <li><strong>Чума</strong> — накопительный урон</li>
+            <li><strong>Шипы</strong> — отражение 50% урона</li>
+            <li><strong>Заморозка</strong> — полная остановка</li>
+            <li><strong>Альтруист-буст</strong> — +5% к взлому для медика</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ СТАТИСТИКА ═══ -->
+  <div class="cl-section blue">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">📊</span>
+      <span class="cl-section-title">Система сбора статистики</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="cl-callout">
+        Статистика собирается исключительно для понимания бесполезности или имбовости некоторых перков и классов — чтобы режим становился лучше.
+      </div>
+      <div class="cl-callout sarcasm">
+        Но это всегда можно отключить, если вы «токсик» и не хотите улучшить режим.
+      </div>
+      <div class="text-body">
+        <p>Отказаться от сбора: команда <strong>/maniacrev offsendstats</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">✦ &nbsp; ⚔ &nbsp; ✦</div>
+
+  <!-- ═══ НОВЫЕ ПЕРКИ ═══ -->
+  <div class="cl-section purple">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">✨</span>
+      <span class="cl-section-title">Новые перки</span>
+    </div>
+    <div class="cl-section-body">
+ 
+      <div style="font-family:'Cinzel',serif;font-size:0.78rem;font-weight:700;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:0.8rem;">⚔ Маньяк</div>
+      <div class="perk-grid" style="margin-bottom:1.6rem;">
+ 
+        <div class="perk-card">
+          <div class="perk-name">Выброс <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Пассивный с КД</span></div>
+          <div class="perk-desc">Когда маньяк кладёт выжившего в нокдаун или убивает — ближайший компьютер откатывается назад. Требует прогресс на компьютере больше нуля.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Откат</span><span class="ps-val">5%</span></div>
+          </div>
+        </div>
+ 
+        <div class="perk-card">
+          <div class="perk-name">Семейный Раздор <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Пассивный с КД</span></div>
+          <div class="perk-desc">Когда 2 или больше выживших взламывают один компьютер — подсвечивает их для владельца перка.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Кулдаун</span><span class="ps-val">60с</span></div>
+          </div>
+        </div>
+ 
+        <div class="perk-card">
+          <div class="perk-name">Грифер <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Пассивный с КД</span></div>
+          <div class="perk-desc">После того как выжившие завершают взлом компьютера — самый заряженный незаблокированный комп блокируется на некоторое время.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Блокировка</span><span class="ps-val">30с</span></div>
+          </div>
+        </div>
+ 
+        <div class="perk-card">
+          <div class="perk-name">Тишина... <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Активный</span></div>
+          <div class="perk-desc">Накладывает эффект Silence на всех в радиусе. Пока эффект активен — никто не может использовать активные перки.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Радиус</span><span class="ps-val">10бл</span></div>
+          </div>
+        </div>
+ 
+      </div>
+ 
+      <div style="font-family:'Cinzel',serif;font-size:0.78rem;font-weight:700;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:0.8rem;">🛡 Выжившие</div>
+      <div class="perk-grid" style="margin-bottom:1.6rem;">
+ 
+        <div class="perk-card">
+          <div class="perk-name">Независимость <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Активный · одноразовый</span></div>
+          <div class="perk-desc">Когда до конца нокдауна остаётся совсем мало времени — можно активировать перк и самостоятельно встать.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Триггер</span><span class="ps-val">≤ 10с до смерти</span></div>
+            <div class="ps-row"><span class="ps-key">HP при подъёме</span><span class="ps-val">5</span></div>
+          </div>
+        </div>
+ 
+        <div class="perk-card">
+          <div class="perk-name">Альтруист.exe <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Пассивный</span></div>
+          <div class="perk-desc">После подъёма союзника — временно ускоряется взлом компьютеров.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Бонус к взлому</span><span class="ps-val">5%</span></div>
+            <div class="ps-row"><span class="ps-key">Длительность</span><span class="ps-val">45с</span></div>
+          </div>
+        </div>
+ 
+        <div class="perk-card">
+          <div class="perk-name">Любовник Магии <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Пассивный</span></div>
+          <div class="perk-desc">После подъёма союзника — получает ману. Чем чаще помогаешь команде, тем больше ресурсов.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Мана за подъём</span><span class="ps-val">10</span></div>
+            <div class="ps-row"><span class="ps-key">Кулдаун</span><span class="ps-val">90с</span></div>
+          </div>
+        </div>
+ 
+        <div class="perk-card">
+          <div class="perk-name">Голландцы <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Пассивный</span></div>
+          <div class="perk-desc">За каждого союзника, заряжающего тот же компьютер — бонус к скорости взлома. Не считает самого владельца перка.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Бонус за игрока</span><span class="ps-val">4%</span></div>
+          </div>
+        </div>
+ 
+        <div class="perk-card">
+          <div class="perk-name">Идеалыч <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Пассивный</span></div>
+          <div class="perk-desc">Перк завязан на качество QTE при взломе. Идеальное попадание ускоряет взлом, промах — замедляет. Обычное попадание сбрасывает штраф.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Крит → бонус</span><span class="ps-val ps-buff">+1% (макс +5%)</span></div>
+            <div class="ps-row"><span class="ps-key">Промах → штраф</span><span class="ps-val ps-nerf">−1% (макс −10%)</span></div>
+          </div>
+        </div>
+ 
+        <div class="perk-card">
+          <div class="perk-name">Ментальная Связь <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Пассивный</span></div>
+          <div class="perk-desc">Подсвечивает всех выживших поблизости. Видит только владелец перка.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Радиус</span><span class="ps-val">30 бл</span></div>
+          </div>
+        </div>
+ 
+      </div>
+ 
+      <div style="font-family:'Cinzel',serif;font-size:0.78rem;font-weight:700;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:0.8rem;">⚔🛡 Все классы</div>
+      <div class="perk-grid">
+ 
+        <div class="perk-card">
+          <div class="perk-name">Футбольный фанат <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Активный · одноразовый</span></div>
+          <div class="perk-desc">Замораживает владельца перка на некоторое время, после чего выдаёт Clarity.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Заморозка (выжившие)</span><span class="ps-val">60с</span></div>
+            <div class="ps-row"><span class="ps-key">Заморозка (маньяк)</span><span class="ps-val">30с</span></div>
+          </div>
+        </div>
+ 
+        <div class="perk-card">
+          <div class="perk-name">Шкура Ёжика <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Активный</span></div>
+          <div class="perk-desc">Временно активирует эффект шипов — отражает часть получаемого урона обратно атакующему.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Отражение урона</span><span class="ps-val">50%</span></div>
+            <div class="ps-row"><span class="ps-key">Длительность</span><span class="ps-val">5с</span></div>
+          </div>
+        </div>
+ 
+        <div class="perk-card">
+          <div class="perk-name">Mana Break <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">Активный</span></div>
+          <div class="perk-desc">При активации — следующий удар снимает ману с цели.</div>
+          <div class="perk-stats">
+            <div class="ps-row"><span class="ps-key">Снятие маны</span><span class="ps-val">10</span></div>
+          </div>
+        </div>
+ 
+      </div>
+    </div>
+  </div>
+ 
+  <div class="divider">✦ &nbsp; ⚔ &nbsp; ✦</div>
+ 
+  <!-- ═══ РЕБАЛАНС ПЕРКОВ ═══ -->
+  <div class="cl-section">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">⚖️</span>
+      <span class="cl-section-title">Ребаланс перков</span>
+    </div>
+    <div class="cl-section-body">
+ 
+      <div class="rb-grid">
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Большие деньги - большие яйца</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Бонус денег</span><span class="rb-old">20%</span><span class="rb-arrow">→</span><span class="rb-new-buff">50%</span></div>
+          </div>
+        </div>
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Волна ужаса</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Длительность эффекта</span><span class="rb-old">3с</span><span class="rb-arrow">→</span><span class="rb-new-buff">5с</span></div>
+            <div class="rb-row"><span class="rb-param">Потребление маны</span><span class="rb-old">0</span><span class="rb-arrow">→</span><span class="rb-new-nerf">10</span></div>
+          </div>
+        </div>
+
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Мегамозг</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Бонус опыта</span><span class="rb-old">20%</span><span class="rb-arrow">→</span><span class="rb-new-buff">50%</span></div>
+          </div>
+        </div>
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Золотая медаль ГТО</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Потребление маны</span><span class="rb-old">0</span><span class="rb-arrow">→</span><span class="rb-new-nerf">5</span></div>
+          </div>
+        </div>
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Прогрел новичка</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Длительность подсветки</span><span class="rb-old">4с</span><span class="rb-arrow">→</span><span class="rb-new-buff">5с</span></div>
+            <div class="rb-row"><span class="rb-param">Кулдаун</span><span class="rb-old">27с</span><span class="rb-arrow">→</span><span class="rb-new-nerf">30с</span></div>
+          </div>
+        </div>
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Компьютер раскрафтер</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Откат</span><span class="rb-old">фикс. значение</span><span class="rb-arrow">→</span><span class="rb-new-buff">50% от заряда</span></div>
+            <div class="rb-row"><span class="rb-param">Потребление маны</span><span class="rb-old">0</span><span class="rb-arrow">→</span><span class="rb-new-nerf">10</span></div>
+          </div>
+        </div>
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Слепота</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Потребление маны</span><span class="rb-old">0</span><span class="rb-arrow">→</span><span class="rb-new-nerf">10</span></div>
+          </div>
+        </div>
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Я - скорость</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Длительность</span><span class="rb-old">10с</span><span class="rb-arrow">→</span><span class="rb-new-buff">15с</span></div>
+          </div>
+        </div>
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">"Последнее дыхание</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Длительность</span><span class="rb-old">7с</span><span class="rb-arrow">→</span><span class="rb-new-buff">10с</span></div>
+            <div class="rb-row"><span class="rb-param">Триггер при падении</span><span class="rb-old">✗</span><span class="rb-arrow">→</span><span class="rb-new-buff">✓</span></div>
+          </div>
+        </div>
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Мимик</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Потребление маны</span><span class="rb-old">0</span><span class="rb-arrow">→</span><span class="rb-new-nerf">15</span></div>
+          </div>
+        </div>
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Быстрая реакция</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Зона успеха (QTE)</span><span class="rb-old">30%</span><span class="rb-arrow">→</span><span class="rb-new-nerf">20%</span></div>
+            <div class="rb-row"><span class="rb-param">Зона крита</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-buff">+10%</span></div>
+            <div class="rb-row"><span class="rb-param">Длительность</span><span class="rb-old">300 мс</span><span class="rb-arrow">→</span><span class="rb-new-buff">450 мс</span></div>
+          </div>
+        </div>
+ 
+        <div class="rebalance-card">
+          <div class="rb-perk-name">Просвет сквозь стену</div>
+          <div class="rb-changes">
+            <div class="rb-row"><span class="rb-param">Длительность</span><span class="rb-old">4с</span><span class="rb-arrow">→</span><span class="rb-new-buff">6с</span></div>
+            <div class="rb-row"><span class="rb-param">Угол обзора</span><span class="rb-old">45°</span><span class="rb-arrow">→</span><span class="rb-new-buff">60°</span></div>
+          </div>
+        </div>
+ 
+      </div>
+ 
+      <!-- <div class="cl-callout" style="margin-top:1.4rem; font-size:0.85rem; font-style:normal;">
+        <strong style="font-family:'Cinzel',serif;font-size:0.82em;letter-spacing:0.05em;color:var(--gold);">КАК ДОБАВИТЬ КАРТОЧКУ:</strong><br>
+        Скопируй блок <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:2px;font-family:monospace;font-size:0.88em;">&lt;div class="rebalance-card"&gt;</code> и добавь в <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:2px;font-family:monospace;font-size:0.88em;">.rb-grid</code>. Классы значений:
+        <br>• <span style="color:var(--green);font-weight:700;">rb-new-buff</span> — зелёный (баф)
+        <br>• <span style="color:var(--red);font-weight:700;">rb-new-nerf</span> — красный (нерф)
+        <br>• <span style="color:var(--gold);font-weight:700;">rb-new-neutral</span> — золотой (нейтрально)
+      </div> -->
+ 
+    </div>
+  </div>
+ 
+</div><!-- /container -->
+
+<footer>
+  <div class="footer-name">☠ NecroDwarf ☠</div>
+  <div class="footer-runes">ᚾᛖᚲᚱᛟ ᛞᚹᚨᚱᚠ</div>
+  <p>Некоммерческая гильдия разработчиков · Кованы в любви к коду</p>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

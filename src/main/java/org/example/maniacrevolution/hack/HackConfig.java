@@ -40,10 +40,10 @@ public class HackConfig {
     public static int QTE_INTERVAL_MAX_SECONDS = 5;
 
     /** Бонус очков за успешный QTE */
-    public static float QTE_SUCCESS_BONUS = 0.5f;
+    public static float QTE_SUCCESS_BONUS = 0.4f;
 
     /** Бонус очков за критический QTE (попадание в фиолетовую зону) */
-    public static float QTE_CRIT_BONUS = 1.2f;
+    public static float QTE_CRIT_BONUS = 0.6f;
 
     // ── Счётчики победы ───────────────────────────────────────────────────────
     /**

@@ -22,7 +22,7 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = "maniacrev", bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class LastBreathPerk extends Perk {
 
-    private static final int GLOW_DURATION = 7 * 20; // 7 секунд в тиках
+    private static final int GLOW_DURATION = 10 * 20; // 7 секунд в тиках
 
     public LastBreathPerk() {
         super(new Builder("last_breath")

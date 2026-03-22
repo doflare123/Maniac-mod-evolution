@@ -27,8 +27,8 @@ import java.util.List;
 public class FearWavePerk extends Perk {
 
     private static final double RADIUS = 10.0;
-    private static final int FEAR_DURATION = 3 * 20; // 5 секунд в тиках
-    private static final int WAVE_ANIMATION_TICKS = 20; // Длительность анимации волны
+    private static final int FEAR_DURATION = 5 * 20; // 3 секунд в тиках
+    private static final int WAVE_ANIMATION_TICKS = 10; // Длительность анимации волны
 
     // Тёмно-зелёный цвет (близкий к чёрному)
     private static final DustParticleOptions PARTICLE_COLOR = new DustParticleOptions(

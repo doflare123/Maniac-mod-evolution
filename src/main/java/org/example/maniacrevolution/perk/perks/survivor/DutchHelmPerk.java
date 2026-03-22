@@ -15,7 +15,7 @@ public class DutchHelmPerk extends Perk {
 
     // ── Настройки ─────────────────────────────────────────────────────────
     // Процент бонуса за каждого союзника (0.04 = 4%)
-    public static final float BONUS_PER_PLAYER = 1.04f;
+    public static final float BONUS_PER_PLAYER = 0.04f;
 
     private static final java.util.Set<java.util.UUID> activePlayers =
             java.util.Collections.synchronizedSet(new java.util.HashSet<>());

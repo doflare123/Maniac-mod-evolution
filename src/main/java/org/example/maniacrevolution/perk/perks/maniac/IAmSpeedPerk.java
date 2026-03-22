@@ -13,8 +13,8 @@ import org.example.maniacrevolution.perk.PerkTeam;
 import org.example.maniacrevolution.perk.PerkType;
 
 public class IAmSpeedPerk extends Perk {
-    private static final int SPEED_DURATION_TICKS = 200; // 10 секунд
-    private static final int SPEED_AMPLIFIER = 2; // Уровень 1 (0 = Speed I)
+    private static final int SPEED_DURATION_TICKS = 300; // 15 секунд
+    private static final int SPEED_AMPLIFIER = 2; // Уровень 2 (1 = Speed II)
 
     public IAmSpeedPerk() {
         super(new Builder("i_am_speed")

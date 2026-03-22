@@ -85,16 +85,16 @@
   "item.maniacrev.hook": "Хук паджерса",
 
   "perk.maniacrev.bigmoney.name": "большие деньги - большие яйца",
-  "perk.maniacrev.bigmoney.desc": "Получайте на 20% больше монет в конце игры",
+  "perk.maniacrev.bigmoney.desc": "Получайте на 50% больше монет в конце игры",
 
   "perk.maniacrev.megamind.name": "Мегамозг",
-  "perk.maniacrev.megamind.desc": "Получайте на 20% больше опыта в конце игры",
+  "perk.maniacrev.megamind.desc": "Получайте на 50% больше опыта в конце игры",
 
   "perk.maniacrev.gto_medal.name": "Золотая медаль ГТО",
   "perk.maniacrev.gto_medal.desc": "Мощный рывок вперёд",
 
   "perk.maniacrev.fear_wave.name": "Волна ужаса",
-  "perk.maniacrev.fear_wave.desc": "Выпускаете волну страха в радиусе 10 блоков, которая пугает ВСЕХ, даже союзников, на короткое время (3 секунды)",
+  "perk.maniacrev.fear_wave.desc": "Выпускаете волну страха в радиусе 10 блоков, которая пугает ВСЕХ, даже союзников, на короткое время (5 секунды)",
 
   "perk.maniacrev.str_perk.name": "Сила Волги",
   "perk.maniacrev.str_perk.desc": "Внемли силе земли!",
@@ -103,7 +103,7 @@
   "perk.maniacrev.wallhack.desc": "Подсвечивает маньяков через стены на 4 секунд. Дистанция: 15 блоков",
 
   "perk.maniacrev.last_breath.name": "Последнее дыхание",
-  "perk.maniacrev.last_breath.desc": "При смерти подсвечивает вашего убийцу для всей команды на 4 секунд",
+  "perk.maniacrev.last_breath.desc": "При смерти подсвечивает вашего убийцу для всей команды на 10 секунд",
 
   "perk.maniacrev.quick_reflexes.name": "Быстрая реакция",
   "perk.maniacrev.quick_reflexes.desc": "QTE генератора: +0.25 сек времени и +10% пространства для успеха",
@@ -115,10 +115,10 @@
   "perk.maniacrev.bloodflow.desc": "Следующий удар разорвет плоть жертвы и она будет истекать кровью (10 секунд).",
 
   "perk.maniacrev.i_am_speed.name": "Я - скорость",
-  "perk.maniacrev.i_am_speed.desc": "После убийства выжившего вы получаете небольшой прилив сил и тем самым перемещаетесь быстрее (10 секунд)",
+  "perk.maniacrev.i_am_speed.desc": "После убийства выжившего вы получаете небольшой прилив сил и тем самым перемещаетесь быстрее (15 секунд)",
 
   "perk.maniacrev.catch_mistakes.name": "Прогрел новичка",
-  "perk.maniacrev.catch_mistakes.desc": "Если при проверке игрока на реакцию он не проходит ее успешно, то этот выживший подсвечивается (4 секунды)",
+  "perk.maniacrev.catch_mistakes.desc": "Если при проверке игрока на реакцию он не проходит ее успешно, то этот выживший подсвечивается (5 секунды)",
 
   "perk.maniacrev.computer_breaker.name": "Компьютер раскрафтер",
   "perk.maniacrev.computer_breaker.desc": "Уменьшает прогресс взлома у не взломанного компьютера на 50% от цели хака, который имеет самый большой прогресс",

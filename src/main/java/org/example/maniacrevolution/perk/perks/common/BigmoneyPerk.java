@@ -5,12 +5,12 @@ import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.perk.*;
 
 /**
- * Пассивный перк: увеличивает получаемые монеты на 20%.
+ * Пассивный перк: увеличивает получаемые монеты на 50%.
  * Работает через проверку в команде /maniacrev addmoney.
  */
 public class BigmoneyPerk extends Perk {
 
-    public static final float BONUS_MULTIPLIER = 1.2f; // +20%
+    public static final float BONUS_MULTIPLIER = 1.5f; // +20%
 
     public BigmoneyPerk() {
         super(new Builder("bigmoney")

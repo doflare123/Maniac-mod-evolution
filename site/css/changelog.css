@@ -1,0 +1,405 @@
+ :root {
+      --bg:      #0a0f0d;
+      --stone:   #101810;
+      --stone2:  #141f16;
+      --border:  #1e3024;
+      --border2: #2a4232;
+      --text:    #bdd4c4;
+      --muted:   #5a7a62;
+      --gold:    #3dcc88;
+      --gold2:   #5de8a0;
+      --green:   #3dcc88;
+      --red:     #e74c3c;
+      --blue:    #4488bb;
+      --purple:  #7755bb;
+      --accent:  #c8a84b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Crimson Text', Georgia, serif;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Шапка ── */
+    .cl-header {
+      text-align: center;
+      margin-top: 10px;
+      padding: 3.5rem 3rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .cl-header::before {
+      content: '☠';
+      font-family: 'UnifrakturMaguntia', cursive;
+      position: absolute;
+      font-size: 18rem;
+      opacity: 0.03;
+      color: var(--gold);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      user-select: none;
+    }
+    .cl-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    .cl-title {
+      font-family: 'Cinzel', serif;
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+    .cl-title span { color: var(--red); }
+    .cl-sub {
+      font-style: italic;
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .cl-sep { color: var(--gold); letter-spacing: 0.5em; font-size: 1.1rem; margin-bottom: 1.8rem; }
+
+    .cl-version-block {
+      display: inline-block;
+      border: 1px solid var(--border2);
+      background: var(--stone);
+      padding: 1rem 2.5rem 1.1rem;
+      text-align: center;
+      position: relative;
+      margin-bottom: 0;
+    }
+    .cl-version-block::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .cl-version-codename {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--gold2);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.2rem;
+    }
+    .cl-version-num {
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      margin-bottom: 0.5rem;
+    }
+    .cl-version-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    /* ── Статы ── */
+    .cl-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+      padding: 1.2rem 2rem;
+      background: var(--stone);
+      border: 1px solid var(--border);
+      max-width: 700px;
+      margin: 0 auto 3rem;
+    }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-family: 'Cinzel', serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--gold);
+      display: block;
+    }
+    .stat-lbl {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── Контейнер ── */
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    /* ── Блок секции ── */
+    .cl-section {
+      margin-bottom: 2.2rem;
+      border: 1px solid var(--border);
+      background: var(--stone);
+      position: relative;
+      overflow: hidden;
+    }
+    .cl-section::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--gold);
+    }
+    .cl-section.red::before   { background: var(--red); }
+    .cl-section.green::before { background: var(--green); }
+    .cl-section.blue::before  { background: var(--blue); }
+    .cl-section.purple::before{ background: var(--purple); }
+
+    .cl-section-head {
+      padding: 1rem 1.5rem 1rem 1.8rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--stone2);
+    }
+    .cl-section-icon { font-size: 1.2rem; }
+    .cl-section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+    }
+    .cl-section.red   .cl-section-title { color: var(--red); }
+    .cl-section.green .cl-section-title { color: var(--green); }
+    .cl-section.blue  .cl-section-title { color: var(--blue); }
+    .cl-section.purple .cl-section-title { color: var(--purple); }
+
+    .cl-section-body { padding: 1.4rem 1.8rem; }
+
+    /* ── Грид карточек ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--stone2);
+      border: 1px solid var(--border);
+      padding: 1rem 1.2rem;
+      position: relative;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--border2);
+    }
+    .card.new::before  { background: var(--green); }
+    .card.mod::before  { background: var(--blue); }
+    .card.del::before  { background: var(--red); }
+
+    .card-head {
+      font-family: 'Cinzel', serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--gold2);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.68rem;
+      padding: 1px 7px;
+      border-radius: 2px;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+    .badge-new  { background: rgba(61,204,136,0.15); color: var(--green); border: 1px solid rgba(61,204,136,0.3); }
+    .badge-mod  { background: rgba(85,136,204,0.15); color: var(--blue);  border: 1px solid rgba(85,136,204,0.3); }
+    .badge-del  { background: rgba(231,76,60,0.15);  color: var(--red);   border: 1px solid rgba(231,76,60,0.3); }
+    .badge-note { background: rgba(200,168,75,0.12); color: var(--gold);  border: 1px solid rgba(200,168,75,0.25); }
+
+    .card p, .card li { color: var(--text); font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .card ul { margin-left: 1.1rem; margin-top: 0.3rem; }
+    .card ul li { margin-bottom: 0.2rem; }
+
+    .card .note {
+      margin-top: 0.6rem;
+      padding: 0.5rem 0.8rem;
+      background: rgba(200,168,75,0.06);
+      border-left: 2px solid var(--gold);
+      font-style: italic;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .card .note.red-note {
+      background: rgba(231,76,60,0.06);
+      border-left-color: var(--red);
+    }
+    .card .note.green-note {
+      background: rgba(61,204,136,0.06);
+      border-left-color: var(--green);
+    }
+
+    /* ── Текстовый блок (без грида) ── */
+    .text-body { color: var(--text); font-size: 0.97rem; }
+    .text-body p { margin-bottom: 0.5rem; }
+    .text-body ul { margin-left: 1.3rem; margin-bottom: 0.4rem; }
+    .text-body li { margin-bottom: 0.2rem; }
+    .text-body strong { color: var(--gold2); font-family: 'Cinzel', serif; font-size: 0.85em; letter-spacing: 0.04em; }
+
+    /* ── Разделитель ── */
+    .divider {
+      text-align: center;
+      color: var(--gold);
+      font-size: 0.9rem;
+      letter-spacing: 0.4em;
+      padding: 1.5rem 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin: 2rem 0;
+    }
+
+    /* ── Перки ── */
+    .perk-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .perk-card {
+      background: var(--stone2);
+      border: 1px solid var(--border);
+      padding: 1.1rem 1.2rem;
+      position: relative;
+    }
+    .perk-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+    }
+    .perk-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--gold2);
+      margin-bottom: 0.5rem;
+    }
+    .perk-desc { font-size: 0.93rem; color: var(--text); line-height: 1.6; }
+    .perk-desc em { color: var(--muted); font-style: italic; font-size: 0.88em; }
+ 
+    /* ── Статы перка ── */
+    .perk-stats {
+      margin-top: 0.7rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .ps-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .ps-key { color: var(--muted); font-family: 'Cinzel', serif; font-size: 0.76rem; letter-spacing: 0.04em; }
+    .ps-val { color: var(--gold2); font-weight: 700; font-family: 'Cinzel', serif; font-size: 0.82rem; }
+    .ps-buff { color: var(--green) !important; }
+    .ps-nerf { color: var(--red) !important; }
+ 
+    /* ── Грид ребаланса ── */
+    .rb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    /* ── Ребаланс ── */
+    .rebalance-card {
+      background: var(--stone2);
+      border: 1px solid var(--border);
+      padding: 1.1rem 1.3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .rb-perk-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold2);
+    }
+    .rb-changes { display: flex; flex-direction: column; gap: 0.35rem; }
+    .rb-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      align-items: baseline;
+      gap: 0.4rem;
+      font-size: 0.88rem;
+    }
+    .rb-param { color: var(--muted); font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 0.05em; min-width: 130px; }
+    .rb-old { color: var(--red); font-weight: 600; }
+    .rb-arrow { color: var(--border2); font-size: 0.9rem; }
+    .rb-new-buff   { color: var(--green); font-weight: 700; }
+    .rb-new-nerf   { color: var(--red);   font-weight: 700; }
+    .rb-new-neutral{ color: var(--gold);  font-weight: 700; }
+
+    /* ── Важная заметка ── */
+    .cl-callout {
+      padding: 1rem 1.5rem;
+      background: rgba(200,168,75,0.07);
+      border: 1px solid rgba(200,168,75,0.2);
+      border-left: 3px solid var(--gold);
+      margin-bottom: 1rem;
+      font-style: italic;
+      color: var(--text);
+    }
+    .cl-callout.sarcasm {
+      background: rgba(85,136,204,0.07);
+      border-color: rgba(85,136,204,0.2);
+      border-left-color: var(--blue);
+      font-size: 0.93rem;
+    }
+
+    /* ── Футер ── */
+    footer {
+      text-align: center;
+      border-top: 1px solid var(--border);
+      padding: 2rem 1rem;
+      margin-top: 3rem;
+    }
+    .footer-name {
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 1.6rem;
+      color: var(--gold);
+      margin-bottom: 0.3rem;
+    }
+    .footer-runes {
+      font-size: 0.85rem;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      margin-bottom: 0.4rem;
+    }
+    footer p { color: var(--muted); font-size: 0.88rem; }

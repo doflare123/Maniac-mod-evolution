@@ -10,7 +10,7 @@ import org.example.maniacrevolution.perk.*;
  */
 public class MegamindPerk extends Perk {
 
-    public static final float BONUS_MULTIPLIER = 1.2f; // +20%
+    public static final float BONUS_MULTIPLIER = 1.5f; // +20%
 
     public MegamindPerk() {
         super(new Builder("megamind")

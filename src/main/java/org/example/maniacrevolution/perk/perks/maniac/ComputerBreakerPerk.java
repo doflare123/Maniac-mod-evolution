@@ -17,7 +17,7 @@ import java.util.List;
 public class ComputerBreakerPerk extends Perk {
 
     private static final int COOLDOWN_SECONDS = 180;
-    private static final int POINTS_TO_REMOVE = 6000;
+    private static final int POINTS_TO_REMOVE = 6000; // 50% от заряда, а не фикс
 
 
     // Максимальное количество компьютеров (можно увеличить при необходимости)
