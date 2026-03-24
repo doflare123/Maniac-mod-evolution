@@ -268,21 +268,14 @@ public class ModCommands {
 
     private static int executeGlowingPerks(CommandSourceStack source) {
         try {
-            int highlightedCount = HighlightPerk.activateGlowing(source.getServer());
+            HighlightPerk.onComputerHacked(source.getServer());
 
-            if (highlightedCount > 0) {
-                source.sendSuccess(
-                        () -> Component.literal("Подсвечено выживших: " + highlightedCount),
-                        true
-                );
-            } else {
-                source.sendSuccess(
-                        () -> Component.literal("Нет активных перков подсветки или нет доступных выживших"),
-                        false
-                );
-            }
+            source.sendSuccess(
+                    () -> Component.literal("Подсветка выживших активирована"),
+                    true
+            );
 
-            return highlightedCount;
+            return 1;
         } catch (Exception e) {
             source.sendFailure(Component.literal("Ошибка при активации перка: " + e.getMessage()));
             e.printStackTrace();

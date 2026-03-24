@@ -157,13 +157,13 @@
   "perk.maniacrev.i_am_speed.desc": "After killing a survivor, you gain a surge of energy and move faster",
 
   "perk.maniacrev.catch_mistakes.name": "Caught Red-Handed",
-  "perk.maniacrev.catch_mistakes.desc": "If a player fails the reaction check, that survivor is highlighted",
+  "perk.maniacrev.catch_mistakes.desc": "When a survivor misses a QTE, highlights them for %d sec. only for you. CD: %d sec.",
 
   "perk.maniacrev.computer_breaker.name": "Computer Breaker",
-  "perk.maniacrev.computer_breaker.desc": "Decreases hacking progress on the unhacked computer with the most progress",
+  "perk.maniacrev.computer_breaker.desc": "Removes %d%% progress from the most charged computer. CD: %d sec. Cost: %d mana.",
 
   "perk.maniacrev.highlight.name": "Don't Bullshit Me Tony",
-  "perk.maniacrev.highlight.desc": "Highlights a random survivor when hacking a computer",
+  "perk.maniacrev.highlight.desc": "When a computer is hacked, highlights random survivors for %d sec. only for you. Count = number of maniacs with this perk.",
 
   "effect.maniacrev.fear": "Fear",
   "effect.maniacrev.open_wound": "Open Wound",

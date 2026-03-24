@@ -1,166 +1,80 @@
 package org.example.maniacrevolution.perk.perks.maniac;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.Score;
-import net.minecraft.world.scores.Scoreboard;
+import org.example.maniacrevolution.hack.HackConfig;
+import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.perk.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Ломание компа (Активный) (Мидгейм)
- * Отнимает 500 очков у самого заряженного НЕзаряженного компьютера
+ * Ломание компа (Активный) (Маньяк, Мидгейм)
+ * Отнимает ROLLBACK_PERCENT от макс. прогресса у самого заряженного
+ * незавершённого компьютера. Прогресс не уходит ниже 0.
  */
 public class ComputerBreakerPerk extends Perk {
 
-    private static final int COOLDOWN_SECONDS = 180;
-    private static final int POINTS_TO_REMOVE = 6000; // 50% от заряда, а не фикс
-
-
-    // Максимальное количество компьютеров (можно увеличить при необходимости)
-    private static final int MAX_COMPUTERS = 9;
+    // ── Настройки ─────────────────────────────────────────────────────────
+    private static final int   COOLDOWN_SECONDS = 180;
+    private static final float ROLLBACK_PERCENT = 0.5f; // 50% от макс. значения
+    private static final float MANA_COST        = 10f;
 
     public ComputerBreakerPerk() {
         super(new Builder("computer_breaker")
                 .type(PerkType.ACTIVE)
                 .team(PerkTeam.MANIAC)
                 .phases(PerkPhase.MIDGAME)
-                .manaCost(10f)
+                .manaCost(MANA_COST)
                 .cooldown(COOLDOWN_SECONDS)
         );
     }
 
+    // ── Описание (RU + EN через локализационный ключ не используем —
+    //    значения берутся из кода напрямую) ────────────────────────────────
+
     @Override
-    public void onActivate(ServerPlayer player) {
-        Scoreboard scoreboard = player.getServer().getScoreboard();
-
-        // Получаем objectives
-        Objective hackObjective = scoreboard.getObjective("hack");
-        Objective hackGoalObjective = scoreboard.getObjective("hackGoal");
-
-        if (hackObjective == null || hackGoalObjective == null) {
-            player.displayClientMessage(
-                    Component.literal("Ошибка: scoreboard objectives не найдены!"),
-                    true
-            );
-            System.out.println("[ComputerBreaker] ERROR: hack or hackGoal objective not found!");
-            return;
-        }
-        String goalName = "Game";
-        // Получаем цель
-        Score goalScore = scoreboard.getOrCreatePlayerScore(goalName, hackGoalObjective);
-        int goal = goalScore.getScore();
-
-        // Собираем информацию о всех компьютерах
-        List<ComputerInfo> computers = new ArrayList<>();
-
-        for (int i = 1; i <= MAX_COMPUTERS; i++) {
-            String progressName = "Progress" + i;
-
-            // Получаем текущий прогресс
-            Score progressScore = scoreboard.getOrCreatePlayerScore(progressName, hackObjective);
-            int currentProgress = progressScore.getScore();
-
-            // Пропускаем компьютеры с нулевой целью (возможно не существуют)
-            if (currentProgress == 0) {
-                System.out.println(String.format("[ComputerBreaker] Skipping Computer %d: Goal is 0", i));
-                continue;
-            }
-
-            // ВАЖНО: В вашей системе заряженный компьютер имеет ОТРИЦАТЕЛЬНЫЙ прогресс
-            // Незаряженный когда Progress >= 0
-            boolean isCharged = currentProgress < 0;
-
-            computers.add(new ComputerInfo(i, progressName, currentProgress, goal, isCharged));
-
-            System.out.println(String.format("[ComputerBreaker] Computer %d: Progress=%d, Goal=%d, Charged=%b",
-                    i, currentProgress, goal, isCharged));
-        }
-
-        if (computers.isEmpty()) {
-            player.displayClientMessage(
-                    Component.literal("Нет доступных компьютеров!"),
-                    true
-            );
-            System.out.println("[ComputerBreaker] No computers found!");
-            return;
-        }
-
-        // Находим самый заряженный НЕзаряженный компьютер
-        ComputerInfo targetComputer = findMostChargedUnfinishedComputer(computers);
-
-        if (targetComputer == null) {
-            player.displayClientMessage(
-                    Component.literal("Все компьютеры уже заряжены!"),
-                    true
-            );
-            System.out.println("[ComputerBreaker] All computers are already charged!");
-            return;
-        }
-
-        System.out.println(String.format("[ComputerBreaker] Target computer selected: %d (Progress=%d, Goal=%d)",
-                targetComputer.id, targetComputer.currentProgress, targetComputer.goal));
-
-        // Отнимаем очки
-        int newProgress = Math.max(0, targetComputer.currentProgress - goal/2);
-        Score progressScore = scoreboard.getOrCreatePlayerScore(targetComputer.progressName, hackObjective);
-        progressScore.setScore(newProgress);
-
-        System.out.println(String.format("[ComputerBreaker] Computer %d: %d -> %d (removed %d points)",
-                targetComputer.id, targetComputer.currentProgress, newProgress,
-                targetComputer.currentProgress - newProgress));
-
-        // Отправляем сообщение игроку
-        player.displayClientMessage(
-                Component.literal(String.format("Компьютер %d сломан! -%d очков (%d -> %d)",
-                        targetComputer.id, POINTS_TO_REMOVE, targetComputer.currentProgress, newProgress)),
-                true
+    public Component getDescription() {
+        return Component.translatable(
+                "perk.maniacrev.computer_breaker.desc",
+                (int)(ROLLBACK_PERCENT * 100),
+                COOLDOWN_SECONDS,
+                (int) MANA_COST
         );
     }
 
-    /**
-     * Находит самый заряженный незаряженный компьютер
-     */
-    private ComputerInfo findMostChargedUnfinishedComputer(List<ComputerInfo> computers) {
-        System.out.println("[ComputerBreaker] Searching for most charged unfinished computer...");
+    // ── Активация ─────────────────────────────────────────────────────────
 
-        ComputerInfo result = computers.stream()
-                .filter(c -> !c.isCharged) // ВАЖНО: Только НЕзаряженные
-                .peek(c -> System.out.println(String.format(
-                        "[ComputerBreaker] Candidate: Computer %d (Progress=%d, Charged=%b)",
-                        c.id, c.currentProgress, c.isCharged)))
-                .max((c1, c2) -> Integer.compare(c1.currentProgress, c2.currentProgress)) // Максимальный прогресс
-                .orElse(null);
+    @Override
+    public void onActivate(ServerPlayer player) {
+        // Находим самый заряженный незавершённый комп
+        int targetId = HackManager.get().getMostProgressedComputer();
 
-        if (result != null) {
-            System.out.println(String.format("[ComputerBreaker] Selected: Computer %d with progress %d",
-                    result.id, result.currentProgress));
-        } else {
-            System.out.println("[ComputerBreaker] No unfinished computers found!");
+        if (targetId == -1) {
+            player.displayClientMessage(
+                    Component.literal("No computers with progress! / Нет компьютеров с прогрессом!")
+                            .withStyle(ChatFormatting.RED),
+                    true
+            );
+            return;
         }
 
-        return result;
-    }
+        float progressBefore = HackManager.get().getProgress(targetId);
+        boolean success = HackManager.get().rollbackComputerById(player, targetId, ROLLBACK_PERCENT);
 
-    /**
-     * Вспомогательный класс для хранения информации о компьютере
-     */
-    private static class ComputerInfo {
-        final int id;
-        final String progressName;
-        final int currentProgress;
-        final int goal;
-        final boolean isCharged;
+        if (success) {
+            float progressAfter = HackManager.get().getProgress(targetId);
+            float maxPts = HackConfig.HACK_POINTS_REQUIRED;
 
-        ComputerInfo(int id, String progressName, int currentProgress, int goal, boolean isCharged) {
-            this.id = id;
-            this.progressName = progressName;
-            this.currentProgress = currentProgress;
-            this.goal = goal;
-            this.isCharged = isCharged;
+            player.displayClientMessage(
+                    Component.literal("💥 Комп #" + targetId + ": ")
+                            .withStyle(ChatFormatting.DARK_RED)
+                            .append(Component.literal(
+                                            String.format("%.0f%%", progressBefore / maxPts * 100)
+                                                    + " → "
+                                                    + String.format("%.0f%%", progressAfter / maxPts * 100))
+                                    .withStyle(ChatFormatting.RED)),
+                    true
+            );
         }
     }
 }

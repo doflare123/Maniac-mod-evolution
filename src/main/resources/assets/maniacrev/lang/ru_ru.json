@@ -118,13 +118,13 @@
   "perk.maniacrev.i_am_speed.desc": "После убийства выжившего вы получаете небольшой прилив сил и тем самым перемещаетесь быстрее (15 секунд)",
 
   "perk.maniacrev.catch_mistakes.name": "Прогрел новичка",
-  "perk.maniacrev.catch_mistakes.desc": "Если при проверке игрока на реакцию он не проходит ее успешно, то этот выживший подсвечивается (5 секунды)",
+  "perk.maniacrev.catch_mistakes.desc": "При промахе выжившего в QTE подсвечивает его на %d сек. только для тебя. КД: %d сек.",
 
   "perk.maniacrev.computer_breaker.name": "Компьютер раскрафтер",
-  "perk.maniacrev.computer_breaker.desc": "Уменьшает прогресс взлома у не взломанного компьютера на 50% от цели хака, который имеет самый большой прогресс",
+  "perk.maniacrev.computer_breaker.desc": "Отнимает %d%% прогресса у самого заряженного компьютера. КД: %d сек. Стоимость: %d маны.",
 
   "perk.maniacrev.highlight.name": "Не наебывай меня Тони",
-  "perk.maniacrev.highlight.desc": "Подсвечивает рандомного выжившего при взломе компьютера (6 секунды)",
+  "perk.maniacrev.highlight.desc": "При взломе компьютера подсвечивает случайных выживших на %d сек. только для тебя. Количество = количество маньяков с перком.",
 
   "effect.maniacrev.fear": "Страх",
   "effect.maniacrev.open_wound": "Открытая рана",

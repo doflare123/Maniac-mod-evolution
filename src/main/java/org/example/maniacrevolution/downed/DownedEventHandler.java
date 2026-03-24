@@ -178,7 +178,6 @@ public class DownedEventHandler {
         // ── Поза SLEEPING — горизонтальное лежание ──────────────────────
         // Поза форсируется на клиенте через DownedHudClient.onClientTick.
         // На сервере просто ставим позу для корректной синхронизации с другими игроками.
-        player.setPose(Pose.SLEEPING);
 
         // ── Визуальные индикаторы для окружающих игроков ─────────────────
         // Каждые 10 тиков показываем частицы у ног и текст над головой
@@ -532,6 +531,7 @@ public class DownedEventHandler {
         player.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 128, false, false));
         player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 400, 0, false, false));
         player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 255, false, false));
+        player.setForcedPose(Pose.SWIMMING);
     }
 
     private static void removeDownedEffects(ServerPlayer player) {
@@ -539,6 +539,7 @@ public class DownedEventHandler {
         player.removeEffect(MobEffects.JUMP);
         player.removeEffect(MobEffects.BLINDNESS);
         player.removeEffect(MobEffects.WEAKNESS);
+        player.setForcedPose(null);
         player.setPose(Pose.STANDING);
     }
 

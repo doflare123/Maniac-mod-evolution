@@ -144,6 +144,42 @@ public class HackManager {
     }
 
     /**
+     * Откатывает компьютер по его computerId (не по позиции).
+     */
+    public boolean rollbackComputerById(ServerPlayer player, int computerId, float rollbackPercent) {
+        if (Boolean.TRUE.equals(hackedComputers.get(computerId))) return false;
+
+        float current = hackProgress.getOrDefault(computerId, 0f);
+        if (current <= 0f) return false;
+
+        float rollback = HackConfig.HACK_POINTS_REQUIRED * rollbackPercent;
+        float newProgress = Math.max(0f, current - rollback);
+        hackProgress.put(computerId, newProgress);
+
+        // Обновляем активную сессию
+        for (HackSession session : activeSessions.values()) {
+            if (session.computerId == computerId) {
+                session.currentPoints = newProgress;
+                break;
+            }
+        }
+
+        // Обновляем BlockEntity
+        if (player.getServer() != null) {
+            for (BlockPos pos : ComputerBlockEntity.getTrackedPositions()) {
+                for (var level : player.getServer().getAllLevels()) {
+                    if (level.getBlockEntity(pos) instanceof ComputerBlockEntity be
+                            && be.getComputerId() == computerId) {
+                        be.setHackProgress(newProgress / HackConfig.HACK_POINTS_REQUIRED);
+                        be.setChanged();
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Откатывает ближайший к игроку компьютер на rollbackPercent.
      * Использует rollbackComputer() внутри.
      */
