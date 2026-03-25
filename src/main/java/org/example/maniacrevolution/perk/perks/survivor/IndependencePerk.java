@@ -101,6 +101,7 @@ public class IndependencePerk extends Perk {
         // Сбрасываем состояние нокдауна
         data.cancelRevive();
         data.setState(DownedState.WEAKENED);
+        DownedEventHandler.removeDownedEffectsPublic(player);
         data.setDownedTicksElapsed(0);
 
         // Убираем эффекты нокдауна и восстанавливаем позу

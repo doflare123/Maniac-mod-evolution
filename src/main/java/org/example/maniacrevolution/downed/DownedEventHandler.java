@@ -337,6 +337,10 @@ public class DownedEventHandler {
     // ПУБЛИЧНЫЕ МЕТОДЫ (для DownedCommand)
     // ══════════════════════════════════════════════════════════════════════
 
+    public static void removeDownedEffectsPublic(ServerPlayer player) {
+        removeDownedEffects(player);
+    }
+
     public static void instantRevive(ServerPlayer target) {
         DownedData data = DownedCapability.get(target);
         if (data == null || data.getState() != DownedState.DOWNED) return;

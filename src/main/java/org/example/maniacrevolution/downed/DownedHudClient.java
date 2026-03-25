@@ -111,7 +111,7 @@ public class DownedHudClient {
             int sec = remainingTicks / 20;
             String col = sec > 20 ? "§e" : sec > 10 ? "§6" : "§c";
             drawCentered(gui, font, cx, y,      "§c" + downedName + " §7упал  " + col + sec + "с");
-            drawCentered(gui, font, cx, y + 10, "§7Удерживайте §aПКМ у ног");
+            drawCentered(gui, font, cx, y + 10, "§7Удерживайте §aПКМ у тела");
         }
     }
 
