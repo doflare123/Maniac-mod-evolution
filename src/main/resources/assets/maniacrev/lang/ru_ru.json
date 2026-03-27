@@ -255,5 +255,6 @@
   "perk.maniacrev.ejection.name": "Выброс",
   "perk.maniacrev.family_discord.name": "Семейный Раздор",
   "perk.maniacrev.griefer.name": "Грифер",
-  "perk.maniacrev.guiding_light.name": "Путеводная Света"
+  "perk.maniacrev.guiding_light.name": "Путеводная Света",
+  "item.maniacrev.nether_swap": "Nether swap"
 }

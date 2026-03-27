@@ -25,7 +25,7 @@ import org.example.maniacrevolution.Maniacrev;
 public class FurySwipesOverheadRenderer {
 
     private static final String MANIAC_TEAM    = "maniac";
-    private static final String SCOREBOARD_OBJ = "SurvivorClass";
+    private static final String SCOREBOARD_OBJ = "ManiacClass";
     private static final int    REQUIRED_CLASS = 7;
 
     @SubscribeEvent
