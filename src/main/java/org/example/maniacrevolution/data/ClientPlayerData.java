@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.data;
 
 import net.minecraft.resources.ResourceLocation;
+import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.cosmetic.CosmeticData;
 import org.example.maniacrevolution.network.packets.SyncPlayerDataPacket;
 import org.example.maniacrevolution.perk.PerkRegistry;
@@ -21,6 +22,8 @@ public class ClientPlayerData {
     private static int coins = 0;
     private static List<ClientPerkData> selectedPerks = new ArrayList<>();
     private static int activePerkIndex = 0;
+    private static int survivorClassId = -1;
+    private static int maniacClassId   = -1;
 
     // Пресеты
     private static List<PerkPreset> presets = new ArrayList<>();
@@ -75,6 +78,33 @@ public class ClientPlayerData {
     public static List<PerkPreset> getPresets() { return presets; }
     public static int getMaxPresets() { return maxPresets; }
     public static CosmeticData getCosmeticData() { return cosmeticData; }
+    public static void setSurvivorClass(int id) { survivorClassId = id; }
+    public static void setManiacClass(int id)   { maniacClassId = id; }
+
+    public static void reset() {
+        survivorClassId = -1;
+        maniacClassId   = -1;
+    }
+
+    public static int getSurvivorClassId() { return survivorClassId; }
+    public static int getManiacClassId()   { return maniacClassId; }
+
+    /** Удобная проверка: является ли локальный игрок маньяком указанного класса */
+    public static boolean isManiacClass(int classId) {
+        return maniacClassId == classId;
+    }
+
+    /** Удобная проверка: является ли локальный игрок выжившим указанного класса */
+    public static boolean isSurvivorClass(int classId) {
+        return survivorClassId == classId;
+    }
+
+    /** Текущий активный тип — определяется по тому, что не -1 */
+    public static CharacterType getActiveType() {
+        if (maniacClassId != -1) return CharacterType.MANIAC;
+        if (survivorClassId != -1) return CharacterType.SURVIVOR;
+        return null;
+    }
 
     public static float getExpProgress() {
         return expForNextLevel > 0 ? (float) experience / expForNextLevel : 0;

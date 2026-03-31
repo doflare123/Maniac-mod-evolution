@@ -3,9 +3,11 @@ package org.example.maniacrevolution.network.packets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterRegistry;
+import org.example.maniacrevolution.network.ModNetworking;
 
 import java.util.function.Supplier;
 
@@ -26,7 +28,6 @@ public class SelectCharacterPacket {
     public static SelectCharacterPacket decode(FriendlyByteBuf buf) {
         return new SelectCharacterPacket(buf.readUtf());
     }
-
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
@@ -39,22 +40,26 @@ public class SelectCharacterPacket {
                 return;
             }
 
-            // Устанавливаем scoreboard в зависимости от типа персонажа
             String scoreboardName = characterClass.getType().getScoreboardName();
             int classId = characterClass.getScoreboardId();
 
-            // Устанавливаем scoreboard
+            // Скорборд — для датапака
             player.getServer().getCommands().performPrefixedCommand(
                     player.createCommandSourceStack().withSuppressedOutput(),
                     String.format("scoreboard players set %s %s %d",
-                            player.getName().getString(),
-                            scoreboardName,
-                            classId)
+                            player.getName().getString(), scoreboardName, classId)
             );
 
-            Maniacrev.LOGGER.info("Player {} selected character: {} - ID: {}",
+            // Клиентские данные — для мода
+            ModNetworking.CHANNEL.send(
+                    PacketDistributor.PLAYER.with(() -> player),
+                    new SyncPlayerClassPacket(characterClass.getType(), classId)
+            );
+
+            Maniacrev.LOGGER.info("Player {} selected character: {} (type={}, id={})",
                     player.getName().getString(),
                     characterClass.getName(),
+                    characterClass.getType(),
                     classId);
         });
         ctx.get().setPacketHandled(true);

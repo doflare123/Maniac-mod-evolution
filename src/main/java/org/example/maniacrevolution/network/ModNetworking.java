@@ -350,6 +350,14 @@ public class ModNetworking {
         CHANNEL.registerMessage(packetId++, SyncFurySwipesTargetPacket.class,
                 SyncFurySwipesTargetPacket::encode, SyncFurySwipesTargetPacket::decode, SyncFurySwipesTargetPacket::handle);
 
+        CHANNEL.registerMessage(
+                packetId++,
+                SyncPlayerClassPacket.class,
+                SyncPlayerClassPacket::encode,
+                SyncPlayerClassPacket::decode,
+                SyncPlayerClassPacket::handle
+        );
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

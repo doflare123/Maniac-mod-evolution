@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -65,29 +66,8 @@ public class BeastClawItem extends Item implements IItemWithAbility {
     // ── Атака ─────────────────────────────────────────────────────────────────
 
     @Override
-    public boolean hurtEnemy(ItemStack stack, net.minecraft.world.entity.LivingEntity target,
-                             net.minecraft.world.entity.LivingEntity attacker) {
-        if (!(attacker instanceof ServerPlayer sp)) return super.hurtEnemy(stack, target, attacker);
-        if (!(target instanceof Player targetPlayer)) return super.hurtEnemy(stack, target, attacker);
-
-        // Только по выжившим (team survivors)
-        if (!isInSurvivorsTeam(targetPlayer)) return super.hurtEnemy(stack, target, attacker);
-
-        // Добавляем стак на цель
-        FurySwipesCapability cap = FurySwipesCapabilityProvider.get(targetPlayer);
-        if (cap != null) {
-            cap.addStack(attacker.level().getGameTime());
-            if (targetPlayer instanceof ServerPlayer targetSP) {
-                cap.syncToClient(targetSP);
-            }
-            // Отправляем данные атакующему для рендера над головой
-            ModNetworking.CHANNEL.send(
-                    PacketDistributor.PLAYER.with(() -> sp),
-                    new SyncFurySwipesTargetPacket(targetPlayer.getUUID(),
-                            getCapabilityExpireTicks(cap))
-            );
-        }
-
+    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        // Ничего про FurySwipes здесь — всё в EventHandler
         return super.hurtEnemy(stack, target, attacker);
     }
 

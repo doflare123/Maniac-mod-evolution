@@ -54,6 +54,10 @@ public class FurySwipesCapability {
 
     public void clearStacks() { stackExpireTicks.clear(); }
 
+    public List<Long> getStackExpireTicks() {
+        return new ArrayList<>(stackExpireTicks);
+    }
+
     /** Возвращает тик истечения ближайшего к смерти стака (минимальный) */
     public long getNearestExpiry() {
         return stackExpireTicks.stream().mapToLong(Long::longValue).min().orElse(-1L);

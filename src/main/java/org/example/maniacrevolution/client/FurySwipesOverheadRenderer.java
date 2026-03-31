@@ -11,6 +11,7 @@ import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.data.ClientPlayerData;
 
 /**
  * Показывает стаки Fury Swipes НАД ГОЛОВОЙ жертвы (выше таблички имени).
@@ -34,10 +35,31 @@ public class FurySwipesOverheadRenderer {
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
+
+        // ── ВРЕМЕННЫЙ ДЕБАГ — убери после починки ────────────────────────────
+        Player local = mc.player;
+        net.minecraft.world.scores.Team team = local.getTeam();
+        Scoreboard sb = mc.level.getScoreboard();
+        Objective obj = sb.getObjective(SCOREBOARD_OBJ);
+
+        System.out.println("[FurySwipes] team=" + (team == null ? "NULL" : team.getName()));
+        System.out.println("[FurySwipes] obj=" + (obj == null ? "NULL" : obj.getName()));
+        if (obj != null) {
+            boolean hasScore = sb.hasPlayerScore(local.getScoreboardName(), obj);
+            System.out.println("[FurySwipes] hasScore=" + hasScore);
+            if (hasScore) {
+                int score = sb.getOrCreatePlayerScore(local.getScoreboardName(), obj).getScore();
+                System.out.println("[FurySwipes] score=" + score);
+            }
+        }
+        int stacks = ClientFurySwipesData.getTargetStackCount(target.getUUID());
+        System.out.println("[FurySwipes] stacks for " + target.getName().getString() + " = " + stacks);
+        // ─────────────────────────────────────────────────────────────────────
+
         if (!isLocalPlayerManiac(mc)) return;
 
-        int stacks = ClientFurySwipesData.getTargetStackCount(target.getUUID());
-        if (stacks <= 0) return;
+        int stackCount = ClientFurySwipesData.getTargetStackCount(target.getUUID());
+        if (stackCount <= 0) return;
 
         PoseStack poseStack = event.getPoseStack();
         MultiBufferSource bufferSource = event.getMultiBufferSource();
@@ -54,7 +76,7 @@ public class FurySwipesOverheadRenderer {
         poseStack.mulPose(mc.getEntityRenderDispatcher().cameraOrientation());
         poseStack.scale(-0.025f, -0.025f, 0.025f);
 
-        String label = "§6§l" + stacks + "§r §cfury";
+        String label = "§6§l" + stacks + "§r §cswipes";
         float textWidth = mc.font.width(label);
         int bgColor = (int)(0.25f * 255) << 24;
 
@@ -81,14 +103,11 @@ public class FurySwipesOverheadRenderer {
         Player local = mc.player;
         if (local == null) return false;
 
+        // Проверка команды через team (для датапака)
         net.minecraft.world.scores.Team team = local.getTeam();
         if (team == null || !MANIAC_TEAM.equalsIgnoreCase(team.getName())) return false;
 
-        Scoreboard sb = mc.level.getScoreboard();
-        Objective obj = sb.getObjective(SCOREBOARD_OBJ);
-        if (obj == null) return false;
-        if (!sb.hasPlayerScore(local.getScoreboardName(), obj)) return false;
-        return sb.getOrCreatePlayerScore(local.getScoreboardName(), obj).getScore()
-                == REQUIRED_CLASS;
+        // Проверка класса через клиентские данные мода (надёжно)
+        return ClientPlayerData.isManiacClass(REQUIRED_CLASS);
     }
 }
