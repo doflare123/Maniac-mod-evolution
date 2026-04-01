@@ -289,5 +289,7 @@
   "perk.maniacrev.family_discord.name ": "Family Discord",
   "perk.maniacrev.griefer.name ": "Griefer",
   "perk.maniacrev.guiding_light.name ": "Guiding Light",
-  "item.maniacrev.nether_swap": "Nether swap"
+  "item.maniacrev.nether_swap": "Nether swap",
+  "item.maniacrev.maze_spawner": "Генератор лабиринта [TEST]",
+  "item.maniacrev.microphone": "Microphone"
 }
