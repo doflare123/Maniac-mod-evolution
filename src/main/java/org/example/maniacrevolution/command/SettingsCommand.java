@@ -64,13 +64,6 @@ public class SettingsCommand {
 
     private static void syncSettingsToPlayer(ServerPlayer player) {
         GameSettings settings = GameSettings.get(player.server);
-        ModNetworking.sendToPlayer(new SyncSettingsPacket(
-                settings.getComputerCount(),
-                settings.getHackPoints(),
-                settings.getHpBoost(),
-                settings.getManiacCount(),
-                settings.getGameTime(),
-                settings.getSelectedMap()
-        ), player);
+        ModNetworking.sendToPlayer(SyncSettingsPacket.from(settings), player);
     }
 }

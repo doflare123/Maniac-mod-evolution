@@ -6,6 +6,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import org.example.maniacrevolution.hack.HackConfig;
 import org.example.maniacrevolution.settings.GameSettings;
 
 public class ApplySettingsCommand {
@@ -21,20 +22,21 @@ public class ApplySettingsCommand {
     private static int applySettings(CommandContext<CommandSourceStack> context) {
         MinecraftServer server = context.getSource().getServer();
         GameSettings settings = GameSettings.get(server);
+
+        HackConfig.HACK_POINTS_REQUIRED = settings.getHackPointsRequired();
+        HackConfig.POINTS_PER_PLAYER_PER_SECOND = settings.getPointsPerPlayer();
+        HackConfig.POINTS_PER_SPECIALIST_PER_SECOND = settings.getPointsPerSpecialist();
+        HackConfig.HACKER_RADIUS = settings.getHackerRadius();
+        HackConfig.SUPPORT_RADIUS = settings.getSupportRadius();
+        HackConfig.QTE_SUCCESS_BONUS = settings.getQteSuccessBonus();
+        HackConfig.QTE_CRIT_BONUS = settings.getQteCritBonus();
+        HackConfig.COMPUTERS_NEEDED_FOR_WIN = settings.getComputersNeededForWin();
+        HackConfig.QTE_INTERVAL_MIN_SECONDS = settings.getQteIntervalMin();
+        HackConfig.QTE_INTERVAL_MAX_SECONDS = settings.getQteIntervalMax();
+        HackConfig.MAX_BONUS_PLAYERS = settings.getMaxBonusPlayers();
+
         
         // Применяем все настройки через команды
-        
-        // 1. Количество компьютеров
-        server.getCommands().performPrefixedCommand(
-            server.createCommandSourceStack(),
-            "scoreboard players set Game allGoal " + settings.getComputerCount()
-        );
-        
-        // 2. Очки для хака
-        server.getCommands().performPrefixedCommand(
-            server.createCommandSourceStack(),
-            "scoreboard players set Game hackGoal " + settings.getHackPoints()
-        );
         
         // 3. Количество маньяков
         server.getCommands().performPrefixedCommand(

@@ -116,6 +116,12 @@ public class PerkSelectionScreen extends Screen {
         int startX = guiLeft + 10;
         int startY = guiTop + 35;
 
+        // Область клиппинга: от заголовка до кнопок снизу
+        int clipTop = guiTop + 30;
+        int clipBottom = guiTop + GUI_HEIGHT - 28;
+
+        gui.enableScissor(guiLeft + 5, clipTop, guiLeft + GUI_WIDTH - 5, clipBottom);
+
         for (int i = 0; i < availablePerks.size(); i++) {
             Perk perk = availablePerks.get(i);
             int row = i / PERKS_PER_ROW;
@@ -124,17 +130,16 @@ public class PerkSelectionScreen extends Screen {
             int x = startX + col * (PERK_SLOT_SIZE + 4);
             int y = startY + row * (PERK_SLOT_SIZE + 4) - scrollOffset;
 
-            if (y < startY - PERK_SLOT_SIZE || y > guiTop + GUI_HEIGHT - 30) continue;
+            // Эту проверку можно оставить для оптимизации
+            if (y + PERK_SLOT_SIZE < clipTop || y > clipBottom) continue;
 
             boolean isSelected = selectedPerkIds.contains(perk.getId());
             boolean isHovered = mouseX >= x && mouseX < x + PERK_SLOT_SIZE
                     && mouseY >= y && mouseY < y + PERK_SLOT_SIZE;
 
-            // Фон слота
             int bgColor = isSelected ? 0xFF446644 : (isHovered ? 0xFF555555 : 0xFF333333);
             gui.fill(x, y, x + PERK_SLOT_SIZE, y + PERK_SLOT_SIZE, bgColor);
 
-            // Рамка по типу
             int borderColor = switch (perk.getType()) {
                 case PASSIVE -> 0xFF5555FF;
                 case ACTIVE -> 0xFFFF5555;
@@ -144,10 +149,8 @@ public class PerkSelectionScreen extends Screen {
             if (isSelected) borderColor = 0xFF55FF55;
             gui.renderOutline(x, y, PERK_SLOT_SIZE, PERK_SLOT_SIZE, borderColor);
 
-            // Иконка (заглушка)
             renderPerkIcon(gui, perk, x+2, y+2, PERK_SLOT_SIZE-4);
 
-            // Индикатор команды
             String teamMark = switch (perk.getTeam()) {
                 case SURVIVOR -> "§aВ";
                 case MANIAC -> "§cМ";
@@ -157,6 +160,8 @@ public class PerkSelectionScreen extends Screen {
                 gui.drawString(font, teamMark, x + 2, y + 2, 0xFFFFFF, false);
             }
         }
+
+        gui.disableScissor();
     }
 
     private void renderPresetsTab(GuiGraphics gui, int mouseX, int mouseY) {
@@ -170,6 +175,12 @@ public class PerkSelectionScreen extends Screen {
 
     private void renderPerkTooltip(GuiGraphics gui, int mouseX, int mouseY) {
         if (currentTab != Tab.ALL) return;
+
+        int clipTop = guiTop + 30;
+        int clipBottom = guiTop + GUI_HEIGHT - 28;
+
+        // Не показываем тултип если мышь вне зоны перков
+        if (mouseY < clipTop || mouseY > clipBottom) return;
 
         int startX = guiLeft + 10;
         int startY = guiTop + 35;

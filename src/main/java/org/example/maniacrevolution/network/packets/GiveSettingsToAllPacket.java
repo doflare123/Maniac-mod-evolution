@@ -41,14 +41,7 @@ public class GiveSettingsToAllPacket {
                 }
 
                 // Синхронизируем настройки каждому клиенту
-                ModNetworking.sendToPlayer(new SyncSettingsPacket(
-                        settings.getComputerCount(),
-                        settings.getHackPoints(),
-                        settings.getHpBoost(),
-                        settings.getManiacCount(),
-                        settings.getGameTime(),
-                        settings.getSelectedMap()
-                ), player);
+                ModNetworking.sendToPlayer(SyncSettingsPacket.from(settings), player);
             }
 
             sender.sendSystemMessage(Component.literal("§aПредмет настроек выдан всем игрокам!"));
