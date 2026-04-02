@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.capability.AddictionCapability;
 import org.example.maniacrevolution.capability.AddictionCapabilityProvider;
 import org.example.maniacrevolution.entity.BongCloudEntity;
@@ -72,7 +73,7 @@ public class BongItem extends Item implements IItemWithAbility {
     // ── IItemWithAbility ─────────────────────────────────────────────────────
 
     @Override public ResourceLocation getAbilityIcon() {
-        return new ResourceLocation("maniacrev", "textures/gui/ability/bong.png");
+        return new ResourceLocation(Maniacrev.MODID, "textures/gui/abilities/bong.png");
     }
     @Override public String getAbilityName()        { return "Облако дыма"; }
     @Override public String getAbilityDescription() {
