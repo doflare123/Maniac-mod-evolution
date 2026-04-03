@@ -51,7 +51,7 @@ public class ComputerBreakerPerk extends Perk {
 
         if (targetId == -1) {
             player.displayClientMessage(
-                    Component.literal("No computers with progress! / Нет компьютеров с прогрессом!")
+                    Component.literal("Нет компьютеров с прогрессом!")
                             .withStyle(ChatFormatting.RED),
                     true
             );

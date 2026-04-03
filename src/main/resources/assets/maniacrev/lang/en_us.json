@@ -271,7 +271,8 @@
   "entity.maniacrev.shaman_totem":     "Totem",
   "block.maniacrev.computer": "Computer",
 
-  "perk.maniacrev.mana_break.name": "Mana Destroyer",
+  "perk.maniacrev.mana_break.name": "Mana Break",
+  "perk.maniacrev.mana_break.desc": "Hitting an enemy drains %d mana. CD: %d sec.",
   "perk.maniacrev.hedgehog_skin.name": "Hedgehog Skin",
   "effect.maniacrev.thorn": "Hedgehog Skin",
   "perk.maniacrev.football_fan.name": "Football fan",

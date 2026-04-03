@@ -238,7 +238,8 @@
   "entity.maniacrev.shaman_totem":     "Тотем шамана",
   "block.maniacrev.computer": "Компьютер",
 
-  "perk.maniacrev.mana_break.name": "Разрушитель Маны",
+  "perk.maniacrev.mana_break.name": "Mana Break",
+  "perk.maniacrev.mana_break.desc": "Удар по противнику снимает %d ед. маны. КД: %d сек.",
   "perk.maniacrev.hedgehog_skin.name": "Шкура Ёжика",
   "effect.maniacrev.thorn": "Шкура Ёжика",
   "perk.maniacrev.football_fan.name": "Футбольный фанат",
