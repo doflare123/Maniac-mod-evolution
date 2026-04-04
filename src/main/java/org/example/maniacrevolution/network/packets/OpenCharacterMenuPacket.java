@@ -1,18 +1,13 @@
 package org.example.maniacrevolution.network.packets;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.character.CharacterType;
-import org.example.maniacrevolution.client.screen.CharacterSelectionScreen;
 
 import java.util.function.Supplier;
 
-/**
- * Пакет для открытия меню выбора персонажа (Server -> Client)
- */
 public class OpenCharacterMenuPacket {
     private final CharacterType type;
 
@@ -29,11 +24,12 @@ public class OpenCharacterMenuPacket {
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                Minecraft.getInstance().setScreen(new CharacterSelectionScreen(type));
-            });
-        });
+        CharacterType capturedType = this.type;
+        ctx.get().enqueueWork(() ->
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () ->
+                        () -> org.example.maniacrevolution.client.ClientScreenHelper
+                                .openCharacterSelectionScreen(capturedType))
+        );
         ctx.get().setPacketHandled(true);
     }
 }

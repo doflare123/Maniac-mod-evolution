@@ -1,11 +1,9 @@
 package org.example.maniacrevolution.network.packets;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
-import org.example.maniacrevolution.gui.GuideScreen;
-import org.example.maniacrevolution.gui.PerkSelectionScreen;
-import org.example.maniacrevolution.gui.ShopScreen;
 
 import java.util.function.Supplier;
 
@@ -26,12 +24,10 @@ public class OpenGuiPacket {
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            Minecraft mc = Minecraft.getInstance();
-            switch (guiType) {
-                case PERK_SELECTION -> mc.setScreen(new PerkSelectionScreen());
-                case SHOP -> mc.setScreen(new ShopScreen());
-                case GUIDE -> mc.setScreen(new GuideScreen());
-            }
+            String typeName = guiType.name();
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () ->
+                    () -> org.example.maniacrevolution.client.ClientScreenHelper
+                            .openGuiByType(typeName));
         });
         ctx.get().setPacketHandled(true);
     }

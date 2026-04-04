@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +21,8 @@ import org.example.maniacrevolution.cosmetic.CosmeticData;
 import org.example.maniacrevolution.cosmetic.client.ClientCosmeticCache;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.joml.Matrix4f;
+
+import java.util.Set;
 
 /**
  * Клиентский рендерер рулетки - привязывается к голове игрока
@@ -220,19 +223,14 @@ public class HaloClientRenderer {
      * Проверяет, должна ли отображаться рулетка для игрока
      */
     private static boolean shouldRenderRoulette(Player player) {
-        // Проверка на режим наблюдателя
         if (isSpectator(player)) return false;
-
-        // Проверка на жив ли игрок
         if (!player.isAlive() || player.getHealth() <= 0) return false;
 
-        // Для локального игрока проверяем через ClientPlayerData
         if (player == Minecraft.getInstance().player) {
             CosmeticData cosmeticData = ClientPlayerData.getCosmeticData();
             return cosmeticData.isEnabled("halo") && cosmeticData.hasPurchased("halo");
         }
 
-        // Для других игроков проверяем через кэш
         return ClientCosmeticCache.hasCosmetic(player, "halo");
     }
 

@@ -12,9 +12,7 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import org.example.maniacrevolution.Maniacrev;
@@ -33,7 +31,7 @@ import java.util.List;
  * Кулдаун: COOLDOWN_SECS секунд.
  *
  */
-public class MicrophoneItem extends Item implements IItemWithAbility {
+public class MicrophoneItem extends SwordItem implements IItemWithAbility {
 
     // ── Настройки ─────────────────────────────────────────────────────────────
     public static final float MANA_COST      = 5f;
@@ -44,11 +42,16 @@ public class MicrophoneItem extends Item implements IItemWithAbility {
     public static final int   STUN_TICKS     = STUN_SECS * 20;     // 60
     // Slowness IX (амплификатор 8) = максимальное замедление
     public static final int   SLOWNESS_AMP   = 8;
+    private static final int DAMAGE = -2;
+    private static final float SPEED = -2.4F;
 
     private static final String SURVIVORS_TEAM = "survivors";
     private static final String NBT_CD         = "MicCooldown";
 
-    public MicrophoneItem(Properties props) { super(props); }
+    public MicrophoneItem(Properties properties) {
+        super(Tiers.NETHERITE, DAMAGE-1, SPEED, properties.stacksTo(1));
+    }
+
 
     // ── Использование ────────────────────────────────────────────────────────
 

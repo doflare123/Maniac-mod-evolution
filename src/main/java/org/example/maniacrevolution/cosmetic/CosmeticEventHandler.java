@@ -21,11 +21,14 @@ public class CosmeticEventHandler {
         if (event.phase != TickEvent.Phase.END) return;
         if (!(event.player instanceof ServerPlayer player)) return;
 
+        // УБЕРИ СТРОКУ С Minecraft.getInstance() — она здесь не нужна
+        // Спектаторы на сервере проверяются так:
+        if (player.isSpectator()) return;
+
         PlayerData data = PlayerDataManager.get(player);
+        if (data == null) return;
         CosmeticData cosmetics = data.getCosmeticData();
 
-        // Применяем все включённые эффекты
-        if (Minecraft.getInstance().gameMode.getPlayerMode() == GameType.SPECTATOR) return;
         for (String cosmeticId : cosmetics.getEnabledCosmetics()) {
             CosmeticEffect effect = CosmeticRegistry.getEffect(cosmeticId);
             if (effect != null) {
