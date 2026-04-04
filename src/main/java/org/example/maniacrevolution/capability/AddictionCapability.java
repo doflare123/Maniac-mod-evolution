@@ -16,14 +16,14 @@ public class AddictionCapability {
 
     /**
      * На сколько % ускоряется заполнение шкалы за каждый применённый шприц.
-     * 0.05 = +5% за каждый шприц.
+     * 0.03 = +3% за каждый шприц.
      * Итоговая скорость: FILL_RATE_PER_TICK * (1 + totalSyringes * SYRINGE_SPEED_BONUS)
      * Например, после 3 шприцов: скорость x1.15 (на 15% быстрее базовой).
      */
-    public static final float SYRINGE_SPEED_BONUS  = 0.05f;
+    public static final float SYRINGE_SPEED_BONUS  = 0.03f;
 
     public static final int   BONG_PAUSE_TICKS     = 200;
-    public static final float SYRINGE_REDUCE_PCT   = 0.20f;
+    public static final float SYRINGE_REDUCE_PCT   = 0.70f;
     public static final int   SYRINGE_WINDOW_TICKS = 400;
     public static final int   DEATH_CHECK_INTERVAL = 20;
     public static final float STAGE3_DEATH_CHANCE  = 0.01f;

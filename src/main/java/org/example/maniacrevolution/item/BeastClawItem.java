@@ -47,7 +47,7 @@ public class BeastClawItem extends Item implements IItemWithAbility {
 
     // ── Настройки ─────────────────────────────────────────────────────────────
     public static final float  BASE_DAMAGE         = 1.0f;
-    public static final float  LEAP_MANA_COST      = 10f;
+    public static final float  LEAP_MANA_COST      = 5f;
     public static final int    LEAP_COOLDOWN_TICKS = 200;  // 10 секунд
     public static final int    LEAP_COOLDOWN_SECS  = 10;
     public static final float  LEAP_LAND_DAMAGE    = 2.0f; // урон при приземлении

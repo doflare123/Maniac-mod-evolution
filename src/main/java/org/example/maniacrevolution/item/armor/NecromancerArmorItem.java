@@ -105,13 +105,6 @@ public class NecromancerArmorItem extends ArmorItem implements IItemWithAbility 
      * Метод для добавления бонусов при полном сете
      */
     public static void applySetBonus(Player player) {
-        // Можно добавить дополнительные бонусы
-        // Например, увеличенную регенерацию маны
-        player.getCapability(org.example.maniacrevolution.mana.ManaProvider.MANA)
-                .ifPresent(mana -> {
-                    float currentBonus = mana.getBonusRegenRate();
-                    mana.setBonusRegenRate(currentBonus + 0.5f); // +0.5 маны/сек
-                });
     }
 
     /**

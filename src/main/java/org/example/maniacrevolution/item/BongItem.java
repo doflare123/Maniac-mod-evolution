@@ -27,7 +27,7 @@ import org.example.maniacrevolution.mana.ManaProvider;
 public class BongItem extends Item implements IItemWithAbility {
 
     // ── Настройки ─────────────────────────────────────────────────────────────
-    public static final float MANA_COST      = 20f;
+    public static final float MANA_COST      = 5f;
     public static final int   COOLDOWN_TICKS = 300;  // 15 секунд
     public static final int   COOLDOWN_SECS  = 15;
     // Радиус и длительность облака — см. BongCloudEntity
