@@ -9,5 +9,9 @@
         "type": "file"
       }
     ]
-  }
+  },
+
+  "maniacrev:qte_success": { "sounds": [{"name": "maniacrev:qte_success"}] },
+  "maniacrev:qte_crit":    { "sounds": [{"name": "maniacrev:qte_crit"}] },
+  "maniacrev:qte_fail":    { "sounds": [{"name": "maniacrev:qte_fail"}] }
 }

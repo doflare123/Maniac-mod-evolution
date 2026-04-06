@@ -10,6 +10,9 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.QTEKeyPressPacket;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundSource;
+import org.example.maniacrevolution.sound.ModSounds;
 
 import java.util.Random;
 
@@ -61,11 +64,37 @@ public class QTEClientHandler {
             currentQTE.render(event.getGuiGraphics());
 
             if (currentQTE.isFinished()) {
-                System.out.println("QTE timeout - sending FAIL");
+                showQTEResult(QTEState.QTEHitResult.FAIL); // НОВОЕ — нужно убедиться что FAIL есть в enum
                 ModNetworking.CHANNEL.sendToServer(
                         new QTEKeyPressPacket(-1, generatorNumber, false));
                 currentQTE = null;
                 nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
+            }
+        }
+    }
+
+    private static void showQTEResult(QTEState.QTEHitResult hit) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+
+        switch (hit) {
+            case CRIT -> {
+                mc.player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§6★ КРИТ!"), true);
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(
+                        ModSounds.QTE_CRIT.get(), 1.0f));
+            }
+            case SUCCESS -> {
+                mc.player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§aПопал!"), true);
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(
+                        ModSounds.QTE_SUCCESS.get(), 1.0f));
+            }
+            default -> {
+                mc.player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§cПромах!"), true);
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(
+                        ModSounds.QTE_FAIL.get(), 1.0f));
             }
         }
     }
@@ -90,6 +119,7 @@ public class QTEClientHandler {
                 return;
 
             QTEState.QTEHitResult hit = currentQTE.checkHit(keyCode);
+            showQTEResult(hit); // НОВОЕ
             ModNetworking.CHANNEL.sendToServer(
                     new QTEKeyPressPacket(keyCode, generatorNumber, hit.isSuccess(), hit == QTEState.QTEHitResult.CRIT));
             currentQTE = null;
@@ -106,6 +136,7 @@ public class QTEClientHandler {
 
         if (pressedKey != -1) {
             QTEState.QTEHitResult hit = currentQTE.checkHit(pressedKey);
+            showQTEResult(hit); // НОВОЕ
             ModNetworking.CHANNEL.sendToServer(
                     new QTEKeyPressPacket(pressedKey, generatorNumber, hit.isSuccess(), hit == QTEState.QTEHitResult.CRIT));
             currentQTE = null;

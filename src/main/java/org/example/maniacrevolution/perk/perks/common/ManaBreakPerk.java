@@ -25,8 +25,9 @@ public class ManaBreakPerk extends Perk {
     private static final float MANA_DRAIN   = 10f;
     private static final int   COOLDOWN_SEC = 90;
 
-    // Жертва текущего удара — передаётся из события в onTrigger через тик
     private static final Map<UUID, ServerPlayer> pendingVictim = new HashMap<>();
+    // НОВОЕ: тик когда был поставлен pending
+    private static final Map<UUID, Long> pendingTick = new HashMap<>();
 
     public ManaBreakPerk() {
         super(new Builder("mana_break")
@@ -48,12 +49,24 @@ public class ManaBreakPerk extends Perk {
 
     @Override
     public boolean shouldTrigger(ServerPlayer player) {
-        return pendingVictim.containsKey(player.getUUID());
+        if (!pendingVictim.containsKey(player.getUUID())) return false;
+        // Разрешаем триггер только если pending поставлен не более 2 тиков назад
+        Long tick = pendingTick.get(player.getUUID());
+        if (tick == null) return false;
+        long currentTick = player.getServer() != null ? player.getServer().getTickCount() : 0;
+        if (currentTick - tick > 2) {
+            // Протух — чистим
+            pendingVictim.remove(player.getUUID());
+            pendingTick.remove(player.getUUID());
+            return false;
+        }
+        return true;
     }
 
     @Override
     public void onTrigger(ServerPlayer player) {
         ServerPlayer victim = pendingVictim.remove(player.getUUID());
+        pendingTick.remove(player.getUUID());
         if (victim == null || !victim.isAlive()) return;
 
         victim.getCapability(ManaProvider.MANA).ifPresent(mana -> {
@@ -74,6 +87,7 @@ public class ManaBreakPerk extends Perk {
     @Override
     public void removePassiveEffect(ServerPlayer player) {
         pendingVictim.remove(player.getUUID());
+        pendingTick.remove(player.getUUID());
     }
 
     @SubscribeEvent
@@ -81,16 +95,17 @@ public class ManaBreakPerk extends Perk {
         if (!(event.getSource().getEntity() instanceof ServerPlayer attacker)) return;
         if (!(event.getEntity() instanceof ServerPlayer victim)) return;
 
-        // Разные команды
         if (attacker.getTeam() == null || victim.getTeam() == null) return;
         if (attacker.getTeam().equals(victim.getTeam())) return;
 
-        // Проверяем есть ли у атакующего этот перк
         PlayerData data = PlayerDataManager.get(attacker);
         boolean hasPerk = data.getSelectedPerks().stream()
                 .anyMatch(inst -> inst.getPerk().getId().equals("mana_break"));
         if (!hasPerk) return;
 
         pendingVictim.put(attacker.getUUID(), victim);
+        // НОВОЕ: запоминаем тик
+        long currentTick = attacker.getServer() != null ? attacker.getServer().getTickCount() : 0;
+        pendingTick.put(attacker.getUUID(), currentTick);
     }
 }
