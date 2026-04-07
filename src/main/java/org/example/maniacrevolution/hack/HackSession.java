@@ -13,6 +13,7 @@ import org.example.maniacrevolution.perk.perks.survivor.IdealychPerk;
 
 import java.util.*;
 
+
 /**
  * Одна активная сессия взлома.
  * Создаётся когда игрок кликает по компьютеру.
@@ -185,13 +186,21 @@ public class HackSession {
 
     // ── QTE ───────────────────────────────────────────────────────────────────
 
-    private void triggerQTE(List<ServerPlayer> supporters) {
-        // Хакер
-        HackManager.sendStartQTE(hacker);
+    private final List<ServerPlayer> currentQTEPlayers = new ArrayList<>();
 
-        // Помощники (тоже участвуют в QTE)
+    private void triggerQTE(List<ServerPlayer> supporters) {
+        // Останавливаем QTE у предыдущих участников перед новым
+        for (ServerPlayer sp : currentQTEPlayers) {
+            HackManager.sendStopQTE(sp);
+        }
+        currentQTEPlayers.clear();
+
+        HackManager.sendStartQTE(hacker);
+        currentQTEPlayers.add(hacker);
+
         for (ServerPlayer sp : supporters) {
             HackManager.sendStartQTE(sp);
+            currentQTEPlayers.add(sp);
         }
     }
 
@@ -231,14 +240,21 @@ public class HackSession {
 
     // ── Завершение ────────────────────────────────────────────────────────────
 
+    private void stopAllQTE() {
+        HackManager.sendStopQTE(hacker);
+        for (ServerPlayer sp : currentQTEPlayers) {
+            if (sp != hacker) HackManager.sendStopQTE(sp);
+        }
+        currentQTEPlayers.clear();
+    }
+
     private void onHackComplete(MinecraftServer server, ServerLevel level) {
         finished = true;
         IdealychPerk.resetStacks(hacker);
         currentPoints = HackConfig.HACK_POINTS_REQUIRED;
         updateBlockDisplay(level);
 
-        // Останавливаем QTE
-        HackManager.sendStopQTE(hacker);
+        stopAllQTE(); // ← вместо одиночного sendStopQTE(hacker)
 
         hacker.displayClientMessage(
                 net.minecraft.network.chat.Component.literal("§a✔ Компьютер взломан!"), true);
@@ -249,7 +265,7 @@ public class HackSession {
     private void cancel() {
         finished = true;
         IdealychPerk.resetStacks(hacker);
-        HackManager.sendStopQTE(hacker);
+        stopAllQTE(); // ← вместо одиночного sendStopQTE(hacker)
         hacker.displayClientMessage(
                 net.minecraft.network.chat.Component.literal("§cВзлом прерван."), true);
     }

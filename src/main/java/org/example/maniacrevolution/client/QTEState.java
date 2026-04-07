@@ -7,14 +7,14 @@ import org.example.maniacrevolution.keybind.ModKeybinds;
 import java.util.Random;
 
 public class QTEState {
-    private static final int BASE_QTE_DURATION   = 800;
+    private static final int BASE_QTE_DURATION   = 750;
     private static final int BOX_SIZE            = 100;
-    private static final int BASE_GREEN_ZONE_SIZE = 50;
+    private static final int BASE_GREEN_ZONE_SIZE = 25;
     // Толерантность: рамка считается "в зелёной зоне" когда её размер
     // попадает в диапазон [greenZoneSize - tolerance, greenZoneSize + tolerance].
     // Рамка сжимается от BOX_SIZE до 0, значит она проходит через greenZoneSize
     // ровно один раз — это и есть момент успеха.
-    private static final int BASE_SUCCESS_TOLERANCE = 25;
+    private static final int BASE_SUCCESS_TOLERANCE = 13;
     /** Размер зоны критического успеха (фиолетовый квадрат внутри зелёного) */
     private static final int BASE_CRIT_ZONE_SIZE = 5;
 
@@ -40,8 +40,8 @@ public class QTEState {
 
         if (hasQuickReflexes) {
             this.qteDuration      = BASE_QTE_DURATION + 450;
-            this.greenZoneSize    = (int)(BASE_GREEN_ZONE_SIZE * 1.2f);
-            this.successTolerance = (int)(BASE_SUCCESS_TOLERANCE * 1.15f);
+            this.greenZoneSize    = (int)(BASE_GREEN_ZONE_SIZE * 1.06f);
+            this.successTolerance = (int)(BASE_SUCCESS_TOLERANCE * 1.05f);
             this.critZoneSize     = (int)(BASE_CRIT_ZONE_SIZE * 1.1f);
         } else {
             this.qteDuration      = BASE_QTE_DURATION;
