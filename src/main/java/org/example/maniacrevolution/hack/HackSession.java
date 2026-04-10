@@ -25,6 +25,7 @@ public class HackSession {
     final BlockPos pos;
     final int computerId;
     float currentPoints;
+    private boolean firstTick = true;
 
     /** Тик-счётчик для QTE (в тиках, не в секундах) */
     private int ticksSinceLastQTE = 0;
@@ -85,7 +86,24 @@ public class HackSession {
         List<ServerPlayer> supporters = getSupporters(level);
         float pointsThisTick = calcPoints(supporters);
         currentPoints = Math.min(currentPoints + pointsThisTick, HackConfig.HACK_POINTS_REQUIRED);
-
+        // Новые саппортеры которых ещё нет в активном QTE
+        for (ServerPlayer sp : supporters) {
+            boolean alreadyInQTE = currentQTEPlayers.contains(sp);
+            if (!alreadyInQTE) {
+                HackManager.sendStartQTE(sp);
+                currentQTEPlayers.add(sp);
+            }
+        }
+        // Саппортеры которые вышли из зоны — останавливаем их QTE
+        List<ServerPlayer> leftZone = new ArrayList<>();
+        for (ServerPlayer sp : currentQTEPlayers) {
+            if (sp == hacker) continue; // хакер управляется отдельно
+            if (!supporters.contains(sp)) {
+                HackManager.sendStopQTE(sp);
+                leftZone.add(sp);
+            }
+        }
+        currentQTEPlayers.removeAll(leftZone);
         // 3. Обновляем блок-сущность для отображения прогресса
         updateBlockDisplay(level);
 
@@ -94,7 +112,10 @@ public class HackSession {
         spawnRadiusParticles(level);
 
         // 5. QTE для хакера и поддержки
-        if (ticksSinceLastQTE >= nextQTEIntervalTicks) {
+        if (firstTick) {
+            firstTick = false;
+            triggerQTE(supporters);
+        } else if (ticksSinceLastQTE >= nextQTEIntervalTicks) {
             ticksSinceLastQTE = 0;
             nextQTEIntervalTicks = randomQTEInterval();
             triggerQTE(supporters);

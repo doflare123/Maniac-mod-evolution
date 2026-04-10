@@ -228,8 +228,6 @@ public class HackManager {
         HackSession session = new HackSession(player, pos, computerId, currentProgress);
         activeSessions.put(pos, session);
 
-        // Запускаем QTE для хакера
-        sendStartQTE(player);
 
         player.displayClientMessage(
                 net.minecraft.network.chat.Component.literal("§6Взлом начат..."), true);
