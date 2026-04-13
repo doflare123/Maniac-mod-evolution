@@ -45,6 +45,7 @@ public class HackSession {
         this.computerId = computerId;
         this.currentPoints = startPoints;
         this.nextQTEIntervalTicks = randomQTEInterval();
+        this.currentQTEPlayers.add(hacker); // ← хакер всегда в списке
     }
 
     /** Публичный геттер участников сессии (хакер + саппортеры) */
@@ -66,7 +67,6 @@ public class HackSession {
 
         ServerLevel level = (ServerLevel) hacker.level();
 
-        // 1. Проверяем что хакер ещё онлайн и в радиусе
         if (!hacker.isAlive() || hacker.hasDisconnected()) {
             cancel();
             return false;
@@ -75,53 +75,48 @@ public class HackSession {
         double hackerDist = hacker.position().distanceTo(
                 new Vec3(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5));
         if (hackerDist > HackConfig.HACKER_RADIUS) {
-            // Хакер вышел из радиуса — прерываем
             hacker.displayClientMessage(
                     net.minecraft.network.chat.Component.literal("§cВзлом прерван: покинул зону!"), true);
             cancel();
             return false;
         }
 
-        // 2. Считаем очки от поддержки
         List<ServerPlayer> supporters = getSupporters(level);
-        float pointsThisTick = calcPoints(supporters);
-        currentPoints = Math.min(currentPoints + pointsThisTick, HackConfig.HACK_POINTS_REQUIRED);
-        // Новые саппортеры которых ещё нет в активном QTE
+
+        // Новые саппортеры — сразу даём им QTE
         for (ServerPlayer sp : supporters) {
-            boolean alreadyInQTE = currentQTEPlayers.contains(sp);
-            if (!alreadyInQTE) {
+            if (!currentQTEPlayers.contains(sp)) {
                 HackManager.sendStartQTE(sp);
                 currentQTEPlayers.add(sp);
             }
         }
-        // Саппортеры которые вышли из зоны — останавливаем их QTE
+
+        // Саппортеры вышедшие из зоны — останавливаем QTE
         List<ServerPlayer> leftZone = new ArrayList<>();
         for (ServerPlayer sp : currentQTEPlayers) {
-            if (sp == hacker) continue; // хакер управляется отдельно
+            if (sp == hacker) continue;
             if (!supporters.contains(sp)) {
                 HackManager.sendStopQTE(sp);
                 leftZone.add(sp);
             }
         }
         currentQTEPlayers.removeAll(leftZone);
-        // 3. Обновляем блок-сущность для отображения прогресса
+
+        float pointsThisTick = calcPoints(supporters);
+        currentPoints = Math.min(currentPoints + pointsThisTick, HackConfig.HACK_POINTS_REQUIRED);
+
         updateBlockDisplay(level);
 
-        // 4. Партиклы радиуса поддержки
-        ticksSinceLastQTE += 20; // каждый вызов = 1 секунда = 20 тиков
+        ticksSinceLastQTE += 20;
         spawnRadiusParticles(level);
 
-        // 5. QTE для хакера и поддержки
-        if (firstTick) {
-            firstTick = false;
-            triggerQTE(supporters);
-        } else if (ticksSinceLastQTE >= nextQTEIntervalTicks) {
+        // Периодический триггер QTE — переотправляем всем кто уже в списке
+        if (ticksSinceLastQTE >= nextQTEIntervalTicks) {
             ticksSinceLastQTE = 0;
             nextQTEIntervalTicks = randomQTEInterval();
-            triggerQTE(supporters);
+            triggerQTE(); // теперь без аргументов
         }
 
-        // 6. Готово?
         if (currentPoints >= HackConfig.HACK_POINTS_REQUIRED) {
             onHackComplete(server, level);
             return false;
@@ -209,19 +204,9 @@ public class HackSession {
 
     private final List<ServerPlayer> currentQTEPlayers = new ArrayList<>();
 
-    private void triggerQTE(List<ServerPlayer> supporters) {
-        // Останавливаем QTE у предыдущих участников перед новым
+    private void triggerQTE() {
         for (ServerPlayer sp : currentQTEPlayers) {
-            HackManager.sendStopQTE(sp);
-        }
-        currentQTEPlayers.clear();
-
-        HackManager.sendStartQTE(hacker);
-        currentQTEPlayers.add(hacker);
-
-        for (ServerPlayer sp : supporters) {
             HackManager.sendStartQTE(sp);
-            currentQTEPlayers.add(sp);
         }
     }
 
