@@ -344,6 +344,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.6rem;
+      margin-bottom: 0.8rem;
     }
     .rb-perk-name {
       font-family: 'Cinzel', serif;
@@ -365,6 +366,102 @@
     .rb-new-buff   { color: var(--green); font-weight: 700; }
     .rb-new-nerf   { color: var(--red);   font-weight: 700; }
     .rb-new-neutral{ color: var(--gold);  font-weight: 700; }
+
+    /* ── Дополнение механики ── */
+    .rb-mechanic {
+      background: rgba(119,85,187,0.06);
+      border: 1px solid rgba(119,85,187,0.2);
+      border-left: 3px solid var(--purple);
+      padding: 0.8rem 1.2rem;
+      margin-top: 0.7rem;
+      border-radius: 0 4px 4px 0;
+    }
+    .rb-mechanic-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--purple);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .rb-mechanic ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .rb-mechanic li {
+      position: relative;
+      padding-left: 1rem;
+      margin-bottom: 0.25rem;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    .rb-mechanic li::before {
+      content: '◆';
+      position: absolute;
+      left: 0;
+      color: var(--purple);
+      font-size: 0.4rem;
+      top: 0.42rem;
+    }
+    .rb-mechanic-media {
+      margin-top: 0.6rem;
+      max-width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .rb-mechanic-media img,
+    .rb-mechanic-media video {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* ── Удалённая механика ── */
+    .rb-mechanic-del {
+      background: rgba(231,76,60,0.06);
+      border: 1px solid rgba(231,76,60,0.2);
+      border-left: 3px solid var(--red);
+      padding: 0.8rem 1.2rem;
+      margin-top: 0.7rem;
+      border-radius: 0 4px 4px 0;
+    }
+    .rb-mechanic-del-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--red);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .rb-mechanic-del ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .rb-mechanic-del li {
+      position: relative;
+      padding-left: 1rem;
+      margin-bottom: 0.25rem;
+      color: var(--text);
+      font-size: 0.9rem;
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+    .rb-mechanic-del li::before {
+      content: '✕';
+      position: absolute;
+      left: 0;
+      color: var(--red);
+      font-size: 0.6rem;
+      top: 0.38rem;
+    }
+    .rb-mechanic-del .rb-mechanic-media {
+      opacity: 0.6;
+    }
 
     /* ── Важная заметка ── */
     .cl-callout {
