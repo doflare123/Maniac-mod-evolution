@@ -131,7 +131,9 @@ public class DownedEventHandler {
         // Если этот игрок — единственный живой (не spectator) в своей команде, сразу умирает
         if (isLastAliveSurvivor(player, team)) {
             Maniacrev.LOGGER.info("[Downed] {} — последний выживший, умирает сразу", player.getName().getString());
-            return; // не отменяем событие — смерть фатальна
+            // ДОБАВИТЬ: убиваем всех кто ещё лежит
+            checkAllDowned(player.getServer(), team);
+            return;
         }
 
         event.setCanceled(true);

@@ -10,8 +10,7 @@
       }
     ]
   },
-
-  "maniacrev:qte_success": { "sounds": [{"name": "maniacrev:qte_success"}] },
-  "maniacrev:qte_crit":    { "sounds": [{"name": "maniacrev:qte_crit"}] },
-  "maniacrev:qte_fail":    { "sounds": [{"name": "maniacrev:qte_fail"}] }
+  "qte_success": { "sounds": [{"name": "maniacrev:qte_success"}] },
+  "qte_crit":    { "sounds": [{"name": "maniacrev:qte_crit"}] },
+  "qte_fail":    { "sounds": [{"name": "maniacrev:qte_fail"}] }
 }
