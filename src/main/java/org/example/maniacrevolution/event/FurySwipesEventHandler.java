@@ -78,6 +78,7 @@ public class FurySwipesEventHandler {
         if (!(attacker.getMainHandItem().getItem() instanceof BeastClawItem)) return;
         if (!(event.getEntity() instanceof ServerPlayer victim)) return;
         if (!BeastClawItem.isInSurvivorsTeam(victim)) return;
+        if (attacker.getAttackStrengthScale(0.5F) < 0.9F) return;
 
         // ── Защита от двойного срабатывания ──────────────────────────────────
         long tick = attacker.level().getGameTime();

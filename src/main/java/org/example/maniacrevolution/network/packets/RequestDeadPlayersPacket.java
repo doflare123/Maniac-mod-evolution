@@ -28,37 +28,24 @@ public class RequestDeadPlayersPacket {
         context.enqueueWork(() -> {
             ServerPlayer sender = context.getSender();
             if (sender == null) {
-                System.err.println("[RequestDeadPlayersPacket] Sender is null!");
                 return;
             }
-
-            System.out.println("[RequestDeadPlayersPacket] Request from: " + sender.getName().getString());
 
             // Собираем список мёртвых игроков
             List<DeadPlayerInfo> deadPlayers = new ArrayList<>();
 
             for (ServerPlayer player : sender.getServer().getPlayerList().getPlayers()) {
-                System.out.println("[RequestDeadPlayersPacket] Checking player: " +
-                        player.getName().getString() +
-                        ", isSpectator: " + player.isSpectator());
-
                 if (player.isSpectator()) {
                     var team = player.getTeam();
-
-                    System.out.println("[RequestDeadPlayersPacket] Team: " +
-                            (team != null ? team.getName() : "null"));
 
                     if (team != null && "survivors".equalsIgnoreCase(team.getName())) {
                         deadPlayers.add(new DeadPlayerInfo(
                                 player.getUUID(),
                                 player.getName().getString()
                         ));
-                        System.out.println("[RequestDeadPlayersPacket] Added: " + player.getName().getString());
                     }
                 }
             }
-
-            System.out.println("[RequestDeadPlayersPacket] Total found: " + deadPlayers.size());
 
             // Отправляем список обратно
             ModNetworking.sendToPlayer(

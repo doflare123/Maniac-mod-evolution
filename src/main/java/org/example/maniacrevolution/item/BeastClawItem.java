@@ -50,8 +50,8 @@ public class BeastClawItem extends Item implements IItemWithAbility {
     public static final float  LEAP_MANA_COST      = 5f;
     public static final int    LEAP_COOLDOWN_TICKS = 200;  // 10 секунд
     public static final int    LEAP_COOLDOWN_SECS  = 10;
-    public static final float  LEAP_LAND_DAMAGE    = 2.0f; // урон при приземлении
-    public static final double LEAP_LAND_RADIUS    = 1.5;  // радиус урона при приземлении
+    public static final float  LEAP_LAND_DAMAGE    = 2.5f; // урон при приземлении
+    public static final double LEAP_LAND_RADIUS    = 1.8;  // радиус урона при приземлении
     public static final String SURVIVORS_TEAM      = "survivors";
 
     private static final String NBT_CD         = "BeastClawCooldown";

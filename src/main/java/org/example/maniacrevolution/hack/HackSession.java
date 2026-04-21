@@ -25,14 +25,10 @@ public class HackSession {
     final BlockPos pos;
     final int computerId;
     float currentPoints;
-    private boolean firstTick = true;
 
     /** Тик-счётчик для QTE (в тиках, не в секундах) */
     private int ticksSinceLastQTE = 0;
     private int nextQTEIntervalTicks;
-
-    /** Игроки которым уже отправили StartQTE в этой сессии (чтобы не дублировать) */
-    private final Set<UUID> activeQTEPlayers = new HashSet<>();
 
     private boolean finished = false;
 

@@ -52,13 +52,6 @@ public class QTEKeyPressPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
 
-            System.out.println("=== QTE Packet Received ===");
-            System.out.println("Player: " + player.getName().getString());
-            System.out.println("KeyIndex: " + packet.keyIndex);
-            System.out.println("Generator: " + packet.generatorNumber);
-            System.out.println("Success: " + packet.success);
-            System.out.println("===========================");
-
             if (packet.success) {
                 int rewardAmount = Config.getHackQTEReward();
                 ScoreboardUtil.addHackProgress(player, packet.generatorNumber, rewardAmount);

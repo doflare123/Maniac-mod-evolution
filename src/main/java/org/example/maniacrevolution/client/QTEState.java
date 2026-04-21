@@ -55,12 +55,6 @@ public class QTEState {
         // Случайный keyCode из 26 букв A-Z (keyCode 65-90)
         this.punishKey = isPunishMode ? (65 + RANDOM.nextInt(26)) : -1;
 
-        System.out.println("=== QTEState created ===");
-        System.out.println("requiredKey=" + requiredKey + " punishMode=" + isPunishMode
-                + (isPunishMode ? " punishKey=" + punishKey : ""));
-        System.out.println("Duration=" + qteDuration + " GreenZone=" + greenZoneSize
-                + " Tolerance=" + successTolerance);
-        System.out.println("========================");
     }
 
     public void update() {
@@ -137,12 +131,10 @@ public class QTEState {
         // Проверка кнопки
         if (isPunishMode) {
             if (pressedKeyCode != punishKey) {
-                System.out.println("PUNISH FAIL: wrong key " + pressedKeyCode + " expected " + punishKey);
                 return QTEHitResult.FAIL;
             }
         } else {
             if (pressedKeyCode != requiredKey) {
-                System.out.println("FAIL: wrong key index");
                 return QTEHitResult.FAIL;
             }
         }
@@ -152,23 +144,12 @@ public class QTEState {
         int diffGreen = Math.abs(currentSize - greenZoneSize);
         int critTolerance = critZoneSize / 2;
 
-        System.out.println("=== QTE Check ===");
-        System.out.println("currentSize=" + currentSize);
-        System.out.println("critZone=" + critZoneSize + " diffCrit=" + diffCrit + " critTol=" + critTolerance);
-        System.out.println("greenZone=" + greenZoneSize + " diffGreen=" + diffGreen + " greenTol=" + successTolerance);
-
         if (diffCrit <= critTolerance) {
-            System.out.println("Result=CRIT");
-            System.out.println("=================");
             return QTEHitResult.CRIT;
         }
         if (diffGreen <= successTolerance) {
-            System.out.println("Result=SUCCESS");
-            System.out.println("=================");
             return QTEHitResult.SUCCESS;
         }
-        System.out.println("Result=FAIL");
-        System.out.println("=================");
         return QTEHitResult.FAIL;
     }
 

@@ -55,9 +55,6 @@ public class WallhackRenderer {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
 
-        // ОТЛАДКА
-        System.out.println("Rendering " + highlightedPlayers.size() + " highlighted players");
-
         Vec3 cameraPos = event.getCamera().getPosition();
         PoseStack poseStack = event.getPoseStack();
 
@@ -71,20 +68,13 @@ public class WallhackRenderer {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.disableCull(); // Отключаем отсечение задних граней
 
-        int renderedCount = 0;
         for (UUID uuid : highlightedPlayers) {
             Entity entity = mc.level.getPlayerByUUID(uuid);
 
-            // ОТЛАДКА
-            System.out.println("  UUID: " + uuid + " -> Entity: " + (entity != null ? entity.getName().getString() : "NULL"));
-
             if (entity instanceof Player player) {
                 renderPlayerHighlight(poseStack, player);
-                renderedCount++;
             }
         }
-
-        System.out.println("Actually rendered: " + renderedCount + " players");
 
         // Восстанавливаем настройки
         RenderSystem.enableCull();
