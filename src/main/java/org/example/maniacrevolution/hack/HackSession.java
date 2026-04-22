@@ -200,6 +200,13 @@ public class HackSession {
 
     private final List<ServerPlayer> currentQTEPlayers = new ArrayList<>();
 
+    boolean hasQTEParticipant(ServerPlayer player) {
+        for (ServerPlayer sp : currentQTEPlayers) {
+            if (sp.getUUID().equals(player.getUUID())) return true;
+        }
+        return false;
+    }
+
     private void triggerQTE() {
         for (ServerPlayer sp : currentQTEPlayers) {
             HackManager.sendStartQTE(sp);

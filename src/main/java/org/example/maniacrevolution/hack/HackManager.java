@@ -397,7 +397,7 @@ public class HackManager {
      */
     public void applyQTEBonus(net.minecraft.server.level.ServerPlayer player, boolean critical) {
         for (HackSession session : activeSessions.values()) {
-            if (session.hacker.getUUID().equals(player.getUUID())) {
+            if (session.hasQTEParticipant(player)) {
                 float bonus = critical
                         ? HackConfig.QTE_CRIT_BONUS
                         : HackConfig.QTE_SUCCESS_BONUS;

@@ -20,8 +20,6 @@ import java.util.Random;
 public class QTEClientHandler {
     private static boolean isActive = false;
     private static int generatorNumber = 0;
-    private static long lastQTETime = 0;
-    private static long nextQTEDelay = 0;
     private static QTEState currentQTE = null;
     private static final Random random = new Random();
 
@@ -29,13 +27,10 @@ public class QTEClientHandler {
 
     public static void startQTE(int generator) {
         generatorNumber = generator;
-        // Если QTE уже активен и показывается — не сбрасываем его.
-        // Просто помечаем как активный, следующий QTE появится по таймеру.
-        if (isActive) return;
         isActive = true;
-        lastQTETime = System.currentTimeMillis();
-        nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
-        currentQTE = null;
+        if (currentQTE == null) {
+            currentQTE = new QTEState(random.nextInt(4), hasQuickReflexes);
+        }
     }
 
     public static void stopQTE() {
@@ -52,13 +47,6 @@ public class QTEClientHandler {
     public static void onRenderGui(RenderGuiOverlayEvent.Post event) {
         if (!isActive) return;
 
-        long currentTime = System.currentTimeMillis();
-
-        if (currentQTE == null && currentTime - lastQTETime >= nextQTEDelay) {
-            currentQTE = new QTEState(random.nextInt(4), hasQuickReflexes);
-            lastQTETime = currentTime;
-        }
-
         if (currentQTE != null) {
             currentQTE.update();
             currentQTE.render(event.getGuiGraphics());
@@ -68,7 +56,6 @@ public class QTEClientHandler {
                 ModNetworking.CHANNEL.sendToServer(
                         new QTEKeyPressPacket(-1, generatorNumber, false));
                 currentQTE = null;
-                nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
             }
         }
     }
@@ -123,7 +110,6 @@ public class QTEClientHandler {
             ModNetworking.CHANNEL.sendToServer(
                     new QTEKeyPressPacket(keyCode, generatorNumber, hit.isSuccess(), hit == QTEState.QTEHitResult.CRIT));
             currentQTE = null;
-            nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
             return;
         }
 
@@ -140,7 +126,6 @@ public class QTEClientHandler {
             ModNetworking.CHANNEL.sendToServer(
                     new QTEKeyPressPacket(pressedKey, generatorNumber, hit.isSuccess(), hit == QTEState.QTEHitResult.CRIT));
             currentQTE = null;
-            nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
         }
     }
 
