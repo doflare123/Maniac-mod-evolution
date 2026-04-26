@@ -8,8 +8,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.example.maniacrevolution.character.CharacterType;
-import org.example.maniacrevolution.network.ModNetworking;
-import org.example.maniacrevolution.network.packets.OpenCharacterMenuPacket;
 
 /**
  * Предмет для открытия меню выбора персонажа

@@ -22,6 +22,11 @@ public class ModSounds {
                     () -> SoundEvent.createVariableRangeEvent(
                             new ResourceLocation(Maniacrev.MODID, "heartbeat")));
 
+    public static final RegistryObject<SoundEvent> SCREAM_AUDIO =
+            SOUND_EVENTS.register("scream_audio",
+                    () -> SoundEvent.createVariableRangeEvent(
+                            new ResourceLocation(Maniacrev.MODID, "scream_audio")));
+
     // Регистрация в главном классе мода:
     // ModSounds.SOUND_EVENTS.register(modEventBus);
 }

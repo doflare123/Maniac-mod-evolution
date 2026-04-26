@@ -291,5 +291,10 @@
   "perk.maniacrev.guiding_light.name ": "Guiding Light",
   "item.maniacrev.nether_swap": "Nether swap",
   "item.maniacrev.maze_spawner": "Генератор лабиринта [TEST]",
-  "item.maniacrev.microphone": "Microphone"
+  "item.maniacrev.microphone": "Microphone",
+  "item.maniacrev.nightmare_lighter": "Nightmare Lighter",
+  "item.maniacrev.awakening_needle": "Awakening Needle",
+  "item.maniacrev.guardian_head": "Keeper's Head",
+  "block.maniacrev.nightmare_cocoon": "Nightmare Cocoon",
+  "entity.maniacrev.fear_chaser": "Fear Chaser"
 }

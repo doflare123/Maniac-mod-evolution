@@ -34,6 +34,7 @@ public class CharacterRegistry {
         register(new NecromancerClass());
         register(new DoctorClass());
         register(new FreddyBearClass());
+        register(new KeeperOfNightmaresClass());
 
         initialized = true;
     }

@@ -164,6 +164,9 @@ public class MazeGenerator {
             level.setBlock(origin.offset(exitX + dx, roofY, exitZ), ACCENT_MAT, 3);
         }
 
+        closeBorderOpening(level, origin, 1, 0, placed);
+        closeBorderOpening(level, origin, (MAZE_W - 1) * CELL_SIZE + 1, MAZE_H * CELL_SIZE, placed);
+
         return placed;
     }
 
@@ -186,16 +189,24 @@ public class MazeGenerator {
         placed.add(pos.immutable());
     }
 
+    private void closeBorderOpening(ServerLevel level, BlockPos origin, int bx, int bz, List<BlockPos> placed) {
+        for (int dx = 0; dx < CELL_SIZE - 1; dx++) {
+            for (int by = 1; by <= WALL_HEIGHT; by++) {
+                place(level, origin.offset(bx + dx, by, bz), BORDER_MAT, placed);
+            }
+        }
+    }
+
     // ── Геттеры ───────────────────────────────────────────────────────────────
     /** Позиция телепорта игрока (перед входом) */
     public BlockPos getEntryPoint(BlockPos origin) {
-        return origin.offset(1, 1, -1);
+        return origin.offset(1, 1, 1);
     }
 
     /** Позиция сразу за выходом */
     public BlockPos getExitPoint(BlockPos origin) {
         int exitX = (MAZE_W - 1) * CELL_SIZE + 1;
-        int exitZ = MAZE_H * CELL_SIZE + 1;
+        int exitZ = (MAZE_H - 1) * CELL_SIZE + 1;
         return origin.offset(exitX, 1, exitZ);
     }
 }

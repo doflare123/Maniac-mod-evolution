@@ -80,6 +80,15 @@ public class ModEntities {
                             .clientTrackingRange(64)
                             .build("nether_swap_projectile"));
 
+    public static final RegistryObject<EntityType<FearChaserEntity>> FEAR_CHASER =
+            ENTITIES.register("fear_chaser", () ->
+                    EntityType.Builder.<FearChaserEntity>of(FearChaserEntity::new, MobCategory.MISC)
+                            .sized(0.8f, 1.9f)
+                            .clientTrackingRange(96)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build("fear_chaser"));
+
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
     }

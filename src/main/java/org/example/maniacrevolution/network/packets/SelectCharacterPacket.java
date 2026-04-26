@@ -7,6 +7,9 @@ import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterRegistry;
+import org.example.maniacrevolution.character.CharacterType;
+import org.example.maniacrevolution.data.PlayerData;
+import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.network.ModNetworking;
 
 import java.util.function.Supplier;
@@ -42,6 +45,12 @@ public class SelectCharacterPacket {
 
             String scoreboardName = characterClass.getType().getScoreboardName();
             int classId = characterClass.getScoreboardId();
+            PlayerData data = PlayerDataManager.get(player);
+            if (characterClass.getType() == CharacterType.MANIAC) {
+                data.setManiacClassId(classId);
+            } else {
+                data.setSurvivorClassId(classId);
+            }
 
             // Скорборд — для датапака
             player.getServer().getCommands().performPrefixedCommand(

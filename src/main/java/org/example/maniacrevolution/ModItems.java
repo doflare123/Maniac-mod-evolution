@@ -252,6 +252,15 @@ public class ModItems {
     public static final RegistryObject<Item> MAZE_SPAWNER =
             ITEMS.register("maze_spawner", MazeSpawnerItem::new);
 
+    public static final RegistryObject<Item> NIGHTMARE_LIGHTER =
+            ITEMS.register("nightmare_lighter", NightmareLighterItem::new);
+
+    public static final RegistryObject<Item> AWAKENING_NEEDLE =
+            ITEMS.register("awakening_needle", () -> new Item(new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> GUARDIAN_HEAD =
+            ITEMS.register("guardian_head", GuardianHeadItem::new);
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

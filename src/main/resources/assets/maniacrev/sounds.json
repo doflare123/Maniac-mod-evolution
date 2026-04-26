@@ -9,5 +9,16 @@
         "type": "file"
       }
     ]
+  },
+  "scream_audio": {
+    "subtitle": "Скример",
+    "sounds": [
+      {
+        "name": "maniacrev:scream_audio",
+        "volume": 1.0,
+        "pitch": 1.0,
+        "type": "file"
+      }
+    ]
   }
 }
