@@ -351,7 +351,7 @@ public final class NightmareManager {
     }
 
     private void restoreInventory(ServerPlayer player, NightmarePlayerState state) {
-        org.example.maniacrevolution.item.NightmareLighterItem.removeLight(player);
+        org.example.maniacrevolution.item.NightmareLighterItem.clearState(player);
         player.removeEffect(MobEffects.WEAKNESS);
         if (state.savedMainInventory == null) return;
 
@@ -374,6 +374,7 @@ public final class NightmareManager {
     private void giveTrialLighter(ServerPlayer player) {
         player.getInventory().setItem(0, new ItemStack(ModItems.NIGHTMARE_LIGHTER.get()));
         player.getInventory().selected = 0;
+        org.example.maniacrevolution.item.NightmareLighterItem.resetFuel(player);
         player.inventoryMenu.broadcastChanges();
     }
 

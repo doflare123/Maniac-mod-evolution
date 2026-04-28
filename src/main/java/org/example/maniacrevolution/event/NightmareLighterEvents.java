@@ -36,7 +36,7 @@ public final class NightmareLighterEvents {
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            NightmareLighterItem.removeLight(player);
+            NightmareLighterItem.clearState(player);
         }
     }
 }

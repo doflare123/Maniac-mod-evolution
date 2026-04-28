@@ -18,14 +18,15 @@ import java.util.UUID;
 
 public class NightmareLighterItem extends Item {
     private static final Map<UUID, BlockPos> LIGHT_POSITIONS = new HashMap<>();
+    private static final Map<UUID, Integer> LIGHTER_FUEL = new HashMap<>();
 
     public NightmareLighterItem() {
-        super(new Properties().stacksTo(1).durability(NightmareConfig.LIGHTER_DURABILITY));
+        super(new Properties().stacksTo(1));
     }
 
     public static void tickHeld(ServerPlayer player, ItemStack stack, EquipmentSlot breakSlot) {
         if (!(player.level() instanceof ServerLevel level)) return;
-        if (!(stack.getItem() instanceof NightmareLighterItem) || stack.getDamageValue() >= stack.getMaxDamage()) {
+        if (!(stack.getItem() instanceof NightmareLighterItem)) {
             removeLight(player);
             return;
         }
@@ -33,13 +34,15 @@ public class NightmareLighterItem extends Item {
         moveLight(player, level, findLightPos(player));
 
         if (player.tickCount % NightmareConfig.LIGHTER_DAMAGE_INTERVAL_TICKS == 0) {
-            int nextDamage = stack.getDamageValue() + 1;
-            if (nextDamage >= stack.getMaxDamage()) {
+            UUID uuid = player.getUUID();
+            int fuel = LIGHTER_FUEL.getOrDefault(uuid, NightmareConfig.LIGHTER_DURABILITY) - 1;
+            if (fuel <= 0) {
+                LIGHTER_FUEL.remove(uuid);
                 stack.shrink(1);
                 player.broadcastBreakEvent(breakSlot);
                 removeLight(player);
             } else {
-                stack.setDamageValue(nextDamage);
+                LIGHTER_FUEL.put(uuid, fuel);
             }
         }
     }
@@ -49,6 +52,15 @@ public class NightmareLighterItem extends Item {
         if (old != null && player.level().getBlockState(old).is(Blocks.LIGHT)) {
             player.level().setBlock(old, Blocks.AIR.defaultBlockState(), 3);
         }
+    }
+
+    public static void resetFuel(ServerPlayer player) {
+        LIGHTER_FUEL.put(player.getUUID(), NightmareConfig.LIGHTER_DURABILITY);
+    }
+
+    public static void clearState(ServerPlayer player) {
+        removeLight(player);
+        LIGHTER_FUEL.remove(player.getUUID());
     }
 
     private static BlockPos findLightPos(ServerPlayer player) {
@@ -80,6 +92,6 @@ public class NightmareLighterItem extends Item {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return stack.getDamageValue() < stack.getMaxDamage();
+        return true;
     }
 }

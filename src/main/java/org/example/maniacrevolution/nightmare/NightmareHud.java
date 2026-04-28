@@ -3,12 +3,13 @@ package org.example.maniacrevolution.nightmare;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.Maniacrev;
 
 public final class NightmareHud {
-    private static final int BAR_WIDTH = 120;
-    private static final int BAR_HEIGHT = 10;
+    private static final int PORTRAIT_WIDTH = 72;
+    private static final int PORTRAIT_HEIGHT = 88;
     private static final ResourceLocation SCREAMER_TEXTURE =
             Maniacrev.loc("textures/gui/abilities/screamer.jpg");
 
@@ -19,17 +20,12 @@ public final class NightmareHud {
         if (mc.player == null) return;
 
         if (ClientNightmareData.isVisible()) {
-            int x = 8;
-            int y = screenHeight - 110;
-            gui.fill(x, y, x + BAR_WIDTH, y + BAR_HEIGHT, 0xAA170A24);
-            int filled = (int) (BAR_WIDTH * ClientNightmareData.getSanityPercent());
-            gui.fill(x, y, x + filled, y + BAR_HEIGHT, 0xFFD65BFF);
-            gui.renderOutline(x, y, BAR_WIDTH, BAR_HEIGHT, 0xFF4B245F);
-            gui.drawString(mc.font, "Рассудок", x, y - 11, 0xFFE8C8FF, true);
+            renderSanityPortrait(gui, mc, 8, screenHeight - 128);
         }
 
         if (ClientNightmareData.getTrialType() != NightmareTrialType.NONE) {
-            String text = trialName(ClientNightmareData.getTrialType()) + ": " + ClientNightmareData.getTrialSecondsLeft() + "с";
+            String text = trialName(ClientNightmareData.getTrialType()) + ": "
+                    + ClientNightmareData.getTrialSecondsLeft() + "\u0441";
             int x = screenWidth / 2 - mc.font.width(text) / 2;
             gui.drawString(mc.font, text, x, 20, 0xFFFFD5FF, true);
         }
@@ -42,11 +38,84 @@ public final class NightmareHud {
         }
     }
 
+    private static void renderSanityPortrait(GuiGraphics gui, Minecraft mc, int x, int y) {
+        float sanity = ClientNightmareData.getSanityPercent();
+        float corruption = 1.0F - sanity;
+        long time = System.currentTimeMillis();
+        float pulse = (float) (Math.sin(time / 140.0D) * 0.5D + 0.5D);
+        int shake = corruption > 0.55F ? (int) (Math.sin(time / 38.0D) * 2.0D * corruption) : 0;
+
+        int px = x + shake;
+        int py = y;
+        int frameColor = lerpColor(0xFF6F5A8A, 0xFFFF2D55, corruption);
+        int glowAlpha = (int) ((35 + 95 * pulse) * corruption);
+        int glowColor = (glowAlpha << 24) | 0xAA0038;
+
+        gui.fill(px, py, px + PORTRAIT_WIDTH, py + PORTRAIT_HEIGHT, 0xCC07050D);
+        gui.fill(px + 2, py + 2, px + PORTRAIT_WIDTH - 2, py + PORTRAIT_HEIGHT - 14, 0xEE100818);
+        gui.renderOutline(px, py, PORTRAIT_WIDTH, PORTRAIT_HEIGHT, frameColor);
+        gui.renderOutline(px + 3, py + 3, PORTRAIT_WIDTH - 6, PORTRAIT_HEIGHT - 18, 0x882C1838);
+
+        RenderSystem.enableBlend();
+        gui.pose().pushPose();
+        gui.pose().translate(0.0F, 0.0F, 60.0F);
+        float lookX = (float) Math.sin(time / 420.0D) * (8.0F + corruption * 18.0F);
+        float lookY = -6.0F + corruption * 10.0F;
+        InventoryScreen.renderEntityInInventoryFollowsMouse(gui, px + PORTRAIT_WIDTH / 2,
+                py + PORTRAIT_HEIGHT - 18, 32, lookX, lookY, mc.player);
+        gui.pose().popPose();
+
+        if (corruption > 0.02F) {
+            gui.fill(px + 2, py + 2, px + PORTRAIT_WIDTH - 2, py + PORTRAIT_HEIGHT - 14, glowColor);
+        }
+        if (corruption > 0.35F) {
+            int crackColor = ((int) (120 + 80 * pulse) << 24) | 0xD8B3FF;
+            gui.fill(px + 12, py + 10, px + 14, py + 30, crackColor);
+            gui.fill(px + 14, py + 28, px + 30, py + 30, crackColor);
+            gui.fill(px + 48, py + 18, px + 50, py + 47, crackColor);
+            gui.fill(px + 36, py + 45, px + 50, py + 47, crackColor);
+        }
+        if (corruption > 0.72F) {
+            int flash = ((int) (70 + 80 * pulse) << 24) | 0xFF0000;
+            gui.renderOutline(px - 1, py - 1, PORTRAIT_WIDTH + 2, PORTRAIT_HEIGHT + 2, flash);
+        }
+        RenderSystem.disableBlend();
+
+        renderSanityMarks(gui, px + 9, py + PORTRAIT_HEIGHT - 10, sanity);
+    }
+
+    private static void renderSanityMarks(GuiGraphics gui, int x, int y, float sanity) {
+        int active = Math.max(0, Math.min(5, (int) Math.ceil(sanity * 5.0F)));
+        for (int i = 0; i < 5; i++) {
+            int markX = x + i * 11;
+            int color = i < active ? 0xFFD65BFF : 0xFF26152E;
+            gui.fill(markX + 2, y, markX + 7, y + 5, color);
+            gui.renderOutline(markX + 1, y - 1, 7, 7, 0xFF4B245F);
+        }
+    }
+
+    private static int lerpColor(int colorA, int colorB, float t) {
+        float clamped = Math.max(0.0F, Math.min(1.0F, t));
+        int aA = (colorA >> 24) & 0xFF;
+        int rA = (colorA >> 16) & 0xFF;
+        int gA = (colorA >> 8) & 0xFF;
+        int bA = colorA & 0xFF;
+        int aB = (colorB >> 24) & 0xFF;
+        int rB = (colorB >> 16) & 0xFF;
+        int gB = (colorB >> 8) & 0xFF;
+        int bB = colorB & 0xFF;
+        int a = (int) (aA + (aB - aA) * clamped);
+        int r = (int) (rA + (rB - rA) * clamped);
+        int g = (int) (gA + (gB - gA) * clamped);
+        int b = (int) (bA + (bB - bA) * clamped);
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
     private static String trialName(NightmareTrialType type) {
         return switch (type) {
-            case MAZE -> "Лабиринт";
-            case ARENA -> "Арена";
-            case FEAR_RACE -> "Гонка";
+            case MAZE -> "\u041b\u0430\u0431\u0438\u0440\u0438\u043d\u0442";
+            case ARENA -> "\u0410\u0440\u0435\u043d\u0430";
+            case FEAR_RACE -> "\u0413\u043e\u043d\u043a\u0430";
             case NONE -> "";
         };
     }
