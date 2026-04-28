@@ -6,28 +6,26 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.example.maniacrevolution.data.PlayerData;
-import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.mana.ManaProvider;
 import org.example.maniacrevolution.perk.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
- * Mana Break (Пассивный с КД) (Все)
- * При ударе по противнику из другой команды (если перк не в КД) — снимает ману.
+ * Mana Break (Активный) (Все)
+ * При активации — следующий удар снимет ману с цели.
  */
 @Mod.EventBusSubscriber
 public class ManaBreakPerk extends Perk {
 
-    private static final float MANA_DRAIN   = 10f;
-    private static final int   COOLDOWN_SEC = 90;
+    // ── Настройки ────────────────────────────────────────────────────────────
+    private static final float MANA_DRAIN   = 10f;   // сколько маны снимает удар
+    private static final int   COOLDOWN_SEC = 90;    // кулдаун в секундах
 
-    private static final Map<UUID, ServerPlayer> pendingVictim = new HashMap<>();
-    // НОВОЕ: тик когда был поставлен pending
-    private static final Map<UUID, Long> pendingTick = new HashMap<>();
+    // Игроки, у которых перк сейчас "заряжен" (ждут удара)
+    private static final Set<UUID> charged = new HashSet<>();
 
     public ManaBreakPerk() {
         super(new Builder("mana_break")
@@ -38,36 +36,32 @@ public class ManaBreakPerk extends Perk {
         );
     }
 
+    // ── Описание с подставленными значениями ─────────────────────────────────
+
     @Override
     public Component getDescription() {
-        return Component.translatable(
-                "perk.maniacrev.mana_break.desc",
-                (int) MANA_DRAIN,
-                COOLDOWN_SEC
-        );
+        return Component.literal("Каждый твой удар снимает ")
+                .withStyle(ChatFormatting.WHITE)
+                .append(Component.literal((int) MANA_DRAIN + " ед. маны")
+                        .withStyle(ChatFormatting.AQUA))
+                .append(Component.literal(" у цели. Кулдаун: ")
+                        .withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(COOLDOWN_SEC + " сек.")
+                        .withStyle(ChatFormatting.RED));
     }
 
-    @Override
-    public boolean shouldTrigger(ServerPlayer player) {
-        if (!pendingVictim.containsKey(player.getUUID())) return false;
-        // Разрешаем триггер только если pending поставлен не более 2 тиков назад
-        Long tick = pendingTick.get(player.getUUID());
-        if (tick == null) return false;
-        long currentTick = player.getServer() != null ? player.getServer().getTickCount() : 0;
-        if (currentTick - tick > 2) {
-            // Протух — чистим
-            pendingVictim.remove(player.getUUID());
-            pendingTick.remove(player.getUUID());
-            return false;
-        }
-        return true;
-    }
+    // ── Обработчик удара ─────────────────────────────────────────────────────
 
-    @Override
-    public void onTrigger(ServerPlayer player) {
-        ServerPlayer victim = pendingVictim.remove(player.getUUID());
-        pendingTick.remove(player.getUUID());
-        if (victim == null || !victim.isAlive()) return;
+    @SubscribeEvent
+    public static void onHurt(LivingHurtEvent event) {
+        if (!(event.getSource().getEntity() instanceof ServerPlayer attacker)) return;
+        if (!charged.contains(attacker.getUUID())) return;
+
+        // Снимаем заряд независимо от того, игрок ли жертва
+        charged.remove(attacker.getUUID());
+
+        // Снимаем ману только если жертва — игрок
+        if (!(event.getEntity() instanceof ServerPlayer victim)) return;
 
         victim.getCapability(ManaProvider.MANA).ifPresent(mana -> {
             float before = mana.getMana();
@@ -76,36 +70,22 @@ public class ManaBreakPerk extends Perk {
 
             victim.displayClientMessage(
                     Component.literal("Враг истощил твою ману на " + (int) drained + " ед.!")
-                            .withStyle(ChatFormatting.DARK_AQUA), true);
+                            .withStyle(ChatFormatting.DARK_AQUA),
+                    true
+            );
 
-            player.displayClientMessage(
+            attacker.displayClientMessage(
                     Component.literal("Mana Break: истощено " + (int) drained + " маны!")
-                            .withStyle(ChatFormatting.AQUA), true);
+                            .withStyle(ChatFormatting.AQUA),
+                    true
+            );
         });
     }
 
+    // ── Сброс при снятии перка ───────────────────────────────────────────────
+
     @Override
     public void removePassiveEffect(ServerPlayer player) {
-        pendingVictim.remove(player.getUUID());
-        pendingTick.remove(player.getUUID());
-    }
-
-    @SubscribeEvent
-    public static void onHurt(LivingHurtEvent event) {
-        if (!(event.getSource().getEntity() instanceof ServerPlayer attacker)) return;
-        if (!(event.getEntity() instanceof ServerPlayer victim)) return;
-
-        if (attacker.getTeam() == null || victim.getTeam() == null) return;
-        if (attacker.getTeam().equals(victim.getTeam())) return;
-
-        PlayerData data = PlayerDataManager.get(attacker);
-        boolean hasPerk = data.getSelectedPerks().stream()
-                .anyMatch(inst -> inst.getPerk().getId().equals("mana_break"));
-        if (!hasPerk) return;
-
-        pendingVictim.put(attacker.getUUID(), victim);
-        // НОВОЕ: запоминаем тик
-        long currentTick = attacker.getServer() != null ? attacker.getServer().getTickCount() : 0;
-        pendingTick.put(attacker.getUUID(), currentTick);
+        charged.remove(player.getUUID());
     }
 }

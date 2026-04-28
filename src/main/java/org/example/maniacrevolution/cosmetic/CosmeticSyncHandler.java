@@ -72,7 +72,12 @@ public class CosmeticSyncHandler {
                 data.getCosmeticData().getEnabledCosmetics()
         );
 
-        // Используй готовый метод вместо цикла
-        ModNetworking.sendToAllPlayers(packet);
+        // Отправляем всем игрокам на сервере
+        for (ServerPlayer otherPlayer : player.serverLevel().players()) {
+            ModNetworking.CHANNEL.send(
+                    PacketDistributor.PLAYER.with(() -> otherPlayer),
+                    packet
+            );
+        }
     }
 }

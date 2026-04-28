@@ -20,7 +20,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class DownedEventHandler {
@@ -82,35 +84,6 @@ public class DownedEventHandler {
     // 1. ПЕРЕХВАТ СМЕРТИ (первый нокаут)
     // ══════════════════════════════════════════════════════════════════════
 
-    private static void checkAllDowned(net.minecraft.server.MinecraftServer server, Team survivorTeam) {
-        if (server == null) return;
-
-        List<ServerPlayer> allSurvivors = new ArrayList<>();
-        List<ServerPlayer> downedSurvivors = new ArrayList<>();
-
-        for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-            if (p.isSpectator()) continue;
-            Team t = p.getTeam();
-            if (t == null || !t.getName().equals(survivorTeam.getName())) continue;
-
-            allSurvivors.add(p);
-            DownedData d = DownedCapability.get(p);
-            if (d != null && d.getState() == DownedState.DOWNED) {
-                downedSurvivors.add(p);
-            }
-        }
-
-        // Если все выжившие (не в спектаторе) лежат — убиваем всех
-        if (!allSurvivors.isEmpty() && allSurvivors.size() == downedSurvivors.size()) {
-            server.getPlayerList().broadcastSystemMessage(
-                    Component.literal("§4Все выжившие упали! Никто не выжил."), false);
-            for (ServerPlayer downed : downedSurvivors) {
-                DownedData d = DownedCapability.get(downed);
-                if (d != null) killDowned(downed, d);
-            }
-        }
-    }
-
     @SubscribeEvent
     public static void onPlayerDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
@@ -131,9 +104,7 @@ public class DownedEventHandler {
         // Если этот игрок — единственный живой (не spectator) в своей команде, сразу умирает
         if (isLastAliveSurvivor(player, team)) {
             Maniacrev.LOGGER.info("[Downed] {} — последний выживший, умирает сразу", player.getName().getString());
-            // ДОБАВИТЬ: убиваем всех кто ещё лежит
-            checkAllDowned(player.getServer(), team);
-            return;
+            return; // не отменяем событие — смерть фатальна
         }
 
         event.setCanceled(true);
@@ -150,9 +121,6 @@ public class DownedEventHandler {
         broadcastMessage(player,
                 "§c☠ " + player.getName().getString() + " §cупал! Помогите ему в течение §e60 сек§c!");
         Maniacrev.LOGGER.info("[Downed] {} -> DOWNED", player.getName().getString());
-
-        // НОВОЕ: проверяем — если теперь все лежат, всех убиваем
-        checkAllDowned(player.getServer(), team);
     }
 
     /**

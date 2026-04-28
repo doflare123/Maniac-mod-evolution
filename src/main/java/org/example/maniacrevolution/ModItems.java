@@ -10,7 +10,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.character.CharacterType;
-import org.example.maniacrevolution.dodepovich.DodepovichCoin;
 import org.example.maniacrevolution.item.*;
 import org.example.maniacrevolution.item.armor.MedicalMaskItem;
 import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
@@ -250,32 +249,8 @@ public class ModItems {
     public static final RegistryObject<Item> NETHER_SWAP = ITEMS.register("nether_swap",
             () -> new NetherSwapItem(new Item.Properties().stacksTo(1)));
 
-    public static final RegistryObject<Item> COIN_ELUSIVENESS = ITEMS.register("coin_elusiveness",
-            () -> new DodepovichCoinItem(new Item.Properties().rarity(Rarity.UNCOMMON), DodepovichCoin.ELUSIVENESS));
-
-    public static final RegistryObject<Item> COIN_INSIGHT = ITEMS.register("coin_insight",
-            () -> new DodepovichCoinItem(new Item.Properties().rarity(Rarity.UNCOMMON), DodepovichCoin.INSIGHT));
-
-    public static final RegistryObject<Item> COIN_SHACKLES = ITEMS.register("coin_shackles",
-            () -> new DodepovichCoinItem(new Item.Properties().rarity(Rarity.UNCOMMON), DodepovichCoin.SHACKLES));
-
-    public static final RegistryObject<Item> COIN_HEALTH = ITEMS.register("coin_health",
-            () -> new DodepovichCoinItem(new Item.Properties().rarity(Rarity.UNCOMMON), DodepovichCoin.HEALTH));
-
-    public static final RegistryObject<Item> COIN_EAGLE = ITEMS.register("coin_eagle",
-            () -> new DodepovichCoinItem(new Item.Properties().rarity(Rarity.UNCOMMON), DodepovichCoin.EAGLE));
-
-    public static final RegistryObject<Item> COIN_DEBT = ITEMS.register("coin_debt",
-            () -> new DodepovichCoinItem(new Item.Properties().rarity(Rarity.RARE), DodepovichCoin.DEBT));
-
-    public static final RegistryObject<Item> COIN_REROLL = ITEMS.register("coin_reroll",
-            () -> new DodepovichCoinItem(new Item.Properties().rarity(Rarity.RARE), DodepovichCoin.REROLL));
-
-    public static final RegistryObject<Item> COIN_FATE = ITEMS.register("coin_fate",
-            () -> new DodepovichCoinItem(new Item.Properties().rarity(Rarity.EPIC), DodepovichCoin.FATE));
-
-    public static final RegistryObject<Item> SLOT_MACHINE = ITEMS.register("slot_machine",
-            () -> new BlockItem(ModBlocks.SLOT_MACHINE.get(), new Item.Properties().rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> MAZE_SPAWNER =
+            ITEMS.register("maze_spawner", MazeSpawnerItem::new);
 
     public static final RegistryObject<Item> NIGHTMARE_LIGHTER =
             ITEMS.register("nightmare_lighter", NightmareLighterItem::new);

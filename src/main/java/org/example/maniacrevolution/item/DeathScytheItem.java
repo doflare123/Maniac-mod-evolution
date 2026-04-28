@@ -22,9 +22,6 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.client.ClientAbilityData;
 import org.example.maniacrevolution.item.armor.IActivatableArmor;
 import org.example.maniacrevolution.util.ManaUtil;
-import org.example.maniacrevolution.downed.DownedCapability;
-import org.example.maniacrevolution.downed.DownedData;
-import org.example.maniacrevolution.downed.DownedState;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -222,10 +219,6 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
 
             Team team = player.getTeam();
             if (team != null && "survivors".equalsIgnoreCase(team.getName())) {
-                // НЕ телепортируемся к лежачим
-                DownedData downedData = DownedCapability.get(player);
-                if (downedData != null && downedData.getState() == DownedState.DOWNED) continue;
-
                 survivors.add(player);
             }
         }

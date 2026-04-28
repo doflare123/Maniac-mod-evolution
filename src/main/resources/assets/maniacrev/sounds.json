@@ -10,7 +10,6 @@
       }
     ]
   },
-
   "scream_audio": {
     "subtitle": "Скример",
     "sounds": [
@@ -19,34 +18,7 @@
         "volume": 1.0,
         "pitch": 1.0,
         "type": "file"
-      }],
-  "qte_success": { "sounds": [{"name": "maniacrev:qte_success"}] },
-  "qte_crit":    { "sounds": [{"name": "maniacrev:qte_crit"}] },
-  "qte_fail":    { "sounds": [{"name": "maniacrev:qte_fail"}] }
-  ,
-  "coin_flip": {
-    "sounds": [
-      "maniacrev:coin_flip"
-    ]
-  },
-  "slot_insert": {
-    "sounds": [
-      "maniacrev:slot_insert"
-    ]
-  },
-  "slot_spin": {
-    "sounds": [
-      "maniacrev:slot_spin"
-    ]
-  },
-  "slot_win": {
-    "sounds": [
-      "maniacrev:slot_win"
-    ]
-  },
-  "slot_jackpot": {
-    "sounds": [
-      "maniacrev:slot_jackpot"
+      }
     ]
   }
-}}
+}

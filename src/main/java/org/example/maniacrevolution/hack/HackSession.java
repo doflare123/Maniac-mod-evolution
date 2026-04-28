@@ -13,7 +13,6 @@ import org.example.maniacrevolution.perk.perks.survivor.IdealychPerk;
 
 import java.util.*;
 
-
 /**
  * Одна активная сессия взлома.
  * Создаётся когда игрок кликает по компьютеру.
@@ -30,6 +29,9 @@ public class HackSession {
     private int ticksSinceLastQTE = 0;
     private int nextQTEIntervalTicks;
 
+    /** Игроки которым уже отправили StartQTE в этой сессии (чтобы не дублировать) */
+    private final Set<UUID> activeQTEPlayers = new HashSet<>();
+
     private boolean finished = false;
 
     private static final Random RANDOM = new Random();
@@ -41,7 +43,6 @@ public class HackSession {
         this.computerId = computerId;
         this.currentPoints = startPoints;
         this.nextQTEIntervalTicks = randomQTEInterval();
-        this.currentQTEPlayers.add(hacker); // ← хакер всегда в списке
     }
 
     /** Публичный геттер участников сессии (хакер + саппортеры) */
@@ -63,6 +64,7 @@ public class HackSession {
 
         ServerLevel level = (ServerLevel) hacker.level();
 
+        // 1. Проверяем что хакер ещё онлайн и в радиусе
         if (!hacker.isAlive() || hacker.hasDisconnected()) {
             cancel();
             return false;
@@ -71,48 +73,33 @@ public class HackSession {
         double hackerDist = hacker.position().distanceTo(
                 new Vec3(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5));
         if (hackerDist > HackConfig.HACKER_RADIUS) {
+            // Хакер вышел из радиуса — прерываем
             hacker.displayClientMessage(
                     net.minecraft.network.chat.Component.literal("§cВзлом прерван: покинул зону!"), true);
             cancel();
             return false;
         }
 
+        // 2. Считаем очки от поддержки
         List<ServerPlayer> supporters = getSupporters(level);
-
-        // Новые саппортеры — сразу даём им QTE
-        for (ServerPlayer sp : supporters) {
-            if (!currentQTEPlayers.contains(sp)) {
-                HackManager.sendStartQTE(sp);
-                currentQTEPlayers.add(sp);
-            }
-        }
-
-        // Саппортеры вышедшие из зоны — останавливаем QTE
-        List<ServerPlayer> leftZone = new ArrayList<>();
-        for (ServerPlayer sp : currentQTEPlayers) {
-            if (sp == hacker) continue;
-            if (!supporters.contains(sp)) {
-                HackManager.sendStopQTE(sp);
-                leftZone.add(sp);
-            }
-        }
-        currentQTEPlayers.removeAll(leftZone);
-
         float pointsThisTick = calcPoints(supporters);
         currentPoints = Math.min(currentPoints + pointsThisTick, HackConfig.HACK_POINTS_REQUIRED);
 
+        // 3. Обновляем блок-сущность для отображения прогресса
         updateBlockDisplay(level);
 
-        ticksSinceLastQTE += 20;
+        // 4. Партиклы радиуса поддержки
+        ticksSinceLastQTE += 20; // каждый вызов = 1 секунда = 20 тиков
         spawnRadiusParticles(level);
 
-        // Периодический триггер QTE — переотправляем всем кто уже в списке
+        // 5. QTE для хакера и поддержки
         if (ticksSinceLastQTE >= nextQTEIntervalTicks) {
             ticksSinceLastQTE = 0;
             nextQTEIntervalTicks = randomQTEInterval();
-            triggerQTE(); // теперь без аргументов
+            triggerQTE(supporters);
         }
 
+        // 6. Готово?
         if (currentPoints >= HackConfig.HACK_POINTS_REQUIRED) {
             onHackComplete(server, level);
             return false;
@@ -198,17 +185,12 @@ public class HackSession {
 
     // ── QTE ───────────────────────────────────────────────────────────────────
 
-    private final List<ServerPlayer> currentQTEPlayers = new ArrayList<>();
+    private void triggerQTE(List<ServerPlayer> supporters) {
+        // Хакер
+        HackManager.sendStartQTE(hacker);
 
-    boolean hasQTEParticipant(ServerPlayer player) {
-        for (ServerPlayer sp : currentQTEPlayers) {
-            if (sp.getUUID().equals(player.getUUID())) return true;
-        }
-        return false;
-    }
-
-    private void triggerQTE() {
-        for (ServerPlayer sp : currentQTEPlayers) {
+        // Помощники (тоже участвуют в QTE)
+        for (ServerPlayer sp : supporters) {
             HackManager.sendStartQTE(sp);
         }
     }
@@ -249,21 +231,14 @@ public class HackSession {
 
     // ── Завершение ────────────────────────────────────────────────────────────
 
-    private void stopAllQTE() {
-        HackManager.sendStopQTE(hacker);
-        for (ServerPlayer sp : currentQTEPlayers) {
-            if (sp != hacker) HackManager.sendStopQTE(sp);
-        }
-        currentQTEPlayers.clear();
-    }
-
     private void onHackComplete(MinecraftServer server, ServerLevel level) {
         finished = true;
         IdealychPerk.resetStacks(hacker);
         currentPoints = HackConfig.HACK_POINTS_REQUIRED;
         updateBlockDisplay(level);
 
-        stopAllQTE(); // ← вместо одиночного sendStopQTE(hacker)
+        // Останавливаем QTE
+        HackManager.sendStopQTE(hacker);
 
         hacker.displayClientMessage(
                 net.minecraft.network.chat.Component.literal("§a✔ Компьютер взломан!"), true);
@@ -274,7 +249,7 @@ public class HackSession {
     private void cancel() {
         finished = true;
         IdealychPerk.resetStacks(hacker);
-        stopAllQTE(); // ← вместо одиночного sendStopQTE(hacker)
+        HackManager.sendStopQTE(hacker);
         hacker.displayClientMessage(
                 net.minecraft.network.chat.Component.literal("§cВзлом прерван."), true);
     }
