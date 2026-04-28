@@ -2,7 +2,7 @@ package org.example.maniacrevolution.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import org.example.maniacrevolution.client.QTEClientHandler;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.function.Supplier;
 
@@ -36,7 +36,7 @@ public class SyncQTEPerkPacket {
     public static void handle(SyncQTEPerkPacket packet, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             // Обновляем флаг на клиенте
-            QTEClientHandler.setQuickReflexes(packet.hasQuickReflexes);
+            ClientOnlyExecutor.setQTEQuickReflexes(packet.hasQuickReflexes);
         });
         ctx.get().setPacketHandled(true);
     }

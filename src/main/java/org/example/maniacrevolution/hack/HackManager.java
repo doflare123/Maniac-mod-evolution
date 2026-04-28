@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
+import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.perk.perks.maniac.GrieferPerk;
 
 import java.util.*;
@@ -25,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HackManager {
 
     private static HackManager INSTANCE;
+    private static volatile boolean initialized = false;
 
     /** Прогресс взлома по computerId: id -> очки */
     private final Map<Integer, Float> hackProgress = new ConcurrentHashMap<>();
@@ -48,9 +50,14 @@ public class HackManager {
         return INSTANCE;
     }
 
+    public static boolean isInitialized() {
+        return initialized;
+    }
+
     /** Вызывается при старте сервера — сбрасываем состояние */
     public static void reset() {
         INSTANCE = new HackManager();
+        initialized = false;
     }
 
     // ── Публичное API ─────────────────────────────────────────────────────────
@@ -228,8 +235,6 @@ public class HackManager {
         HackSession session = new HackSession(player, pos, computerId, currentProgress);
         activeSessions.put(pos, session);
 
-        // Запускаем QTE для хакера
-        sendStartQTE(player);
 
         player.displayClientMessage(
                 net.minecraft.network.chat.Component.literal("§6Взлом начат..."), true);
@@ -297,7 +302,11 @@ public class HackManager {
         activeSessions.clear();
         hackProgress.clear();
         hackedComputers.clear();
+        blockedComputers.clear();
         totalHacked = 0;
+        initialized = true;
+        ComputerBlockEntity.resetTrackedBlockEntities(server);
+        save(server);
         sendResetPacket(server);
     }
 
@@ -305,6 +314,7 @@ public class HackManager {
     public void resetById(MinecraftServer server, int computerId) {
         hackProgress.remove(computerId);
         hackedComputers.remove(computerId);
+        blockedComputers.remove(computerId);
 
         // Останавливаем активные сессии с этим id
         List<BlockPos> toStop = new ArrayList<>();
@@ -318,6 +328,8 @@ public class HackManager {
 
         // Пересчитываем totalHacked
         totalHacked = (int) hackedComputers.values().stream().filter(v -> v).count();
+        initialized = true;
+        if (server != null) save(server);
     }
 
     // ── Геттеры ───────────────────────────────────────────────────────────────
@@ -343,7 +355,7 @@ public class HackManager {
             server.getCommands().performPrefixedCommand(
                     server.createCommandSourceStack(), cmd);
         } catch (Exception e) {
-            System.err.println("[HackManager] Command error: " + cmd + " -> " + e.getMessage());
+            Maniacrev.LOGGER.warn("[HackManager] Command error: {} -> {}", cmd, e.getMessage());
         }
     }
 
@@ -367,7 +379,7 @@ public class HackManager {
                 if ("quick_reflexes".equals(inst.getPerk().getId())) return true;
             }
         } catch (Exception e) {
-            System.err.println("[HackManager] hasQuickReflexesPerk error: " + e.getMessage());
+            Maniacrev.LOGGER.warn("[HackManager] hasQuickReflexesPerk error: {}", e.getMessage());
         }
         return false;
     }
@@ -385,16 +397,18 @@ public class HackManager {
      */
     public void applyQTEBonus(net.minecraft.server.level.ServerPlayer player, boolean critical) {
         for (HackSession session : activeSessions.values()) {
-            if (session.hacker.getUUID().equals(player.getUUID())) {
+            if (session.hasQTEParticipant(player)) {
                 float bonus = critical
                         ? HackConfig.QTE_CRIT_BONUS
                         : HackConfig.QTE_SUCCESS_BONUS;
                 session.currentPoints = Math.min(
                         session.currentPoints + bonus,
                         HackConfig.HACK_POINTS_REQUIRED);
-                System.out.println("[HackManager] QTE " + (critical ? "CRIT" : "normal") +
-                        " bonus +" + bonus + " для " + player.getName().getString() +
-                        " -> " + session.currentPoints);
+                Maniacrev.LOGGER.debug("[HackManager] QTE {} bonus +{} for {} -> {}",
+                        critical ? "CRIT" : "normal",
+                        bonus,
+                        player.getName().getString(),
+                        session.currentPoints);
                 return;
             }
         }
@@ -431,7 +445,7 @@ public class HackManager {
             root.putFloat("pointsRequired", HackConfig.HACK_POINTS_REQUIRED);
             net.minecraft.nbt.NbtIo.writeCompressed(root, file);
         } catch (Exception e) {
-            System.err.println("[HackManager] Save error: " + e.getMessage());
+            Maniacrev.LOGGER.warn("[HackManager] Save error: {}", e.getMessage());
         }
     }
 
@@ -442,7 +456,11 @@ public class HackManager {
     public void load(net.minecraft.server.MinecraftServer server) {
         try {
             java.io.File file = getDataFile(server);
-            if (!file.exists()) return;
+            if (!file.exists()) {
+                initialized = true;
+                ComputerBlockEntity.syncTrackedBlockEntities(server);
+                return;
+            }
             net.minecraft.nbt.CompoundTag root = net.minecraft.nbt.NbtIo.readCompressed(file);
             net.minecraft.nbt.CompoundTag progress = root.getCompound("progress");
             for (String key : progress.getAllKeys()) {
@@ -463,14 +481,16 @@ public class HackManager {
                 HackConfig.HACK_POINTS_REQUIRED = root.getFloat("pointsRequired");
             }
 
-            System.out.println("[HackManager] Loaded: totalHacked=" + totalHacked
-                    + " computers=" + hackProgress.size()
-                    + " goal=" + HackConfig.COMPUTERS_NEEDED_FOR_WIN);
+            Maniacrev.LOGGER.info("[HackManager] Loaded: totalHacked={}, computers={}, goal={}",
+                    totalHacked, hackProgress.size(), HackConfig.COMPUTERS_NEEDED_FOR_WIN);
 
             // Синхронизируем HUD клиентам (goal мог измениться)
             sendSyncPacket(server);
+            initialized = true;
+            ComputerBlockEntity.syncTrackedBlockEntities(server);
         } catch (Exception e) {
-            System.err.println("[HackManager] Load error: " + e.getMessage());
+            Maniacrev.LOGGER.warn("[HackManager] Load error: {}", e.getMessage());
+            initialized = true;
         }
     }
 

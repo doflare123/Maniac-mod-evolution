@@ -164,8 +164,6 @@ public class NecromancerEventsUpdated {
 
         // Множественные взрывные кольца на разных высотах
         for (int i = 0; i < 3; i++) {
-            double heightOffset = i * 0.5;
-            ServerPlayer offsetPlayer = player; // Используем того же игрока
             org.example.maniacrevolution.util.ParticleShapes.drawExplosionRing(
                     player,
                     net.minecraft.core.particles.ParticleTypes.ENCHANT,

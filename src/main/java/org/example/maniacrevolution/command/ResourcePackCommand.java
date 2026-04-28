@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.example.maniacrevolution.Maniacrev;
 
 public class ResourcePackCommand {
-    private static boolean resourcePackEnabled = true;
+    private static boolean resourcePackEnabled = false;
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("maniacrev")

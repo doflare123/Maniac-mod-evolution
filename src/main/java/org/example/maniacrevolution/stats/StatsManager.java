@@ -36,7 +36,13 @@ public class StatsManager {
             Map.entry("quick_reflexes", 11), Map.entry("blindness", 12),
             Map.entry("bloodflow", 13), Map.entry("i_am_speed", 14),
             Map.entry("catch_mistakes", 15), Map.entry("computer_breaker", 16),
-            Map.entry("highlight", 17)
+            Map.entry("highlight", 17), Map.entry("football_fan", 18),
+            Map.entry("ejection", 19), Map.entry("family_discord", 20),
+            Map.entry("griefer", 21), Map.entry("guiding_light", 22),
+            Map.entry("silence", 23),
+            Map.entry("altruist_exe", 24), Map.entry("dutch_helm", 25),
+            Map.entry("idealych",26), Map.entry("independence", 27),
+            Map.entry("magic_lover", 28), Map.entry("mental_bond", 29)
     );
 
     // ── Инициализация драйвера ─────────────────────────────────────────────

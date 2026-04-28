@@ -65,26 +65,25 @@ public class FNAFGeneratorBlockEntity extends BlockEntity {
     public void serverTick(ServerLevel level, BlockPos pos, BlockState state) {
         boolean stateChanged = false;
 
-        // Если генератор ВКЛЮЧЕН - РАЗРЯЖАЕТСЯ
-        if (powered && charge > 0) {
+        // Если генератор ВКЛЮЧЕН - ЗАРЯЖАЕТСЯ
+        if (powered && charge < MAX_CHARGE) {
             charge += DRAIN_RATE;
             if (charge > MAX_CHARGE) charge = MAX_CHARGE;
             stateChanged = true;
 
-            // Частицы лавы когда включен
             particleTimer++;
-            if (particleTimer >= 20) { // Каждые 10 тиков
+            if (particleTimer >= 20) {
                 particleTimer = 0;
                 spawnLavaParticles(level, pos);
             }
         }
-        // Если генератор ВЫКЛЮЧЕН - ЗАРЯЖАЕТСЯ (восстанавливается)
-        else if (!powered && charge <= MAX_CHARGE) {
-            charge -= DRAIN_RATE; // Заряжается с той же скоростью, что и разряжается
+        // Если генератор ВЫКЛЮЧЕН - РАЗРЯЖАЕТСЯ
+        else if (!powered && charge > 0) {
+            charge -= DRAIN_RATE;
             if (charge < 0) charge = 0;
             stateChanged = true;
 
-            particleTimer = 0; // Сбрасываем таймер частиц
+            particleTimer = 0;
         }
 
         // Сохраняем изменения и синхронизируем

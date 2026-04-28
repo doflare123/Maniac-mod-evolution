@@ -24,7 +24,7 @@ import java.util.UUID;
 
 public class PlagueLanternItem extends Item implements ITimedAbility {
 
-    public static final float MANA_COST = 25f;
+    public static final float MANA_COST = 5f;
     public static final int COOLDOWN_TICKS = 400;
     public static final int COOLDOWN_SECONDS = 20;
     private static final String NBT_COOLDOWN_KEY = "PlagueLanternCooldownTick";

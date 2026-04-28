@@ -2,7 +2,7 @@ package org.example.maniacrevolution.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import org.example.maniacrevolution.client.renderer.WallhackRenderer;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -63,7 +63,7 @@ public class WallhackHighlightPacket {
             System.out.println("  Duration: " + packet.durationTicks + " ticks");
 
             // Обновляем список подсвеченных игроков на клиенте
-            WallhackRenderer.setHighlightedPlayers(
+            ClientOnlyExecutor.setWallhackHighlightedPlayers(
                     packet.highlightedPlayers,
                     packet.durationTicks
             );
