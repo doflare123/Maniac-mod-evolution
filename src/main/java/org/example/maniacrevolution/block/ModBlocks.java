@@ -38,6 +38,11 @@ public class ModBlocks {
                     .mapColor(MapColor.COLOR_PURPLE)
                     .strength(-1.0F, 3600000.0F)
                     .sound(SoundType.WOOL)
+    public static final RegistryObject<Block> SLOT_MACHINE = BLOCKS.register("slot_machine",
+            () -> new SlotMachineBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.0f, 6.0f)
+                    .sound(SoundType.METAL)
                     .noOcclusion()
             ));
 

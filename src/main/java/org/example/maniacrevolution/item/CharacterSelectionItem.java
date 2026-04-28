@@ -8,10 +8,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.example.maniacrevolution.character.CharacterType;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
-/**
- * Предмет для открытия меню выбора персонажа
- */
 public class CharacterSelectionItem extends Item {
     private final CharacterType type;
 
@@ -22,24 +20,16 @@ public class CharacterSelectionItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
-
-        if (level.isClientSide) {
-            // На клиенте открываем меню
-            net.minecraft.client.Minecraft.getInstance().setScreen(
-                    new org.example.maniacrevolution.client.screen.CharacterSelectionScreen(type)
-            );
+        if (level.isClientSide()) {
+            ClientOnlyExecutor.openCharacterSelectionScreen(this.type);
         }
-
-        return InteractionResultHolder.success(stack);
+        return InteractionResultHolder.success(player.getItemInHand(hand));
     }
 
     @Override
     public Component getName(ItemStack stack) {
-        if (type == CharacterType.SURVIVOR) {
-            return Component.literal("§aВыбор выжившего");
-        } else {
-            return Component.literal("§cВыбор маньяка");
-        }
+        return type == CharacterType.SURVIVOR
+                ? Component.literal("§aВыбор выжившего")
+                : Component.literal("§cВыбор маньяка");
     }
 }

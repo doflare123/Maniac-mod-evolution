@@ -10,6 +10,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -138,6 +140,8 @@ public class NetherSwapProjectile extends Projectile {
         target.teleportTo((ServerLevel) this.level(),
                 shooterPos.x, shooterPos.y, shooterPos.z,
                 java.util.Set.of(), shooterYaw, shooterPitch);
+
+        shooter.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 5 * 20, 0, false, false, true));
 
         spawnSwapEffects((ServerLevel) this.level(), shooterPos);
         spawnSwapEffects((ServerLevel) this.level(), targetPos);

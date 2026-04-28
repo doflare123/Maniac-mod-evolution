@@ -174,19 +174,19 @@ public class SettingsScreen extends Screen {
 
     private void buildGameRows(int startY) {
 
-        addRow(startY, 2, () -> tempHpBoost,
+        addRow(startY, 0, () -> tempHpBoost,
                 v -> tempHpBoost = Math.max(0, v), 2,
                 () -> tempHpBoost = GameSettings.DEFAULT_HP_BOOST);
 
-        addRow(startY, 3, () -> tempManiacCount,
+        addRow(startY, 1, () -> tempManiacCount,
                 v -> tempManiacCount = Math.max(1, v), 1,
                 () -> tempManiacCount = GameSettings.DEFAULT_MANIAC_COUNT);
 
-        addRow(startY, 4, () -> tempGameTime,
+        addRow(startY, 2, () -> tempGameTime,
                 v -> tempGameTime = Math.max(1, v), 1,
                 () -> tempGameTime = GameSettings.DEFAULT_GAME_TIME);
 
-        addMapRow(startY, 5);
+        addMapRow(startY, 3);
     }
 
     private void buildComputerRows(int startY) {

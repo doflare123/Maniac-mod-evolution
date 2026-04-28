@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -34,6 +35,37 @@ public class ComputerBlockEntity extends BlockEntity {
         return java.util.Collections.unmodifiableSet(TRACKED_POSITIONS);
     }
 
+    public static void resetTrackedBlockEntities(net.minecraft.server.MinecraftServer server) {
+        if (server == null) return;
+        java.util.Set<BlockPos> positions;
+        synchronized (TRACKED_POSITIONS) {
+            positions = new java.util.HashSet<>(TRACKED_POSITIONS);
+        }
+        for (BlockPos pos : positions) {
+            for (ServerLevel level : server.getAllLevels()) {
+                if (level.getBlockEntity(pos) instanceof ComputerBlockEntity computer) {
+                    computer.resetProgress();
+                }
+            }
+        }
+    }
+
+    public static void syncTrackedBlockEntities(net.minecraft.server.MinecraftServer server) {
+        if (server == null) return;
+        java.util.Set<BlockPos> positions;
+        synchronized (TRACKED_POSITIONS) {
+            positions = new java.util.HashSet<>(TRACKED_POSITIONS);
+        }
+        for (BlockPos pos : positions) {
+            for (ServerLevel level : server.getAllLevels()) {
+                if (level.getBlockEntity(pos) instanceof ComputerBlockEntity computer) {
+                    computer.applyHackManagerState();
+                    computer.syncToClient();
+                }
+            }
+        }
+    }
+
     private int computerId = 1;
     private float hackProgress = 0f;   // 0.0 .. 1.0
     private boolean isHacked = false;
@@ -52,13 +84,24 @@ public class ComputerBlockEntity extends BlockEntity {
 
     public ComputerBlockEntity(BlockPos pos, BlockState state) {
         super(ModHackRegistry.COMPUTER_BLOCK_ENTITY.get(), pos, state);
-        TRACKED_POSITIONS.add(pos);
+        registerPosition();
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
         TRACKED_POSITIONS.remove(worldPosition);
+    }
+
+    @Override
+    public void setLevel(net.minecraft.world.level.Level level) {
+        super.setLevel(level);
+        registerPosition();
+        applyHackManagerState();
+    }
+
+    private void registerPosition() {
+        TRACKED_POSITIONS.add(worldPosition);
     }
 
     // ── Клиентский тик (анимация) ─────────────────────────────────────────────
@@ -93,6 +136,7 @@ public class ComputerBlockEntity extends BlockEntity {
     public void resetProgress() {
         hackProgress = 0f;
         isHacked = false;
+        blocked = false;
         setChanged();
         syncToClient();
     }
@@ -101,7 +145,11 @@ public class ComputerBlockEntity extends BlockEntity {
 
     private void syncToClient() {
         if (level != null && !level.isClientSide()) {
+            setChanged();
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            if (level instanceof ServerLevel serverLevel) {
+                serverLevel.getChunkSource().blockChanged(worldPosition);
+            }
         }
     }
 
@@ -139,5 +187,17 @@ public class ComputerBlockEntity extends BlockEntity {
         hackProgress = tag.getFloat("HackProgress");
         isHacked     = tag.getBoolean("IsHacked");
         blocked = tag.getBoolean("Blocked");
+        registerPosition();
+        applyHackManagerState();
+    }
+
+    private void applyHackManagerState() {
+        if (level == null || level.isClientSide() || !HackManager.isInitialized()) return;
+
+        HackManager manager = HackManager.get();
+        float pointsRequired = Math.max(0.0001f, HackConfig.HACK_POINTS_REQUIRED);
+        hackProgress = Math.min(1f, Math.max(0f, manager.getProgress(computerId) / pointsRequired));
+        isHacked = manager.isHacked(computerId);
+        blocked = manager.isBlocked(computerId);
     }
 }

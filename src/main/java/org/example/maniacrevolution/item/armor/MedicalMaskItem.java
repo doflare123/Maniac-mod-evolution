@@ -154,16 +154,7 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
     }
 
     private String getActivationKeyName() {
-        try {
-            // Получаем KeyMapping
-            net.minecraft.client.KeyMapping keyMapping = org.example.maniacrevolution.keybind.ModKeybinds.ACTIVATE_ARMOR_ABILITY;
-
-            // Получаем локализованное название клавиши
-            return keyMapping.getTranslatedKeyMessage().getString();
-        } catch (Exception e) {
-            // Если не удалось получить (например, на сервере), возвращаем дефолт
-            return "V";
-        }
+        return "V";
     }
 
     @Override

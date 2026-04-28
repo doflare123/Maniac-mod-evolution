@@ -1,17 +1,13 @@
 package org.example.maniacrevolution.event;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
-import org.example.maniacrevolution.gui.GuideScreen;
-import org.example.maniacrevolution.gui.pages.GuidePage;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.OpenGuidePacket;
 
@@ -60,7 +56,7 @@ public class FirstJoinHandler {
 
                 if (player != null) {
                     ModNetworking.sendToPlayer(
-                            new OpenGuidePacket(GuidePage.PageType.TUTORIAL),
+                            new OpenGuidePacket("TUTORIAL"),
                             player
                     );
                     Maniacrev.LOGGER.info("[FirstJoin] Opened guide for: {}", player.getName().getString());
@@ -78,17 +74,6 @@ public class FirstJoinHandler {
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             pendingGuideOpens.remove(player.getUUID());
-        }
-    }
-
-    @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = Maniacrev.MODID)
-    public static class ClientHandler {
-
-        public static void openGuide(GuidePage.PageType page) {
-            Minecraft mc = Minecraft.getInstance();
-            mc.execute(() -> {
-                mc.setScreen(new GuideScreen(page));
-            });
         }
     }
 }
