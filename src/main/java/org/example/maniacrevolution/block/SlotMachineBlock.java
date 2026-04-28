@@ -7,6 +7,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -117,6 +118,7 @@ public class SlotMachineBlock extends Block {
         }
 
         serverPlayer.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_SLOT_COOLDOWN.get(), 30 * 20, 0, false, true, true));
+        serverPlayer.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 70, 0, false, false, true));
         level.playSound(null, pos, ModSounds.SLOT_INSERT.get(), SoundSource.BLOCKS, 0.9f, 1.0f);
         DodepovichCasinoManager.playSlotMachine(serverPlayer, coinItem.getCoin());
         return InteractionResult.SUCCESS;

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.api.distmarker.Dist;
@@ -23,8 +24,6 @@ public class DodepovichAnimationOverlay {
     private static final long COIN_FLIP_MS = 500;
     private static final long COIN_HOLD_MS = 850;
     private static final long SLOT_DURATION_MS = 3200;
-    private static final int COIN_GOOD_COLOR = 0xFF58D878;
-    private static final int COIN_BAD_COLOR = 0xFFE14F4F;
     private static final List<ItemStack> FAKE_ICONS = List.of(
             new ItemStack(Items.APPLE),
             new ItemStack(Items.BLAZE_POWDER),
@@ -86,8 +85,7 @@ public class DodepovichAnimationOverlay {
         int y = settled ? baseY - 8 : baseY - arc;
 
         float phase = settled ? (animation.good ? 1.0f : 0.0f) : (float) ((elapsed / 65) % 2);
-        boolean greenSide = settled ? animation.good : phase >= 1.0f;
-        int color = greenSide ? COIN_GOOD_COLOR : COIN_BAD_COLOR;
+        boolean frontSide = settled ? animation.good : phase >= 1.0f;
 
         float flip = settled ? 1.0f : Math.abs((flipProgress * 10.0f) % 2.0f - 1.0f);
         int sizeX = Math.max(10, (int) (58 * flip));
@@ -95,25 +93,23 @@ public class DodepovichAnimationOverlay {
 
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, 250);
-        renderCoinItem(graphics, animation.coin, centerX, y, sizeX, sizeY, greenSide);
+        renderCoinSide(graphics, animation.coin, centerX, y, sizeX, sizeY, frontSide);
         graphics.pose().popPose();
     }
 
-    private static void renderCoinItem(GuiGraphics graphics, DodepovichCoin coin, int centerX, int centerY,
-                                       int sizeX, int sizeY, boolean goodSide) {
-        ItemStack stack = getCoinStack(coin);
-        float red = goodSide ? 0.62f : 1.0f;
-        float green = goodSide ? 1.0f : 0.52f;
-        float blue = goodSide ? 0.62f : 0.52f;
-
-        graphics.fill(centerX - sizeX / 2 + 4, centerY - sizeY / 2 + 5,
-                centerX + sizeX / 2 + 4, centerY + sizeY / 2 + 5, 0x55000000);
+    private static void renderCoinSide(GuiGraphics graphics, DodepovichCoin coin, int centerX, int centerY,
+                                       int sizeX, int sizeY, boolean frontSide) {
         graphics.pose().pushPose();
         graphics.pose().translate(centerX - sizeX / 2.0f, centerY - sizeY / 2.0f, 0);
         graphics.pose().scale(sizeX / 16.0f, sizeY / 16.0f, 1.0f);
-        RenderSystem.setShaderColor(red, green, blue, 1.0f);
-        graphics.renderItem(stack, 0, 0);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        if (frontSide) {
+            graphics.renderItem(getCoinStack(coin), 0, 0);
+        } else {
+            ResourceLocation backTexture = new ResourceLocation(Maniacrev.MODID, "textures/item/" + coin.getId() + "_back.png");
+            RenderSystem.enableBlend();
+            graphics.blit(backTexture, 0, 0, 0, 0, 16, 16, 16, 16);
+            RenderSystem.disableBlend();
+        }
         graphics.pose().popPose();
     }
 
@@ -208,10 +204,8 @@ public class DodepovichAnimationOverlay {
                 ? result.getIcon(slotAnimation.coin)
                 : FAKE_ICONS.get((reel * 2 + 1) % FAKE_ICONS.size());
 
-        if (result == SlotMachineResult.COIN_GOOD) {
-            renderTintedItem(graphics, stack, x, y, 0.45f, 1.0f, 0.45f);
-        } else if (result == SlotMachineResult.COIN_BAD) {
-            renderTintedItem(graphics, stack, x, y, 1.0f, 0.35f, 0.35f);
+        if (result == SlotMachineResult.COIN_BAD) {
+            renderCoinBackTexture(graphics, slotMachineCoin(), x, y);
         } else {
             graphics.renderItem(stack, x, y);
         }
@@ -221,12 +215,15 @@ public class DodepovichAnimationOverlay {
         graphics.renderItem(FAKE_ICONS.get(seed % FAKE_ICONS.size()), x, y);
     }
 
-    private static void renderTintedItem(GuiGraphics graphics, ItemStack stack, int x, int y, float red, float green, float blue) {
-        RenderSystem.setShaderColor(red, green, blue, 1.0f);
-        graphics.renderItem(stack, x, y);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        int overlayColor = ((int) (red * 80) << 16) | ((int) (green * 80) << 8) | (int) (blue * 80) | 0x44000000;
-        graphics.fill(x, y, x + 16, y + 16, overlayColor);
+    private static void renderCoinBackTexture(GuiGraphics graphics, DodepovichCoin coin, int x, int y) {
+        ResourceLocation backTexture = new ResourceLocation(Maniacrev.MODID, "textures/item/" + coin.getId() + "_back.png");
+        RenderSystem.enableBlend();
+        graphics.blit(backTexture, x, y, 0, 0, 16, 16, 16, 16);
+        RenderSystem.disableBlend();
+    }
+
+    private static DodepovichCoin slotMachineCoin() {
+        return slotAnimation != null ? slotAnimation.coin : DodepovichCoin.ELUSIVENESS;
     }
 
     private static boolean isReelStopped(int reel, long elapsed) {

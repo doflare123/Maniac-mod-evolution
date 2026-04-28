@@ -51,12 +51,12 @@ public final class DodepovichCasinoManager {
     public static final int CREDIT_HEAL_SECONDS = 30;
     public static final int CREDIT_DAMAGE_SECONDS = 30;
     public static final float CREDIT_DAMAGE_MULTIPLIER = 1.15f;
-    public static final int JACKPOT_SECONDS = 60;
+    public static final int JACKPOT_SECONDS = 75;
     public static final double JACKPOT_BASE_CHANCE = 0.005;
     public static final double JACKPOT_MISS_BONUS = 0.0015;
     public static final double JACKPOT_MAX_CHANCE = 0.03;
     public static final double DEATH_BASE_CHANCE = 0.002;
-    public static final double DEATH_JACKPOT_MULTIPLIER = 3.0;
+    public static final double DEATH_JACKPOT_MULTIPLIER = 10.0;
     private static final String SURVIVOR_CLASS_OBJECTIVE = "SurvivorClass";
     private static final Random RANDOM = new Random();
     private static final Map<UUID, DodepovichCoin> LAST_COIN = new ConcurrentHashMap<>();
@@ -93,7 +93,7 @@ public final class DodepovichCasinoManager {
                 new OpenCoinFlipAnimationPacket(coin, good));
 
         player.level().playSound(null, player.blockPosition(),
-                ModSounds.COIN_FLIP.get(), SoundSource.PLAYERS, 0.8f, 1.0f);
+                ModSounds.COIN_FLIP.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
 
         schedule(player, 10, delayedPlayer -> applyCoinEffect(delayedPlayer, coin, good, true));
     }
@@ -200,6 +200,8 @@ public final class DodepovichCasinoManager {
                 player.displayClientMessage(Component.literal("§aКредит: 30 сек восстановления, затем 30 сек выплаты с процентами."), true);
             }
             case DEATH -> {
+                player.level().playSound(null, player.blockPosition(),
+                        ModSounds.SLOT_DEATH.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
                 player.getServer().getPlayerList().broadcastSystemMessage(
                         Component.literal("§4§lСМЕРТЬ! §cАвтомат забрал " + player.getName().getString() + "."),
                         false

@@ -324,8 +324,8 @@
   "tooltip.maniacrev.coin_eagle.bad": "You get Blindness for %s sec.",
   "tooltip.maniacrev.coin_debt.good": "Your next incoming damage is fully blocked. The effect waits %s sec.",
   "tooltip.maniacrev.coin_debt.bad": "Your next incoming damage is doubled. The effect waits %s sec.",
-  "tooltip.maniacrev.coin_reroll.good": "Repeats the last non-reroll coin. If history is empty, chooses a random coin.",
-  "tooltip.maniacrev.coin_reroll.bad": "Repeats the last non-reroll coin. If history is empty, chooses a random coin.",
+  "tooltip.maniacrev.coin_reroll.good": "Repeats the positive result of the last non-reroll coin. If history is empty, chooses a random coin.",
+  "tooltip.maniacrev.coin_reroll.bad": "Repeats the negative result of the last non-reroll coin. If history is empty, chooses a random coin.",
   "tooltip.maniacrev.coin_fate.good": "Revives all spectator survivors and teleports them to a random active maniac.",
   "tooltip.maniacrev.coin_fate.bad": "You die and deal %s damage to every active ally."
 }

@@ -62,6 +62,11 @@ public class ModSounds {
                     () -> SoundEvent.createVariableRangeEvent(
                             new ResourceLocation(Maniacrev.MODID, "slot_jackpot")));
 
+    public static final RegistryObject<SoundEvent> SLOT_DEATH =
+            SOUND_EVENTS.register("slot_death",
+                    () -> SoundEvent.createVariableRangeEvent(
+                            new ResourceLocation(Maniacrev.MODID, "slot_death")));
+
     // Регистрация в главном классе мода:
     // ModSounds.SOUND_EVENTS.register(modEventBus);
 }

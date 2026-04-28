@@ -16,7 +16,12 @@
   ,
   "coin_flip": {
     "sounds": [
-      "maniacrev:coin_flip"
+      {
+        "name": "maniacrev:coin_flip",
+        "volume": 1.0,
+        "pitch": 1.0,
+        "type": "file"
+      }
     ]
   },
   "slot_insert": {
@@ -37,6 +42,11 @@
   "slot_jackpot": {
     "sounds": [
       "maniacrev:slot_jackpot"
+    ]
+  },
+  "slot_death": {
+    "sounds": [
+      "maniacrev:slot_death"
     ]
   }
 }

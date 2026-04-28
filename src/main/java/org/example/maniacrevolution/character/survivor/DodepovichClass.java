@@ -5,7 +5,7 @@ import org.example.maniacrevolution.character.CharacterType;
 
 public class DodepovichClass extends CharacterClass {
     public DodepovichClass() {
-        super("dodepovich", "Кирилл Додепович", CharacterType.SURVIVOR,
+        super("dodepovich", "Никита Додепович", CharacterType.SURVIVOR,
                 "Азартный выживший, который решает проблемы монеткой и автоматом. Удача может спасти его, но долг казино всегда найдёт способ вернуться.",
                 13, 4);
 
