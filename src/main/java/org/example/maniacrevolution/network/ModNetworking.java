@@ -86,6 +86,18 @@ public class ModNetworking {
                 .consumerMainThread(WallhackGlowPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(OpenCoinFlipAnimationPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OpenCoinFlipAnimationPacket::encode)
+                .decoder(OpenCoinFlipAnimationPacket::decode)
+                .consumerMainThread(OpenCoinFlipAnimationPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(OpenSlotMachinePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OpenSlotMachinePacket::encode)
+                .decoder(OpenSlotMachinePacket::decode)
+                .consumerMainThread(OpenSlotMachinePacket::handle)
+                .add();
+
         // Client -> Server
         CHANNEL.messageBuilder(ActivatePerkPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(ActivatePerkPacket::encode)
