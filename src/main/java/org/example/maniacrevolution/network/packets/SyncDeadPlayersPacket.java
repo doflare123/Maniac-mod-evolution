@@ -2,7 +2,7 @@ package org.example.maniacrevolution.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import org.example.maniacrevolution.gui.ResurrectionScreen;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ public class SyncDeadPlayersPacket {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
             // Обновляем GUI
-            ResurrectionScreen.updateDeadPlayers(deadPlayers);
+            ClientOnlyExecutor.updateDeadPlayers(deadPlayers);
         });
         context.setPacketHandled(true);
         return true;

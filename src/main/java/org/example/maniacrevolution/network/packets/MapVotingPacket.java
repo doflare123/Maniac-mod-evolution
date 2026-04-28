@@ -1,9 +1,8 @@
 package org.example.maniacrevolution.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,15 +47,8 @@ public class MapVotingPacket {
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        boolean capturedOpen = this.open;
-        int capturedTime = this.timeRemaining;
-        Map<String, Integer> capturedVotes = this.voteCount;
-        String capturedMapId = this.playerVotedMapId;
         ctx.get().enqueueWork(() ->
-                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () ->
-                        () -> org.example.maniacrevolution.client.ClientScreenHelper
-                                .handleMapVotingPacket(capturedOpen, capturedTime, capturedVotes, capturedMapId))
-        );
+                ClientOnlyExecutor.handleMapVotingPacket(open, timeRemaining, voteCount, playerVotedMapId));
         return true;
     }
 }

@@ -1,6 +1,5 @@
 package org.example.maniacrevolution.cosmetic;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;

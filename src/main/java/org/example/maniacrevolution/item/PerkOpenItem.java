@@ -8,8 +8,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -25,8 +24,7 @@ public class PerkOpenItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
 
         if (level.isClientSide) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () ->
-                    org.example.maniacrevolution.client.ClientScreenHelper::openPerkScreen);
+            ClientOnlyExecutor.openPerkScreen();
             return InteractionResultHolder.success(stack);
         }
 

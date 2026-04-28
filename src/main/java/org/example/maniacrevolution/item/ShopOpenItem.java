@@ -8,10 +8,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
 import org.example.maniacrevolution.data.ClientGameState;
 import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -32,8 +31,7 @@ public class ShopOpenItem extends Item {
                         Component.literal("§cМагазин доступен только вне игры!"), true);
                 return InteractionResultHolder.fail(stack);
             }
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () ->
-                    org.example.maniacrevolution.client.ClientScreenHelper::openShopScreen);
+            ClientOnlyExecutor.openShopScreen();
             return InteractionResultHolder.success(stack);
         }
 

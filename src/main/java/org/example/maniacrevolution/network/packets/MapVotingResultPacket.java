@@ -1,9 +1,8 @@
 package org.example.maniacrevolution.network.packets;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import org.example.maniacrevolution.client.screen.MapVotingScreen;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,9 +41,7 @@ public class MapVotingResultPacket {
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            if (Minecraft.getInstance().screen instanceof MapVotingScreen screen) {
-                screen.showResult(winnerMapId, finalVoteCount);
-            }
+            ClientOnlyExecutor.showMapVotingResult(winnerMapId, finalVoteCount);
         });
         return true;
     }

@@ -6,8 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 public class RecipeBookItem extends Item {
 
@@ -18,8 +17,7 @@ public class RecipeBookItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (level.isClientSide()) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () ->
-                    org.example.maniacrevolution.client.ClientScreenHelper::openRecipeBookScreen);
+            ClientOnlyExecutor.openRecipeBookScreen();
         }
         return InteractionResultHolder.success(player.getItemInHand(hand));
     }

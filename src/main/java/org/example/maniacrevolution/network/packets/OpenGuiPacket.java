@@ -1,9 +1,8 @@
 package org.example.maniacrevolution.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.function.Supplier;
 
@@ -23,12 +22,7 @@ public class OpenGuiPacket {
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            String typeName = guiType.name();
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () ->
-                    () -> org.example.maniacrevolution.client.ClientScreenHelper
-                            .openGuiByType(typeName));
-        });
+        ctx.get().enqueueWork(() -> ClientOnlyExecutor.openGuiByType(guiType.name()));
         ctx.get().setPacketHandled(true);
     }
 
