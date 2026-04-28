@@ -40,6 +40,13 @@ public class ModBlocks {
                     .sound(SoundType.WOOL)
                     .noOcclusion()
             ));
+    public static final RegistryObject<Block> SLOT_MACHINE = BLOCKS.register("slot_machine",
+            () -> new SlotMachineBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.0f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+            ));
 
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
