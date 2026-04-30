@@ -63,10 +63,12 @@ public final class NightmareConfig {
     public static final int FEAR_RACE_COUNTDOWN_TICKS = 3 * 20;
     /** Длина прямой дороги гонки в блоках. */
     public static final int FEAR_RACE_LENGTH = 96;
+    public static final int FEAR_RACE_AREA_WIDTH = 31;
+    public static final int FEAR_RACE_CORRIDOR_WIDTH = 3;
     /** Ширина дороги гонки в блоках. */
     public static final int FEAR_RACE_WIDTH = 7;
     /** Скорость преследователя страха за тик. */
-    public static final double FEAR_CHASER_SPEED = 0.245D;
+    public static final double FEAR_CHASER_SPEED = 0.275D;
     /** Дистанция, на которой преследователь считается догнавшим выжившего. */
     public static final double FEAR_CHASER_CATCH_RADIUS = 1.35D;
     /** Урон при провале гонки по таймеру или при поимке. */

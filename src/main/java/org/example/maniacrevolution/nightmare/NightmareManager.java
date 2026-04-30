@@ -12,6 +12,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.data.PlayerData;
@@ -294,7 +296,7 @@ public final class NightmareManager {
                 player.displayClientMessage(Component.literal(String.valueOf(seconds)), true);
                 return;
             }
-            if (state.raceFinishPos != null && player.blockPosition().distSqr(state.raceFinishPos) <= 6.25D) {
+            if (isRaceFinishDoorOpened(player, state)) {
                 finishTrial(player, state, false, 0.0F);
                 return;
             }
@@ -380,6 +382,14 @@ public final class NightmareManager {
 
     private void rescueFromTrial(ServerPlayer player, NightmarePlayerState state) {
         finishTrial(player, state, false, NightmareConfig.COCOON_RESCUE_DAMAGE);
+    }
+
+    private boolean isRaceFinishDoorOpened(ServerPlayer player, NightmarePlayerState state) {
+        if (state.raceFinishPos == null || player.level() != state.returnLevel) return false;
+        if (player.blockPosition().distSqr(state.raceFinishPos) > 9.0D) return false;
+
+        BlockState doorState = player.level().getBlockState(state.raceFinishPos);
+        return doorState.getBlock() instanceof DoorBlock && doorState.getValue(DoorBlock.OPEN);
     }
 
     private ServerPlayer findGazedSurvivor(ServerPlayer keeper, double range) {
