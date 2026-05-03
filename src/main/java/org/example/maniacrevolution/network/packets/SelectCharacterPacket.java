@@ -3,11 +3,10 @@ package org.example.maniacrevolution.network.packets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterRegistry;
-import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.data.PlayerDataManager;
 
 import java.util.function.Supplier;
 
@@ -50,11 +49,8 @@ public class SelectCharacterPacket {
                             player.getName().getString(), scoreboardName, classId)
             );
 
-            // Клиентские данные — для мода
-            ModNetworking.CHANNEL.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new SyncPlayerClassPacket(characterClass.getType(), classId)
-            );
+            // Серверные и клиентские данные — для логики мода без зависимости от scoreboard
+            PlayerDataManager.setSelectedClass(player, characterClass.getType(), classId);
 
             Maniacrev.LOGGER.info("Player {} selected character: {} (type={}, id={})",
                     player.getName().getString(),

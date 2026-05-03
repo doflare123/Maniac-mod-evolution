@@ -13,6 +13,8 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import net.minecraftforge.network.PacketDistributor;
+import org.example.maniacrevolution.character.CharacterType;
+import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.OpenCoinFlipAnimationPacket;
@@ -57,7 +59,6 @@ public final class DodepovichCasinoManager {
     public static final double JACKPOT_MAX_CHANCE = 0.03;
     public static final double DEATH_BASE_CHANCE = 0.002;
     public static final double DEATH_JACKPOT_MULTIPLIER = 10.0;
-    private static final String SURVIVOR_CLASS_OBJECTIVE = "SurvivorClass";
     private static final Random RANDOM = new Random();
     private static final Map<UUID, DodepovichCoin> LAST_COIN = new ConcurrentHashMap<>();
     private static final Map<UUID, Integer> JACKPOT_MISS_STREAK = new ConcurrentHashMap<>();
@@ -69,8 +70,12 @@ public final class DodepovichCasinoManager {
     }
 
     public static boolean isDodepovich(ServerPlayer player) {
+        if (PlayerDataManager.isSelectedClass(player, CharacterType.SURVIVOR, CLASS_ID)) {
+            return true;
+        }
+
         Scoreboard scoreboard = player.getScoreboard();
-        Objective objective = scoreboard.getObjective(SURVIVOR_CLASS_OBJECTIVE);
+        Objective objective = scoreboard.getObjective(CharacterType.SURVIVOR.getScoreboardName());
         if (objective == null) return false;
         if (!scoreboard.hasPlayerScore(player.getScoreboardName(), objective)) return false;
         return scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective).getScore() == CLASS_ID;

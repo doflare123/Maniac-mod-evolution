@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.data;
 
 import org.example.maniacrevolution.cosmetic.CosmeticData;
+import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.perk.*;
 import org.example.maniacrevolution.preset.PerkPreset;
 import net.minecraft.nbt.CompoundTag;
@@ -21,6 +22,10 @@ public class PlayerData {
     // Выбранные перки на текущую игру (максимум 2)
     private final List<PerkInstance> selectedPerks = new ArrayList<>(2);
     private int activePerkIndex = 0;
+
+    // Выбранные классы на сервере. Scoreboard остаётся для датапака, это источник для логики мода.
+    private int survivorClassId = -1;
+    private int maniacClassId = -1;
 
     // Пресеты (максимум 2 по умолчанию, можно докупить)
     private final List<PerkPreset> presets = new ArrayList<>();
@@ -194,6 +199,37 @@ public class PlayerData {
         return cosmeticData;
     }
 
+    // === Классы ===
+
+    public int getSurvivorClassId() {
+        return survivorClassId;
+    }
+
+    public int getManiacClassId() {
+        return maniacClassId;
+    }
+
+    public void setSelectedClass(CharacterType type, int classId) {
+        if (type == CharacterType.SURVIVOR) {
+            survivorClassId = classId;
+            maniacClassId = -1;
+        } else {
+            maniacClassId = classId;
+            survivorClassId = -1;
+        }
+    }
+
+    public void clearSelectedClasses() {
+        survivorClassId = -1;
+        maniacClassId = -1;
+    }
+
+    public boolean isSelectedClass(CharacterType type, int classId) {
+        return type == CharacterType.SURVIVOR
+                ? survivorClassId == classId
+                : maniacClassId == classId;
+    }
+
     // === Тик ===
 
     public void tick(ServerPlayer player, PerkPhase currentPhase) {
@@ -224,6 +260,8 @@ public class PlayerData {
         tag.putInt("experience", experience);
         tag.putInt("coins", coins);
         tag.putInt("maxPresets", maxPresets);
+        tag.putInt("survivorClassId", survivorClassId);
+        tag.putInt("maniacClassId", maniacClassId);
 
         // Пресеты
         ListTag presetsTag = new ListTag();
@@ -254,6 +292,8 @@ public class PlayerData {
         data.coins = tag.getInt("coins");
         data.maxPresets = tag.getInt("maxPresets");
         if (data.maxPresets < 2) data.maxPresets = 2;
+        data.survivorClassId = tag.contains("survivorClassId") ? tag.getInt("survivorClassId") : -1;
+        data.maniacClassId = tag.contains("maniacClassId") ? tag.getInt("maniacClassId") : -1;
 
         // Пресеты
         ListTag presetsTag = tag.getList("presets", Tag.TAG_COMPOUND);
