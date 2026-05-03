@@ -2,6 +2,9 @@ package org.example.maniacrevolution.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
@@ -43,12 +46,17 @@ public class SelectCharacterPacket {
             String scoreboardName = characterClass.getType().getScoreboardName();
             int classId = characterClass.getScoreboardId();
 
-            // Скорборд — для датапака
-            player.getServer().getCommands().performPrefixedCommand(
-                    player.createCommandSourceStack().withSuppressedOutput(),
-                    String.format("scoreboard players set %s %s %d",
-                            player.getName().getString(), scoreboardName, classId)
-            );
+            Scoreboard scoreboard = player.getServer().getScoreboard();
+            Objective objective = scoreboard.getObjective(scoreboardName);
+            if (objective == null) {
+                objective = scoreboard.addObjective(
+                        scoreboardName,
+                        ObjectiveCriteria.DUMMY,
+                        net.minecraft.network.chat.Component.literal(scoreboardName),
+                        ObjectiveCriteria.RenderType.INTEGER
+                );
+            }
+            scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective).setScore(classId);
 
             // Клиентские данные — для мода
             ModNetworking.CHANNEL.send(
