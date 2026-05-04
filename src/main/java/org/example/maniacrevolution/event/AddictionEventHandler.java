@@ -16,6 +16,9 @@ import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.capability.AddictionCapability;
 import org.example.maniacrevolution.capability.AddictionCapabilityProvider;
+import org.example.maniacrevolution.downed.DownedCapability;
+import org.example.maniacrevolution.downed.DownedData;
+import org.example.maniacrevolution.downed.DownedState;
 import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SyncAddictionVisibilityPacket;
@@ -65,6 +68,14 @@ public class AddictionEventHandler {
         }
 
         if (!isAddict) return;
+
+        DownedData downedData = DownedCapability.get(player);
+        if (downedData != null && downedData.getState() == DownedState.DOWNED) {
+            if (player.tickCount % 4 == 0) {
+                cap.syncToClient(player);
+            }
+            return;
+        }
 
         // ── Пауза от бонка ────────────────────────────────────────────────────
         if (cap.isPaused()) {

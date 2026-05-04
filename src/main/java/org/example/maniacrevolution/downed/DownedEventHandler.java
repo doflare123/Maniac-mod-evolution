@@ -19,6 +19,12 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.data.PlayerData;
+import org.example.maniacrevolution.data.PlayerDataManager;
+import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.perk.Perk;
+import org.example.maniacrevolution.perk.PerkInstance;
+import org.example.maniacrevolution.perk.PerkPhase;
 
 import java.util.*;
 
@@ -85,23 +91,28 @@ public class DownedEventHandler {
     private static void checkAllDowned(net.minecraft.server.MinecraftServer server, Team survivorTeam) {
         if (server == null) return;
 
-        List<ServerPlayer> allSurvivors = new ArrayList<>();
+        List<ServerPlayer> standingSurvivors = new ArrayList<>();
         List<ServerPlayer> downedSurvivors = new ArrayList<>();
+        boolean hasReadySelfRevive = false;
 
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             if (p.isSpectator()) continue;
             Team t = p.getTeam();
             if (t == null || !t.getName().equals(survivorTeam.getName())) continue;
 
-            allSurvivors.add(p);
             DownedData d = DownedCapability.get(p);
             if (d != null && d.getState() == DownedState.DOWNED) {
                 downedSurvivors.add(p);
+                if (hasReadySelfRevive(p)) {
+                    hasReadySelfRevive = true;
+                }
+            } else {
+                standingSurvivors.add(p);
             }
         }
 
-        // Если все выжившие (не в спектаторе) лежат — убиваем всех
-        if (!allSurvivors.isEmpty() && allSurvivors.size() == downedSurvivors.size()) {
+        // Если стоящих не осталось и никто из лежащих не может самоподняться — убиваем всех
+        if (!downedSurvivors.isEmpty() && standingSurvivors.isEmpty() && !hasReadySelfRevive) {
             server.getPlayerList().broadcastSystemMessage(
                     Component.literal("§4Все выжившие упали! Никто не выжил."), false);
             for (ServerPlayer downed : downedSurvivors) {
@@ -128,14 +139,6 @@ public class DownedEventHandler {
         Team team = player.getTeam();
         if (team == null || !team.getName().equalsIgnoreCase("survivors")) return;
 
-        // Если этот игрок — единственный живой (не spectator) в своей команде, сразу умирает
-        if (isLastAliveSurvivor(player, team)) {
-            Maniacrev.LOGGER.info("[Downed] {} — последний выживший, умирает сразу", player.getName().getString());
-            // ДОБАВИТЬ: убиваем всех кто ещё лежит
-            checkAllDowned(player.getServer(), team);
-            return;
-        }
-
         event.setCanceled(true);
 
         data.setState(DownedState.DOWNED);
@@ -153,28 +156,6 @@ public class DownedEventHandler {
 
         // НОВОЕ: проверяем — если теперь все лежат, всех убиваем
         checkAllDowned(player.getServer(), team);
-    }
-
-    /**
-     * Возвращает true если player — единственный в своей команде кто не в spectator режиме
-     * и не лежит (т.е. некому его поднять).
-     */
-    private static boolean isLastAliveSurvivor(ServerPlayer player, Team team) {
-        if (player.getServer() == null) return false;
-        for (ServerPlayer other : player.getServer().getPlayerList().getPlayers()) {
-            if (other == player) continue;
-            // Только игроки из той же команды
-            Team otherTeam = other.getTeam();
-            if (otherTeam == null || !otherTeam.getName().equals(team.getName())) continue;
-            // Если игрок не в spectator и не лежит — есть кому поднять
-            if (!other.isSpectator()) {
-                DownedData otherData = DownedCapability.get(other);
-                if (otherData == null || otherData.getState() != DownedState.DOWNED) {
-                    return false;
-                }
-            }
-        }
-        return true; // все остальные в spectator или лежат
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -609,5 +590,24 @@ public class DownedEventHandler {
         if (player.getServer() == null) return;
         player.getServer().getPlayerList().broadcastSystemMessage(
                 Component.literal(text), false);
+    }
+
+    private static boolean hasReadySelfRevive(ServerPlayer player) {
+        PlayerData data = PlayerDataManager.get(player);
+        if (data == null) return false;
+
+        PerkPhase phase = GameManager.getCurrentPhase();
+
+        for (PerkInstance perkInstance : data.getSelectedPerks()) {
+            Perk perk = perkInstance.getPerk();
+            if (!"independence".equals(perk.getId())) continue;
+            if (perkInstance.isOnCooldown()) continue;
+            if (phase != null && !perk.isActiveInPhase(phase)) continue;
+            if (!perk.hasMana(player)) continue;
+            if (!perk.meetsActivationCondition(player)) continue;
+            return true;
+        }
+
+        return false;
     }
 }
