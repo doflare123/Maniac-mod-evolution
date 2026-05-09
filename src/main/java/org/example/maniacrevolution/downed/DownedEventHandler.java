@@ -3,7 +3,7 @@ package org.example.maniacrevolution.downed;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import org.example.maniacrevolution.network.ModNetworking;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Pose;
@@ -22,6 +22,7 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.perk.Perk;
 import org.example.maniacrevolution.perk.PerkInstance;
 import org.example.maniacrevolution.perk.PerkPhase;
@@ -111,14 +112,11 @@ public class DownedEventHandler {
             }
         }
 
-        // Если стоящих не осталось и никто из лежащих не может самоподняться — убиваем всех
+        // Если стоящих не осталось и никто из лежащих не может самоподняться — завершаем игру
         if (!downedSurvivors.isEmpty() && standingSurvivors.isEmpty() && !hasReadySelfRevive) {
             server.getPlayerList().broadcastSystemMessage(
                     Component.literal("§4Все выжившие упали! Никто не выжил."), false);
-            for (ServerPlayer downed : downedSurvivors) {
-                DownedData d = DownedCapability.get(downed);
-                if (d != null) killDowned(downed, d);
-            }
+            endGameForSurvivors(server, survivorTeam);
         }
     }
 
@@ -590,6 +588,29 @@ public class DownedEventHandler {
         if (player.getServer() == null) return;
         player.getServer().getPlayerList().broadcastSystemMessage(
                 Component.literal(text), false);
+    }
+
+    private static void endGameForSurvivors(net.minecraft.server.MinecraftServer server, Team survivorTeam) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            Team team = player.getTeam();
+            if (team == null || !team.getName().equals(survivorTeam.getName())) {
+                continue;
+            }
+
+            DownedData data = DownedCapability.get(player);
+            if (data != null) {
+                data.cancelRevive();
+            }
+
+            removeDownedEffects(player);
+            clearHudForNearby(player);
+            player.setGameMode(GameType.SPECTATOR);
+        }
+
+        server.getCommands().performPrefixedCommand(
+                server.createCommandSourceStack().withSuppressedOutput().withMaximumPermission(4),
+                "function maniac:game/game_end"
+        );
     }
 
     private static boolean hasReadySelfRevive(ServerPlayer player) {
