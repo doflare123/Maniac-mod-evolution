@@ -358,6 +358,12 @@ public class ModNetworking {
                 SyncPlayerClassPacket::handle
         );
 
+        CHANNEL.messageBuilder(GhostActionPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(GhostActionPacket::encode)
+                .decoder(GhostActionPacket::decode)
+                .consumerMainThread(GhostActionPacket::handle)
+                .add();
+
         CHANNEL.messageBuilder(SyncGhostPossessionPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(SyncGhostPossessionPacket::encode)
                 .decoder(SyncGhostPossessionPacket::decode)

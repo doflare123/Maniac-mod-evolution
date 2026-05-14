@@ -1,6 +1,10 @@
 package org.example.maniacrevolution.ghost;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
@@ -8,6 +12,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.GhostActionPacket;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public class GhostClientEvents {
@@ -47,6 +53,47 @@ public class GhostClientEvents {
             return;
         }
 
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
+            return;
+        }
+
         event.setCanceled(true);
+        event.setSwingHand(false);
+
+        if (event.isAttack()) {
+            if (mc.hitResult instanceof EntityHitResult entityHit) {
+                ModNetworking.sendToServer(GhostActionPacket.attackEntity(entityHit.getEntity().getId()));
+            }
+            return;
+        }
+
+        if (!event.isUseItem()) {
+            return;
+        }
+
+        if (mc.hitResult instanceof EntityHitResult entityHit) {
+            Entity entity = entityHit.getEntity();
+            ModNetworking.sendToServer(GhostActionPacket.useEntity(
+                    event.getHand(),
+                    entity.getId(),
+                    entityHit.getLocation().subtract(entity.position())
+            ));
+            return;
+        }
+
+        if (mc.hitResult instanceof BlockHitResult blockHit) {
+            ModNetworking.sendToServer(GhostActionPacket.useBlock(
+                    event.getHand(),
+                    blockHit.getBlockPos(),
+                    blockHit.getDirection(),
+                    blockHit.getLocation()
+            ));
+            return;
+        }
+
+        if (mc.hitResult == null || mc.hitResult.getType() == HitResult.Type.MISS) {
+            ModNetworking.sendToServer(GhostActionPacket.useItem(event.getHand()));
+        }
     }
 }
