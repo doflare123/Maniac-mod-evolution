@@ -11,7 +11,6 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Team;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -38,8 +37,6 @@ public class GhostPossessionManager {
     private static final Map<UUID, PossessionState> ACTIVE_POSSESSIONS = new HashMap<>();
     private static final Map<UUID, UUID> TARGET_TO_POSSESSOR = new HashMap<>();
     private static final Map<UUID, Long> COOLDOWN_UNTIL = new HashMap<>();
-
-    private static boolean redirectingDamage = false;
     private GhostPossessionManager() {
     }
 
@@ -294,37 +291,6 @@ public class GhostPossessionManager {
             if (target != null) {
                 target.swing(InteractionHand.MAIN_HAND, true);
             }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onLivingHurt(LivingHurtEvent event) {
-        if (redirectingDamage) {
-            return;
-        }
-        if (!(event.getEntity() instanceof ServerPlayer possessor)) {
-            return;
-        }
-        if (!isPossessing(possessor)) {
-            return;
-        }
-
-        PossessionState state = ACTIVE_POSSESSIONS.get(possessor.getUUID());
-        if (state == null || possessor.getServer() == null) {
-            return;
-        }
-
-        ServerPlayer target = possessor.getServer().getPlayerList().getPlayer(state.targetUuid());
-        if (target == null) {
-            return;
-        }
-
-        event.setCanceled(true);
-        redirectingDamage = true;
-        try {
-            target.hurt(event.getSource(), event.getAmount());
-        } finally {
-            redirectingDamage = false;
         }
     }
 
