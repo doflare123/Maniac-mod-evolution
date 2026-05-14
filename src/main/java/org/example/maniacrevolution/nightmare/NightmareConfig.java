@@ -34,6 +34,7 @@ public final class NightmareConfig {
     public static final float MAX_SANITY = 100.0F;
     /** Кулдаун после испытания перед повторным похищением того же выжившего. */
     public static final int ABDUCTION_COOLDOWN_TICKS = 20 * 20;
+    public static final int SANITY_IMMUNITY_AFTER_TRIAL_TICKS = 20 * 20;
 
     /** Первые N попаданий всегда ведут в лабиринт, после этого включается рандом испытаний. */
     public static final int FORCED_MAZE_COUNT = 3;
@@ -47,7 +48,7 @@ public final class NightmareConfig {
     public static final double MAZE_EXIT_RADIUS = 2.4D;
 
     /** Размер стороны арены в блоках. */
-    public static final int ARENA_SIZE = 31;
+    public static final int ARENA_SIZE = 7;
     /** Высота стен арены. */
     public static final int ARENA_WALL_HEIGHT = 5;
     /** Длительность испытания ареной. */

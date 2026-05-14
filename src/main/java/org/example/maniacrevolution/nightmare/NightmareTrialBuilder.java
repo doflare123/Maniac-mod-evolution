@@ -43,9 +43,11 @@ final class NightmareTrialBuilder {
             }
         }
 
-        for (int i = 0; i < NightmareConfig.ARENA_COVER_COUNT; i++) {
-            int x = 3 + random.nextInt(area.width - 6);
-            int z = 3 + random.nextInt(area.depth - 6);
+        int coverCount = Math.min(NightmareConfig.ARENA_COVER_COUNT,
+                Math.max(1, ((area.width - 2) * (area.depth - 2)) / 8));
+        for (int i = 0; i < coverCount; i++) {
+            int x = randomInside(random, area.width);
+            int z = randomInside(random, area.depth);
             int h = 2 + random.nextInt(3);
             for (int y = 1; y <= h; y++) {
                 level.setBlock(origin.offset(x, y, z), cover, 3);
@@ -54,8 +56,8 @@ final class NightmareTrialBuilder {
 
         for (int i = 0; i < NightmareConfig.ARENA_MOB_COUNT; i++) {
             Mob mob = createArenaMob(level, random);
-            mob.moveTo(origin.getX() + 4 + random.nextInt(area.width - 8), origin.getY() + 1,
-                    origin.getZ() + 4 + random.nextInt(area.depth - 8), random.nextFloat() * 360.0F, 0.0F);
+            mob.moveTo(origin.getX() + randomInside(random, area.width) + 0.5D, origin.getY() + 1,
+                    origin.getZ() + randomInside(random, area.depth) + 0.5D, random.nextFloat() * 360.0F, 0.0F);
             mob.setPersistenceRequired();
             level.addFreshEntity(mob);
             area.entities.add(mob);
@@ -105,6 +107,10 @@ final class NightmareTrialBuilder {
         for (int i = 14; i < NightmareConfig.FEAR_RACE_LENGTH - 10; i += 9) {
             int[] point = pointOnRoute(route, i);
             if (point == null) continue;
+            if (!nearRouteTurn(route, point[0], point[1], 7) && (i / 9) % 2 == 0) {
+                placeJumpBarrier(level, origin, point, obstacle);
+                continue;
+            }
             int side = random.nextBoolean() ? -1 : 1;
             level.setBlock(origin.offset(point[0] + side, 1, point[1]), obstacle, 3);
             if (random.nextBoolean()) {
@@ -185,12 +191,38 @@ final class NightmareTrialBuilder {
             if (remaining <= length) {
                 return new int[] {
                         x1 + Integer.compare(x2, x1) * remaining,
-                        z1 + Integer.compare(z2, z1) * remaining
+                        z1 + Integer.compare(z2, z1) * remaining,
+                        Integer.compare(x2, x1),
+                        Integer.compare(z2, z1)
                 };
             }
             remaining -= length;
         }
         return null;
+    }
+
+    private static boolean nearRouteTurn(int[][] route, int x, int z, int minDistance) {
+        int minDistanceSqr = minDistance * minDistance;
+        for (int i = 1; i < route.length - 1; i++) {
+            int dx = x - route[i][0];
+            int dz = z - route[i][1];
+            if (dx * dx + dz * dz <= minDistanceSqr) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void placeJumpBarrier(ServerLevel level, BlockPos origin, int[] point, BlockState obstacle) {
+        if (point[2] != 0) {
+            for (int dz = -1; dz <= 1; dz++) {
+                level.setBlock(origin.offset(point[0], 1, point[1] + dz), obstacle, 3);
+            }
+        } else {
+            for (int dx = -1; dx <= 1; dx++) {
+                level.setBlock(origin.offset(point[0] + dx, 1, point[1]), obstacle, 3);
+            }
+        }
     }
 
     private static void placeFinishDoor(ServerLevel level, BlockPos worldDoorPos) {
@@ -208,5 +240,9 @@ final class NightmareTrialBuilder {
             case 1 -> new Skeleton(EntityType.SKELETON, level);
             default -> new Husk(EntityType.HUSK, level);
         };
+    }
+
+    private static int randomInside(Random random, int size) {
+        return 1 + random.nextInt(Math.max(1, size - 2));
     }
 }

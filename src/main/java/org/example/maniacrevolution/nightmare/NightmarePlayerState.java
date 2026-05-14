@@ -12,6 +12,7 @@ class NightmarePlayerState {
     float sanity = NightmareConfig.MAX_SANITY;
     long lastGazeTick = Long.MIN_VALUE;
     long abductionCooldownUntil;
+    long sanityImmunityUntil;
     int mazeTrialsStarted;
     NightmareTrialType trialType = NightmareTrialType.NONE;
     UUID mazeId;

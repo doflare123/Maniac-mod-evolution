@@ -20,6 +20,7 @@ public final class NightmareHud {
         if (mc.player == null) return;
 
         if (ClientNightmareData.isVisible()) {
+            renderSanityVignette(gui, screenWidth, screenHeight);
             renderSanityPortrait(gui, mc, 8, screenHeight - 128);
         }
 
@@ -43,9 +44,8 @@ public final class NightmareHud {
         float corruption = 1.0F - sanity;
         long time = System.currentTimeMillis();
         float pulse = (float) (Math.sin(time / 140.0D) * 0.5D + 0.5D);
-        int shake = corruption > 0.55F ? (int) (Math.sin(time / 38.0D) * 2.0D * corruption) : 0;
 
-        int px = x + shake;
+        int px = x;
         int py = y;
         int frameColor = lerpColor(0xFF6F5A8A, 0xFFFF2D55, corruption);
         int glowAlpha = (int) ((35 + 95 * pulse) * corruption);
@@ -68,13 +68,6 @@ public final class NightmareHud {
         if (corruption > 0.02F) {
             gui.fill(px + 2, py + 2, px + PORTRAIT_WIDTH - 2, py + PORTRAIT_HEIGHT - 14, glowColor);
         }
-        if (corruption > 0.35F) {
-            int crackColor = ((int) (120 + 80 * pulse) << 24) | 0xD8B3FF;
-            gui.fill(px + 12, py + 10, px + 14, py + 30, crackColor);
-            gui.fill(px + 14, py + 28, px + 30, py + 30, crackColor);
-            gui.fill(px + 48, py + 18, px + 50, py + 47, crackColor);
-            gui.fill(px + 36, py + 45, px + 50, py + 47, crackColor);
-        }
         if (corruption > 0.72F) {
             int flash = ((int) (70 + 80 * pulse) << 24) | 0xFF0000;
             gui.renderOutline(px - 1, py - 1, PORTRAIT_WIDTH + 2, PORTRAIT_HEIGHT + 2, flash);
@@ -82,6 +75,23 @@ public final class NightmareHud {
         RenderSystem.disableBlend();
 
         renderSanityMarks(gui, px + 9, py + PORTRAIT_HEIGHT - 10, sanity);
+    }
+
+    private static void renderSanityVignette(GuiGraphics gui, int screenWidth, int screenHeight) {
+        float corruption = 1.0F - ClientNightmareData.getSanityPercent();
+        if (corruption <= 0.04F) return;
+
+        int alpha = (int) (Math.min(0.82F, corruption * corruption * 0.95F) * 255.0F);
+        int color = (alpha << 24) | 0x050009;
+        int sideWidth = Math.max(12, (int) (screenWidth * (0.08F + corruption * 0.20F)));
+        int verticalHeight = Math.max(8, (int) (screenHeight * (0.04F + corruption * 0.10F)));
+
+        RenderSystem.enableBlend();
+        gui.fill(0, 0, sideWidth, screenHeight, color);
+        gui.fill(screenWidth - sideWidth, 0, screenWidth, screenHeight, color);
+        gui.fill(0, 0, screenWidth, verticalHeight, color);
+        gui.fill(0, screenHeight - verticalHeight, screenWidth, screenHeight, color);
+        RenderSystem.disableBlend();
     }
 
     private static void renderSanityMarks(GuiGraphics gui, int x, int y, float sanity) {

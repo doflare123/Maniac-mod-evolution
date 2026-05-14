@@ -140,6 +140,7 @@ public final class NightmareManager {
         state.sanity = NightmareConfig.MAX_SANITY;
         state.lastGazeTick = Long.MIN_VALUE;
         state.abductionCooldownUntil = 0L;
+        state.sanityImmunityUntil = 0L;
         state.mazeTrialsStarted = 0;
         restoreInventory(player, state);
         state.clearTrial();
@@ -163,6 +164,12 @@ public final class NightmareManager {
 
     private void tickSanity(ServerPlayer player, NightmarePlayerState state,
                             List<ServerPlayer> keepers, long tick) {
+        if (tick < state.sanityImmunityUntil) {
+            state.sanity = Math.min(NightmareConfig.MAX_SANITY,
+                    state.sanity + NightmareConfig.SANITY_REGEN_PER_TICK);
+            return;
+        }
+
         boolean watched = false;
         for (ServerPlayer keeper : keepers) {
             if (isLookingAt(keeper, player, NightmareConfig.GAZE_RANGE, NightmareConfig.GAZE_DOT_THRESHOLD)) {
@@ -323,6 +330,7 @@ public final class NightmareManager {
             player.hurt(player.damageSources().magic(), damage);
         }
         state.abductionCooldownUntil = returnLevel.getGameTime() + NightmareConfig.ABDUCTION_COOLDOWN_TICKS;
+        state.sanityImmunityUntil = returnLevel.getGameTime() + NightmareConfig.SANITY_IMMUNITY_AFTER_TRIAL_TICKS;
         state.clearTrial();
         player.displayClientMessage(Component.literal(failed ? "Испытание провалено" : "Испытание пройдено"), true);
     }
