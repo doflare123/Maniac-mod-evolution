@@ -158,6 +158,13 @@ public class GhostPossessionManager {
         if (event.getLevel().isClientSide) {
             return;
         }
+        if (isPossessing(possessor)) {
+            ServerPlayer possessedTarget = getPossessedTargetInternal(possessor);
+            if (possessedTarget != null && target != possessedTarget) {
+                possessedTarget.swing(event.getHand(), true);
+            }
+            return;
+        }
         if (!possessor.isShiftKeyDown()) {
             return;
         }

@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -49,5 +50,16 @@ public class GhostClientEvents {
         // Полный прокси-контроль через отдельные пакеты отключён.
         // Пока используем более стабильную модель:
         // сам Призрак выполняет действия, а тело жертвы только повторяет движение/анимацию.
+    }
+
+    @SubscribeEvent
+    public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
+        if (!GhostPossessionClientState.isControllerActive()) {
+            return;
+        }
+
+        if (event.getEntity().getId() == GhostPossessionClientState.getTargetEntityId()) {
+            event.setCanceled(true);
+        }
     }
 }
