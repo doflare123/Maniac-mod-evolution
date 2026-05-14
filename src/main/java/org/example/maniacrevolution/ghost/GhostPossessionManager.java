@@ -95,7 +95,7 @@ public class GhostPossessionManager {
         syncClientState(possessor, true, true, target.getId());
         syncClientState(target, true, false, -1);
 
-        possessor.displayClientMessage(Component.literal("§dВы вселились в " + target.getName().getString()), false);
+        possessor.displayClientMessage(Component.literal("§dВы вселились в " + target.getName().getString() + " §7[движение: да, атаки/ПКМ: тестово отключены]"), false);
         target.displayClientMessage(Component.literal("§5Ваше тело захватил Призрак!"), false);
         return true;
     }
@@ -226,6 +226,10 @@ public class GhostPossessionManager {
 
     @SubscribeEvent
     public static void onAttackEntity(AttackEntityEvent event) {
+        if (isPossessing(event.getEntity())) {
+            event.setCanceled(true);
+            return;
+        }
         if (isPossessed(event.getEntity())) {
             event.setCanceled(true);
         }
@@ -233,6 +237,10 @@ public class GhostPossessionManager {
 
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        if (isPossessing(event.getEntity())) {
+            event.setCanceled(true);
+            return;
+        }
         if (isPossessed(event.getEntity())) {
             event.setCanceled(true);
         }
@@ -240,6 +248,10 @@ public class GhostPossessionManager {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (isPossessing(event.getEntity())) {
+            event.setCanceled(true);
+            return;
+        }
         if (isPossessed(event.getEntity())) {
             event.setCanceled(true);
         }
@@ -247,6 +259,10 @@ public class GhostPossessionManager {
 
     @SubscribeEvent
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        if (isPossessing(event.getEntity())) {
+            event.setCanceled(true);
+            return;
+        }
         if (isPossessed(event.getEntity())) {
             event.setCanceled(true);
         }
@@ -357,6 +373,13 @@ public class GhostPossessionManager {
     }
 
     private static void syncTargetToPossessor(ServerPlayer possessor, ServerPlayer target) {
+        target.moveTo(
+                possessor.getX(),
+                possessor.getY(),
+                possessor.getZ(),
+                possessor.getYRot(),
+                possessor.getXRot()
+        );
         target.connection.teleport(
                 possessor.getX(),
                 possessor.getY(),

@@ -3,6 +3,7 @@ package org.example.maniacrevolution.ghost;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -38,5 +39,14 @@ public class GhostClientEvents {
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         GhostPossessionClientState.clear();
+    }
+
+    @SubscribeEvent
+    public static void onInteraction(InputEvent.InteractionKeyMappingTriggered event) {
+        if (!GhostPossessionClientState.isControllerActive()) {
+            return;
+        }
+
+        event.setCanceled(true);
     }
 }
