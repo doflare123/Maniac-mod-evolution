@@ -358,6 +358,12 @@ public class ModNetworking {
                 SyncPlayerClassPacket::handle
         );
 
+        CHANNEL.messageBuilder(SyncGhostPossessionPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SyncGhostPossessionPacket::encode)
+                .decoder(SyncGhostPossessionPacket::decode)
+                .consumerMainThread(SyncGhostPossessionPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

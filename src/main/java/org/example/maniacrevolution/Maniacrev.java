@@ -157,6 +157,7 @@ public class Maniacrev {
         ShamanCommands.register(event.getDispatcher());
         HackCommands.register(event.getDispatcher());
         StatsCommand.register(event.getDispatcher());
+        GhostCommand.register(event.getDispatcher());
 
         SettingsCommand.register(event.getDispatcher());
         HpBoostCommand.register(event.getDispatcher());
