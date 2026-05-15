@@ -14,13 +14,21 @@ public class ApplySettingsCommand {
         dispatcher.register(Commands.literal("maniacrev")
             .then(Commands.literal("apply_settings")
                 .requires(source -> source.hasPermission(2))
-                .executes(ApplySettingsCommand::applySettings)
+                .executes(ApplySettingsCommand::applySettingsCommand)
             )
         );
     }
 
-    private static int applySettings(CommandContext<CommandSourceStack> context) {
-        MinecraftServer server = context.getSource().getServer();
+    private static int applySettingsCommand(CommandContext<CommandSourceStack> context) {
+        applySettings(context.getSource().getServer(), false);
+
+        context.getSource().sendSuccess(() ->
+            Component.literal("§aВсе настройки применены!"), true);
+
+        return 1;
+    }
+
+    public static void applySettings(MinecraftServer server, boolean suppressOutput) {
         GameSettings settings = GameSettings.get(server);
 
         HackConfig.HACK_POINTS_REQUIRED = settings.getHackPointsRequired();
@@ -35,37 +43,35 @@ public class ApplySettingsCommand {
         HackConfig.QTE_INTERVAL_MAX_SECONDS = settings.getQteIntervalMax();
         HackConfig.MAX_BONUS_PLAYERS = settings.getMaxBonusPlayers();
 
-        
+        CommandSourceStack source = suppressOutput
+                ? server.createCommandSourceStack().withSuppressedOutput().withMaximumPermission(4)
+                : server.createCommandSourceStack();
+
         // Применяем все настройки через команды
-        
+
         // 3. Количество маньяков
         server.getCommands().performPrefixedCommand(
-            server.createCommandSourceStack(),
+            source,
             "scoreboard players set maniacCount game " + settings.getManiacCount()
         );
-        
+
         // 4. Время игры (конвертируем минуты в секунды)
         int timeInSeconds = settings.getGameTime() * 60;
         server.getCommands().performPrefixedCommand(
-            server.createCommandSourceStack(),
+            source,
             "maniacrev timer maxtime " + timeInSeconds
         );
-        
+
         // 5. HP Boost (применяем через нашу команду)
         server.getCommands().performPrefixedCommand(
-            server.createCommandSourceStack(),
+            source,
             "maniacrev hp_boost"
         );
-        
+
         // 6. Карта (устанавливаем в scoreboard)
         server.getCommands().performPrefixedCommand(
-            server.createCommandSourceStack(),
+            source,
             "scoreboard players set selectedMap game " + settings.getSelectedMap()
         );
-        
-        context.getSource().sendSuccess(() -> 
-            Component.literal("§aВсе настройки применены!"), true);
-        
-        return 1;
     }
 }

@@ -3,6 +3,7 @@ package org.example.maniacrevolution.network.packets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
+import org.example.maniacrevolution.command.ApplySettingsCommand;
 import org.example.maniacrevolution.hack.HackConfig;
 import org.example.maniacrevolution.settings.GameSettings;
 
@@ -120,6 +121,9 @@ public class UpdateSettingsPacket {
             HackConfig.QTE_SUCCESS_BONUS             = msg.qteSuccessBonus;
             HackConfig.QTE_CRIT_BONUS                = msg.qteCritBonus;
             HackConfig.COMPUTERS_NEEDED_FOR_WIN      = msg.computersNeededForWin;
+
+            // Применяем и основные настройки сразу, чтобы кнопка "Применить" работала полностью.
+            ApplySettingsCommand.applySettings(player.server, true);
         });
         ctx.get().setPacketHandled(true);
     }
