@@ -10,6 +10,7 @@ import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterRegistry;
+import org.example.maniacrevolution.ghost.GhostLoadoutManager;
 import org.example.maniacrevolution.network.ModNetworking;
 
 import java.util.function.Supplier;
@@ -63,6 +64,12 @@ public class SelectCharacterPacket {
                     PacketDistributor.PLAYER.with(() -> player),
                     new SyncPlayerClassPacket(characterClass.getType(), classId)
             );
+
+            if ("ghost".equals(characterClass.getId())) {
+                GhostLoadoutManager.refreshGhostLoadout(player);
+            } else {
+                GhostLoadoutManager.clearGhostLoadout(player);
+            }
 
             Maniacrev.LOGGER.info("Player {} selected character: {} (type={}, id={})",
                     player.getName().getString(),

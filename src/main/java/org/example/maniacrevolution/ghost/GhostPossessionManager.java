@@ -6,8 +6,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Team;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -17,10 +17,12 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.downed.DownedData;
 import org.example.maniacrevolution.downed.DownedState;
 import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.SyncAbilityCooldownPacket;
 import org.example.maniacrevolution.network.packets.SyncGhostPossessionPacket;
 
 import java.util.HashMap;
@@ -30,9 +32,9 @@ import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class GhostPossessionManager {
-    public static final int GHOST_CLASS_ID = 13;
-    private static final int POSSESSION_DURATION_TICKS = 8 * 20;
-    private static final int POSSESSION_COOLDOWN_TICKS = 25 * 20;
+    public static final int GHOST_CLASS_ID = 8;
+    public static final int POSSESSION_DURATION_TICKS = 15 * 20;
+    public static final int POSSESSION_COOLDOWN_TICKS = 25 * 20;
 
     private static final Map<UUID, PossessionState> ACTIVE_POSSESSIONS = new HashMap<>();
     private static final Map<UUID, UUID> TARGET_TO_POSSESSOR = new HashMap<>();
@@ -49,7 +51,7 @@ public class GhostPossessionManager {
             return false;
         }
 
-        if (!isGhostClass(possessor)) {
+        if (!GhostLoadoutManager.isGhostClass(possessor)) {
             possessor.displayClientMessage(Component.literal("§cЭта способность доступна только классу Призрак."), true);
             return false;
         }
@@ -84,12 +86,14 @@ public class GhostPossessionManager {
         ACTIVE_POSSESSIONS.put(possessor.getUUID(), new PossessionState(target.getUUID(), now + POSSESSION_DURATION_TICKS));
         TARGET_TO_POSSESSOR.put(target.getUUID(), possessor.getUUID());
         COOLDOWN_UNTIL.put(possessor.getUUID(), now + POSSESSION_COOLDOWN_TICKS);
+        possessor.getCooldowns().addCooldown(ModItems.GHOST_HAND.get(), POSSESSION_COOLDOWN_TICKS);
 
         syncTargetToPossessor(possessor, target);
         applyPossessorEffects(possessor);
         applyTargetEffects(target);
         syncClientState(possessor, true, true, target.getId());
         syncClientState(target, true, false, -1);
+        ModNetworking.sendToPlayer(new SyncAbilityCooldownPacket(ModItems.GHOST_HAND.get(), getCooldownSeconds(possessor), POSSESSION_COOLDOWN_TICKS / 20, 0), possessor);
 
         possessor.displayClientMessage(Component.literal("§dВы вселились в " + target.getName().getString()), false);
         target.displayClientMessage(Component.literal("§5Ваше тело захватил Призрак!"), false);
@@ -137,6 +141,27 @@ public class GhostPossessionManager {
         return "свободен";
     }
 
+    public static int getCooldownSeconds(Player player) {
+        if (!(player instanceof ServerPlayer serverPlayer) || serverPlayer.getServer() == null) {
+            if (player.level().isClientSide) {
+                return org.example.maniacrevolution.client.ClientAbilityData.getCooldownSeconds(ModItems.GHOST_HAND.get());
+            }
+            return 0;
+        }
+        long now = serverPlayer.getServer().getTickCount();
+        long until = COOLDOWN_UNTIL.getOrDefault(serverPlayer.getUUID(), 0L);
+        return until <= now ? 0 : (int) ((until - now + 19) / 20);
+    }
+
+    public static void resetGhostState(ServerPlayer player) {
+        releasePossession(player, "сброс");
+        ACTIVE_POSSESSIONS.remove(player.getUUID());
+        TARGET_TO_POSSESSOR.values().removeIf(uuid -> uuid.equals(player.getUUID()));
+        COOLDOWN_UNTIL.remove(player.getUUID());
+        player.getCooldowns().removeCooldown(ModItems.GHOST_HAND.get());
+        ModNetworking.sendToPlayer(new SyncAbilityCooldownPacket(ModItems.GHOST_HAND.get(), 0, POSSESSION_COOLDOWN_TICKS / 20, 0), player);
+    }
+
     @SubscribeEvent
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         if (isPossessed(event.getEntity())) {
@@ -155,6 +180,9 @@ public class GhostPossessionManager {
         if (event.getLevel().isClientSide) {
             return;
         }
+        if (!isGhostHand(possessor.getMainHandItem())) {
+            return;
+        }
         if (isPossessing(possessor)) {
             ServerPlayer possessedTarget = getPossessedTargetInternal(possessor);
             if (possessedTarget != null && target != possessedTarget) {
@@ -165,7 +193,7 @@ public class GhostPossessionManager {
         if (!possessor.isShiftKeyDown()) {
             return;
         }
-        if (!isGhostClass(possessor)) {
+        if (!GhostLoadoutManager.isGhostClass(possessor)) {
             return;
         }
 
@@ -191,7 +219,7 @@ public class GhostPossessionManager {
             }
 
             ServerPlayer target = event.getServer().getPlayerList().getPlayer(entry.getValue().targetUuid());
-            if (target == null || !isValidTarget(target) || !isGhostClass(possessor) || possessor.isSpectator()) {
+            if (target == null || !isValidTarget(target) || !GhostLoadoutManager.isGhostClass(possessor) || possessor.isSpectator()) {
                 iterator.remove();
                 TARGET_TO_POSSESSOR.remove(entry.getValue().targetUuid());
                 finishPossession(possessor, entry.getValue(), "цель больше недоступна");
@@ -338,21 +366,6 @@ public class GhostPossessionManager {
         }
     }
 
-    private static boolean isGhostClass(ServerPlayer player) {
-        Team team = player.getTeam();
-        if (team == null || !"maniac".equalsIgnoreCase(team.getName())) {
-            return false;
-        }
-
-        Objective objective = player.getScoreboard().getObjective("ManiacClass");
-        if (objective == null) {
-            return false;
-        }
-
-        int classId = player.getScoreboard().getOrCreatePlayerScore(player.getScoreboardName(), objective).getScore();
-        return classId == GHOST_CLASS_ID;
-    }
-
     private static boolean isValidTarget(ServerPlayer target) {
         if (target.isCreative() || target.isSpectator() || target.isDeadOrDying()) {
             return false;
@@ -401,12 +414,14 @@ public class GhostPossessionManager {
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 10, 255, false, false));
         target.addEffect(new MobEffectInstance(MobEffects.JUMP, 10, 128, false, false));
         target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 10, 255, false, false));
+        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 10, 0, false, false));
     }
 
     private static void clearTargetEffects(ServerPlayer target) {
         target.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
         target.removeEffect(MobEffects.JUMP);
         target.removeEffect(MobEffects.WEAKNESS);
+        target.removeEffect(MobEffects.MOVEMENT_SPEED);
     }
 
     private static void syncClientState(ServerPlayer player, boolean active, boolean controller, int targetEntityId) {
@@ -427,6 +442,10 @@ public class GhostPossessionManager {
             clearTargetEffects(target);
             target.displayClientMessage(Component.literal("§aВы снова контролируете себя."), true);
         }
+    }
+
+    private static boolean isGhostHand(ItemStack stack) {
+        return stack.is(ModItems.GHOST_HAND.get());
     }
 
     private static ServerPlayer getPossessedTargetInternal(ServerPlayer possessor) {

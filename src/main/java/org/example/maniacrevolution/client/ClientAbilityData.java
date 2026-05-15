@@ -31,6 +31,9 @@ public class ClientAbilityData {
         }
 
         public int getRemainingDuration() {
+            if (remainingDuration < 0) {
+                return remainingDuration;
+            }
             long elapsed = (System.currentTimeMillis() - lastUpdateTime) / 1000;
             return Math.max(0, remainingDuration - (int)elapsed);
         }

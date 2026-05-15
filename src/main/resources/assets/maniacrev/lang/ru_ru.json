@@ -259,5 +259,9 @@
   "perk.maniacrev.guiding_light.name": "Путеводная Света",
   "item.maniacrev.nether_swap": "Nether swap",
   "item.maniacrev.maze_spawner": "Генератор лабиринта [TEST]",
-  "item.maniacrev.microphone": "Микрофон"
+  "item.maniacrev.microphone": "Микрофон",
+  "item.maniacrev.toy_knife": "Игрушечный нож",
+  "item.maniacrev.ghost_hand": "Призрачная рука",
+  "item.maniacrev.ghost_helmet": "Шлем призрака",
+  "item.maniacrev.ghost_leggings": "Штаны призрака"
 }

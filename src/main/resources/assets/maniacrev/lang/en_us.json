@@ -292,5 +292,9 @@
   "perk.maniacrev.guiding_light.name": "Guiding Light",
   "item.maniacrev.nether_swap": "Nether swap",
   "item.maniacrev.maze_spawner": "Генератор лабиринта [TEST]",
-  "item.maniacrev.microphone": "Microphone"
+  "item.maniacrev.microphone": "Microphone",
+  "item.maniacrev.toy_knife": "Toy Knife",
+  "item.maniacrev.ghost_hand": "Ghost Hand",
+  "item.maniacrev.ghost_helmet": "Ghost Helmet",
+  "item.maniacrev.ghost_leggings": "Ghost Leggings"
 }

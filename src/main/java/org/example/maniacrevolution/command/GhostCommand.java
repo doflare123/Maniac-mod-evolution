@@ -6,7 +6,10 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import org.example.maniacrevolution.ghost.GhostLoadoutManager;
 import org.example.maniacrevolution.ghost.GhostPossessionManager;
+
+import java.util.Collection;
 
 public class GhostCommand {
 
@@ -56,6 +59,17 @@ public class GhostCommand {
                                                     Component.literal("§7Статус Призрака для " + player.getName().getString()
                                                             + ": " + GhostPossessionManager.getStatus(player)), false);
                                             return 1;
+                                        })))
+                        .then(Commands.literal("refresh")
+                                .then(Commands.argument("targets", EntityArgument.players())
+                                        .executes(ctx -> {
+                                            Collection<ServerPlayer> targets = EntityArgument.getPlayers(ctx, "targets");
+                                            for (ServerPlayer target : targets) {
+                                                GhostLoadoutManager.refreshGhostLoadout(target);
+                                            }
+                                            ctx.getSource().sendSuccess(() ->
+                                                    Component.literal("§dСнаряжение и способности Призрака обновлены для " + targets.size() + " игрок(ов)."), true);
+                                            return targets.size();
                                         })))));
     }
 }
