@@ -52,6 +52,9 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> SILENCE =
             MOB_EFFECTS.register("silence", SilenceEffect::new);
 
+    public static final RegistryObject<MobEffect> POSSESSION_TIMER =
+            MOB_EFFECTS.register("possession_timer", PossessionTimerEffect::new);
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }

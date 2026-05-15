@@ -160,13 +160,13 @@ public final class GhostStealthManager {
         CompoundTag data = player.getPersistentData();
 
         ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (helmet.is(ModItems.GHOST_HELMET.get()) && !data.contains(NBT_HIDDEN_HELMET)) {
+        if (!helmet.isEmpty() && !data.contains(NBT_HIDDEN_HELMET)) {
             data.put(NBT_HIDDEN_HELMET, helmet.save(new CompoundTag()));
             player.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
         }
 
         ItemStack leggings = player.getItemBySlot(EquipmentSlot.LEGS);
-        if (leggings.is(ModItems.GHOST_LEGGINGS.get()) && !data.contains(NBT_HIDDEN_LEGGINGS)) {
+        if (!leggings.isEmpty() && !data.contains(NBT_HIDDEN_LEGGINGS)) {
             data.put(NBT_HIDDEN_LEGGINGS, leggings.save(new CompoundTag()));
             player.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
         }
@@ -225,7 +225,7 @@ public final class GhostStealthManager {
 
             boolean active = isActive(player, now);
             boolean recovering = isRecovering(player, now);
-            boolean fullyHidden = player.isShiftKeyDown() || active || recovering;
+            boolean fullyHidden = player.isShiftKeyDown() || active || recovering || GhostPossessionManager.isPossessing(player);
 
             player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 15, 0, false, false));
 

@@ -36,7 +36,8 @@ public class GhostHandItem extends Item implements IItemWithAbility {
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.empty());
         tooltip.add(Component.literal("§dПризрачная рука").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.literal("  §7Shift + ПКМ по выжившему: вселение на 15 сек."));
+        tooltip.add(Component.literal("  §7Shift + ПКМ по выжившему: вселение на 30 сек."));
+        tooltip.add(Component.literal("  §7Во время контроля Shift + ПКМ: досрочно выйти."));
         tooltip.add(Component.literal("  §7Во время вселения цель получает §fSpeed I§7."));
         tooltip.add(Component.literal("  §7Кулдаун: §f" + getMaxCooldownSeconds() + " сек."));
     }
