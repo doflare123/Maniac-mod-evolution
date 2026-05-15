@@ -148,7 +148,7 @@ public class DownedEventHandler {
         applyDownedEffects(player);
         spawnDownedStand(player);
 
-        broadcastMessage(player,
+        sendTeamMessage(player, team,
                 "§c☠ " + player.getName().getString() + " §cупал! Помогите ему в течение §e60 сек§c!");
         Maniacrev.LOGGER.info("[Downed] {} -> DOWNED", player.getName().getString());
 
@@ -588,6 +588,18 @@ public class DownedEventHandler {
         if (player.getServer() == null) return;
         player.getServer().getPlayerList().broadcastSystemMessage(
                 Component.literal(text), false);
+    }
+
+    private static void sendTeamMessage(ServerPlayer source, Team team, String text) {
+        if (source.getServer() == null || team == null) return;
+
+        Component message = Component.literal(text);
+        for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
+            Team playerTeam = player.getTeam();
+            if (playerTeam != null && playerTeam.getName().equals(team.getName())) {
+                player.sendSystemMessage(message);
+            }
+        }
     }
 
     private static void endGameForSurvivors(net.minecraft.server.MinecraftServer server, Team survivorTeam) {

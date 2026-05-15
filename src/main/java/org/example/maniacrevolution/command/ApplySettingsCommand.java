@@ -6,6 +6,9 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.example.maniacrevolution.hack.HackConfig;
 import org.example.maniacrevolution.settings.GameSettings;
 
@@ -68,10 +71,17 @@ public class ApplySettingsCommand {
             "maniacrev hp_boost"
         );
 
-        // 6. Карта (устанавливаем в scoreboard)
-        server.getCommands().performPrefixedCommand(
-            source,
-            "scoreboard players set selectedMap game " + settings.getSelectedMap()
-        );
+        // 6. Карта (устанавливаем туда же, откуда её читает игровая логика)
+        Scoreboard scoreboard = server.getScoreboard();
+        Objective mapObjective = scoreboard.getObjective("map");
+        if (mapObjective == null) {
+            mapObjective = scoreboard.addObjective(
+                    "map",
+                    ObjectiveCriteria.DUMMY,
+                    Component.literal("Map"),
+                    ObjectiveCriteria.RenderType.INTEGER
+            );
+        }
+        scoreboard.getOrCreatePlayerScore("Game", mapObjective).setScore(settings.getSelectedMap());
     }
 }
