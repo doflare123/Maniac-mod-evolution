@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.item;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -13,6 +14,8 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.entity.NetherSwapProjectile;
 import org.example.maniacrevolution.entity.ModEntities;

@@ -10,7 +10,15 @@
       }
     ]
   },
-  "qte_success": { "sounds": [{"name": "maniacrev:qte_success"}] },
-  "qte_crit":    { "sounds": [{"name": "maniacrev:qte_crit"}] },
-  "qte_fail":    { "sounds": [{"name": "maniacrev:qte_fail"}] }
+  "scream_audio": {
+    "subtitle": "Скример",
+    "sounds": [
+      {
+        "name": "maniacrev:scream_audio",
+        "volume": 1.0,
+        "pitch": 1.0,
+        "type": "file"
+      }
+    ]
+  }
 }

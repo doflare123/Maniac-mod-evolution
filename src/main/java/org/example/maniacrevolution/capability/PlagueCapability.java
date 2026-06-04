@@ -22,8 +22,8 @@ import org.example.maniacrevolution.network.packets.SyncPlaguePacket;
 @AutoRegisterCapability
 public class PlagueCapability {
 
-    /** 5 секунд × 20 тиков/сек = 100 тиков */
-    public static final int THRESHOLD_TICKS = 100;
+    /** 8 секунд × 20 тиков/сек = 160 тиков */
+    public static final int THRESHOLD_TICKS = 160;
 
     /** 1.5 сердца = 3.0f единицы урона */
     public static final float PLAGUE_DAMAGE = 3.0f;

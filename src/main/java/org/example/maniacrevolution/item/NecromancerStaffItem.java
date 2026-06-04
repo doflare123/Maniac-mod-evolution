@@ -47,14 +47,6 @@ public class NecromancerStaffItem extends Item {
         ItemStack itemStack = player.getItemInHand(hand);
 
         if (!level.isClientSide()) {
-            if (!(player instanceof ServerPlayer serverPlayer) || !isNecromancer(serverPlayer)) {
-                player.displayClientMessage(
-                        Component.literal("§cТолько некромант может использовать этот посох!"),
-                        true
-                );
-                return InteractionResultHolder.fail(itemStack);
-            }
-
             // Проверяем ману
             boolean hasMana = player.getCapability(ManaProvider.MANA).map(mana ->
                     mana.getMana() >= MANA_COST
@@ -86,14 +78,6 @@ public class NecromancerStaffItem extends Item {
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         if (entity instanceof ServerPlayer player) {
-            if (!isNecromancer(player)) {
-                player.displayClientMessage(
-                        Component.literal("§cРитуал прерван: вы больше не некромант."),
-                        true
-                );
-                return stack;
-            }
-
             // Потребляем ману
             player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
                 if (mana.consumeMana(MANA_COST)) {
@@ -187,14 +171,5 @@ public class NecromancerStaffItem extends Item {
     @Override
     public UseAnim getUseAnimation(ItemStack stack) {
         return UseAnim.BOW;
-    }
-
-    private static boolean isNecromancer(ServerPlayer player) {
-        net.minecraft.world.scores.Objective objective =
-                player.getScoreboard().getObjective("SurvivorClass");
-        if (objective == null) return false;
-        return player.getScoreboard()
-                .getOrCreatePlayerScore(player.getScoreboardName(), objective)
-                .getScore() == 8;
     }
 }

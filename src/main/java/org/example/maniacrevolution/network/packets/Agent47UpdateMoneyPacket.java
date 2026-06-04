@@ -2,7 +2,7 @@ package org.example.maniacrevolution.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import org.example.maniacrevolution.util.ClientOnlyExecutor;
+import org.example.maniacrevolution.gui.Agent47TabletScreen;
 
 import java.util.function.Supplier;
 
@@ -30,7 +30,7 @@ public class Agent47UpdateMoneyPacket {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
             // Обновляем баланс в GUI
-            ClientOnlyExecutor.updateAgent47Money(money);
+            Agent47TabletScreen.updateMoney(money);
         });
         context.setPacketHandled(true);
     }

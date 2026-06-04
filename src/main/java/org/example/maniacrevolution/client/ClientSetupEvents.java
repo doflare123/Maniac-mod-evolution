@@ -28,6 +28,9 @@ public class ClientSetupEvents {
         event.registerEntityRenderer(ModEntities.NETHER_SWAP_PROJECTILE.get(),
                 NetherSwapProjectileRenderer::new);
 
+        event.registerEntityRenderer(ModEntities.FEAR_CHASER.get(),
+                context -> new net.minecraft.client.renderer.entity.NoopRenderer<>(context));
+
         net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
                 ModHackRegistry.COMPUTER_BLOCK_ENTITY.get(),
                 ComputerBlockRenderer::new);

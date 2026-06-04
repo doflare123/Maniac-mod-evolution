@@ -2,8 +2,8 @@ package org.example.maniacrevolution.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
+import org.example.maniacrevolution.gui.Agent47TabletScreen;
 import org.example.maniacrevolution.system.Agent47ShopConfig;
-import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +78,7 @@ public class Agent47SyncDataPacket {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
             // Обновляем GUI на клиенте
-            ClientOnlyExecutor.updateAgent47Data(targetName, money, shopItems);
+            Agent47TabletScreen.updateData(targetName, money, shopItems);
         });
         context.setPacketHandled(true);
     }

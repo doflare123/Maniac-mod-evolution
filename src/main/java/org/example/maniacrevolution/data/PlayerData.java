@@ -28,6 +28,8 @@ public class PlayerData {
 
     // Косметика
     private final CosmeticData cosmeticData = new CosmeticData();
+    private int survivorClassId = -1;
+    private int maniacClassId = -1;
 
     public PlayerData(UUID uuid) {
         this.playerUuid = uuid;
@@ -194,6 +196,22 @@ public class PlayerData {
         return cosmeticData;
     }
 
+    public int getSurvivorClassId() {
+        return survivorClassId;
+    }
+
+    public int getManiacClassId() {
+        return maniacClassId;
+    }
+
+    public void setSurvivorClassId(int survivorClassId) {
+        this.survivorClassId = survivorClassId;
+    }
+
+    public void setManiacClassId(int maniacClassId) {
+        this.maniacClassId = maniacClassId;
+    }
+
     // === Тик ===
 
     public void tick(ServerPlayer player, PerkPhase currentPhase) {
@@ -224,6 +242,8 @@ public class PlayerData {
         tag.putInt("experience", experience);
         tag.putInt("coins", coins);
         tag.putInt("maxPresets", maxPresets);
+        tag.putInt("survivorClassId", survivorClassId);
+        tag.putInt("maniacClassId", maniacClassId);
 
         // Пресеты
         ListTag presetsTag = new ListTag();
@@ -254,6 +274,8 @@ public class PlayerData {
         data.coins = tag.getInt("coins");
         data.maxPresets = tag.getInt("maxPresets");
         if (data.maxPresets < 2) data.maxPresets = 2;
+        data.survivorClassId = tag.contains("survivorClassId") ? tag.getInt("survivorClassId") : -1;
+        data.maniacClassId = tag.contains("maniacClassId") ? tag.getInt("maniacClassId") : -1;
 
         // Пресеты
         ListTag presetsTag = tag.getList("presets", Tag.TAG_COMPOUND);

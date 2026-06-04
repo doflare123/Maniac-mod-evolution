@@ -22,20 +22,10 @@ public class ModSounds {
                     () -> SoundEvent.createVariableRangeEvent(
                             new ResourceLocation(Maniacrev.MODID, "heartbeat")));
 
-    public static final RegistryObject<SoundEvent> QTE_SUCCESS =
-            SOUND_EVENTS.register("qte_success",
+    public static final RegistryObject<SoundEvent> SCREAM_AUDIO =
+            SOUND_EVENTS.register("scream_audio",
                     () -> SoundEvent.createVariableRangeEvent(
-                            new ResourceLocation(Maniacrev.MODID, "qte_success")));
-
-    public static final RegistryObject<SoundEvent> QTE_CRIT =
-            SOUND_EVENTS.register("qte_crit",
-                    () -> SoundEvent.createVariableRangeEvent(
-                            new ResourceLocation(Maniacrev.MODID, "qte_crit")));
-
-    public static final RegistryObject<SoundEvent> QTE_FAIL =
-            SOUND_EVENTS.register("qte_fail",
-                    () -> SoundEvent.createVariableRangeEvent(
-                            new ResourceLocation(Maniacrev.MODID, "qte_fail")));
+                            new ResourceLocation(Maniacrev.MODID, "scream_audio")));
 
     // Регистрация в главном классе мода:
     // ModSounds.SOUND_EVENTS.register(modEventBus);

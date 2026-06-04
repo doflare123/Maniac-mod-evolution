@@ -19,6 +19,7 @@ import org.example.maniacrevolution.item.armor.MedicalMaskItem;
 import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.mana.ClientManaData;
+import org.example.maniacrevolution.nightmare.NightmareHud;
 import org.example.maniacrevolution.perk.PerkType;
 
 import java.util.List;
@@ -121,6 +122,8 @@ public class CustomHud implements IGuiOverlay {
             int hackHudY = (scaledHeight - ComputerHackHud.HEIGHT) / 2;
             ComputerHackHud.render(guiGraphics, hackHudX, hackHudY);
         }
+
+        NightmareHud.render(guiGraphics, scaledWidth, scaledHeight);
 
         guiGraphics.pose().popPose();
     }

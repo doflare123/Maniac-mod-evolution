@@ -1,11 +1,15 @@
 package org.example.maniacrevolution.network.packets;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.function.Supplier;
 
+/**
+ * Пакет для синхронизации кулдауна планшета с клиентом
+ * Отправляется с сервера на клиент
+ */
 public class SyncTabletCooldownPacket {
 
     private final int cooldownSeconds;
@@ -24,7 +28,18 @@ public class SyncTabletCooldownPacket {
 
     public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
-        context.enqueueWork(() -> ClientOnlyExecutor.showTabletCooldown(cooldownSeconds));
+        context.enqueueWork(() -> {
+            // Сохраняем кулдаун на клиенте для отображения в GUI
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null && cooldownSeconds > 0) {
+                mc.player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal(
+                                String.format("§eКулдаун отслеживания: %d сек", cooldownSeconds)
+                        ),
+                        true
+                );
+            }
+        });
         context.setPacketHandled(true);
     }
 

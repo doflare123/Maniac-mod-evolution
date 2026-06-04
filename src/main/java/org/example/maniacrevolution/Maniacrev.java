@@ -42,6 +42,7 @@ import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.hack.ModHackRegistry;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.map.MapRegistry;
+import org.example.maniacrevolution.maze.MazeTickHandler;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.perk.PerkRegistry;
 import org.example.maniacrevolution.pregame.PreGameReadyManager;
@@ -93,6 +94,7 @@ public class Maniacrev {
         ModHackRegistry.BLOCKS.register(modEventBus);
         ModHackRegistry.BLOCK_ENTITIES.register(modEventBus);
         ModHackRegistry.ITEMS.register(modEventBus);
+        MinecraftForge.EVENT_BUS.register(new MazeTickHandler());
         // =========================================================
 
         MinecraftForge.EVENT_BUS.register(this);

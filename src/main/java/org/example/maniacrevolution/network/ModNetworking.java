@@ -358,6 +358,11 @@ public class ModNetworking {
                 SyncPlayerClassPacket::handle
         );
 
+        CHANNEL.registerMessage(packetId++, SyncNightmarePacket.class,
+                SyncNightmarePacket::encode, SyncNightmarePacket::decode, SyncNightmarePacket::handle);
+        CHANNEL.registerMessage(packetId++, NightmareScreamerPacket.class,
+                NightmareScreamerPacket::encode, NightmareScreamerPacket::decode, NightmareScreamerPacket::handle);
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

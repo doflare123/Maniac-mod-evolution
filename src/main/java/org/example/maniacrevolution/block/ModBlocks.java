@@ -33,6 +33,14 @@ public class ModBlocks {
                     .noOcclusion()
             ));
 
+    public static final RegistryObject<Block> NIGHTMARE_COCOON = BLOCKS.register("nightmare_cocoon",
+            () -> new NightmareCocoonBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE)
+                    .strength(-1.0F, 3600000.0F)
+                    .sound(SoundType.WOOL)
+                    .noOcclusion()
+            ));
+
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
     }
