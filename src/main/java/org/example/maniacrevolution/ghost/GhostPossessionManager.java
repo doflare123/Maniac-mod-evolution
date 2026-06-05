@@ -36,6 +36,7 @@ public class GhostPossessionManager {
     public static final int GHOST_CLASS_ID = 8;
     public static final int POSSESSION_DURATION_TICKS = 30 * 20;
     public static final int POSSESSION_COOLDOWN_TICKS = 60 * 20;
+    private static final int MANUAL_RELEASE_GRACE_TICKS = 5;
 
     private static final Map<UUID, PossessionState> ACTIVE_POSSESSIONS = new HashMap<>();
     private static final Map<UUID, UUID> TARGET_TO_POSSESSOR = new HashMap<>();
@@ -84,7 +85,7 @@ public class GhostPossessionManager {
             return false;
         }
 
-        ACTIVE_POSSESSIONS.put(possessor.getUUID(), new PossessionState(target.getUUID(), now + POSSESSION_DURATION_TICKS));
+        ACTIVE_POSSESSIONS.put(possessor.getUUID(), new PossessionState(target.getUUID(), now, now + POSSESSION_DURATION_TICKS));
         TARGET_TO_POSSESSOR.put(target.getUUID(), possessor.getUUID());
 
         syncTargetToPossessor(possessor, target);
@@ -190,7 +191,7 @@ public class GhostPossessionManager {
         if (isPossessing(possessor)) {
             if (possessor.isShiftKeyDown()) {
                 event.setCanceled(true);
-                releasePossession(possessor, "принудительный выход");
+                tryManualRelease(possessor);
                 return;
             }
             ServerPlayer possessedTarget = getPossessedTargetInternal(possessor);
@@ -299,7 +300,7 @@ public class GhostPossessionManager {
                 && possessor.isShiftKeyDown()
                 && isGhostHand(event.getItemStack())) {
             event.setCanceled(true);
-            releasePossession(possessor, "принудительный выход");
+            tryManualRelease(possessor);
             return;
         }
 
@@ -324,7 +325,7 @@ public class GhostPossessionManager {
                 && possessor.isShiftKeyDown()
                 && isGhostHand(possessor.getMainHandItem())) {
             event.setCanceled(true);
-            releasePossession(possessor, "принудительный выход");
+            tryManualRelease(possessor);
             return;
         }
 
@@ -489,6 +490,24 @@ public class GhostPossessionManager {
         player.addEffect(new MobEffectInstance(ModEffects.POSSESSION_TIMER.get(), durationTicks, 0, false, true, true));
     }
 
+    private static void tryManualRelease(ServerPlayer possessor) {
+        if (possessor == null || possessor.getServer() == null) {
+            return;
+        }
+
+        PossessionState state = ACTIVE_POSSESSIONS.get(possessor.getUUID());
+        if (state == null) {
+            return;
+        }
+
+        long now = possessor.getServer().getTickCount();
+        if (now - state.startTick() < MANUAL_RELEASE_GRACE_TICKS) {
+            return;
+        }
+
+        releasePossession(possessor, "принудительный выход");
+    }
+
     private static boolean isGhostHand(ItemStack stack) {
         return stack.is(ModItems.GHOST_HAND.get());
     }
@@ -506,6 +525,6 @@ public class GhostPossessionManager {
         return possessor.getServer().getPlayerList().getPlayer(state.targetUuid());
     }
 
-    private record PossessionState(UUID targetUuid, long endTick) {
+    private record PossessionState(UUID targetUuid, long startTick, long endTick) {
     }
 }
