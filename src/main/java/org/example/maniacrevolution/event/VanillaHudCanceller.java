@@ -9,6 +9,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.config.HudConfig;
+import org.example.maniacrevolution.util.PlayerModeUtil;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public class VanillaHudCanceller {
@@ -23,7 +24,7 @@ public class VanillaHudCanceller {
         }
 
         // В КРЕАТИВЕ/НАБЛЮДАТЕЛЕ - ВСЕГДА показываем ванильный HUD
-        if (mc.player.isCreative() || mc.player.isSpectator()) {
+        if (!PlayerModeUtil.isSurvivalOrAdventure(mc.player)) {
             return; // НЕ отменяем ванильный рендер
         }
 

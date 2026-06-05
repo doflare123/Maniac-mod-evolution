@@ -27,9 +27,7 @@ import org.example.maniacrevolution.perk.Perk;
 import org.example.maniacrevolution.perk.PerkInstance;
 import org.example.maniacrevolution.perk.PerkPhase;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class DownedEventHandler {
@@ -139,12 +137,6 @@ public class DownedEventHandler {
         Team team = player.getTeam();
         if (team == null || !team.getName().equalsIgnoreCase("survivors")) return;
 
-        // Если этот игрок — единственный живой (не spectator) в своей команде, сразу умирает
-        if (isLastAliveSurvivor(player, team)) {
-            Maniacrev.LOGGER.info("[Downed] {} — последний выживший, умирает сразу", player.getName().getString());
-            return; // не отменяем событие — смерть фатальна
-        }
-
         event.setCanceled(true);
 
         data.setState(DownedState.DOWNED);
@@ -156,9 +148,12 @@ public class DownedEventHandler {
         applyDownedEffects(player);
         spawnDownedStand(player);
 
-        sendTeamMessage(player, team,
+        broadcastMessage(player,
                 "§c☠ " + player.getName().getString() + " §cупал! Помогите ему в течение §e60 сек§c!");
         Maniacrev.LOGGER.info("[Downed] {} -> DOWNED", player.getName().getString());
+
+        // НОВОЕ: проверяем — если теперь все лежат, всех убиваем
+        checkAllDowned(player.getServer(), team);
     }
 
     // ══════════════════════════════════════════════════════════════════════

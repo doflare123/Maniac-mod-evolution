@@ -6,6 +6,7 @@ import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.util.PlayerModeUtil;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public class HotbarScrollEvents {
@@ -14,6 +15,7 @@ public class HotbarScrollEvents {
     public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
         Player player = net.minecraft.client.Minecraft.getInstance().player;
         if (player == null) return;
+        if (!PlayerModeUtil.isSurvivalOrAdventure(player)) return;
 
         double scrollDelta = event.getScrollDelta();
         if (scrollDelta == 0) return;

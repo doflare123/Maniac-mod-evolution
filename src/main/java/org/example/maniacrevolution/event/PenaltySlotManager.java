@@ -9,6 +9,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.util.PlayerModeUtil;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class PenaltySlotManager {
@@ -73,8 +74,13 @@ public class PenaltySlotManager {
      * Проверяет, находится ли игрок в пенальти-слоте
      */
     public static boolean isInPenaltySlot(Player player) {
+        if (!PlayerModeUtil.isSurvivalOrAdventure(player)) {
+            return false;
+        }
+
         int selected = player.getInventory().selected;
-        return selected >= PENALTY_SLOT_START && selected <= PENALTY_SLOT_END;
+        return selected >= PENALTY_SLOT_START
+                && selected <= PENALTY_SLOT_END;
     }
 
     /**

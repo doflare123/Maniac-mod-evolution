@@ -10,6 +10,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.event.PenaltySlotManager;
+import org.example.maniacrevolution.util.PlayerModeUtil;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public class PenaltyHudOverlay {
@@ -21,7 +22,7 @@ public class PenaltyHudOverlay {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
 
-        if (player == null || player.isCreative() || player.isSpectator()) return;
+        if (!PlayerModeUtil.isSurvivalOrAdventure(player)) return;
 
         GuiGraphics gui = event.getGuiGraphics();
         int screenW = mc.getWindow().getGuiScaledWidth();
