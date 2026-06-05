@@ -29,6 +29,14 @@ public class MapRegistry {
                 new ResourceLocation(Maniacrev.MODID, "textures/gui/maps/pizzeria.png")
         ));
 
+        register(new MapData(
+                "fort",
+                5,
+                "Форт",
+                "Страшный и маленький форт из никому неизвестной игры. Довольно маленькая карта",
+                new ResourceLocation(Maniacrev.MODID, "textures/gui/maps/fort.png")
+        ));
+
         Maniacrev.LOGGER.info("Registered {} maps", MAPS.size());
     }
 
