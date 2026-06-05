@@ -22,6 +22,7 @@ import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.GameStatePacket;
 import org.example.maniacrevolution.perk.PerkPhase;
+import org.example.maniacrevolution.stats.StatsManager;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class GameManager {
@@ -154,6 +155,7 @@ public class GameManager {
 
         setPhase(1);
         startTimer();
+        StatsManager.onGameStarted(server);
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             PlayerData data = PlayerDataManager.get(player);

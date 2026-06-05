@@ -126,12 +126,14 @@ public class Maniacrev {
         ReadinessManager.setServer(event.getServer());
         PreGameReadyManager.setServer(event.getServer());
         HackManager.reset();
+        StatsManager.onServerStarted(event.getServer());
         LOGGER.info("Character system initialized");
         LOGGER.info("ManiacRev server data loaded");
     }
 
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
+        StatsManager.onServerStopping();
         PlayerDataManager.save(event.getServer());
         ReadinessManager.clear();
         LOGGER.info("ManiacRev server data saved");
@@ -169,11 +171,18 @@ public class Maniacrev {
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        StatsManager.onPlayerLoggedIn(player);
         if (!GameManager.isTimerRunning()) return;
 
         player.setGameMode(GameType.SPECTATOR);
         player.sendSystemMessage(Component.literal("§7Игра уже идёт. Вы переведены в режим наблюдателя."));
         LOGGER.info("Player {} joined during active game — set to spectator", player.getName().getString());
+    }
+
+    @SubscribeEvent
+    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        StatsManager.onPlayerLoggedOut(player);
     }
 
     public static ResourceLocation loc(String path) {

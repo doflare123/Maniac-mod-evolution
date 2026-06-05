@@ -59,6 +59,9 @@ public class StatsCommand {
                 if (gameId > 0) {
                     source.sendSuccess(() -> Component.literal(
                             "§a[Stats] §fСтатистика сохранена! ID игры: §e#" + gameId), false);
+                } else if (gameId == StatsManager.RESULT_SKIPPED) {
+                    source.sendFailure(Component.literal(
+                            "§e[Stats] Матч не записан: " + StatsManager.getLastSkipReason()));
                 } else {
                     source.sendFailure(Component.literal(
                             "§c[Stats] Ошибка при сохранении статистики. Проверьте логи сервера."));
