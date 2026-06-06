@@ -8,6 +8,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.client.ClientPlagueData;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.ClientGameState;
@@ -19,6 +20,7 @@ import org.example.maniacrevolution.item.armor.MedicalMaskItem;
 import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.mana.ClientManaData;
+import org.example.maniacrevolution.nightmare.NightmareConfig;
 import org.example.maniacrevolution.nightmare.NightmareHud;
 import org.example.maniacrevolution.perk.PerkType;
 import org.example.maniacrevolution.util.PlayerModeUtil;
@@ -258,6 +260,11 @@ public class CustomHud implements IGuiOverlay {
      * ИСПРАВЛЕНО: Поиск предмета со способностью с учетом условий
      */
     private IItemWithAbility findItemWithAbility(Player player) {
+        if (ClientPlayerData.isManiacClass(NightmareConfig.KEEPER_CLASS_ID)
+                && ModItems.GUARDIAN_HEAD.get() instanceof IItemWithAbility ability) {
+            return ability;
+        }
+
         // Проверяем основную руку
         ItemStack mainHand = player.getMainHandItem();
         if (mainHand.getItem() instanceof IItemWithAbility ability) {

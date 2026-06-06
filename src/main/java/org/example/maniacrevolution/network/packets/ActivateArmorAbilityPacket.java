@@ -6,9 +6,11 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
+import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.item.IItemWithAbility;
 import org.example.maniacrevolution.item.armor.IActivatableArmor;
 import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.nightmare.NightmareManager;
 
 import java.util.function.Supplier;
 
@@ -50,6 +52,13 @@ public class ActivateArmorAbilityPacket {
         }
 
         context.enqueueWork(() -> {
+            if (NightmareManager.getInstance().isKeeper(player)) {
+                if (ModItems.GUARDIAN_HEAD.get() instanceof IActivatableArmor formAbility) {
+                    formAbility.activateAbility(player);
+                }
+                return;
+            }
+
             // Проверяем броню в указанном слоте
             ItemStack armorPiece = player.getItemBySlot(slot);
 

@@ -72,6 +72,7 @@ public class SelectCharacterPacket {
                     PacketDistributor.PLAYER.with(() -> player),
                     new SyncPlayerClassPacket(characterClass.getType(), classId)
             );
+            PlayerDataManager.syncPlayerClassToAll(player);
 
             Maniacrev.LOGGER.info("Player {} selected character: {} (type={}, id={})",
                     player.getName().getString(),

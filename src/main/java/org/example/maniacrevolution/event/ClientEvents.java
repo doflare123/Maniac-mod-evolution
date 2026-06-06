@@ -15,6 +15,7 @@ import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.client.particle.NecromancerParticle;
 import org.example.maniacrevolution.client.renderer.BloodMarkerRenderer;
 import org.example.maniacrevolution.config.HudConfig;
+import org.example.maniacrevolution.data.ClientKeeperFormData;
 import org.example.maniacrevolution.effect.client.FearClientHandler;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.entity.TotemEntity;
@@ -92,5 +93,6 @@ public class ClientEvents {
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         // Очищаем все свечения при выходе
         WallhackGlowHandler.clearAll();
+        ClientKeeperFormData.clear();
     }
 }

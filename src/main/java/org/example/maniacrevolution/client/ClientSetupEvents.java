@@ -5,8 +5,11 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.block.entity.ModBlockEntities;
+import org.example.maniacrevolution.client.renderer.KeeperNightmareDummyRenderer;
 import org.example.maniacrevolution.client.renderer.MimicBlockRenderer;
 import org.example.maniacrevolution.client.renderer.NetherSwapProjectileRenderer;
+import org.example.maniacrevolution.client.renderer.NightmareCocoonRenderer;
 import org.example.maniacrevolution.client.renderer.PlagueOrbRenderer;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.hack.ModHackRegistry;
@@ -30,6 +33,12 @@ public class ClientSetupEvents {
 
         event.registerEntityRenderer(ModEntities.FEAR_CHASER.get(),
                 context -> new net.minecraft.client.renderer.entity.NoopRenderer<>(context));
+
+        event.registerEntityRenderer(ModEntities.KEEPER_NIGHTMARE_DUMMY.get(),
+                KeeperNightmareDummyRenderer::new);
+
+        event.registerBlockEntityRenderer(ModBlockEntities.NIGHTMARE_COCOON.get(),
+                context -> new NightmareCocoonRenderer());
 
         net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
                 ModHackRegistry.COMPUTER_BLOCK_ENTITY.get(),

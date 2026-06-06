@@ -13,6 +13,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.item.DeathScytheItem;
 import org.example.maniacrevolution.item.HookItem;
@@ -23,6 +24,7 @@ import org.example.maniacrevolution.mana.ManaProvider;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SyncAbilityCooldownPacket;
 import org.example.maniacrevolution.network.packets.SyncManaPacket;
+import org.example.maniacrevolution.nightmare.NightmareManager;
 
 import java.util.UUID;
 
@@ -112,6 +114,10 @@ public class ManaEvents {
      * ОБНОВЛЕНО: Синхронизация активных способностей брони и оружия
      */
     private static void syncActiveArmorAbilities(ServerPlayer player) {
+        if (NightmareManager.getInstance().isKeeper(player)) {
+            ArmorAbilityCooldownManager.syncToClient(player, ModItems.GUARDIAN_HEAD.get(), 0);
+        }
+
         // Броня
         for (ItemStack armorSlot : player.getArmorSlots()) {
             if (armorSlot.getItem() instanceof ITimedAbility timedAbility) {

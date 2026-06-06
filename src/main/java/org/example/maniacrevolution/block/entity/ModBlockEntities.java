@@ -16,4 +16,9 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("fnaf_generator", () ->
                     BlockEntityType.Builder.of(FNAFGeneratorBlockEntity::new,
                             ModBlocks.FNAF_GENERATOR.get()).build(null));
+
+    public static final RegistryObject<BlockEntityType<NightmareCocoonBlockEntity>> NIGHTMARE_COCOON =
+            BLOCK_ENTITIES.register("nightmare_cocoon", () ->
+                    BlockEntityType.Builder.of(NightmareCocoonBlockEntity::new,
+                            ModBlocks.NIGHTMARE_COCOON.get()).build(null));
 }

@@ -69,20 +69,19 @@ public final class NightmareManager {
         }
     }
 
-    public void onCocoonHit(ServerPlayer rescuer, BlockPos pos) {
+    public boolean onCocoonHit(ServerPlayer rescuer, BlockPos pos) {
         if (!rescuer.getMainHandItem().is(ModItems.AWAKENING_NEEDLE.get())) {
-            rescuer.displayClientMessage(Component.literal("Нужна Игла пробуждения"), true);
-            return;
+            return false;
         }
 
         for (ServerPlayer player : rescuer.server.getPlayerList().getPlayers()) {
             NightmarePlayerState state = states.get(player.getUUID());
             if (state != null && state.isInTrial() && pos.equals(state.cocoonPos)) {
                 rescueFromTrial(player, state);
-                rescuer.level().destroyBlock(pos, false);
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     public boolean castConcentratedNightmare(ServerPlayer keeper) {

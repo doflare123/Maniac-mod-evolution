@@ -12,6 +12,7 @@ import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.SyncRemotePlayerClassPacket;
 import org.example.maniacrevolution.network.packets.SyncPlayerDataPacket;
 import org.example.maniacrevolution.perk.PerkPhase;
 
@@ -50,11 +51,33 @@ public class PlayerDataManager {
         }
     }
 
+    public static void syncPlayerClassToAll(ServerPlayer player) {
+        PlayerData data = get(player);
+        ModNetworking.sendToAllPlayers(new SyncRemotePlayerClassPacket(
+                player.getUUID(),
+                data.getManiacClassId()
+        ));
+    }
+
+    private static void syncAllPlayerClassesTo(ServerPlayer receiver) {
+        if (server == null) return;
+
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            PlayerData data = get(player);
+            ModNetworking.sendToPlayer(new SyncRemotePlayerClassPacket(
+                    player.getUUID(),
+                    data.getManiacClassId()
+            ), receiver);
+        }
+    }
+
     @SubscribeEvent
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             PlayerData data = getOrCreate(player.getUUID());
             syncToClient(player);
+            syncAllPlayerClassesTo(player);
+            syncPlayerClassToAll(player);
         }
     }
 

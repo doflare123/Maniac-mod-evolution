@@ -358,6 +358,10 @@ public class ModNetworking {
                 SyncPlayerClassPacket::handle
         );
 
+        CHANNEL.registerMessage(packetId++, SyncRemotePlayerClassPacket.class,
+                SyncRemotePlayerClassPacket::encode, SyncRemotePlayerClassPacket::decode,
+                SyncRemotePlayerClassPacket::handle);
+
         CHANNEL.registerMessage(packetId++, SyncNightmarePacket.class,
                 SyncNightmarePacket::encode, SyncNightmarePacket::decode, SyncNightmarePacket::handle);
         CHANNEL.registerMessage(packetId++, NightmareScreamerPacket.class,

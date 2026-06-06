@@ -9,10 +9,12 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.item.armor.IActivatableArmor;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.ActivateArmorAbilityPacket;
+import org.example.maniacrevolution.nightmare.NightmareConfig;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public class ArmorAbilityKeyHandler {
@@ -37,6 +39,11 @@ public class ArmorAbilityKeyHandler {
     }
 
     private static void handleArmorAbilityActivation(LocalPlayer player) {
+        if (ClientPlayerData.isManiacClass(NightmareConfig.KEEPER_CLASS_ID)) {
+            ModNetworking.sendToServer(new ActivateArmorAbilityPacket(EquipmentSlot.HEAD));
+            return;
+        }
+
         // Проверяем броню игрока
         IActivatableArmor activatableArmor = null;
         EquipmentSlot slot = null;

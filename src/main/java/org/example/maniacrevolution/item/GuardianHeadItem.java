@@ -4,7 +4,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
@@ -45,7 +44,10 @@ public class GuardianHeadItem extends ArmorItem implements IActivatableArmor, II
 
     @Override
     public boolean canActivate(ServerPlayer player) {
-        if (player.getItemBySlot(EquipmentSlot.HEAD).getItem() != this) return false;
+        if (!NightmareManager.getInstance().isKeeper(player)) {
+            player.displayClientMessage(Component.literal("Эта способность привязана к форме Хранителя кошмаров"), true);
+            return false;
+        }
         if (ArmorAbilityCooldownManager.isOnCooldown(player, this)) {
             player.displayClientMessage(Component.literal("Кошмар восстанавливается: " +
                     ArmorAbilityCooldownManager.getRemainingCooldown(player, this) / 20 + "с"), true);

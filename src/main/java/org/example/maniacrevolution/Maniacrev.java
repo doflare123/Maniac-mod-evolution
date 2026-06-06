@@ -63,6 +63,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
+import software.bernie.geckolib.GeckoLib;
 
 @Mod(Maniacrev.MODID)
 public class Maniacrev {
@@ -77,6 +78,8 @@ public class Maniacrev {
                     new ResourceLocation(MODID, "phase_change")));
 
     public Maniacrev() {
+        GeckoLib.initialize();
+
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         modEventBus.addListener(this::commonSetup);
