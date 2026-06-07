@@ -12,6 +12,8 @@ public final class NightmareConfig {
 
     /** ID класса Хранителя кошмаров в модовой системе классов. */
     public static final int KEEPER_CLASS_ID = 17;
+    /** Скорость Хранителя кошмаров */
+    public static final double KEEPER_WALK_SPEED_MODIFIER = 0.15D;
 
     /** Базовая дальняя зона, где строятся испытания, чтобы не задевать основную карту. */
     public static final BlockPos TRIAL_BASE_ORIGIN = new BlockPos(20000, 80, 20000);

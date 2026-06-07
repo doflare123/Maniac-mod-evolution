@@ -22,7 +22,7 @@ public final class KeeperNightmareFormEvents {
     private static final AttributeModifier WALK_SPEED_MODIFIER = new AttributeModifier(
             WALK_SPEED_MODIFIER_ID,
             "Keeper nightmare form walk speed",
-            -0.40D,
+            NightmareConfig.KEEPER_WALK_SPEED_MODIFIER,
             AttributeModifier.Operation.MULTIPLY_TOTAL
     );
 

@@ -89,15 +89,6 @@ public class ModEntities {
                             .fireImmune()
                             .build("fear_chaser"));
 
-    public static final RegistryObject<EntityType<KeeperNightmareDummyEntity>> KEEPER_NIGHTMARE_DUMMY =
-            ENTITIES.register("keeper_nightmare_dummy", () ->
-                    EntityType.Builder.<KeeperNightmareDummyEntity>of(KeeperNightmareDummyEntity::new, MobCategory.MISC)
-                            .sized(0.95F, 2.7F)
-                            .clientTrackingRange(96)
-                            .updateInterval(20)
-                            .fireImmune()
-                            .build("keeper_nightmare_dummy"));
-
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
     }
