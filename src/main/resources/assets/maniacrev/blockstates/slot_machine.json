@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "maniacrev:block/slot_machine"
+    },
+    "half=upper": {
+      "model": "maniacrev:block/slot_machine"
+    }
+  }
+}

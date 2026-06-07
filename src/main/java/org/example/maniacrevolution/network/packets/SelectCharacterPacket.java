@@ -6,12 +6,12 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterRegistry;
 import org.example.maniacrevolution.ghost.GhostLoadoutManager;
 import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.data.PlayerDataManager;
 
 import java.util.function.Supplier;
 
@@ -59,11 +59,8 @@ public class SelectCharacterPacket {
             }
             scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective).setScore(classId);
 
-            // Клиентские данные — для мода
-            ModNetworking.CHANNEL.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new SyncPlayerClassPacket(characterClass.getType(), classId)
-            );
+            // Серверные и клиентские данные — для логики мода без зависимости от scoreboard
+            PlayerDataManager.setSelectedClass(player, characterClass.getType(), classId);
 
             if ("ghost".equals(characterClass.getId())) {
                 GhostLoadoutManager.refreshGhostLoadout(player);

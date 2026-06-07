@@ -37,6 +37,36 @@ public class ModSounds {
                     () -> SoundEvent.createVariableRangeEvent(
                             new ResourceLocation(Maniacrev.MODID, "qte_fail")));
 
+    public static final RegistryObject<SoundEvent> COIN_FLIP =
+            SOUND_EVENTS.register("coin_flip",
+                    () -> SoundEvent.createVariableRangeEvent(
+                            new ResourceLocation(Maniacrev.MODID, "coin_flip")));
+
+    public static final RegistryObject<SoundEvent> SLOT_INSERT =
+            SOUND_EVENTS.register("slot_insert",
+                    () -> SoundEvent.createVariableRangeEvent(
+                            new ResourceLocation(Maniacrev.MODID, "slot_insert")));
+
+    public static final RegistryObject<SoundEvent> SLOT_SPIN =
+            SOUND_EVENTS.register("slot_spin",
+                    () -> SoundEvent.createVariableRangeEvent(
+                            new ResourceLocation(Maniacrev.MODID, "slot_spin")));
+
+    public static final RegistryObject<SoundEvent> SLOT_WIN =
+            SOUND_EVENTS.register("slot_win",
+                    () -> SoundEvent.createVariableRangeEvent(
+                            new ResourceLocation(Maniacrev.MODID, "slot_win")));
+
+    public static final RegistryObject<SoundEvent> SLOT_JACKPOT =
+            SOUND_EVENTS.register("slot_jackpot",
+                    () -> SoundEvent.createVariableRangeEvent(
+                            new ResourceLocation(Maniacrev.MODID, "slot_jackpot")));
+
+    public static final RegistryObject<SoundEvent> SLOT_DEATH =
+            SOUND_EVENTS.register("slot_death",
+                    () -> SoundEvent.createVariableRangeEvent(
+                            new ResourceLocation(Maniacrev.MODID, "slot_death")));
+
     // Регистрация в главном классе мода:
     // ModSounds.SOUND_EVENTS.register(modEventBus);
 }

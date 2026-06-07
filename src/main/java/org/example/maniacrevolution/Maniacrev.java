@@ -155,6 +155,7 @@ public class Maniacrev {
         ResourcePackCommand.register(event.getDispatcher());
         GeneratorCommand.register(event.getDispatcher());
         ShamanCommands.register(event.getDispatcher());
+        DodepovichCommands.register(event.getDispatcher());
         HackCommands.register(event.getDispatcher());
         StatsCommand.register(event.getDispatcher());
         GhostCommand.register(event.getDispatcher());

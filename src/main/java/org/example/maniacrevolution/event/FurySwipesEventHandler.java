@@ -2,8 +2,6 @@ package org.example.maniacrevolution.event;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.Scoreboard;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -15,11 +13,10 @@ import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.capability.FurySwipesCapability;
 import org.example.maniacrevolution.capability.FurySwipesCapabilityProvider;
-import org.example.maniacrevolution.character.CharacterType;
+import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.item.BeastClawItem;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SyncFurySwipesTargetPacket;
-import org.example.maniacrevolution.network.packets.SyncPlayerClassPacket;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -105,21 +102,6 @@ public class FurySwipesEventHandler {
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer sp)) return;
-
-        Scoreboard sb = sp.getServer().getScoreboard();
-
-        for (CharacterType type : CharacterType.values()) {
-            Objective obj = sb.getObjective(type.getScoreboardName());
-            if (obj == null) continue;
-            if (!sb.hasPlayerScore(sp.getScoreboardName(), obj)) continue;
-
-            int score = sb.getOrCreatePlayerScore(sp.getScoreboardName(), obj).getScore();
-            if (score <= 0) continue;
-
-            ModNetworking.CHANNEL.send(
-                    PacketDistributor.PLAYER.with(() -> sp),
-                    new SyncPlayerClassPacket(type, score)
-            );
-        }
+        PlayerDataManager.syncClassToClient(sp);
     }
 }
