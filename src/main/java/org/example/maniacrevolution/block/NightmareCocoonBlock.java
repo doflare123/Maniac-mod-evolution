@@ -15,8 +15,8 @@ import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.block.entity.NightmareCocoonBlockEntity;
-import org.example.maniacrevolution.nightmare.NightmareConfig;
-import org.example.maniacrevolution.nightmare.NightmareManager;
+import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.OpenCocoonNeedleMinigamePacket;
 import org.jetbrains.annotations.Nullable;
 
 public class NightmareCocoonBlock extends Block implements EntityBlock {
@@ -50,15 +50,10 @@ public class NightmareCocoonBlock extends Block implements EntityBlock {
             event.setCanceled(true);
             if (level.isClientSide()) return;
             if (!player.getMainHandItem().is(ModItems.AWAKENING_NEEDLE.get())) return;
-            if (!(level.getBlockEntity(pos) instanceof NightmareCocoonBlockEntity cocoon)) return;
+            if (!(level.getBlockEntity(pos) instanceof NightmareCocoonBlockEntity)) return;
+            if (!(player instanceof ServerPlayer serverPlayer)) return;
 
-            int hits = cocoon.hit();
-            if (hits >= NightmareConfig.COCOON_REQUIRED_HITS && player instanceof ServerPlayer serverPlayer) {
-                boolean rescued = NightmareManager.getInstance().onCocoonHit(serverPlayer, pos);
-                if (!rescued) {
-                    level.destroyBlock(pos, false);
-                }
-            }
+            ModNetworking.sendToPlayer(new OpenCocoonNeedleMinigamePacket(pos.immutable()), serverPlayer);
         }
     }
 }

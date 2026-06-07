@@ -19,13 +19,13 @@ public final class NightmareLighterEvents {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
 
         ItemStack mainHand = player.getMainHandItem();
-        if (mainHand.getItem() instanceof NightmareLighterItem) {
+        if (mainHand.getItem() instanceof NightmareLighterItem && NightmareLighterItem.isLit(mainHand)) {
             NightmareLighterItem.tickHeld(player, mainHand, EquipmentSlot.MAINHAND);
             return;
         }
 
         ItemStack offHand = player.getOffhandItem();
-        if (offHand.getItem() instanceof NightmareLighterItem) {
+        if (offHand.getItem() instanceof NightmareLighterItem && NightmareLighterItem.isLit(offHand)) {
             NightmareLighterItem.tickHeld(player, offHand, EquipmentSlot.OFFHAND);
             return;
         }

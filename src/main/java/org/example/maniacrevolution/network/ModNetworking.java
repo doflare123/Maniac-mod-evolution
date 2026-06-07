@@ -324,6 +324,18 @@ public class ModNetworking {
                 .consumerMainThread(DownedHudPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(OpenCocoonNeedleMinigamePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OpenCocoonNeedleMinigamePacket::encode)
+                .decoder(OpenCocoonNeedleMinigamePacket::decode)
+                .consumerMainThread(OpenCocoonNeedleMinigamePacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(CocoonNeedleMinigameResultPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(CocoonNeedleMinigameResultPacket::encode)
+                .decoder(CocoonNeedleMinigameResultPacket::decode)
+                .consumerMainThread(CocoonNeedleMinigameResultPacket::handle)
+                .add();
+
         CHANNEL.registerMessage(
                      packetId++,
                      SyncPlaguePacket.class,

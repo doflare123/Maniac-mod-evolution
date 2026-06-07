@@ -26,7 +26,11 @@ public class NightmareCocoonBlockEntity extends BlockEntity implements GeoBlockE
     }
 
     public int hit() {
-        hits = Math.min(NightmareConfig.COCOON_REQUIRED_HITS, hits + 1);
+        return damage(NightmareConfig.COCOON_NEEDLE_MINIGAME_DAMAGE);
+    }
+
+    public int damage(int amount) {
+        hits = Math.min(NightmareConfig.COCOON_REQUIRED_HITS, hits + Math.max(0, amount));
         sync();
         return hits;
     }
