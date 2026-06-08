@@ -8,7 +8,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.client.ClientPlagueData;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.ClientGameState;
@@ -20,10 +19,7 @@ import org.example.maniacrevolution.item.armor.MedicalMaskItem;
 import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.mana.ClientManaData;
-import org.example.maniacrevolution.nightmare.NightmareConfig;
-import org.example.maniacrevolution.nightmare.NightmareHud;
 import org.example.maniacrevolution.perk.PerkType;
-import org.example.maniacrevolution.util.PlayerModeUtil;
 
 import java.util.List;
 
@@ -39,17 +35,7 @@ public class CustomHud implements IGuiOverlay {
     private static final int BAR_HEIGHT = 18;
     private static final int BAR_WIDTH = 200;
 
-    private static final int SIDE_GAP = 5;
-    private static final int SLOT_GAP = 4;
-    private static final int HOTBAR_COLUMNS = 3;
-    private static final int HOTBAR_WIDTH = HOTBAR_COLUMNS * HOTBAR_SLOT_SIZE + (HOTBAR_COLUMNS - 1) * SLOT_GAP;
-    private static final int KEYBIND_HINT_WIDTH = 125;
-    private static final int PENALTY_GAP = 8;
-    private static final int ADDICTION_GAP = 4;
-    private static final int ADDICTION_WIDTH = 12;
-    private static final int RIGHT_PANEL_WIDTH = SIDE_GAP + HOTBAR_WIDTH + PENALTY_GAP + PENALTY_SLOT_SIZE + ADDICTION_GAP + ADDICTION_WIDTH;
-    private static final int MIN_SCREEN_WIDTH = MAIN_PANEL_WIDTH + Math.max(KEYBIND_HINT_WIDTH, RIGHT_PANEL_WIDTH) * 2;
-    private static final int MIN_SCREEN_HEIGHT = MAIN_PANEL_HEIGHT + 45;
+    private static final int MIN_SCREEN_WIDTH = MAIN_PANEL_WIDTH + 120;
 
     // Цвета
     private static final int PANEL_BG = 0xCC000000;
@@ -78,7 +64,7 @@ public class CustomHud implements IGuiOverlay {
 
         Player player = mc.player;
 
-        if (!PlayerModeUtil.isSurvivalOrAdventure(player)) {
+        if (player.isCreative() || player.isSpectator()) {
             return;
         }
 
@@ -100,16 +86,16 @@ public class CustomHud implements IGuiOverlay {
         FurySwipesHud.render(guiGraphics, scaledWidth / 2, mainY - 10);
         renderMainPanel(guiGraphics, mainX, mainY, player);
         LevelHud.render(guiGraphics, 5, 5);
-        TimerHud.render(guiGraphics, scaledWidth / 2, 5);
+        TimerHud.render(guiGraphics, screenWidth / 2, 5);
 
         int hotbarY = mainY + (MAIN_PANEL_HEIGHT - (HOTBAR_SLOT_SIZE * 2 + 4)) / 2;
-        renderHotbar(guiGraphics, mainX + MAIN_PANEL_WIDTH + SIDE_GAP, hotbarY, player);
+        renderHotbar(guiGraphics, mainX + MAIN_PANEL_WIDTH + 5, hotbarY, player);
 
-        int penaltyX = mainX + MAIN_PANEL_WIDTH + SIDE_GAP + HOTBAR_WIDTH + PENALTY_GAP;
+        int penaltyX = mainX + MAIN_PANEL_WIDTH + 5 + (HOTBAR_SLOT_SIZE + 4) * 3 + 8;
         int penaltyY = mainY + (MAIN_PANEL_HEIGHT - PENALTY_SLOT_SIZE * 3 - 8) / 2;
         renderPenaltySlots(guiGraphics, penaltyX, penaltyY, player);
         // Шкала зависимости — правее слотов штрафа
-        int addX = penaltyX + PENALTY_SLOT_SIZE + ADDICTION_GAP;
+        int addX = penaltyX + PENALTY_SLOT_SIZE + 4;
         int addY = mainY + 5;
         int addH = MAIN_PANEL_HEIGHT - 10;
         AddictionHud.render(guiGraphics, addX, addY, addH);
@@ -135,8 +121,6 @@ public class CustomHud implements IGuiOverlay {
             int hackHudY = (scaledHeight - ComputerHackHud.HEIGHT) / 2;
             ComputerHackHud.render(guiGraphics, hackHudX, hackHudY);
         }
-
-        NightmareHud.render(guiGraphics, scaledWidth, scaledHeight);
 
         guiGraphics.pose().popPose();
     }
@@ -213,11 +197,10 @@ public class CustomHud implements IGuiOverlay {
     }
 
     private float calculateScale(int screenWidth) {
-        Minecraft mc = Minecraft.getInstance();
-        int screenHeight = mc.getWindow().getGuiScaledHeight();
-        float widthScale = (float) screenWidth / MIN_SCREEN_WIDTH;
-        float heightScale = (float) screenHeight / MIN_SCREEN_HEIGHT;
-        return Math.min(1.0f, Math.min(widthScale, heightScale));
+        if (screenWidth < MIN_SCREEN_WIDTH) {
+            return (float) screenWidth / MIN_SCREEN_WIDTH;
+        }
+        return 1.0f;
     }
 
     private void renderMainPanel(GuiGraphics gui, int x, int y, Player player) {
@@ -260,11 +243,6 @@ public class CustomHud implements IGuiOverlay {
      * ИСПРАВЛЕНО: Поиск предмета со способностью с учетом условий
      */
     private IItemWithAbility findItemWithAbility(Player player) {
-        if (ClientPlayerData.isManiacClass(NightmareConfig.KEEPER_CLASS_ID)
-                && ModItems.GUARDIAN_HEAD.get() instanceof IItemWithAbility ability) {
-            return ability;
-        }
-
         // Проверяем основную руку
         ItemStack mainHand = player.getMainHandItem();
         if (mainHand.getItem() instanceof IItemWithAbility ability) {

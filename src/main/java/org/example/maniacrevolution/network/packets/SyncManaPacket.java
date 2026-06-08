@@ -1,6 +1,5 @@
 package org.example.maniacrevolution.network.packets;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.mana.ClientManaData;

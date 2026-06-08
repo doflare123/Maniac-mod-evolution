@@ -1,17 +1,12 @@
 package org.example.maniacrevolution.network.packets;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkEvent;
-import org.example.maniacrevolution.block.entity.FNAFGeneratorBlockEntity;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.function.Supplier;
 
-/**
- * Пакет для синхронизации состояния генератора с клиентом
- */
 public class SyncGeneratorPacket {
 
     private final BlockPos pos;
@@ -37,18 +32,7 @@ public class SyncGeneratorPacket {
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            // Обработка на клиенте
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.level != null) {
-                BlockEntity be = mc.level.getBlockEntity(pos);
-                if (be instanceof FNAFGeneratorBlockEntity generator) {
-                    // Используем методы БЕЗ синхронизации, чтобы не создать цикл пакетов
-                    generator.setCharge(charge, false);
-                    generator.setPowered(powered, false);
-                }
-            }
-        });
+        ctx.get().enqueueWork(() -> ClientOnlyExecutor.syncGenerator(pos, charge, powered));
         ctx.get().setPacketHandled(true);
         return true;
     }

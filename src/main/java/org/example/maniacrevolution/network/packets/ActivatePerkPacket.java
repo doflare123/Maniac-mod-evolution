@@ -53,7 +53,9 @@ public class ActivatePerkPacket {
 
             switch (result) {
                 case SUCCESS -> player.displayClientMessage(
-                        Component.literal("§a" + active.getPerk().getName().getString() + " активирован!"), true);
+                        net.minecraft.network.chat.Component.literal("§a")
+                                .append(active.getPerk().getName())
+                                .append(" активирован!"), true);
                 case ON_COOLDOWN -> player.displayClientMessage(
                         Component.literal("§cПерк на перезарядке! Осталось: " + active.getCooldownRemainingSeconds() + " сек"), true);
                 case WRONG_PHASE -> player.displayClientMessage(

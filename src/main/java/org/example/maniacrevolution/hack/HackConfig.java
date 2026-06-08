@@ -27,7 +27,7 @@ public class HackConfig {
 
     // ── Радиусы ───────────────────────────────────────────────────────────────
     /** Радиус (в блоках) в котором хакер должен находиться у компьютера */
-    public static double HACKER_RADIUS = 1.7;
+    public static double HACKER_RADIUS = 1.3;
 
     /** Радиус (в блоках) в котором стоят помощники */
     public static double SUPPORT_RADIUS = 3.0;

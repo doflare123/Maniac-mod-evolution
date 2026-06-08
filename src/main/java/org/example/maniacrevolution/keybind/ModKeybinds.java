@@ -4,13 +4,11 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
-import org.checkerframework.checker.units.qual.K;
 import org.example.maniacrevolution.Maniacrev;
 import org.lwjgl.glfw.GLFW;
 
 public class ModKeybinds {
     public static final String CATEGORY = "key.categories.maniacrev";
-    public static final String CATEGORY2 = "key.categories.maniacrev";
 
     // ФИКС: Инициализируем СРАЗУ при объявлении, а не в методе
     public static final KeyMapping OPEN_GUIDE = new KeyMapping(
@@ -42,7 +40,7 @@ public class ModKeybinds {
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_F,
-            CATEGORY2
+            CATEGORY
     );
 
     public static final KeyMapping QTE_KEY_2 = new KeyMapping(
