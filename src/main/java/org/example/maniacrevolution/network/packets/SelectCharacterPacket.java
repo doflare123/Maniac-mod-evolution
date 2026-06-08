@@ -9,7 +9,6 @@ import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterRegistry;
-import org.example.maniacrevolution.ghost.GhostLoadoutManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.data.PlayerDataManager;
 
@@ -61,12 +60,6 @@ public class SelectCharacterPacket {
 
             // Серверные и клиентские данные — для логики мода без зависимости от scoreboard
             PlayerDataManager.setSelectedClass(player, characterClass.getType(), classId);
-
-            if ("ghost".equals(characterClass.getId())) {
-                GhostLoadoutManager.refreshGhostLoadout(player);
-            } else {
-                GhostLoadoutManager.clearGhostLoadout(player);
-            }
 
             Maniacrev.LOGGER.info("Player {} selected character: {} (type={}, id={})",
                     player.getName().getString(),

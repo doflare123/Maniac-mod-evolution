@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -29,6 +30,8 @@ import org.example.maniacrevolution.network.packets.SyncGhostPossessionPacket;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
@@ -41,6 +44,7 @@ public class GhostPossessionManager {
     private static final Map<UUID, PossessionState> ACTIVE_POSSESSIONS = new HashMap<>();
     private static final Map<UUID, UUID> TARGET_TO_POSSESSOR = new HashMap<>();
     private static final Map<UUID, Long> COOLDOWN_UNTIL = new HashMap<>();
+    private static final Set<UUID> MANUAL_RELEASE_READY = new HashSet<>();
     private GhostPossessionManager() {
     }
 
@@ -87,6 +91,7 @@ public class GhostPossessionManager {
 
         ACTIVE_POSSESSIONS.put(possessor.getUUID(), new PossessionState(target.getUUID(), now, now + POSSESSION_DURATION_TICKS));
         TARGET_TO_POSSESSOR.put(target.getUUID(), possessor.getUUID());
+        MANUAL_RELEASE_READY.remove(possessor.getUUID());
 
         syncTargetToPossessor(possessor, target);
         applyPossessorEffects(possessor);
@@ -160,6 +165,7 @@ public class GhostPossessionManager {
         releasePossession(player, "сброс");
         ACTIVE_POSSESSIONS.remove(player.getUUID());
         TARGET_TO_POSSESSOR.values().removeIf(uuid -> uuid.equals(player.getUUID()));
+        MANUAL_RELEASE_READY.remove(player.getUUID());
         COOLDOWN_UNTIL.remove(player.getUUID());
         clearPossessorEffects(player);
         GhostLoadoutManager.restoreCosmetics(player);
@@ -241,6 +247,10 @@ public class GhostPossessionManager {
                 TARGET_TO_POSSESSOR.remove(entry.getValue().targetUuid());
                 finishPossession(possessor, entry.getValue(), "время вышло");
                 continue;
+            }
+
+            if (!possessor.isShiftKeyDown()) {
+                MANUAL_RELEASE_READY.add(possessor.getUUID());
             }
 
             applyPossessorEffects(possessor);
@@ -375,6 +385,27 @@ public class GhostPossessionManager {
     }
 
     @SubscribeEvent
+    public static void onPossessedAttacked(LivingAttackEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer target)
+                || !isPossessed(target)) {
+            return;
+        }
+
+        UUID possessorUuid = TARGET_TO_POSSESSOR.get(target.getUUID());
+        if (possessorUuid == null
+                || event.getSource().getEntity() == null
+                || !possessorUuid.equals(event.getSource().getEntity().getUUID())
+                || target.getServer() == null) {
+            return;
+        }
+
+        ServerPlayer possessor = target.getServer().getPlayerList().getPlayer(possessorUuid);
+        if (possessor != null) {
+            releasePossession(possessor, "Призрак ударил одержимого");
+        }
+    }
+
+    @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
@@ -433,12 +464,10 @@ public class GhostPossessionManager {
     }
 
     private static void applyPossessorEffects(ServerPlayer possessor) {
-        possessor.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 10, 0, false, false));
         possessor.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 10, 0, false, false));
     }
 
     private static void clearPossessorEffects(ServerPlayer possessor) {
-        possessor.removeEffect(MobEffects.INVISIBILITY);
         possessor.removeEffect(MobEffects.MOVEMENT_SPEED);
         possessor.removeEffect(ModEffects.POSSESSION_TIMER.get());
     }
@@ -463,6 +492,7 @@ public class GhostPossessionManager {
     }
 
     private static void finishPossession(ServerPlayer possessor, PossessionState state, String reason) {
+        MANUAL_RELEASE_READY.remove(possessor.getUUID());
         ServerPlayer target = possessor.getServer() != null
                 ? possessor.getServer().getPlayerList().getPlayer(state.targetUuid())
                 : null;
@@ -476,6 +506,7 @@ public class GhostPossessionManager {
 
         syncClientState(possessor, false, false, -1);
         clearPossessorEffects(possessor);
+        possessor.addEffect(new MobEffectInstance(ModEffects.STUN.get(), 2 * 20, 0, false, true, true));
         GhostLoadoutManager.restoreCosmetics(possessor);
         possessor.displayClientMessage(Component.literal("§7Вселение завершено" + (reason == null || reason.isBlank() ? "" : ": " + reason)), true);
 
@@ -501,7 +532,8 @@ public class GhostPossessionManager {
         }
 
         long now = possessor.getServer().getTickCount();
-        if (now - state.startTick() < MANUAL_RELEASE_GRACE_TICKS) {
+        if (now - state.startTick() < MANUAL_RELEASE_GRACE_TICKS
+                || !MANUAL_RELEASE_READY.contains(possessor.getUUID())) {
             return;
         }
 

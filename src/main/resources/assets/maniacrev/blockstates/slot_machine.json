@@ -4,7 +4,7 @@
       "model": "maniacrev:block/slot_machine"
     },
     "half=upper": {
-      "model": "maniacrev:block/slot_machine"
+      "model": "maniacrev:block/slot_machine_upper"
     }
   }
 }

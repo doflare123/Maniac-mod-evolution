@@ -227,8 +227,6 @@ public final class GhostStealthManager {
             boolean recovering = isRecovering(player, now);
             boolean fullyHidden = player.isShiftKeyDown() || active || recovering || GhostPossessionManager.isPossessing(player);
 
-            player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 15, 0, false, false));
-
             if (fullyHidden) {
                 hideArmor(player);
             } else {

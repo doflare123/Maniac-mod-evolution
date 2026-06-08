@@ -56,6 +56,9 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> POSSESSION_TIMER =
             MOB_EFFECTS.register("possession_timer", PossessionTimerEffect::new);
 
+    public static final RegistryObject<MobEffect> STUN =
+            MOB_EFFECTS.register("stun", StunEffect::new);
+
     public static final RegistryObject<MobEffect> DODEPOVICH_INSURANCE =
             MOB_EFFECTS.register("dodepovich_insurance",
                     () -> new DodepovichSimpleEffect(MobEffectCategory.BENEFICIAL, 0x52D273));

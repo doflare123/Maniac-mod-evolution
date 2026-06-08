@@ -256,6 +256,7 @@
   "effect.maniacrev.mana_flow": "mana flow",
   "effect.maniacrev.target": "target",
   "effect.maniacrev.death_race": "death race",
+  "effect.maniacrev.stun": "Stun",
   "item.maniacrev.clarity": "clarity",
   "item.maniacrev.plague_lantern": "Plague lantern",
   "effect.maniacrev.plague": "Plague",
@@ -296,9 +297,7 @@
   "item.maniacrev.toy_knife": "Toy Knife",
   "item.maniacrev.ghost_hand": "Ghost Hand",
   "item.maniacrev.ghost_helmet": "Ghost Helmet",
-  "item.maniacrev.ghost_leggings": "Ghost Leggings"
-  "item.maniacrev.microphone": "Microphone"
-  ,
+  "item.maniacrev.ghost_leggings": "Ghost Leggings",
   "item.maniacrev.coin_elusiveness": "Elusiveness Coin",
   "item.maniacrev.coin_insight": "Insight Coin",
   "item.maniacrev.coin_shackles": "Shackles Coin",

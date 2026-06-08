@@ -4,17 +4,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.cosmetic.CosmeticSyncHandler;
 import org.example.maniacrevolution.data.PlayerData;
@@ -184,17 +179,6 @@ public final class GhostLoadoutManager {
 
         if (!inventory.add(stack)) {
             player.drop(stack, false);
-        }
-    }
-
-    @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
-    public static class Events {
-        @SubscribeEvent
-        public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-            if (event.getEntity() instanceof ServerPlayer player && isGhostClass(player)) {
-                refreshGhostLoadout(player);
-                player.displayClientMessage(Component.literal("§dСнаряжение Призрака восстановлено."), true);
-            }
         }
     }
 }
