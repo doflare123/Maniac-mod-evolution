@@ -14,6 +14,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public final class KeeperNightmareAnimatable implements GeoReplacedEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("Walk");
+    private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("swim");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -29,6 +30,12 @@ public final class KeeperNightmareAnimatable implements GeoReplacedEntity {
             boolean moving = state.isMoving();
             if (entity instanceof Player player) {
                 moving = player.walkAnimation.speed() > 0.03F;
+                boolean swimming = player.isSwimming()
+                        || player.isInWater() && player.getDeltaMovement().horizontalDistanceSqr() > 0.0004D;
+                if (swimming) {
+                    state.setControllerSpeed(1.0F);
+                    return state.setAndContinue(SWIM);
+                }
             }
             state.setControllerSpeed(moving ? 1.65F : 1.0F);
             return state.setAndContinue(moving ? WALK : IDLE);
