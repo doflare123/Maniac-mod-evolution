@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "maniacrev:item/hand"
+    "layer0": "maniacrev:item/ghost_hand"
   }
 }

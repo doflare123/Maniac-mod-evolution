@@ -65,7 +65,7 @@ public class ToyKnifeItem extends Item implements ITimedAbility {
 
     @Override
     public ResourceLocation getAbilityIcon() {
-        return new ResourceLocation(Maniacrev.MODID, "textures/item/hook.png");
+        return new ResourceLocation(Maniacrev.MODID, "textures/item/toy_knife.png");
     }
 
     @Override

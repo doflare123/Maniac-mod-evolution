@@ -62,6 +62,11 @@ public class GhostPossessionManager {
             return false;
         }
 
+        if (possessor.hasEffect(ModEffects.FULL_INVISIBILITY.get())) {
+            possessor.displayClientMessage(Component.literal("§cНельзя вселиться во время полной невидимости."), true);
+            return false;
+        }
+
         if (!isValidTarget(target)) {
             possessor.displayClientMessage(Component.literal("§cЭтого выжившего сейчас нельзя захватить."), true);
             return false;

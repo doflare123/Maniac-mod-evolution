@@ -44,7 +44,7 @@ public class GhostHandItem extends Item implements IItemWithAbility {
 
     @Override
     public ResourceLocation getAbilityIcon() {
-        return new ResourceLocation(Maniacrev.MODID, "textures/item/hand.png");
+        return new ResourceLocation(Maniacrev.MODID, "textures/item/ghost_hand.png");
     }
 
     @Override

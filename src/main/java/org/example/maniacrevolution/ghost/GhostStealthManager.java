@@ -8,18 +8,16 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.client.ClientAbilityData;
+import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SyncAbilityCooldownPacket;
 
@@ -107,20 +105,12 @@ public final class GhostStealthManager {
         return isActive(serverPlayer, now) || isRecovering(serverPlayer, now);
     }
 
-    public static boolean shouldBlockAttack(ServerPlayer player) {
-        if (player == null || player.getServer() == null) {
-            return false;
-        }
-        long now = player.getServer().getTickCount();
-        return isActive(player, now) || isRecovering(player, now);
-    }
-
     public static void resetGhostState(ServerPlayer player) {
         ACTIVE_UNTIL.remove(player.getUUID());
         RECOVERY_UNTIL.remove(player.getUUID());
         restoreArmor(player);
-        player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
-        player.removeEffect(MobEffects.JUMP);
+        player.removeEffect(ModEffects.FULL_INVISIBILITY.get());
+        player.removeEffect(ModEffects.STUN.get());
         player.getCooldowns().removeCooldown(ModItems.TOY_KNIFE.get());
         syncKnifeState(player);
     }
@@ -136,6 +126,7 @@ public final class GhostStealthManager {
     private static void beginRecovery(ServerPlayer player, long now) {
         ACTIVE_UNTIL.remove(player.getUUID());
         RECOVERY_UNTIL.put(player.getUUID(), now + RECOVERY_TICKS);
+        player.addEffect(new MobEffectInstance(ModEffects.STUN.get(), RECOVERY_TICKS, 0, false, true, true));
         syncKnifeState(player);
 
         player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.PLAYERS, 1.1f, 0.7f);
@@ -227,6 +218,21 @@ public final class GhostStealthManager {
             boolean recovering = isRecovering(player, now);
             boolean fullyHidden = player.isShiftKeyDown() || active || recovering || GhostPossessionManager.isPossessing(player);
 
+            if ((active || recovering) && !player.hasEffect(ModEffects.FULL_INVISIBILITY.get())) {
+                player.addEffect(new MobEffectInstance(
+                        ModEffects.FULL_INVISIBILITY.get(),
+                        MobEffectInstance.INFINITE_DURATION,
+                        0,
+                        false,
+                        false,
+                        true
+                ));
+            } else {
+                if (!active && !recovering) {
+                    player.removeEffect(ModEffects.FULL_INVISIBILITY.get());
+                }
+            }
+
             if (fullyHidden) {
                 hideArmor(player);
             } else {
@@ -234,16 +240,9 @@ public final class GhostStealthManager {
             }
 
             if (recovering) {
-                player.setDeltaMovement(Vec3.ZERO);
-                player.hurtMarked = true;
-                player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 15, 255, false, false));
-                player.addEffect(new MobEffectInstance(MobEffects.JUMP, 15, 128, false, false));
                 if (player.level() instanceof ServerLevel level && player.tickCount % 3 == 0) {
                     spawnRecoveryTrail(level, player);
                 }
-            } else {
-                player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
-                player.removeEffect(MobEffects.JUMP);
             }
 
             if ((active || recovering || player.tickCount % 20 == 0) && player.getMainHandItem().is(ModItems.TOY_KNIFE.get())) {
@@ -252,13 +251,6 @@ public final class GhostStealthManager {
         }
 
         RECOVERY_UNTIL.entrySet().removeIf(entry -> entry.getValue() <= now);
-    }
-
-    @SubscribeEvent
-    public static void onAttack(AttackEntityEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && shouldBlockAttack(player)) {
-            event.setCanceled(true);
-        }
     }
 
     @SubscribeEvent

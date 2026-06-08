@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -17,9 +18,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
@@ -33,11 +38,14 @@ import org.jetbrains.annotations.Nullable;
 
 public class SlotMachineBlock extends Block {
     public static final EnumProperty<DoubleBlockHalf> HALF = EnumProperty.create("half", DoubleBlockHalf.class);
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
 
     public SlotMachineBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(HALF, DoubleBlockHalf.LOWER));
+        registerDefaultState(stateDefinition.any()
+                .setValue(HALF, DoubleBlockHalf.LOWER)
+                .setValue(FACING, Direction.SOUTH));
     }
 
     @Nullable
@@ -48,7 +56,9 @@ public class SlotMachineBlock extends Block {
         if (pos.getY() >= level.getMaxBuildHeight() - 1 || !level.getBlockState(pos.above()).canBeReplaced(context)) {
             return null;
         }
-        return defaultBlockState().setValue(HALF, DoubleBlockHalf.LOWER);
+        return defaultBlockState()
+                .setValue(HALF, DoubleBlockHalf.LOWER)
+                .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @Override
@@ -135,7 +145,17 @@ public class SlotMachineBlock extends Block {
     }
 
     @Override
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(HALF);
+        builder.add(HALF, FACING);
     }
 }

@@ -2,9 +2,9 @@ package org.example.maniacrevolution.effect;
 
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -13,8 +13,16 @@ import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 
 public class StunEffect extends MobEffect {
+    private static final String MOVEMENT_SPEED_MODIFIER = "b9e8dd41-5f72-4a48-a15f-cc98b6266014";
+
     public StunEffect() {
         super(MobEffectCategory.HARMFUL, 0xD5D8E8);
+        addAttributeModifier(
+                Attributes.MOVEMENT_SPEED,
+                MOVEMENT_SPEED_MODIFIER,
+                -1.0,
+                AttributeModifier.Operation.MULTIPLY_TOTAL
+        );
     }
 
     @Override
@@ -25,8 +33,6 @@ public class StunEffect extends MobEffect {
 
         entity.setDeltaMovement(Vec3.ZERO);
         entity.hurtMarked = true;
-        entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 5, 255, false, false, false));
-        entity.addEffect(new MobEffectInstance(MobEffects.JUMP, 5, 128, false, false, false));
     }
 
     @Override

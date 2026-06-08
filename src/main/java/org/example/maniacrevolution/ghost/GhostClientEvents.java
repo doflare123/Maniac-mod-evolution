@@ -4,11 +4,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.effect.ModEffects;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public class GhostClientEvents {
@@ -54,11 +56,24 @@ public class GhostClientEvents {
 
     @SubscribeEvent
     public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
+        if (event.getEntity().hasEffect(ModEffects.FULL_INVISIBILITY.get())) {
+            event.setCanceled(true);
+            return;
+        }
+
         if (!GhostPossessionClientState.isControllerActive()) {
             return;
         }
 
         if (event.getEntity().getId() == GhostPossessionClientState.getTargetEntityId()) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderHand(RenderHandEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.player.hasEffect(ModEffects.FULL_INVISIBILITY.get())) {
             event.setCanceled(true);
         }
     }

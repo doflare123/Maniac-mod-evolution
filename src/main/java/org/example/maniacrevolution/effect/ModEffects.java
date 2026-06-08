@@ -59,6 +59,9 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> STUN =
             MOB_EFFECTS.register("stun", StunEffect::new);
 
+    public static final RegistryObject<MobEffect> FULL_INVISIBILITY =
+            MOB_EFFECTS.register("full_invisibility", FullInvisibilityEffect::new);
+
     public static final RegistryObject<MobEffect> DODEPOVICH_INSURANCE =
             MOB_EFFECTS.register("dodepovich_insurance",
                     () -> new DodepovichSimpleEffect(MobEffectCategory.BENEFICIAL, 0x52D273));
