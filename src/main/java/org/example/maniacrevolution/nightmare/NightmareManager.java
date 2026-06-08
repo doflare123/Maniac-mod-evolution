@@ -28,6 +28,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class NightmareManager {
+    private static final int COCOON_SEARCH_RADIUS = 8;
+    private static final int COCOON_SEARCH_DOWN = 2;
+    private static final int COCOON_SEARCH_UP = 3;
+
     private static final NightmareManager INSTANCE = new NightmareManager();
 
     public static NightmareManager getInstance() {
@@ -219,8 +223,7 @@ public final class NightmareManager {
         BlockPos entry = generator.getEntryPoint(usedOrigin);
         state.exitPos = generator.getExitPoint(usedOrigin);
 
-        state.cocoonPos = state.returnPos;
-        level.setBlockAndUpdate(state.cocoonPos, org.example.maniacrevolution.block.ModBlocks.NIGHTMARE_COCOON.get().defaultBlockState());
+        placeCocoon(level, state);
 
         player.teleportTo(level, entry.getX() + 0.5D, entry.getY(), entry.getZ() + 0.5D,
                 player.getYRot(), player.getXRot());
@@ -239,8 +242,7 @@ public final class NightmareManager {
 
         BlockPos origin = nextTrialOrigin();
         state.trialArea = NightmareTrialBuilder.buildArena(level, origin, level.getGameTime() ^ player.getUUID().getLeastSignificantBits());
-        state.cocoonPos = state.returnPos;
-        level.setBlockAndUpdate(state.cocoonPos, org.example.maniacrevolution.block.ModBlocks.NIGHTMARE_COCOON.get().defaultBlockState());
+        placeCocoon(level, state);
 
         BlockPos spawn = NightmareTrialBuilder.arenaSpawn(origin);
         player.teleportTo(level, spawn.getX() + 0.5D, spawn.getY(), spawn.getZ() + 0.5D,
@@ -265,14 +267,60 @@ public final class NightmareManager {
         state.trialArea = NightmareTrialBuilder.buildRace(level, origin, player.getUUID(),
                 level.getGameTime() ^ player.getUUID().getMostSignificantBits(), state.raceStartsAt);
         state.raceFinishPos = NightmareTrialBuilder.raceFinish(origin);
-        state.cocoonPos = state.returnPos;
-        level.setBlockAndUpdate(state.cocoonPos, org.example.maniacrevolution.block.ModBlocks.NIGHTMARE_COCOON.get().defaultBlockState());
+        placeCocoon(level, state);
 
         BlockPos spawn = NightmareTrialBuilder.raceSpawn(origin);
         player.teleportTo(level, spawn.getX() + 0.5D, spawn.getY(), spawn.getZ() + 0.5D,
                 0.0F, 0.0F);
         giveTrialLighter(player);
         player.displayClientMessage(Component.literal("Беги до конца дороги"), true);
+    }
+
+    private void placeCocoon(ServerLevel level, NightmarePlayerState state) {
+        BlockPos preferredPos = state.returnPos != null ? state.returnPos : level.getSharedSpawnPos();
+        BlockPos cocoonPos = findNearestCocoonAir(level, preferredPos);
+        if (cocoonPos == null) {
+            state.cocoonPos = null;
+            org.example.maniacrevolution.Maniacrev.LOGGER.warn(
+                    "Could not place nightmare cocoon near {} without replacing blocks", preferredPos);
+            return;
+        }
+
+        state.cocoonPos = cocoonPos;
+        level.setBlockAndUpdate(cocoonPos, org.example.maniacrevolution.block.ModBlocks.NIGHTMARE_COCOON.get().defaultBlockState());
+    }
+
+    private BlockPos findNearestCocoonAir(ServerLevel level, BlockPos origin) {
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
+
+        for (int dy = -COCOON_SEARCH_DOWN; dy <= COCOON_SEARCH_UP; dy++) {
+            int y = origin.getY() + dy;
+            if (y < level.getMinBuildHeight() || y + 1 >= level.getMaxBuildHeight()) {
+                continue;
+            }
+
+            for (int dx = -COCOON_SEARCH_RADIUS; dx <= COCOON_SEARCH_RADIUS; dx++) {
+                for (int dz = -COCOON_SEARCH_RADIUS; dz <= COCOON_SEARCH_RADIUS; dz++) {
+                    BlockPos pos = origin.offset(dx, dy, dz);
+                    if (!canPlaceCocoonAt(level, pos)) {
+                        continue;
+                    }
+
+                    double distance = origin.distSqr(pos);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        best = pos.immutable();
+                    }
+                }
+            }
+        }
+
+        return best;
+    }
+
+    private boolean canPlaceCocoonAt(ServerLevel level, BlockPos pos) {
+        return level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir();
     }
 
     private void tickTrial(ServerPlayer player, NightmarePlayerState state, long tick) {

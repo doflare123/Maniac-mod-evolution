@@ -58,7 +58,7 @@ public class HackConfig {
      * Используйте стандартный синтаксис Minecraft без слэша.
      */
     public static final String[] WIN_COMMANDS = {
-            "give @a[team=survivors] securitycraft:keycard_lv5{ownerUUID:"2c764c0d-d00a-3482-b6fc-41c00c0df086",ownerName:"VitaminLLO",signature:0,linked:1b} 1",
+            "give @a[team=survivors] securitycraft:keycard_lv5{ownerUUID:\"2c764c0d-d00a-3482-b6fc-41c00c0df086\",ownerName:\"VitaminLLO\",signature:0,linked:1b} 1",
             "effect clear @a[team=maniac] minecraft:resistance",
             "effect clear @a[team=survivors] minecraft:weakness",
             "execute as @e[type=marker,tag=weaponMarker] at @s run summon armor_stand ~-0.5 ~ ~-0.5 {Tags:[\"removeMe\"],NoGravity:1b,Invisible:1b,Glowing:1b,glow_color_override:9408399}",

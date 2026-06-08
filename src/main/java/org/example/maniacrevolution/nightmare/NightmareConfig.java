@@ -21,15 +21,15 @@ public final class NightmareConfig {
     public static final int TRIAL_AREA_STEP = 220;
 
     /** Максимальная дистанция, на которой взгляд Хранителя влияет на выжившего. */
-    public static final double GAZE_RANGE = 32.0D;
+    public static final double GAZE_RANGE = 40.0D;
     /** Порог точности взгляда: чем выше, тем ближе цель должна быть к центру экрана. */
-    public static final double GAZE_DOT_THRESHOLD = 0.965D;
+    public static final double GAZE_DOT_THRESHOLD = 0.900D;
     /** Сколько рассудка снимается каждый тик, пока Хранитель держит цель во взгляде. */
-    public static final float SANITY_DRAIN_PER_TICK = 0.55F;
+    public static final float SANITY_DRAIN_PER_TICK = 1.55F;
     /** Задержка после последнего взгляда перед началом восстановления рассудка. */
-    public static final int SANITY_REGEN_DELAY_TICKS = 80;
+    public static final int SANITY_REGEN_DELAY_TICKS = 320;
     /** Сколько рассудка восстанавливается каждый тик после задержки. */
-    public static final float SANITY_REGEN_PER_TICK = 0.18F;
+    public static final float SANITY_REGEN_PER_TICK = 0.11F;
     /** Значение рассудка, при котором запускается похищение в испытание. */
     public static final float SANITY_BREAKPOINT = 0.0F;
     /** Максимальный рассудок, отображаемый в HUD. */
@@ -43,7 +43,7 @@ public final class NightmareConfig {
     /** Длительность испытания лабиринтом. */
     public static final int MAZE_DURATION_TICKS = 60 * 20;
     /** Урон при провале лабиринта по таймеру. */
-    public static final float MAZE_FAIL_DAMAGE = 6.0F;
+    public static final float MAZE_FAIL_DAMAGE = 8.0F;
     /** Длительность Darkness, который постоянно обновляется на игроке в лабиринте. */
     public static final int MAZE_DARKNESS_REFRESH_TICKS = 80;
     /** Дистанция до точки выхода, на которой лабиринт считается пройденным. */
@@ -56,9 +56,9 @@ public final class NightmareConfig {
     /** Длительность испытания ареной. */
     public static final int ARENA_DURATION_TICKS = 45 * 20;
     /** Количество враждебных мобов, спавнящихся при старте арены. */
-    public static final int ARENA_MOB_COUNT = 6;
+    public static final int ARENA_MOB_COUNT = 8;
     /** Количество случайно расставленных укрытий/столбов на арене. */
-    public static final int ARENA_COVER_COUNT = 18;
+    public static final int ARENA_COVER_COUNT = 10;
 
     /** Длительность испытания гонкой со страхом. */
     public static final int FEAR_RACE_DURATION_TICKS = 30 * 20;
