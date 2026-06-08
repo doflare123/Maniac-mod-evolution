@@ -331,7 +331,7 @@
   "tooltip.maniacrev.coin_reroll.good": "Repeats the positive result of the last non-reroll coin. If history is empty, chooses a random coin.",
   "tooltip.maniacrev.coin_reroll.bad": "Repeats the negative result of the last non-reroll coin. If history is empty, chooses a random coin.",
   "tooltip.maniacrev.coin_fate.good": "Revives all spectator survivors and teleports them to a random active maniac.",
-  "tooltip.maniacrev.coin_fate.bad": "You die and deal %s damage to every active ally."
+  "tooltip.maniacrev.coin_fate.bad": "You die and deal %s damage to every active ally.",
   "item.maniacrev.microphone": "Microphone",
   "item.maniacrev.nightmare_lighter": "Nightmare Lighter",
   "item.maniacrev.awakening_needle": "Awakening Needle",

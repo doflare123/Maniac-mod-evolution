@@ -28,8 +28,8 @@ public class ResourcePackHandler {
 
             Component message = Component.literal(
                     "§6§lManiacRev Ресурс-Пак\n" +
-                            "§eЭтот сервер требует специальный ресурс-пак.\n" +
-                            "§cЗагрузка обязательна для игры!"
+                            "§eДля корректного отображения рекомендуется установить ресурс-пак.\n" +
+                            "§7От него можно отказаться и продолжить игру."
             );
 
             player.sendTexturePack(

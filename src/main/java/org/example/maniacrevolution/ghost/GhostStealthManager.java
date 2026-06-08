@@ -30,7 +30,7 @@ import java.util.UUID;
 public final class GhostStealthManager {
     public static final int STEALTH_DURATION_TICKS = 0;
     public static final int STEALTH_COOLDOWN_TICKS = 0;
-    public static final int RECOVERY_TICKS = 50;
+    public static final int RECOVERY_TICKS = 40;
     public static final String NBT_HIDDEN_HELMET = "GhostHiddenHelmet";
     public static final String NBT_HIDDEN_LEGGINGS = "GhostHiddenLeggings";
 

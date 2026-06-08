@@ -9,10 +9,6 @@ import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterRegistry;
-import org.example.maniacrevolution.character.CharacterType;
-import org.example.maniacrevolution.data.PlayerData;
-import org.example.maniacrevolution.data.PlayerDataManager;
-import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.data.PlayerDataManager;
 
 import java.util.function.Supplier;
@@ -48,12 +44,6 @@ public class SelectCharacterPacket {
 
             String scoreboardName = characterClass.getType().getScoreboardName();
             int classId = characterClass.getScoreboardId();
-            PlayerData data = PlayerDataManager.get(player);
-            if (characterClass.getType() == CharacterType.MANIAC) {
-                data.setManiacClassId(classId);
-            } else {
-                data.setSurvivorClassId(classId);
-            }
 
             Scoreboard scoreboard = player.getServer().getScoreboard();
             Objective objective = scoreboard.getObjective(scoreboardName);
@@ -67,14 +57,8 @@ public class SelectCharacterPacket {
             }
             scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective).setScore(classId);
 
-            // Клиентские данные — для мода
-            ModNetworking.CHANNEL.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new SyncPlayerClassPacket(characterClass.getType(), classId)
-            );
-            PlayerDataManager.syncPlayerClassToAll(player);
-            // Серверные и клиентские данные — для логики мода без зависимости от scoreboard
             PlayerDataManager.setSelectedClass(player, characterClass.getType(), classId);
+            PlayerDataManager.syncPlayerClassToAll(player);
 
             Maniacrev.LOGGER.info("Player {} selected character: {} (type={}, id={})",
                     player.getName().getString(),

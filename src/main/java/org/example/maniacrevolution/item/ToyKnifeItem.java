@@ -59,7 +59,7 @@ public class ToyKnifeItem extends Item implements ITimedAbility {
         tooltip.add(Component.literal("§fИгрушечный нож").withStyle(ChatFormatting.BOLD));
         tooltip.add(Component.literal("  §7Урон: §f2"));
         tooltip.add(Component.literal("  §7ПКМ: бесконечная полная невидимость."));
-        tooltip.add(Component.literal("  §7Повторный ПКМ: выход §f2.5 сек§7 без возможности бить."));
+        tooltip.add(Component.literal("  §7Повторный ПКМ: выход §f2 сек§7 без возможности бить."));
         tooltip.add(Component.literal("  §7Кулдаун: §fнет"));
     }
 
@@ -75,7 +75,7 @@ public class ToyKnifeItem extends Item implements ITimedAbility {
 
     @Override
     public String getAbilityDescription() {
-        return "Полная невидимость, после выхода 2.5 сек восстановления.";
+        return "Полная невидимость, после выхода 2 сек восстановления.";
     }
 
     @Override

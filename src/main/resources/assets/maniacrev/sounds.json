@@ -20,7 +20,7 @@
         "type": "file"
       }
     ]
-  }
+  },
   "qte_success": { "sounds": [{"name": "maniacrev:qte_success"}] },
   "qte_crit":    { "sounds": [{"name": "maniacrev:qte_crit"}] },
   "qte_fail":    { "sounds": [{"name": "maniacrev:qte_fail"}] }

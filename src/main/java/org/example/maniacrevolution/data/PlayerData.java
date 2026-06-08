@@ -33,8 +33,6 @@ public class PlayerData {
 
     // Косметика
     private final CosmeticData cosmeticData = new CosmeticData();
-    private int survivorClassId = -1;
-    private int maniacClassId = -1;
 
     public PlayerData(UUID uuid) {
         this.playerUuid = uuid;
@@ -214,10 +212,8 @@ public class PlayerData {
     public void setSelectedClass(CharacterType type, int classId) {
         if (type == CharacterType.SURVIVOR) {
             survivorClassId = classId;
-            maniacClassId = -1;
         } else {
             maniacClassId = classId;
-            survivorClassId = -1;
         }
     }
 
@@ -230,14 +226,6 @@ public class PlayerData {
         return type == CharacterType.SURVIVOR
                 ? survivorClassId == classId
                 : maniacClassId == classId;
-    }
-
-    public int getSurvivorClassId() {
-        return survivorClassId;
-    }
-
-    public int getManiacClassId() {
-        return maniacClassId;
     }
 
     public void setSurvivorClassId(int survivorClassId) {
