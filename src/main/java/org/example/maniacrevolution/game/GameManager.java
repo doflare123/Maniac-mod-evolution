@@ -7,6 +7,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Score;
@@ -17,12 +19,17 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.GameStatePacket;
 import org.example.maniacrevolution.perk.PerkPhase;
 import org.example.maniacrevolution.stats.StatsManager;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class GameManager {
@@ -41,6 +48,7 @@ public class GameManager {
     private static final int GLOWING_THRESHOLD = 2400; // 2 минуты в тиках
     private static final int GLOWING_DURATION = 2500; // Чуть больше 2 минут, чтобы эффект не пропал
     private static final String MANIAC_TEAM_NAME = "maniac";
+    private static final String SURVIVORS_TEAM_NAME = "survivors";
 
     public static void init(MinecraftServer server) {
         GameManager.server = server;
@@ -161,9 +169,60 @@ public class GameManager {
             PlayerData data = PlayerDataManager.get(player);
             data.onGameStart(player);
         }
+        giveAwakeningNeedles();
 
         source.sendSuccess(() -> Component.literal("§aИгра началась!"), true);
         Maniacrev.LOGGER.info("Game started by {}", source.getTextName());
+    }
+
+    private static void giveAwakeningNeedles() {
+        if (server == null) return;
+
+        List<ServerPlayer> survivors = new ArrayList<>();
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (isActiveSurvivor(player)) {
+                removeAwakeningNeedles(player);
+                survivors.add(player);
+            }
+        }
+
+        if (survivors.isEmpty()) {
+            Maniacrev.LOGGER.info("No active survivors found for awakening needle distribution");
+            return;
+        }
+
+        Collections.shuffle(survivors);
+        int needlesToGive = (survivors.size() + 2) / 3;
+        for (int i = 0; i < needlesToGive; i++) {
+            ServerPlayer player = survivors.get(i);
+            ItemStack needle = new ItemStack(ModItems.AWAKENING_NEEDLE.get());
+            if (!player.getInventory().add(needle)) {
+                player.drop(needle, false);
+            }
+            player.displayClientMessage(Component.literal("§bВы получили иглу пробуждения"), true);
+        }
+
+        Maniacrev.LOGGER.info("Distributed {} awakening needle(s) among {} active survivor(s)",
+                needlesToGive, survivors.size());
+    }
+
+    private static boolean isActiveSurvivor(ServerPlayer player) {
+        PlayerTeam team = (PlayerTeam) player.getTeam();
+        if (team == null || !SURVIVORS_TEAM_NAME.equalsIgnoreCase(team.getName())) {
+            return false;
+        }
+
+        GameType mode = player.gameMode.getGameModeForPlayer();
+        return mode == GameType.ADVENTURE || mode == GameType.SURVIVAL;
+    }
+
+    private static void removeAwakeningNeedles(ServerPlayer player) {
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.is(ModItems.AWAKENING_NEEDLE.get())) {
+                player.getInventory().setItem(i, ItemStack.EMPTY);
+            }
+        }
     }
 
     public static void stopGame(CommandSourceStack source) {
