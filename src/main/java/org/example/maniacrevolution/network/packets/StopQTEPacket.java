@@ -2,7 +2,7 @@ package org.example.maniacrevolution.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import org.example.maniacrevolution.client.QTEClientHandler;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.function.Supplier;
 
@@ -21,7 +21,7 @@ public class StopQTEPacket {
 
     public static void handle(StopQTEPacket packet, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            QTEClientHandler.stopQTE();
+            ClientOnlyExecutor.stopQTE();
         });
         ctx.get().setPacketHandled(true);
     }

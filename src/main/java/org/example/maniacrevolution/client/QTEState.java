@@ -7,14 +7,14 @@ import org.example.maniacrevolution.keybind.ModKeybinds;
 import java.util.Random;
 
 public class QTEState {
-    private static final int BASE_QTE_DURATION   = 800;
+    private static final int BASE_QTE_DURATION   = 750;
     private static final int BOX_SIZE            = 100;
-    private static final int BASE_GREEN_ZONE_SIZE = 50;
+    private static final int BASE_GREEN_ZONE_SIZE = 25;
     // Толерантность: рамка считается "в зелёной зоне" когда её размер
     // попадает в диапазон [greenZoneSize - tolerance, greenZoneSize + tolerance].
     // Рамка сжимается от BOX_SIZE до 0, значит она проходит через greenZoneSize
     // ровно один раз — это и есть момент успеха.
-    private static final int BASE_SUCCESS_TOLERANCE = 25;
+    private static final int BASE_SUCCESS_TOLERANCE = 13;
     /** Размер зоны критического успеха (фиолетовый квадрат внутри зелёного) */
     private static final int BASE_CRIT_ZONE_SIZE = 5;
 
@@ -40,8 +40,8 @@ public class QTEState {
 
         if (hasQuickReflexes) {
             this.qteDuration      = BASE_QTE_DURATION + 450;
-            this.greenZoneSize    = (int)(BASE_GREEN_ZONE_SIZE * 1.2f);
-            this.successTolerance = (int)(BASE_SUCCESS_TOLERANCE * 1.15f);
+            this.greenZoneSize    = (int)(BASE_GREEN_ZONE_SIZE * 1.06f);
+            this.successTolerance = (int)(BASE_SUCCESS_TOLERANCE * 1.05f);
             this.critZoneSize     = (int)(BASE_CRIT_ZONE_SIZE * 1.1f);
         } else {
             this.qteDuration      = BASE_QTE_DURATION;
@@ -55,12 +55,6 @@ public class QTEState {
         // Случайный keyCode из 26 букв A-Z (keyCode 65-90)
         this.punishKey = isPunishMode ? (65 + RANDOM.nextInt(26)) : -1;
 
-        System.out.println("=== QTEState created ===");
-        System.out.println("requiredKey=" + requiredKey + " punishMode=" + isPunishMode
-                + (isPunishMode ? " punishKey=" + punishKey : ""));
-        System.out.println("Duration=" + qteDuration + " GreenZone=" + greenZoneSize
-                + " Tolerance=" + successTolerance);
-        System.out.println("========================");
     }
 
     public void update() {
@@ -137,12 +131,10 @@ public class QTEState {
         // Проверка кнопки
         if (isPunishMode) {
             if (pressedKeyCode != punishKey) {
-                System.out.println("PUNISH FAIL: wrong key " + pressedKeyCode + " expected " + punishKey);
                 return QTEHitResult.FAIL;
             }
         } else {
             if (pressedKeyCode != requiredKey) {
-                System.out.println("FAIL: wrong key index");
                 return QTEHitResult.FAIL;
             }
         }
@@ -152,23 +144,12 @@ public class QTEState {
         int diffGreen = Math.abs(currentSize - greenZoneSize);
         int critTolerance = critZoneSize / 2;
 
-        System.out.println("=== QTE Check ===");
-        System.out.println("currentSize=" + currentSize);
-        System.out.println("critZone=" + critZoneSize + " diffCrit=" + diffCrit + " critTol=" + critTolerance);
-        System.out.println("greenZone=" + greenZoneSize + " diffGreen=" + diffGreen + " greenTol=" + successTolerance);
-
         if (diffCrit <= critTolerance) {
-            System.out.println("Result=CRIT");
-            System.out.println("=================");
             return QTEHitResult.CRIT;
         }
         if (diffGreen <= successTolerance) {
-            System.out.println("Result=SUCCESS");
-            System.out.println("=================");
             return QTEHitResult.SUCCESS;
         }
-        System.out.println("Result=FAIL");
-        System.out.println("=================");
         return QTEHitResult.FAIL;
     }
 

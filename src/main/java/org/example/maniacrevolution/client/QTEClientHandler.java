@@ -10,6 +10,9 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.QTEKeyPressPacket;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundSource;
+import org.example.maniacrevolution.sound.ModSounds;
 
 import java.util.Random;
 
@@ -17,8 +20,6 @@ import java.util.Random;
 public class QTEClientHandler {
     private static boolean isActive = false;
     private static int generatorNumber = 0;
-    private static long lastQTETime = 0;
-    private static long nextQTEDelay = 0;
     private static QTEState currentQTE = null;
     private static final Random random = new Random();
 
@@ -26,13 +27,10 @@ public class QTEClientHandler {
 
     public static void startQTE(int generator) {
         generatorNumber = generator;
-        // Если QTE уже активен и показывается — не сбрасываем его.
-        // Просто помечаем как активный, следующий QTE появится по таймеру.
-        if (isActive) return;
         isActive = true;
-        lastQTETime = System.currentTimeMillis();
-        nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
-        currentQTE = null;
+        if (currentQTE == null) {
+            currentQTE = new QTEState(random.nextInt(4), hasQuickReflexes);
+        }
     }
 
     public static void stopQTE() {
@@ -49,23 +47,41 @@ public class QTEClientHandler {
     public static void onRenderGui(RenderGuiOverlayEvent.Post event) {
         if (!isActive) return;
 
-        long currentTime = System.currentTimeMillis();
-
-        if (currentQTE == null && currentTime - lastQTETime >= nextQTEDelay) {
-            currentQTE = new QTEState(random.nextInt(4), hasQuickReflexes);
-            lastQTETime = currentTime;
-        }
-
         if (currentQTE != null) {
             currentQTE.update();
             currentQTE.render(event.getGuiGraphics());
 
             if (currentQTE.isFinished()) {
-                System.out.println("QTE timeout - sending FAIL");
+                showQTEResult(QTEState.QTEHitResult.FAIL); // НОВОЕ — нужно убедиться что FAIL есть в enum
                 ModNetworking.CHANNEL.sendToServer(
                         new QTEKeyPressPacket(-1, generatorNumber, false));
                 currentQTE = null;
-                nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
+            }
+        }
+    }
+
+    private static void showQTEResult(QTEState.QTEHitResult hit) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+
+        switch (hit) {
+            case CRIT -> {
+                mc.player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§6★ КРИТ!"), true);
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(
+                        ModSounds.QTE_CRIT.get(), 1.0f));
+            }
+            case SUCCESS -> {
+                mc.player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§aПопал!"), true);
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(
+                        ModSounds.QTE_SUCCESS.get(), 1.0f));
+            }
+            default -> {
+                mc.player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§cПромах!"), true);
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(
+                        ModSounds.QTE_FAIL.get(), 1.0f));
             }
         }
     }
@@ -90,10 +106,10 @@ public class QTEClientHandler {
                 return;
 
             QTEState.QTEHitResult hit = currentQTE.checkHit(keyCode);
+            showQTEResult(hit); // НОВОЕ
             ModNetworking.CHANNEL.sendToServer(
                     new QTEKeyPressPacket(keyCode, generatorNumber, hit.isSuccess(), hit == QTEState.QTEHitResult.CRIT));
             currentQTE = null;
-            nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
             return;
         }
 
@@ -106,10 +122,10 @@ public class QTEClientHandler {
 
         if (pressedKey != -1) {
             QTEState.QTEHitResult hit = currentQTE.checkHit(pressedKey);
+            showQTEResult(hit); // НОВОЕ
             ModNetworking.CHANNEL.sendToServer(
                     new QTEKeyPressPacket(pressedKey, generatorNumber, hit.isSuccess(), hit == QTEState.QTEHitResult.CRIT));
             currentQTE = null;
-            nextQTEDelay = (3 + random.nextInt(5)) * 1000L;
         }
     }
 
