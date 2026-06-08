@@ -16,8 +16,8 @@ import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.capability.FurySwipesCapabilityProvider;
 import org.example.maniacrevolution.character.CharacterType;
+import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.network.ModNetworking;
-import org.example.maniacrevolution.network.packets.SyncPlayerClassPacket;
 
 import java.util.Collection;
 
@@ -69,7 +69,7 @@ public class ManiacRevCommands {
         int count = 0;
         for (ServerPlayer player : players) {
             clearScoreboards(player);
-            sendResetClassPacket(player);
+            PlayerDataManager.clearSelectedClasses(player);
             count++;
         }
 
@@ -133,7 +133,7 @@ public class ManiacRevCommands {
         // Вызываем оба сброса без дублирования сообщений
         for (ServerPlayer player : players) {
             clearScoreboards(player);
-            sendResetClassPacket(player);
+            PlayerDataManager.clearSelectedClasses(player);
 
             var cap = FurySwipesCapabilityProvider.get(player);
             if (cap != null) {
@@ -182,15 +182,4 @@ public class ManiacRevCommands {
         }
     }
 
-    /** Отправляет клиенту пакет сброса класса (-1 для обоих типов) */
-    private static void sendResetClassPacket(ServerPlayer player) {
-        ModNetworking.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> player),
-                new SyncPlayerClassPacket(CharacterType.SURVIVOR, -1)
-        );
-        ModNetworking.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> player),
-                new SyncPlayerClassPacket(CharacterType.MANIAC, -1)
-        );
-    }
 }

@@ -1,6 +1,5 @@
 # Gradle
 .gradle/
-.gradle-home/
 build/
 out/
 
@@ -22,3 +21,5 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+/src/GPT

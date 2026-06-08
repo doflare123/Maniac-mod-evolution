@@ -24,6 +24,7 @@ public class CharacterRegistry {
         register(new ShamanClass());
         register(new MefedronshchikClass());
         register(new ScientistClass());
+        register(new DodepovichClass());
         register(new AgentClass());
         register(new PudgeClass());
 
@@ -31,6 +32,7 @@ public class CharacterRegistry {
         register(new DeathClass());
         register(new UrsaClass());
         register(new PlagueDoctorClass());
+        register(new GhostClass());
         register(new NecromancerClass());
         register(new DoctorClass());
         register(new FreddyBearClass());

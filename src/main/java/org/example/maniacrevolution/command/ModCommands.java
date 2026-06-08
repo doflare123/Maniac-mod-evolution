@@ -22,6 +22,7 @@ import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.ghost.GhostLoadoutManager;
 import org.example.maniacrevolution.mana.ManaProvider;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.ClosePerkScreenPacket;
@@ -200,6 +201,10 @@ public class ModCommands {
                 .then(Commands.literal("guide")
                         .executes(ctx -> openGuide(ctx)))
 
+                .then(Commands.literal("refresh_abilities")
+                        .then(Commands.argument("targets", EntityArgument.players())
+                                .executes(ModCommands::refreshAbilities)))
+
                 .then(DownedCommand.build())
         );
     }
@@ -326,6 +331,20 @@ public class ModCommands {
             );
         }
         return 1;
+    }
+
+    private static int refreshAbilities(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        Collection<ServerPlayer> targets = EntityArgument.getPlayers(ctx, "targets");
+
+        for (ServerPlayer player : targets) {
+            if (GhostLoadoutManager.isGhostClass(player)) {
+                GhostLoadoutManager.refreshGhostLoadout(player);
+            }
+        }
+
+        ctx.getSource().sendSuccess(() ->
+                Component.literal("§dСпособности и предметы обновлены для " + targets.size() + " игрок(ов)."), true);
+        return targets.size();
     }
 
     private static int closePerkGui(CommandContext<CommandSourceStack> ctx, @Nullable Collection<ServerPlayer> targets) {

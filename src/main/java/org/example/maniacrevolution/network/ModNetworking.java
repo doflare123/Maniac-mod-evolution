@@ -86,6 +86,18 @@ public class ModNetworking {
                 .consumerMainThread(WallhackGlowPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(OpenCoinFlipAnimationPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OpenCoinFlipAnimationPacket::encode)
+                .decoder(OpenCoinFlipAnimationPacket::decode)
+                .consumerMainThread(OpenCoinFlipAnimationPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(OpenSlotMachinePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OpenSlotMachinePacket::encode)
+                .decoder(OpenSlotMachinePacket::decode)
+                .consumerMainThread(OpenSlotMachinePacket::handle)
+                .add();
+
         // Client -> Server
         CHANNEL.messageBuilder(ActivatePerkPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(ActivatePerkPacket::encode)
@@ -378,6 +390,12 @@ public class ModNetworking {
                 SyncNightmarePacket::encode, SyncNightmarePacket::decode, SyncNightmarePacket::handle);
         CHANNEL.registerMessage(packetId++, NightmareScreamerPacket.class,
                 NightmareScreamerPacket::encode, NightmareScreamerPacket::decode, NightmareScreamerPacket::handle);
+
+        CHANNEL.messageBuilder(SyncGhostPossessionPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SyncGhostPossessionPacket::encode)
+                .decoder(SyncGhostPossessionPacket::decode)
+                .consumerMainThread(SyncGhostPossessionPacket::handle)
+                .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }

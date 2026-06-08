@@ -6,7 +6,6 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterRegistry;
@@ -14,6 +13,7 @@ import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.data.PlayerDataManager;
 
 import java.util.function.Supplier;
 
@@ -73,6 +73,8 @@ public class SelectCharacterPacket {
                     new SyncPlayerClassPacket(characterClass.getType(), classId)
             );
             PlayerDataManager.syncPlayerClassToAll(player);
+            // Серверные и клиентские данные — для логики мода без зависимости от scoreboard
+            PlayerDataManager.setSelectedClass(player, characterClass.getType(), classId);
 
             Maniacrev.LOGGER.info("Player {} selected character: {} (type={}, id={})",
                     player.getName().getString(),

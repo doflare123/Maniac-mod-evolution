@@ -16,9 +16,11 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.item.DeathScytheItem;
+import org.example.maniacrevolution.item.GhostHandItem;
 import org.example.maniacrevolution.item.HookItem;
 import org.example.maniacrevolution.item.IItemWithAbility;
 import org.example.maniacrevolution.item.ITimedAbility;
+import org.example.maniacrevolution.item.ToyKnifeItem;
 import org.example.maniacrevolution.item.armor.ArmorAbilityCooldownManager;
 import org.example.maniacrevolution.mana.ManaProvider;
 import org.example.maniacrevolution.network.ModNetworking;
@@ -130,21 +132,27 @@ public class ManaEvents {
             }
         }
 
-        // Оружие в руках
-        ItemStack mainHand = player.getMainHandItem();
-        if (mainHand.getItem() instanceof IItemWithAbility ability) {
-            int cooldown = ability.getCooldownSeconds(player);
-            if (cooldown > 0) {
-                ModNetworking.sendToPlayer(
-                        new SyncAbilityCooldownPacket(
-                                mainHand.getItem(),
-                                cooldown,
-                                ability.getMaxCooldownSeconds(),
-                                0
-                        ),
-                        player
-                );
-            }
+        syncHandAbility(player, player.getMainHandItem());
+        syncHandAbility(player, player.getOffhandItem());
+    }
+
+    private static void syncHandAbility(ServerPlayer player, ItemStack stack) {
+        if (!(stack.getItem() instanceof IItemWithAbility ability)) {
+            return;
+        }
+
+        int cooldown = ability.getCooldownSeconds(player);
+        int remaining = ability instanceof ITimedAbility timedAbility ? timedAbility.getRemainingDurationSeconds(player) : 0;
+        if (cooldown > 0 || remaining > 0 || stack.getItem() instanceof ToyKnifeItem || stack.getItem() instanceof GhostHandItem) {
+            ModNetworking.sendToPlayer(
+                    new SyncAbilityCooldownPacket(
+                            stack.getItem(),
+                            cooldown,
+                            ability.getMaxCooldownSeconds(),
+                            remaining
+                    ),
+                    player
+            );
         }
     }
 

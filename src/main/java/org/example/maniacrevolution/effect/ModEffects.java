@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.effect;
 
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -51,6 +52,34 @@ public class ModEffects {
 
     public static final RegistryObject<MobEffect> SILENCE =
             MOB_EFFECTS.register("silence", SilenceEffect::new);
+
+    public static final RegistryObject<MobEffect> POSSESSION_TIMER =
+            MOB_EFFECTS.register("possession_timer", PossessionTimerEffect::new);
+
+    public static final RegistryObject<MobEffect> STUN =
+            MOB_EFFECTS.register("stun", StunEffect::new);
+
+    public static final RegistryObject<MobEffect> FULL_INVISIBILITY =
+            MOB_EFFECTS.register("full_invisibility", FullInvisibilityEffect::new);
+
+    public static final RegistryObject<MobEffect> DODEPOVICH_INSURANCE =
+            MOB_EFFECTS.register("dodepovich_insurance",
+                    () -> new DodepovichSimpleEffect(MobEffectCategory.BENEFICIAL, 0x52D273));
+
+    public static final RegistryObject<MobEffect> DODEPOVICH_DAMAGE_BLOCK =
+            MOB_EFFECTS.register("dodepovich_damage_block",
+                    () -> new DodepovichSimpleEffect(MobEffectCategory.BENEFICIAL, 0x5ED7FF));
+
+    public static final RegistryObject<MobEffect> DODEPOVICH_DOUBLE_DAMAGE =
+            MOB_EFFECTS.register("dodepovich_double_damage",
+                    () -> new DodepovichSimpleEffect(MobEffectCategory.HARMFUL, 0xB3212A));
+
+    public static final RegistryObject<MobEffect> DODEPOVICH_CREDIT =
+            MOB_EFFECTS.register("dodepovich_credit", DodepovichCreditEffect::new);
+
+    public static final RegistryObject<MobEffect> DODEPOVICH_SLOT_COOLDOWN =
+            MOB_EFFECTS.register("dodepovich_slot_cooldown",
+                    () -> new DodepovichSimpleEffect(MobEffectCategory.NEUTRAL, 0xC78B42));
 
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);

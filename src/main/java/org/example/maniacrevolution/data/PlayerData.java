@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.data;
 
 import org.example.maniacrevolution.cosmetic.CosmeticData;
+import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.perk.*;
 import org.example.maniacrevolution.preset.PerkPreset;
 import net.minecraft.nbt.CompoundTag;
@@ -21,6 +22,10 @@ public class PlayerData {
     // Выбранные перки на текущую игру (максимум 2)
     private final List<PerkInstance> selectedPerks = new ArrayList<>(2);
     private int activePerkIndex = 0;
+
+    // Выбранные классы на сервере. Scoreboard остаётся для датапака, это источник для логики мода.
+    private int survivorClassId = -1;
+    private int maniacClassId = -1;
 
     // Пресеты (максимум 2 по умолчанию, можно докупить)
     private final List<PerkPreset> presets = new ArrayList<>();
@@ -194,6 +199,37 @@ public class PlayerData {
 
     public CosmeticData getCosmeticData() {
         return cosmeticData;
+    }
+
+    // === Классы ===
+
+    public int getSurvivorClassId() {
+        return survivorClassId;
+    }
+
+    public int getManiacClassId() {
+        return maniacClassId;
+    }
+
+    public void setSelectedClass(CharacterType type, int classId) {
+        if (type == CharacterType.SURVIVOR) {
+            survivorClassId = classId;
+            maniacClassId = -1;
+        } else {
+            maniacClassId = classId;
+            survivorClassId = -1;
+        }
+    }
+
+    public void clearSelectedClasses() {
+        survivorClassId = -1;
+        maniacClassId = -1;
+    }
+
+    public boolean isSelectedClass(CharacterType type, int classId) {
+        return type == CharacterType.SURVIVOR
+                ? survivorClassId == classId
+                : maniacClassId == classId;
     }
 
     public int getSurvivorClassId() {

@@ -5,13 +5,17 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.SyncPlayerClassPacket;
 import org.example.maniacrevolution.network.packets.SyncRemotePlayerClassPacket;
 import org.example.maniacrevolution.network.packets.SyncPlayerDataPacket;
 import org.example.maniacrevolution.perk.PerkPhase;
@@ -44,10 +48,37 @@ public class PlayerDataManager {
         );
     }
 
+    public static void syncClassToClient(ServerPlayer player) {
+        PlayerData data = get(player);
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new SyncPlayerClassPacket(CharacterType.SURVIVOR, data.getSurvivorClassId())
+        );
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new SyncPlayerClassPacket(CharacterType.MANIAC, data.getManiacClassId())
+        );
+    }
+
+    public static void setSelectedClass(ServerPlayer player, CharacterType type, int classId) {
+        get(player).setSelectedClass(type, classId);
+        syncClassToClient(player);
+    }
+
+    public static void clearSelectedClasses(ServerPlayer player) {
+        get(player).clearSelectedClasses();
+        syncClassToClient(player);
+    }
+
+    public static boolean isSelectedClass(ServerPlayer player, CharacterType type, int classId) {
+        return get(player).isSelectedClass(type, classId);
+    }
+
     public static void syncToAll() {
         if (server == null) return;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             syncToClient(player);
+            syncClassToClient(player);
         }
     }
 
@@ -75,7 +106,41 @@ public class PlayerDataManager {
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             PlayerData data = getOrCreate(player.getUUID());
+            migrateClassFromScoreboardIfMissing(player, data);
             syncToClient(player);
+            syncClassToClient(player);
+        }
+    }
+
+    private static void migrateClassFromScoreboardIfMissing(ServerPlayer player, PlayerData data) {
+        if (data.getSurvivorClassId() != -1 || data.getManiacClassId() != -1) {
+            return;
+        }
+
+        Scoreboard scoreboard = player.getServer().getScoreboard();
+        String teamName = player.getTeam() == null ? "" : player.getTeam().getName();
+        if ("maniac".equalsIgnoreCase(teamName)) {
+            migrateClassTypeFromScoreboard(player, data, scoreboard, CharacterType.MANIAC);
+        } else if ("survivors".equalsIgnoreCase(teamName)) {
+            migrateClassTypeFromScoreboard(player, data, scoreboard, CharacterType.SURVIVOR);
+        } else {
+            migrateClassTypeFromScoreboard(player, data, scoreboard, CharacterType.SURVIVOR);
+            if (data.getSurvivorClassId() == -1) {
+                migrateClassTypeFromScoreboard(player, data, scoreboard, CharacterType.MANIAC);
+            }
+        }
+    }
+
+    private static void migrateClassTypeFromScoreboard(ServerPlayer player, PlayerData data,
+                                                       Scoreboard scoreboard, CharacterType type) {
+        Objective objective = scoreboard.getObjective(type.getScoreboardName());
+        if (objective == null || !scoreboard.hasPlayerScore(player.getScoreboardName(), objective)) {
+            return;
+        }
+
+        int score = scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective).getScore();
+        if (score > 0) {
+            data.setSelectedClass(type, score);
             syncAllPlayerClassesTo(player);
             syncPlayerClassToAll(player);
         }
