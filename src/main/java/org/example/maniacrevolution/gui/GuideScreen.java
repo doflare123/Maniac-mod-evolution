@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.gui.pages.*;
+import org.example.maniacrevolution.guide.GuideProgressClient;
 
 public class GuideScreen extends Screen {
     private GuidePage currentPage;
@@ -30,6 +31,7 @@ public class GuideScreen extends Screen {
         super(Component.literal("Гайд по режиму"));
 
         // Инициализируем страницы
+        GuideProgressClient.markCurrentGuideSeen();
         this.mainPage = new MainPage(this);
         this.perksPage = new PerksPage(this);
         this.tutorialPage = new TutorialPage(this);

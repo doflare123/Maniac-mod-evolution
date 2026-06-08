@@ -9,6 +9,7 @@ import org.example.maniacrevolution.network.packets.CocoonNeedleMinigameResultPa
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CocoonNeedleMinigameScreen extends Screen {
     private static final int PANEL_WIDTH = 360;
@@ -16,17 +17,7 @@ public class CocoonNeedleMinigameScreen extends Screen {
     private static final int TRACK_THICKNESS = 9;
     private static final double START_RADIUS = 22.0D;
     private static final double TRACK_TOLERANCE = 12.0D;
-
-    private static final double[][] PATH = {
-            {0.08D, 0.66D},
-            {0.20D, 0.40D},
-            {0.33D, 0.50D},
-            {0.44D, 0.30D},
-            {0.57D, 0.56D},
-            {0.69D, 0.43D},
-            {0.81D, 0.63D},
-            {0.92D, 0.36D}
-    };
+    private static final int PATH_POINT_COUNT = 8;
 
     private static final double[][] CRACKS = {
             {0.12D, 0.18D, 0.24D, 0.26D, 0.18D, 0.36D},
@@ -36,6 +27,7 @@ public class CocoonNeedleMinigameScreen extends Screen {
     };
 
     private final BlockPos cocoonPos;
+    private final double[][] path;
     private boolean tracing;
     private boolean completed;
     private double progress;
@@ -46,6 +38,7 @@ public class CocoonNeedleMinigameScreen extends Screen {
     public CocoonNeedleMinigameScreen(BlockPos cocoonPos) {
         super(Component.empty());
         this.cocoonPos = cocoonPos;
+        this.path = generatePath();
     }
 
     @Override
@@ -60,7 +53,7 @@ public class CocoonNeedleMinigameScreen extends Screen {
         drawPath(gui, left, top);
         drawTrace(gui);
         drawEndpoint(gui, pathX(left, 0), pathY(top, 0), 0xFFE7D9FF);
-        drawEndpoint(gui, pathX(left, PATH.length - 1), pathY(top, PATH.length - 1), 0xFFFFEFEF);
+        drawEndpoint(gui, pathX(left, path.length - 1), pathY(top, path.length - 1), 0xFFFFEFEF);
 
         super.render(gui, mouseX, mouseY, partialTick);
     }
@@ -155,7 +148,7 @@ public class CocoonNeedleMinigameScreen extends Screen {
     }
 
     private void drawPath(GuiGraphics gui, int left, int top) {
-        for (int i = 0; i < PATH.length - 1; i++) {
+        for (int i = 0; i < path.length - 1; i++) {
             drawLine(gui, pathX(left, i), pathY(top, i), pathX(left, i + 1), pathY(top, i + 1),
                     TRACK_THICKNESS, 0xFF49105F);
             drawLine(gui, pathX(left, i), pathY(top, i), pathX(left, i + 1), pathY(top, i + 1),
@@ -204,7 +197,7 @@ public class CocoonNeedleMinigameScreen extends Screen {
 
     private NearestPoint nearestPoint(double mouseX, double mouseY) {
         NearestPoint best = new NearestPoint(Double.MAX_VALUE, 0.0D);
-        for (int i = 0; i < PATH.length - 1; i++) {
+        for (int i = 0; i < path.length - 1; i++) {
             double x1 = pathX(left(), i);
             double y1 = pathY(top(), i);
             double x2 = pathX(left(), i + 1);
@@ -217,7 +210,7 @@ public class CocoonNeedleMinigameScreen extends Screen {
             double px = x1 + dx * t;
             double py = y1 + dy * t;
             double distance = distance(mouseX, mouseY, px, py);
-            double pointProgress = (i + t) / (PATH.length - 1);
+            double pointProgress = (i + t) / (path.length - 1);
             if (distance < best.distance) {
                 best = new NearestPoint(distance, pointProgress);
             }
@@ -226,11 +219,40 @@ public class CocoonNeedleMinigameScreen extends Screen {
     }
 
     private double pathX(int left, int index) {
-        return left + 42.0D + PATH[index][0] * (PANEL_WIDTH - 84.0D);
+        return left + 42.0D + path[index][0] * (PANEL_WIDTH - 84.0D);
     }
 
     private double pathY(int top, int index) {
-        return top + 34.0D + PATH[index][1] * (PANEL_HEIGHT - 68.0D);
+        return top + 34.0D + path[index][1] * (PANEL_HEIGHT - 68.0D);
+    }
+
+    private static double[][] generatePath() {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        double[][] generated = new double[PATH_POINT_COUNT][2];
+
+        generated[0][0] = 0.08D;
+        generated[0][1] = random.nextDouble(0.42D, 0.69D);
+        generated[PATH_POINT_COUNT - 1][0] = 0.92D;
+        generated[PATH_POINT_COUNT - 1][1] = random.nextDouble(0.31D, 0.58D);
+
+        double previousY = generated[0][1];
+        for (int i = 1; i < PATH_POINT_COUNT - 1; i++) {
+            double baseX = 0.08D + (0.84D * i / (PATH_POINT_COUNT - 1));
+            generated[i][0] = clamp(baseX + random.nextDouble(-0.025D, 0.025D), 0.12D, 0.88D);
+
+            double y = random.nextDouble(0.28D, 0.72D);
+            for (int attempt = 0; attempt < 5 && Math.abs(y - previousY) < 0.10D; attempt++) {
+                y = random.nextDouble(0.28D, 0.72D);
+            }
+            generated[i][1] = y;
+            previousY = y;
+        }
+
+        return generated;
+    }
+
+    private static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
     }
 
     private int left() {

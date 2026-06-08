@@ -87,7 +87,7 @@ public final class NightmareConfig {
     /** Сколько ударов Иглой пробуждения нужно для разрушения кокона. */
     public static final int COCOON_REQUIRED_HITS = 4;
     public static final int COCOON_NEEDLE_MINIGAME_DAMAGE = 2;
-    public static final float COCOON_NEEDLE_MINIGAME_REQUIRED_ACCURACY = 0.85F;
+    public static final float COCOON_NEEDLE_MINIGAME_REQUIRED_ACCURACY = 0.95F;
     /** Урон выжившему, которого досрочно вытащили через кокон. */
     public static final float COCOON_RESCUE_DAMAGE = 0.5F;
 

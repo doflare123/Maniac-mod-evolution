@@ -14,7 +14,7 @@ public class ResourcePackHandler {
 
     private static final String RESOURCE_PACK_URL = "https://www.dropbox.com/scl/fi/w6mc7iov78yg4vxw9tzce/resources.zip?rlkey=5yf4wly16qrzn4glun7j4a9to&st=m41a0fyj&dl=1";
     private static final String RESOURCE_PACK_HASH = "";
-    private static final boolean REQUIRED = true;
+    private static final boolean REQUIRED = false;
 
     // ИСПРАВЛЕНО: Добавлен HIGHEST приоритет - выполнится первым
     @SubscribeEvent(priority = EventPriority.HIGHEST)

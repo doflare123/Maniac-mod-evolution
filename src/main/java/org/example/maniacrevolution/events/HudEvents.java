@@ -6,6 +6,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.hud.CustomHud;
+import org.example.maniacrevolution.hud.GuideUpdateIndicatorHud;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class HudEvents {
@@ -13,5 +14,6 @@ public class HudEvents {
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiOverlaysEvent event) {
         event.registerAboveAll("custom_hud", new CustomHud());
+        event.registerAboveAll("guide_update_indicator", new GuideUpdateIndicatorHud());
     }
 }
