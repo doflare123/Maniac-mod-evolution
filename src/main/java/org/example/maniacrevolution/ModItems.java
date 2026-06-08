@@ -293,9 +293,6 @@ public class ModItems {
     public static final RegistryObject<Item> SLOT_MACHINE = ITEMS.register("slot_machine",
             () -> new BlockItem(ModBlocks.SLOT_MACHINE.get(), new Item.Properties().rarity(Rarity.RARE)));
 
-    public static final RegistryObject<Item> MAZE_SPAWNER =
-            ITEMS.register("maze_spawner", MazeSpawnerItem::new);
-
     public static final RegistryObject<Item> NIGHTMARE_LIGHTER =
             ITEMS.register("nightmare_lighter", NightmareLighterItem::new);
 
