@@ -22,6 +22,8 @@ import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.dodepovich.DodepovichCasinoManager;
+import org.example.maniacrevolution.dodepovich.SlotMachineResult;
 import org.example.maniacrevolution.ghost.GhostLoadoutManager;
 import org.example.maniacrevolution.mana.ManaProvider;
 import org.example.maniacrevolution.network.ModNetworking;
@@ -205,8 +207,34 @@ public class ModCommands {
                         .then(Commands.argument("targets", EntityArgument.players())
                                 .executes(ModCommands::refreshAbilities)))
 
+                .then(Commands.literal("casino")
+                        .then(Commands.literal("force")
+                                .then(Commands.literal("jackpot")
+                                        .then(Commands.argument("targets", EntityArgument.players())
+                                                .executes(ctx -> forceCasinoResult(ctx, SlotMachineResult.JACKPOT))))
+                                .then(Commands.literal("death")
+                                        .then(Commands.argument("targets", EntityArgument.players())
+                                                .executes(ctx -> forceCasinoResult(ctx, SlotMachineResult.DEATH))))))
+
                 .then(DownedCommand.build())
         );
+    }
+
+    private static int forceCasinoResult(CommandContext<CommandSourceStack> context,
+                                         SlotMachineResult result) throws CommandSyntaxException {
+        Collection<ServerPlayer> targets = EntityArgument.getPlayers(context, "targets");
+        for (ServerPlayer player : targets) {
+            DodepovichCasinoManager.forceNextResult(player, result);
+            player.displayClientMessage(Component.literal(
+                    result == SlotMachineResult.JACKPOT
+                            ? "§6Следующий прокрут гарантированно даст джекпот."
+                            : "§4Следующий прокрут гарантированно даст смерть."
+            ), false);
+        }
+
+        context.getSource().sendSuccess(() -> Component.literal(
+                "§aСледующий результат автомата установлен для игроков: " + targets.size()), true);
+        return targets.size();
     }
 
     private static int addExp(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

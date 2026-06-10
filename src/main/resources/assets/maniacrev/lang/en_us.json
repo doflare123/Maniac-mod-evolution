@@ -313,6 +313,7 @@
   "effect.maniacrev.dodepovich_double_damage": "Debt",
   "effect.maniacrev.dodepovich_credit": "Credit",
   "effect.maniacrev.dodepovich_slot_cooldown": "Break",
+  "effect.maniacrev.jackpot": "Jackpot",
   "tooltip.maniacrev.dodepovich_coin.roll": "Right-click: flip, 50/50.",
   "tooltip.maniacrev.dodepovich_coin.good": "+ Luck:",
   "tooltip.maniacrev.dodepovich_coin.bad": "- Bust:",

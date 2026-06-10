@@ -21,6 +21,8 @@ import java.util.List;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public class DodepovichAnimationOverlay {
+    private static final ResourceLocation JACKPOT_TEXTURE =
+            new ResourceLocation(Maniacrev.MODID, "textures/mob_effect/jackpot.png");
     private static final long COIN_FLIP_MS = 500;
     private static final long COIN_HOLD_MS = 850;
     private static final long SLOT_DURATION_MS = 3200;
@@ -191,7 +193,9 @@ public class DodepovichAnimationOverlay {
     private static void renderFinalSlotIcon(GuiGraphics graphics, int x, int y, int reel) {
         SlotMachineResult result = slotAnimation.result;
         if (result == SlotMachineResult.JACKPOT) {
-            graphics.drawCenteredString(Minecraft.getInstance().font, "§6§l7", x + 8, y + 4, 0xFFFFFFFF);
+            RenderSystem.enableBlend();
+            graphics.blit(JACKPOT_TEXTURE, x, y, 16, 16, 0, 0, 39, 39, 39, 39);
+            RenderSystem.disableBlend();
             return;
         }
 

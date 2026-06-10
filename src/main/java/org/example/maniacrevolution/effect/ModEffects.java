@@ -81,6 +81,9 @@ public class ModEffects {
             MOB_EFFECTS.register("dodepovich_slot_cooldown",
                     () -> new DodepovichSimpleEffect(MobEffectCategory.NEUTRAL, 0xC78B42));
 
+    public static final RegistryObject<MobEffect> JACKPOT =
+            MOB_EFFECTS.register("jackpot", JackpotEffect::new);
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }

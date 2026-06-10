@@ -1,12 +1,17 @@
 package org.example.maniacrevolution.dodepovich;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.projectile.FireworkRocketEntity;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
@@ -33,7 +38,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class DodepovichCasinoManager {
-    private static final String JACKPOT_UNTIL_NBT = "DodepovichJackpotUntil";
     public static final int CLASS_ID = 13;
     public static final int ELUSIVENESS_GOOD_SECONDS = 10;
     public static final int ELUSIVENESS_BAD_SLOW_SECONDS = 5;
@@ -65,6 +69,7 @@ public final class DodepovichCasinoManager {
     private static final Map<UUID, DodepovichCoin> LAST_COIN = new ConcurrentHashMap<>();
     private static final Map<UUID, Integer> JACKPOT_MISS_STREAK = new ConcurrentHashMap<>();
     private static final Map<UUID, Integer> DEATH_JACKPOT_STACKS = new ConcurrentHashMap<>();
+    private static final Map<UUID, SlotMachineResult> FORCED_NEXT_RESULTS = new ConcurrentHashMap<>();
     private static final List<DelayedAction> DELAYED_ACTIONS = new ArrayList<>();
     private static final EnumSet<DodepovichCoin> RANDOM_REROLL_POOL = EnumSet.complementOf(EnumSet.of(DodepovichCoin.REROLL));
 
@@ -105,7 +110,7 @@ public final class DodepovichCasinoManager {
         schedule(player, 10, delayedPlayer -> applyCoinEffect(delayedPlayer, coin, good, true));
     }
 
-    public static void playSlotMachine(ServerPlayer player, DodepovichCoin insertedCoin) {
+    public static void playSlotMachine(ServerPlayer player, DodepovichCoin insertedCoin, BlockPos machinePos) {
         SlotMachineResult result = rollSlotResult(player);
         ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
                 new OpenSlotMachinePacket(insertedCoin, result));
@@ -113,7 +118,7 @@ public final class DodepovichCasinoManager {
         player.level().playSound(null, player.blockPosition(),
                 ModSounds.SLOT_SPIN.get(), SoundSource.BLOCKS, 0.9f, 1.0f);
 
-        schedule(player, 64, delayedPlayer -> applySlotResult(delayedPlayer, insertedCoin, result));
+        schedule(player, 64, delayedPlayer -> applySlotResult(delayedPlayer, insertedCoin, result, machinePos));
     }
 
     public static void tickDelayedActions() {
@@ -136,6 +141,11 @@ public final class DodepovichCasinoManager {
     }
 
     private static SlotMachineResult rollSlotResult(ServerPlayer player) {
+        SlotMachineResult forcedResult = FORCED_NEXT_RESULTS.remove(player.getUUID());
+        if (forcedResult != null) {
+            return forcedResult;
+        }
+
         int misses = JACKPOT_MISS_STREAK.getOrDefault(player.getUUID(), 0);
         double deathChance = DEATH_BASE_CHANCE * Math.pow(DEATH_JACKPOT_MULTIPLIER,
                 DEATH_JACKPOT_STACKS.getOrDefault(player.getUUID(), 0));
@@ -153,22 +163,23 @@ public final class DodepovichCasinoManager {
 
         JACKPOT_MISS_STREAK.put(player.getUUID(), misses + 1);
         double roll = RANDOM.nextDouble();
-        if (roll < 0.35) return SlotMachineResult.NONE;
-        if (roll < 0.53) return SlotMachineResult.COIN_GOOD;
-        if (roll < 0.71) return SlotMachineResult.COIN_BAD;
-        if (roll < 0.81) return SlotMachineResult.COAL;
-        if (roll < 0.88) return SlotMachineResult.SPIDER_EYE;
-        if (roll < 0.94) return SlotMachineResult.ROTTEN_FLESH;
-        if (roll < 0.98) return SlotMachineResult.EMERALDS;
-        if (roll < 0.992) return SlotMachineResult.INSURANCE;
-        if (roll < 0.997) return SlotMachineResult.CREDIT;
+        if (roll < 0.331) return SlotMachineResult.NONE;
+        if (roll < 0.511) return SlotMachineResult.COIN_GOOD;
+        if (roll < 0.691) return SlotMachineResult.COIN_BAD;
+        if (roll < 0.791) return SlotMachineResult.COAL;
+        if (roll < 0.861) return SlotMachineResult.SPIDER_EYE;
+        if (roll < 0.921) return SlotMachineResult.ROTTEN_FLESH;
+        if (roll < 0.961) return SlotMachineResult.EMERALDS;
+        if (roll < 0.976) return SlotMachineResult.INSURANCE;
+        if (roll < 0.989) return SlotMachineResult.CREDIT;
         return SlotMachineResult.DIAMONDS;
     }
 
-    private static void applySlotResult(ServerPlayer player, DodepovichCoin coin, SlotMachineResult result) {
+    private static void applySlotResult(ServerPlayer player, DodepovichCoin coin, SlotMachineResult result,
+                                        BlockPos machinePos) {
         switch (result) {
             case NONE -> player.displayClientMessage(Component.literal("§7Автомат съел монетку. Ничего не выпало."), true);
-            case JACKPOT -> applyJackpot(player);
+            case JACKPOT -> applyJackpot(player, machinePos);
             case COIN_GOOD -> applyCoinEffect(player, coin, true, false);
             case COIN_BAD -> applyCoinEffect(player, coin, false, false);
             case DIAMONDS -> {
@@ -375,13 +386,9 @@ public final class DodepovichCasinoManager {
         }
     }
 
-    private static void applyJackpot(ServerPlayer player) {
-        player.getPersistentData().putLong(JACKPOT_UNTIL_NBT, player.level().getGameTime() + JACKPOT_SECONDS * 20L);
-        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, JACKPOT_SECONDS * 20, 255, false, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, JACKPOT_SECONDS * 20, 2, false, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, JACKPOT_SECONDS * 20, 2, false, true, true));
-        player.level().playSound(null, player.blockPosition(),
-                ModSounds.SLOT_JACKPOT.get(), SoundSource.PLAYERS, 0.35f, 1.0f);
+    private static void applyJackpot(ServerPlayer player, BlockPos machinePos) {
+        player.addEffect(new MobEffectInstance(ModEffects.JACKPOT.get(), JACKPOT_SECONDS * 20, 0, false, true, true));
+        launchJackpotFireworks((ServerLevel) player.level(), machinePos);
         player.getServer().getPlayerList().broadcastSystemMessage(
                 Component.literal("§6§lДЖЕКПОТ! §e" + player.getName().getString() + " вошёл в режим удачи Додеповича!"),
                 false
@@ -389,15 +396,43 @@ public final class DodepovichCasinoManager {
     }
 
     public static boolean hasActiveJackpot(Player player) {
-        if (player == null) {
-            return false;
+        return player != null && player.hasEffect(ModEffects.JACKPOT.get());
+    }
+
+    public static void forceNextResult(ServerPlayer player, SlotMachineResult result) {
+        if (result != SlotMachineResult.JACKPOT && result != SlotMachineResult.DEATH) {
+            throw new IllegalArgumentException("Only jackpot or death can be forced");
         }
-        long until = player.getPersistentData().getLong(JACKPOT_UNTIL_NBT);
-        if (until <= player.level().getGameTime()) {
-            player.getPersistentData().remove(JACKPOT_UNTIL_NBT);
-            return false;
+        FORCED_NEXT_RESULTS.put(player.getUUID(), result);
+    }
+
+    private static void launchJackpotFireworks(ServerLevel level, BlockPos machinePos) {
+        int[] colors = {0xE13232, 0xFFD700, 0x5BFF72};
+        for (int i = 0; i < 5; i++) {
+            ItemStack rocket = new ItemStack(Items.FIREWORK_ROCKET);
+            CompoundTag fireworks = rocket.getOrCreateTagElement("Fireworks");
+            fireworks.putByte("Flight", (byte) 1);
+
+            CompoundTag explosion = new CompoundTag();
+            explosion.putByte("Type", (byte) (i % 3));
+            explosion.putIntArray("Colors", colors);
+            explosion.putIntArray("FadeColors", new int[]{0xFFFFFF, 0xFF6B35});
+            explosion.putBoolean("Flicker", true);
+            explosion.putBoolean("Trail", true);
+            ListTag explosions = new ListTag();
+            explosions.add(explosion);
+            fireworks.put("Explosions", explosions);
+
+            double angle = Math.PI * 2.0 * i / 5.0;
+            FireworkRocketEntity entity = new FireworkRocketEntity(
+                    level,
+                    machinePos.getX() + 0.5 + Math.cos(angle) * 1.2,
+                    machinePos.getY() + 0.4,
+                    machinePos.getZ() + 0.5 + Math.sin(angle) * 1.2,
+                    rocket
+            );
+            level.addFreshEntity(entity);
         }
-        return true;
     }
 
     private static ServerPlayer findRandomManiac(ServerPlayer player) {

@@ -120,6 +120,11 @@ public class SlotMachineBlock extends Block {
             return InteractionResult.FAIL;
         }
 
+        if (serverPlayer.hasEffect(ModEffects.JACKPOT.get())) {
+            player.displayClientMessage(Component.literal("§6Во время джекпота автомат больше не принимает ставки."), true);
+            return InteractionResult.FAIL;
+        }
+
         if (serverPlayer.hasEffect(ModEffects.DODEPOVICH_SLOT_COOLDOWN.get())) {
             player.displayClientMessage(Component.literal("§6Казино на перерыве. Подожди перед следующим прокрутом."), true);
             return InteractionResult.FAIL;
@@ -137,7 +142,8 @@ public class SlotMachineBlock extends Block {
         serverPlayer.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_SLOT_COOLDOWN.get(), 30 * 20, 0, false, true, true));
         serverPlayer.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 70, 0, false, false, true));
         level.playSound(null, pos, ModSounds.SLOT_INSERT.get(), SoundSource.BLOCKS, 0.9f, 1.0f);
-        DodepovichCasinoManager.playSlotMachine(serverPlayer, coinItem.getCoin());
+        BlockPos machinePos = state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
+        DodepovichCasinoManager.playSlotMachine(serverPlayer, coinItem.getCoin(), machinePos);
         return InteractionResult.SUCCESS;
     }
 
