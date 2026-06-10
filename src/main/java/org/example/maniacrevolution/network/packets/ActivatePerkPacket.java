@@ -9,6 +9,7 @@ import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.perk.PerkInstance;
 import org.example.maniacrevolution.perk.PerkPhase;
+import org.example.maniacrevolution.ghost.GhostPossessionManager;
 
 import java.util.function.Supplier;
 
@@ -25,6 +26,11 @@ public class ActivatePerkPacket {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
+
+            if (GhostPossessionManager.isPossessed(player)) {
+                player.displayClientMessage(Component.literal("§5Одержимость не позволяет использовать перки."), true);
+                return;
+            }
 
             PlayerData data = PlayerDataManager.get(player);
             PerkInstance active = data.getActivePerk();

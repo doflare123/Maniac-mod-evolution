@@ -13,11 +13,13 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.example.maniacrevolution.dodepovich.DodepovichCasinoManager;
 import org.example.maniacrevolution.dodepovich.DodepovichCoin;
+import org.example.maniacrevolution.util.ManaUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class DodepovichCoinItem extends Item {
+    public static final float MANA_COST = 5.0f;
     private final DodepovichCoin coin;
 
     public DodepovichCoinItem(Properties properties, DodepovichCoin coin) {
@@ -42,6 +44,11 @@ public class DodepovichCoinItem extends Item {
 
         if (!DodepovichCasinoManager.isDodepovich(serverPlayer)) {
             player.displayClientMessage(Component.literal("§cТолько Додепович умеет правильно подбрасывать эти монетки."), true);
+            return InteractionResultHolder.fail(stack);
+        }
+
+        if (!ManaUtil.consumeMana(serverPlayer, MANA_COST)) {
+            player.displayClientMessage(Component.literal("§bНедостаточно маны. Подброс монетки стоит 5 маны."), true);
             return InteractionResultHolder.fail(stack);
         }
 

@@ -34,9 +34,11 @@ import org.example.maniacrevolution.dodepovich.DodepovichCasinoManager;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.item.DodepovichCoinItem;
 import org.example.maniacrevolution.sound.ModSounds;
+import org.example.maniacrevolution.util.ManaUtil;
 import org.jetbrains.annotations.Nullable;
 
 public class SlotMachineBlock extends Block {
+    private static final float MANA_COST = 10.0f;
     public static final EnumProperty<DoubleBlockHalf> HALF = EnumProperty.create("half", DoubleBlockHalf.class);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
@@ -120,6 +122,11 @@ public class SlotMachineBlock extends Block {
 
         if (serverPlayer.hasEffect(ModEffects.DODEPOVICH_SLOT_COOLDOWN.get())) {
             player.displayClientMessage(Component.literal("§6Казино на перерыве. Подожди перед следующим прокрутом."), true);
+            return InteractionResult.FAIL;
+        }
+
+        if (!ManaUtil.consumeMana(serverPlayer, MANA_COST)) {
+            player.displayClientMessage(Component.literal("§bНедостаточно маны. Игра в автомате стоит 10 маны."), true);
             return InteractionResult.FAIL;
         }
 

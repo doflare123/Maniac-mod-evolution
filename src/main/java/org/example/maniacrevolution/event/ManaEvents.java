@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.effect.ModEffects;
+import org.example.maniacrevolution.dodepovich.DodepovichCasinoManager;
 import org.example.maniacrevolution.item.DeathScytheItem;
 import org.example.maniacrevolution.item.GhostHandItem;
 import org.example.maniacrevolution.item.HookItem;
@@ -75,6 +76,10 @@ public class ManaEvents {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && !event.player.level().isClientSide()) {
             event.player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+                if (DodepovichCasinoManager.hasActiveJackpot(event.player)) {
+                    mana.setMana(mana.getMaxMana());
+                }
+
                 // ИСПРАВЛЕНО: Проверяем и очищаем некорректный бонусный реген
                 if (!mana.isPassiveRegenEnabled() && mana.getBonusRegenRate() > 0) {
                     // Если пассивный реген отключен, но есть бонусный - проверяем источник

@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class GhostHandItem extends Item implements IItemWithAbility {
+    public static final float MANA_COST = 10.0f;
 
     public GhostHandItem(Properties properties) {
         super(properties.stacksTo(1));
@@ -59,7 +60,7 @@ public class GhostHandItem extends Item implements IItemWithAbility {
 
     @Override
     public float getManaCost() {
-        return 0;
+        return MANA_COST;
     }
 
     @Override

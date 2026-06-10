@@ -26,6 +26,8 @@ import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SyncAbilityCooldownPacket;
 import org.example.maniacrevolution.network.packets.SyncGhostPossessionPacket;
+import org.example.maniacrevolution.item.GhostHandItem;
+import org.example.maniacrevolution.util.ManaUtil;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -94,6 +96,11 @@ public class GhostPossessionManager {
             return false;
         }
 
+        if (!ManaUtil.consumeMana(possessor, GhostHandItem.MANA_COST)) {
+            possessor.displayClientMessage(Component.literal("§bНедостаточно маны. Вселение стоит 10 маны."), true);
+            return false;
+        }
+
         ACTIVE_POSSESSIONS.put(possessor.getUUID(), new PossessionState(target.getUUID(), now, now + POSSESSION_DURATION_TICKS));
         TARGET_TO_POSSESSOR.put(target.getUUID(), possessor.getUUID());
         MANUAL_RELEASE_READY.remove(possessor.getUUID());
@@ -101,6 +108,7 @@ public class GhostPossessionManager {
         syncTargetToPossessor(possessor, target);
         applyPossessorEffects(possessor);
         applyTargetEffects(target);
+        target.noPhysics = true;
         applyPossessionTimer(possessor, POSSESSION_DURATION_TICKS);
         applyPossessionTimer(target, POSSESSION_DURATION_TICKS);
         GhostLoadoutManager.suppressCosmetics(possessor);
@@ -235,6 +243,13 @@ public class GhostPossessionManager {
             ServerPlayer possessor = event.getServer().getPlayerList().getPlayer(entry.getKey());
             if (possessor == null) {
                 TARGET_TO_POSSESSOR.remove(entry.getValue().targetUuid());
+                ServerPlayer abandonedTarget = event.getServer().getPlayerList().getPlayer(entry.getValue().targetUuid());
+                if (abandonedTarget != null) {
+                    abandonedTarget.noPhysics = false;
+                    abandonedTarget.setDeltaMovement(Vec3.ZERO);
+                    clearTargetEffects(abandonedTarget);
+                    syncClientState(abandonedTarget, false, false, -1);
+                }
                 iterator.remove();
                 continue;
             }
@@ -282,6 +297,7 @@ public class GhostPossessionManager {
                 : null;
 
         player.setDeltaMovement(Vec3.ZERO);
+        player.noPhysics = true;
         player.setShiftKeyDown(possessor != null && possessor.isShiftKeyDown());
         player.setSprinting(possessor != null && possessor.isSprinting());
         player.hurtMarked = true;
@@ -463,7 +479,8 @@ public class GhostPossessionManager {
         );
         target.setYHeadRot(possessor.getYHeadRot());
         target.yBodyRot = possessor.yBodyRot;
-        target.setDeltaMovement(possessor.getDeltaMovement());
+        target.setDeltaMovement(Vec3.ZERO);
+        target.noPhysics = true;
         target.setShiftKeyDown(possessor.isShiftKeyDown());
         target.setSprinting(possessor.isSprinting());
     }
@@ -517,6 +534,9 @@ public class GhostPossessionManager {
 
         if (target != null) {
             syncClientState(target, false, false, -1);
+            target.noPhysics = false;
+            target.setDeltaMovement(Vec3.ZERO);
+            target.hurtMarked = true;
             clearTargetEffects(target);
             target.displayClientMessage(Component.literal("§aВы снова контролируете себя."), true);
         }

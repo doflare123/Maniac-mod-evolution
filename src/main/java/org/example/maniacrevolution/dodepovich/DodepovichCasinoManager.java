@@ -8,6 +8,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
@@ -32,6 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class DodepovichCasinoManager {
+    private static final String JACKPOT_UNTIL_NBT = "DodepovichJackpotUntil";
     public static final int CLASS_ID = 13;
     public static final int ELUSIVENESS_GOOD_SECONDS = 10;
     public static final int ELUSIVENESS_BAD_SLOW_SECONDS = 5;
@@ -374,15 +376,28 @@ public final class DodepovichCasinoManager {
     }
 
     private static void applyJackpot(ServerPlayer player) {
+        player.getPersistentData().putLong(JACKPOT_UNTIL_NBT, player.level().getGameTime() + JACKPOT_SECONDS * 20L);
         player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, JACKPOT_SECONDS * 20, 255, false, true, true));
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, JACKPOT_SECONDS * 20, 2, false, true, true));
         player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, JACKPOT_SECONDS * 20, 2, false, true, true));
         player.level().playSound(null, player.blockPosition(),
-                ModSounds.SLOT_JACKPOT.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
+                ModSounds.SLOT_JACKPOT.get(), SoundSource.PLAYERS, 0.35f, 1.0f);
         player.getServer().getPlayerList().broadcastSystemMessage(
                 Component.literal("§6§lДЖЕКПОТ! §e" + player.getName().getString() + " вошёл в режим удачи Додеповича!"),
                 false
         );
+    }
+
+    public static boolean hasActiveJackpot(Player player) {
+        if (player == null) {
+            return false;
+        }
+        long until = player.getPersistentData().getLong(JACKPOT_UNTIL_NBT);
+        if (until <= player.level().getGameTime()) {
+            player.getPersistentData().remove(JACKPOT_UNTIL_NBT);
+            return false;
+        }
+        return true;
     }
 
     private static ServerPlayer findRandomManiac(ServerPlayer player) {

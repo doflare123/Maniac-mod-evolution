@@ -20,6 +20,8 @@ import org.example.maniacrevolution.client.ClientAbilityData;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SyncAbilityCooldownPacket;
+import org.example.maniacrevolution.item.ToyKnifeItem;
+import org.example.maniacrevolution.util.ManaUtil;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,6 +55,12 @@ public final class GhostStealthManager {
         if (isActive(player, now)) {
             beginRecovery(player, now);
             return true;
+        }
+
+        if (!ManaUtil.consumeMana(player, ToyKnifeItem.MANA_COST)) {
+            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                    "§bНедостаточно маны. Полная невидимость стоит 3 маны."), true);
+            return false;
         }
 
         ACTIVE_UNTIL.put(player.getUUID(), Long.MAX_VALUE);
@@ -111,6 +119,7 @@ public final class GhostStealthManager {
         restoreArmor(player);
         player.removeEffect(ModEffects.FULL_INVISIBILITY.get());
         player.removeEffect(ModEffects.STUN.get());
+        player.setInvisible(player.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY));
         player.getCooldowns().removeCooldown(ModItems.TOY_KNIFE.get());
         syncKnifeState(player);
     }
@@ -216,9 +225,11 @@ public final class GhostStealthManager {
 
             boolean active = isActive(player, now);
             boolean recovering = isRecovering(player, now);
-            boolean fullyHidden = player.isShiftKeyDown() || active || recovering || GhostPossessionManager.isPossessing(player);
+            boolean possessing = GhostPossessionManager.isPossessing(player);
+            boolean fullyHidden = player.isShiftKeyDown() || active || recovering || possessing;
+            boolean fullInvisibility = active || recovering;
 
-            if ((active || recovering) && !player.hasEffect(ModEffects.FULL_INVISIBILITY.get())) {
+            if (fullInvisibility && !player.hasEffect(ModEffects.FULL_INVISIBILITY.get())) {
                 player.addEffect(new MobEffectInstance(
                         ModEffects.FULL_INVISIBILITY.get(),
                         MobEffectInstance.INFINITE_DURATION,
@@ -228,10 +239,13 @@ public final class GhostStealthManager {
                         true
                 ));
             } else {
-                if (!active && !recovering) {
+                if (!fullInvisibility) {
                     player.removeEffect(ModEffects.FULL_INVISIBILITY.get());
                 }
             }
+
+            player.setInvisible(fullInvisibility || possessing
+                    || player.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY));
 
             if (fullyHidden) {
                 hideArmor(player);

@@ -10,6 +10,7 @@ import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.perk.perks.survivor.AltruistExePerk;
 import org.example.maniacrevolution.perk.perks.survivor.DutchHelmPerk;
 import org.example.maniacrevolution.perk.perks.survivor.IdealychPerk;
+import org.example.maniacrevolution.dodepovich.DodepovichCasinoManager;
 
 import java.util.*;
 
@@ -160,6 +161,10 @@ public class HackSession {
 
             // Идеалыч
             points *= IdealychPerk.getHackMultiplier(sp);
+
+            if (DodepovichCasinoManager.hasActiveJackpot(sp)) {
+                points *= 1.3f;
+            }
 
             total += points;
             if (sp != hacker) count++;

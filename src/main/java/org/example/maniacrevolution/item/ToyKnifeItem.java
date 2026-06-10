@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class ToyKnifeItem extends Item implements ITimedAbility {
+    public static final float MANA_COST = 3.0f;
     private static final UUID DAMAGE_UUID = UUID.fromString("77d6a3a6-ffea-4402-b4af-2a65ac65dfc0");
     private static final UUID SPEED_UUID = UUID.fromString("a4ef69d8-038f-4ef4-87de-5f9342252acf");
 
@@ -80,7 +81,7 @@ public class ToyKnifeItem extends Item implements ITimedAbility {
 
     @Override
     public float getManaCost() {
-        return 0;
+        return MANA_COST;
     }
 
     @Override
