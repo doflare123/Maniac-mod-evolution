@@ -82,16 +82,6 @@ public class ModItems {
             () -> new PreGameReadyItemActive(new Item.Properties()));
 
     public enum ModArmorMaterials implements ArmorMaterial {
-        GHOST(
-                "ghost",
-                8,
-                new int[]{0, 0, 0, 0},
-                0,
-                SoundEvents.ARMOR_EQUIP_LEATHER,
-                0.0F,
-                0.0F,
-                () -> Ingredient.EMPTY
-        ),
         NECROMANCER(
                 "necromancer",
                 25, // Прочность
@@ -238,10 +228,6 @@ public class ModItems {
     public static final RegistryObject<Item> MICROPHONE = ITEMS.register("microphone", () -> new MicrophoneItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> TOY_KNIFE = ITEMS.register("toy_knife", () -> new ToyKnifeItem(new Item.Properties()));
     public static final RegistryObject<Item> GHOST_HAND = ITEMS.register("ghost_hand", () -> new GhostHandItem(new Item.Properties()));
-    public static final RegistryObject<Item> GHOST_HELMET = ITEMS.register("ghost_helmet",
-            () -> new ArmorItem(ModArmorMaterials.GHOST, ArmorItem.Type.HELMET, new Item.Properties().stacksTo(1)));
-    public static final RegistryObject<Item> GHOST_LEGGINGS = ITEMS.register("ghost_leggings",
-            () -> new ArmorItem(ModArmorMaterials.GHOST, ArmorItem.Type.LEGGINGS, new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> BEAST_CLAW =  ITEMS.register("beast_claw", () -> new BeastClawItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> BEEHIVE_FOOD = ITEMS.register("beehive_food", () -> new BeehiveItem(

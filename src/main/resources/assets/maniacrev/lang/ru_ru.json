@@ -299,7 +299,5 @@
   "tooltip.maniacrev.coin_fate.good": "Возрождает всех spectator-выживших и телепортирует их к случайному активному маньяку.",
   "tooltip.maniacrev.coin_fate.bad": "Ты умираешь и наносишь всем активным союзникам %s урона.",
   "item.maniacrev.toy_knife": "Игрушечный нож",
-  "item.maniacrev.ghost_hand": "Призрачная рука",
-  "item.maniacrev.ghost_helmet": "Шлем призрака",
-  "item.maniacrev.ghost_leggings": "Штаны призрака"
+  "item.maniacrev.ghost_hand": "Призрачная рука"
 }
