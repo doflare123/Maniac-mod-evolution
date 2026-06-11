@@ -69,6 +69,8 @@ public class DodepovichCoinItem extends Item {
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.translatable("tooltip.maniacrev.dodepovich_coin.roll").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.dodepovich_coin.mana", (int) MANA_COST)
+                .withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.translatable("tooltip.maniacrev.dodepovich_coin.good").withStyle(ChatFormatting.GREEN));
         tooltip.add(goodTooltip().withStyle(ChatFormatting.DARK_GREEN));
         tooltip.add(Component.translatable("tooltip.maniacrev.dodepovich_coin.bad").withStyle(ChatFormatting.RED));

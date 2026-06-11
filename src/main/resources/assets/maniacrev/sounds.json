@@ -52,7 +52,11 @@
   },
   "slot_jackpot": {
     "sounds": [
-      "maniacrev:slot_jackpot"
+      {
+        "name": "maniacrev:slot_jackpot",
+        "attenuation_distance": 32,
+        "type": "file"
+      }
     ]
   },
   "slot_death": {

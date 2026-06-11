@@ -20,6 +20,7 @@ import org.example.maniacrevolution.client.ClientAbilityData;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SyncAbilityCooldownPacket;
+import org.example.maniacrevolution.network.packets.SyncGhostVisibilityPacket;
 import org.example.maniacrevolution.item.ToyKnifeItem;
 import org.example.maniacrevolution.util.ManaUtil;
 
@@ -27,6 +28,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public final class GhostStealthManager {
@@ -38,6 +41,7 @@ public final class GhostStealthManager {
 
     private static final Map<UUID, Long> ACTIVE_UNTIL = new HashMap<>();
     private static final Map<UUID, Long> RECOVERY_UNTIL = new HashMap<>();
+    private static final Set<UUID> SYNCED_HIDDEN_PLAYERS = new HashSet<>();
     private GhostStealthManager() {
     }
 
@@ -120,6 +124,7 @@ public final class GhostStealthManager {
         player.removeEffect(ModEffects.FULL_INVISIBILITY.get());
         player.removeEffect(ModEffects.STUN.get());
         player.setInvisible(player.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY));
+        syncVisibility(player, false);
         player.getCooldowns().removeCooldown(ModItems.TOY_KNIFE.get());
         syncKnifeState(player);
     }
@@ -228,6 +233,7 @@ public final class GhostStealthManager {
             boolean possessing = GhostPossessionManager.isPossessing(player);
             boolean fullyHidden = player.isShiftKeyDown() || active || recovering || possessing;
             boolean fullInvisibility = active || recovering;
+            boolean hiddenFromOthers = fullInvisibility || possessing;
 
             if (fullInvisibility && !player.hasEffect(ModEffects.FULL_INVISIBILITY.get())) {
                 player.addEffect(new MobEffectInstance(
@@ -246,6 +252,7 @@ public final class GhostStealthManager {
 
             player.setInvisible(fullInvisibility || possessing
                     || player.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY));
+            syncVisibility(player, hiddenFromOthers);
 
             if (fullyHidden) {
                 hideArmor(player);
@@ -278,6 +285,35 @@ public final class GhostStealthManager {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             restoreArmor(player);
+            syncVisibility(player, false);
         }
+    }
+
+    @SubscribeEvent
+    public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer joiningPlayer)
+                || joiningPlayer.getServer() == null) {
+            return;
+        }
+
+        for (ServerPlayer player : joiningPlayer.getServer().getPlayerList().getPlayers()) {
+            if (SYNCED_HIDDEN_PLAYERS.contains(player.getUUID())) {
+                ModNetworking.sendToPlayer(new SyncGhostVisibilityPacket(player.getUUID(), true), joiningPlayer);
+            }
+        }
+    }
+
+    private static void syncVisibility(ServerPlayer player, boolean hidden) {
+        boolean wasHidden = SYNCED_HIDDEN_PLAYERS.contains(player.getUUID());
+        if (wasHidden == hidden) {
+            return;
+        }
+
+        if (hidden) {
+            SYNCED_HIDDEN_PLAYERS.add(player.getUUID());
+        } else {
+            SYNCED_HIDDEN_PLAYERS.remove(player.getUUID());
+        }
+        ModNetworking.sendToAllPlayers(new SyncGhostVisibilityPacket(player.getUUID(), hidden));
     }
 }

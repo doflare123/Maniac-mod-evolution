@@ -1,0 +1,9 @@
+{
+  "parent": "bettercombat:dagger",
+  "attributes": {
+    "attack_damage": 2.0,
+    "attack_speed": 2.2,
+    "attack_range": 2.5,
+    "two_handed": false
+  }
+}

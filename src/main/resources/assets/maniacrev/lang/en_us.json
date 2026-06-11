@@ -315,6 +315,7 @@
   "effect.maniacrev.dodepovich_slot_cooldown": "Break",
   "effect.maniacrev.jackpot": "Jackpot",
   "tooltip.maniacrev.dodepovich_coin.roll": "Right-click: flip, 50/50.",
+  "tooltip.maniacrev.dodepovich_coin.mana": "Mana: %s",
   "tooltip.maniacrev.dodepovich_coin.good": "+ Luck:",
   "tooltip.maniacrev.dodepovich_coin.bad": "- Bust:",
   "tooltip.maniacrev.coin_elusiveness.good": "Invisibility I and Speed I for %s sec.",

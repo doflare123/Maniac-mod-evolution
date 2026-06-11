@@ -279,6 +279,7 @@
   "effect.maniacrev.dodepovich_slot_cooldown": "Перерыв",
   "effect.maniacrev.jackpot": "Джекпот",
   "tooltip.maniacrev.dodepovich_coin.roll": "ПКМ: подбросить, 50/50.",
+  "tooltip.maniacrev.dodepovich_coin.mana": "Мана: %s",
   "tooltip.maniacrev.dodepovich_coin.good": "+ Удача:",
   "tooltip.maniacrev.dodepovich_coin.bad": "- Провал:",
   "tooltip.maniacrev.coin_elusiveness.good": "Невидимость I и Скорость I на %s сек.",

@@ -42,6 +42,7 @@ public class GhostClientEvents {
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         GhostPossessionClientState.clear();
+        GhostVisibilityClientState.clear();
     }
 
     @SubscribeEvent
@@ -56,7 +57,8 @@ public class GhostClientEvents {
 
     @SubscribeEvent
     public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
-        if (event.getEntity().hasEffect(ModEffects.FULL_INVISIBILITY.get())) {
+        if (event.getEntity().hasEffect(ModEffects.FULL_INVISIBILITY.get())
+                || GhostVisibilityClientState.isHidden(event.getEntity().getUUID())) {
             event.setCanceled(true);
             return;
         }

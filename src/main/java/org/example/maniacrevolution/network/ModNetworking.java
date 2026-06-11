@@ -397,6 +397,12 @@ public class ModNetworking {
                 .consumerMainThread(SyncGhostPossessionPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(SyncGhostVisibilityPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SyncGhostVisibilityPacket::encode)
+                .decoder(SyncGhostVisibilityPacket::decode)
+                .consumerMainThread(SyncGhostVisibilityPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 
