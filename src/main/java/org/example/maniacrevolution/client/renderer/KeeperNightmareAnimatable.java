@@ -2,6 +2,7 @@ package org.example.maniacrevolution.client.renderer;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import software.bernie.geckolib.animatable.GeoReplacedEntity;
 import software.bernie.geckolib.constant.DataTickets;
@@ -31,7 +32,8 @@ public final class KeeperNightmareAnimatable implements GeoReplacedEntity {
             if (entity instanceof Player player) {
                 moving = player.walkAnimation.speed() > 0.03F;
                 boolean swimming = player.isSwimming()
-                        || player.isInWater() && player.getDeltaMovement().horizontalDistanceSqr() > 0.0004D;
+                        || player.getPose() == Pose.SWIMMING
+                        || (player.isInWater() && player.getDeltaMovement().horizontalDistanceSqr() > 0.0004D);
                 if (swimming) {
                     state.setControllerSpeed(1.0F);
                     return state.setAndContinue(SWIM);

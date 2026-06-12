@@ -6,17 +6,19 @@ public final class ClientNightmareData {
     private static float maxSanity = NightmareConfig.MAX_SANITY;
     private static NightmareTrialType trialType = NightmareTrialType.NONE;
     private static int trialSecondsLeft;
+    private static int sanityImmunitySecondsLeft;
     private static long screamerUntilMillis;
 
     private ClientNightmareData() {}
 
     public static void update(boolean hudVisible, float sanityValue, float maxValue,
-                              NightmareTrialType activeTrial, int secondsLeft) {
+                              NightmareTrialType activeTrial, int secondsLeft, int immunitySecondsLeft) {
         visible = hudVisible;
         sanity = sanityValue;
         maxSanity = maxValue;
         trialType = activeTrial;
         trialSecondsLeft = secondsLeft;
+        sanityImmunitySecondsLeft = immunitySecondsLeft;
     }
 
     public static boolean isVisible() {
@@ -33,6 +35,10 @@ public final class ClientNightmareData {
 
     public static int getTrialSecondsLeft() {
         return trialSecondsLeft;
+    }
+
+    public static int getSanityImmunitySecondsLeft() {
+        return sanityImmunitySecondsLeft;
     }
 
     public static void showScreamer(int durationTicks) {

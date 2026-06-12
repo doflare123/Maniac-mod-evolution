@@ -24,6 +24,7 @@ import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.GameStatePacket;
+import org.example.maniacrevolution.nightmare.NightmareConfig;
 import org.example.maniacrevolution.perk.PerkPhase;
 import org.example.maniacrevolution.stats.StatsManager;
 
@@ -191,6 +192,11 @@ public class GameManager {
             return;
         }
 
+        if (!hasActiveKeeperManiac()) {
+            Maniacrev.LOGGER.info("No active Keeper of Nightmares found, skipped awakening needle distribution");
+            return;
+        }
+
         Collections.shuffle(survivors);
         int needlesToGive = (survivors.size() + 2) / 3;
         for (int i = 0; i < needlesToGive; i++) {
@@ -214,6 +220,26 @@ public class GameManager {
 
         GameType mode = player.gameMode.getGameModeForPlayer();
         return mode == GameType.ADVENTURE || mode == GameType.SURVIVAL;
+    }
+
+    private static boolean hasActiveKeeperManiac() {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            PlayerTeam team = (PlayerTeam) player.getTeam();
+            if (team == null || !MANIAC_TEAM_NAME.equalsIgnoreCase(team.getName())) {
+                continue;
+            }
+
+            GameType mode = player.gameMode.getGameModeForPlayer();
+            if (mode != GameType.ADVENTURE && mode != GameType.SURVIVAL) {
+                continue;
+            }
+
+            PlayerData data = PlayerDataManager.get(player);
+            if (data.getManiacClassId() == NightmareConfig.KEEPER_CLASS_ID) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void removeAwakeningNeedles(ServerPlayer player) {

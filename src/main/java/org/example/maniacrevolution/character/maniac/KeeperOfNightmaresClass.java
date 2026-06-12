@@ -7,7 +7,7 @@ import org.example.maniacrevolution.nightmare.NightmareConfig;
 public class KeeperOfNightmaresClass extends CharacterClass {
     public KeeperOfNightmaresClass() {
         super("keeper_of_nightmares", "Хранитель кошмаров", CharacterType.MANIAC,
-                "Медленный маньяк, ломающий рассудок взглядом и отправляющий выживших в кошмарные испытания.",
+                "Бабадзаки научился уворачиваться от ремня с задержкой, поэтому батя начал давить психологически",
                 NightmareConfig.KEEPER_CLASS_ID, 5);
 
         addTag("Контроль");

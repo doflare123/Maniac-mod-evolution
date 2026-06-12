@@ -13,14 +13,16 @@ public class SyncNightmarePacket {
     private final float maxSanity;
     private final NightmareTrialType trialType;
     private final int trialSecondsLeft;
+    private final int sanityImmunitySecondsLeft;
 
     public SyncNightmarePacket(boolean visible, float sanity, float maxSanity,
-                               NightmareTrialType trialType, int trialSecondsLeft) {
+                               NightmareTrialType trialType, int trialSecondsLeft, int sanityImmunitySecondsLeft) {
         this.visible = visible;
         this.sanity = sanity;
         this.maxSanity = maxSanity;
         this.trialType = trialType;
         this.trialSecondsLeft = trialSecondsLeft;
+        this.sanityImmunitySecondsLeft = sanityImmunitySecondsLeft;
     }
 
     public static void encode(SyncNightmarePacket packet, FriendlyByteBuf buf) {
@@ -29,6 +31,7 @@ public class SyncNightmarePacket {
         buf.writeFloat(packet.maxSanity);
         buf.writeEnum(packet.trialType);
         buf.writeVarInt(packet.trialSecondsLeft);
+        buf.writeVarInt(packet.sanityImmunitySecondsLeft);
     }
 
     public static SyncNightmarePacket decode(FriendlyByteBuf buf) {
@@ -37,6 +40,7 @@ public class SyncNightmarePacket {
                 buf.readFloat(),
                 buf.readFloat(),
                 buf.readEnum(NightmareTrialType.class),
+                buf.readVarInt(),
                 buf.readVarInt()
         );
     }
@@ -47,7 +51,8 @@ public class SyncNightmarePacket {
                 packet.sanity,
                 packet.maxSanity,
                 packet.trialType,
-                packet.trialSecondsLeft
+                packet.trialSecondsLeft,
+                packet.sanityImmunitySecondsLeft
         ));
         ctx.get().setPacketHandled(true);
     }

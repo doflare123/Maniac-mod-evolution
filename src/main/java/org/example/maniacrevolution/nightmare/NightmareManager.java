@@ -59,7 +59,7 @@ public final class NightmareManager {
             NightmarePlayerState state = state(player);
             if (isKeeper(player) || player.isSpectator() || player.isCreative()) {
                 ModNetworking.sendToPlayer(new SyncNightmarePacket(false, state.sanity,
-                        NightmareConfig.MAX_SANITY, NightmareTrialType.NONE, 0), player);
+                        NightmareConfig.MAX_SANITY, NightmareTrialType.NONE, 0, 0), player);
                 continue;
             }
 
@@ -493,19 +493,22 @@ public final class NightmareManager {
         int secondsLeft = state.isInTrial()
                 ? Math.max(0, (int) ((state.trialEndsAt - player.server.overworld().getGameTime()) / 20))
                 : 0;
+        long immunityTicksLeft = Math.max(0L, state.sanityImmunityUntil - player.level().getGameTime());
+        int immunitySecondsLeft = (int) ((immunityTicksLeft + 19L) / 20L);
         ModNetworking.sendToPlayer(new SyncNightmarePacket(
                 keeperPresent,
                 state.sanity,
                 NightmareConfig.MAX_SANITY,
                 state.trialType,
-                secondsLeft
+                secondsLeft,
+                immunitySecondsLeft
         ), player);
     }
 
     private void syncDisabled(List<ServerPlayer> players) {
         for (ServerPlayer player : players) {
             ModNetworking.sendToPlayer(new SyncNightmarePacket(false, NightmareConfig.MAX_SANITY,
-                    NightmareConfig.MAX_SANITY, NightmareTrialType.NONE, 0), player);
+                    NightmareConfig.MAX_SANITY, NightmareTrialType.NONE, 0, 0), player);
         }
     }
 }

@@ -21,7 +21,10 @@ public final class NightmareHud {
 
         if (ClientNightmareData.isVisible()) {
             renderSanityVignette(gui, screenWidth, screenHeight);
-            renderSanityPortrait(gui, mc, 8, screenHeight - 128);
+            int portraitX = 8;
+            int portraitY = screenHeight - 128;
+            renderSanityPortrait(gui, mc, portraitX, portraitY);
+            renderSanityResistance(gui, mc, portraitX, portraitY + PORTRAIT_HEIGHT + 5);
         }
 
         if (ClientNightmareData.getTrialType() != NightmareTrialType.NONE) {
@@ -92,6 +95,20 @@ public final class NightmareHud {
         gui.fill(0, 0, screenWidth, verticalHeight, color);
         gui.fill(0, screenHeight - verticalHeight, screenWidth, screenHeight, color);
         RenderSystem.disableBlend();
+    }
+
+    private static void renderSanityResistance(GuiGraphics gui, Minecraft mc, int x, int y) {
+        int secondsLeft = ClientNightmareData.getSanityImmunitySecondsLeft();
+        if (secondsLeft <= 0) {
+            return;
+        }
+
+        String text = "\u0417\u0430\u0449\u0438\u0442\u0430: " + secondsLeft + "\u0441";
+        int width = Math.max(PORTRAIT_WIDTH, mc.font.width(text) + 12);
+        gui.fill(x, y, x + width, y + 14, 0xCC090511);
+        gui.renderOutline(x, y, width, 14, 0xFF7A4D96);
+        gui.fill(x + 3, y + 11, x + width - 3, y + 12, 0xFFD65BFF);
+        gui.drawString(mc.font, text, x + 6, y + 3, 0xFFE9C7FF, true);
     }
 
     private static void renderSanityMarks(GuiGraphics gui, int x, int y, float sanity) {

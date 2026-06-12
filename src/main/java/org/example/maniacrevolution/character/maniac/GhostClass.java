@@ -7,7 +7,7 @@ public class GhostClass extends CharacterClass {
 
     public GhostClass() {
         super("ghost", "Призрак", CharacterType.MANIAC,
-                "Чужое тело для него лишь временная оболочка.",
+                "Люди пешки - мир орешки",
                 8, 5);
 
         addTag("Контроль");
