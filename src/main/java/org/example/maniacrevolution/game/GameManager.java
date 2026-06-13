@@ -5,8 +5,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.Objective;
@@ -27,10 +25,14 @@ import org.example.maniacrevolution.network.packets.GameStatePacket;
 import org.example.maniacrevolution.nightmare.NightmareConfig;
 import org.example.maniacrevolution.perk.PerkPhase;
 import org.example.maniacrevolution.stats.StatsManager;
+import org.example.maniacrevolution.util.SelectiveGlowingEffect;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class GameManager {
@@ -41,13 +43,14 @@ public class GameManager {
     private static int currentTime = 0;
     private static boolean timerRunning = false;
     private static boolean maniacGlowing = false;
+    private static final Set<UUID> maniacPhaseGlowTargets = new HashSet<>();
 
     // Название scoreboard objective для фазы
     private static final String PHASE_OBJECTIVE = "phaseGame";
 
     // Константы
-    private static final int GLOWING_THRESHOLD = 2400; // 2 минуты в тиках
-    private static final int GLOWING_DURATION = 2500; // Чуть больше 2 минут, чтобы эффект не пропал
+    private static final int GLOWING_THRESHOLD = 2400;
+    private static final int GLOWING_DURATION = 2500;
     private static final String MANIAC_TEAM_NAME = "maniac";
     private static final String SURVIVORS_TEAM_NAME = "survivors";
 
@@ -96,6 +99,11 @@ public class GameManager {
         score.setScore(phase);
 
         // Оповещаем всех игроков
+        if (phase != 3) {
+            clearManiacPhaseGlowing();
+            maniacGlowing = false;
+        }
+
         PerkPhase newPhase = PerkPhase.fromScoreboardValue(phase);
         if (newPhase != null) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -119,7 +127,8 @@ public class GameManager {
     public static void startTimer() {
         currentTime = maxGameTime;
         timerRunning = true;
-        maniacGlowing = false; // ИСПРАВЛЕНО: Сбрасываем флаг при старте
+        maniacGlowing = false;
+        clearManiacPhaseGlowing();
         syncGameState();
         Maniacrev.LOGGER.info("Timer started: {} seconds", maxGameTime / 20);
     }
@@ -255,8 +264,8 @@ public class GameManager {
         setPhase(0);
         stopTimer();
         currentTime = 0;
-        maniacGlowing = false; // ИСПРАВЛЕНО: Сбрасываем флаг
-
+        maniacGlowing = false;
+        clearManiacPhaseGlowing();
         if (server != null) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 PlayerData data = PlayerDataManager.get(player);
@@ -284,18 +293,19 @@ public class GameManager {
             );
         }
 
-        // ИСПРАВЛЕНО: Подсветка маньяков в фазе 3 при остатке времени <= 2 минут
+        // Phase 3 outline for maniacs. Packet-based, not saved as a player effect.
         if (currentTime <= GLOWING_THRESHOLD && getPhaseValue() == 3 && !maniacGlowing) {
-            applyManiacGlowing();
+            applyManiacPhaseGlowing();
             maniacGlowing = true;
 
-            Maniacrev.LOGGER.info("Applied glowing to maniacs (time remaining: {} seconds)", currentTime / 20);
+            Maniacrev.LOGGER.info("Applied phase outline to maniacs (time remaining: {} seconds)", currentTime / 20);
         }
 
-        // Проверка на конец времени
         if (currentTime <= 0) {
             currentTime = 0;
             timerRunning = false;
+            maniacGlowing = false;
+            clearManiacPhaseGlowing();
 
             server.getCommands().performPrefixedCommand(
                     server.createCommandSourceStack().withSuppressedOutput(),
@@ -311,48 +321,40 @@ public class GameManager {
         }
     }
 
-    // === Подсветка маньяков ===
+    // === Phase outline ===
 
-    /**
-     * Применяет эффект подсветки ко всем игрокам команды "maniac"
-     */
-    private static void applyManiacGlowing() {
+    private static void applyManiacPhaseGlowing() {
         if (server == null) return;
 
         int glowingCount = 0;
+        List<ServerPlayer> viewers = server.getPlayerList().getPlayers();
 
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            // Проверяем команду игрока
+        for (ServerPlayer player : viewers) {
             if (isInManiacTeam(player)) {
-                // Применяем эффект подсветки на оставшееся время + запас
-                player.addEffect(new MobEffectInstance(
-                        MobEffects.GLOWING,
-                        GLOWING_DURATION, // ~2 минуты + запас
-                        0,
-                        false,
-                        false,
-                        false
-                ));
-
+                SelectiveGlowingEffect.addGlowing(player, viewers, GLOWING_DURATION);
+                maniacPhaseGlowTargets.add(player.getUUID());
                 glowingCount++;
             }
         }
 
-        Maniacrev.LOGGER.info("Applied glowing to {} maniac(s)", glowingCount);
+        Maniacrev.LOGGER.info("Applied phase outline to {} maniac(s)", glowingCount);
     }
 
-    /**
-     * Проверяет, находится ли игрок в команде "maniac"
-     */
+    private static void clearManiacPhaseGlowing() {
+        if (server == null || maniacPhaseGlowTargets.isEmpty()) return;
+
+        for (UUID playerId : new HashSet<>(maniacPhaseGlowTargets)) {
+            ServerPlayer player = server.getPlayerList().getPlayer(playerId);
+            if (player != null) {
+                SelectiveGlowingEffect.removeAllGlowing(player);
+            }
+        }
+        maniacPhaseGlowTargets.clear();
+    }
+
     private static boolean isInManiacTeam(ServerPlayer player) {
         PlayerTeam team = (PlayerTeam) player.getTeam();
-
-        if (team == null) {
-            return false;
-        }
-
-        // ИСПРАВЛЕНО: Правильная проверка имени команды
-        return MANIAC_TEAM_NAME.equalsIgnoreCase(team.getName());
+        return team != null && MANIAC_TEAM_NAME.equalsIgnoreCase(team.getName());
     }
 
     // === Синхронизация ===
