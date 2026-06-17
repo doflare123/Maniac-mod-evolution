@@ -1,0 +1,373 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Хроники — Maniac Revolution</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/changelog.css" />
+</head>
+<body>
+
+    <nav>
+  <div class="nav-logo" onclick="show('home')">
+    <span class="skull">☠</span> NecroDwarf
+  </div>
+  <ul class="nav-links">
+    <a href="../../index.html#home" style="color:var(--muted);text-decoration:none;">Главная</a>
+    <a href="../../index.html#projects" style="color:var(--muted);text-decoration:none;">Проекты</a>
+    <a href="../../index.html#changelog" style="color:var(--muted);text-decoration:none;">Хроники</a>
+    <a href="../../index.html#about" style="color:var(--muted);text-decoration:none;">О гильдии</a>
+  </ul>
+</nav>
+
+<!-- ══════════ ШАПКА ══════════ -->
+<div class="cl-header">
+  <div class="cl-label">Записи летописца · Maniac (DBD × Minecraft)</div>
+  <h1 class="cl-title">Хроники <span>Обновления</span></h1>
+  <p class="cl-sub">— Переход к новому этапу модинга —</p>
+  <div class="cl-sep">✦ ☠ ✦</div>
+
+  <div class="cl-version-block">
+    <div class="cl-version-codename">Кошмарный додеп</div>
+    <div class="cl-version-num">Версия 1.1</div>
+    <div class="cl-version-note">обновление про психологическое давление, казино, риск и тех, кто решил, что обычного маньяка уже мало</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="cl-stats">
+    <div class="stat-item">
+      <span class="stat-num">3</span>
+      <span class="stat-lbl">класса</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">14+</span>
+      <span class="stat-lbl">предметов</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">1</span>
+      <span class="stat-lbl">карта</span>
+    </div>
+  </div>
+
+  <!-- ═══ ГЛАВНОЕ 1.1 ═══ -->
+  <div class="cl-section green">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">✦</span>
+      <span class="cl-section-title">Главное обновления</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="cl-callout">
+        Это обновление добавляет сразу три крупных игровых направления: Хранителя кошмаров, Додеповича и Призрака. У каждого не просто новый набор предметов, а отдельный стиль игры: давление рассудком, азартная рулетка и скрытное вселение.
+      </div>
+      <div class="cards">
+        <a class="card new cl-jump-card" href="#keeper-nightmares">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Хранитель кошмаров <span class="badge badge-maniac">Маньяк</span></div>
+          <p>Маньяк, который ломает выживших не уроном, а рассудком. Долгий взгляд снижает шкалу рассудка, а при срыве цель похищается в отдельное кошмарное испытание.</p>
+          <ul>
+            <li>Дальность давления взглядом: 40 блоков</li>
+            <li>Первые 3 похищения ведут в лабиринт</li>
+            <li>После этого открываются арена и гонка со страхом</li>
+          </ul>
+        </a>
+
+        <a class="card new cl-jump-card" href="#dodepovich">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Никита Додепович <span class="badge badge-survivor">Выживший</span></div>
+          <p>Азартный выживший, который играет через монетки и казино-автомат. Каждая монетка имеет хороший и плохой исход, а автомат может выдать как спасение, так и смерть.</p>
+          <ul>
+            <li>8 разных монеток с эффектами 50/50</li>
+            <li>Казино-автомат для усиленного розыгрыша</li>
+            <li>Редкий джекпот с огромным баффом и отдельной музыкой</li>
+          </ul>
+        </a>
+
+        <a class="card new cl-jump-card" href="#ghost">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Призрак <span class="badge badge-maniac">Маньяк</span></div>
+          <p>Скрытный маньяк, который может исчезать полностью и захватывать тело выжившего. Его сила не в прямом давлении, а в том, что выжившие не всегда понимают, кто сейчас перед ними.</p>
+          <ul>
+            <li>Вселение в выжившего на 30 секунд</li>
+            <li>Полная невидимость через игрушечный нож</li>
+            <li>Белая кожаная броня скрывается во время инвиза и одержимости</li>
+          </ul>
+        </a>
+
+        <a class="card new cl-jump-card" href="#fort-map">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Карта «Форт»</div>
+          <p>В ротацию карт добавлен «Форт» — маленькая и плотная карта для быстрых, нервных раундов без долгого бегового туризма.</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ХРАНИТЕЛЬ КОШМАРОВ ═══ -->
+  <div class="cl-section purple" id="keeper-nightmares">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">☽</span>
+      <span class="cl-section-title">Хранитель кошмаров</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="cards">
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Рассудок</div>
+          <p>У выживших появилась шкала рассудка против Хранителя. Если маньяк смотрит на цель - рассудок падает; если нет, то он начинает восстанавливаться.</p>
+          <ul>
+            <li>Максимум рассудка: 100</li>
+            <li>После провала испытания или спасения есть 20 секунд иммунитета</li>
+            <li>HUD показывает рассудок, активное испытание, таймер и иммунитет</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Концентрированный кошмар</div>
+          <p>Сразу снимает часть рассудка с цели.</p>
+          <ul>
+            <li>Снимает 10% максимального рассудка</li>
+            <li>Дальность поиска цели: 40 блоков</li>
+            <li>Кулдаун: 45 секунд</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Лабиринт</div>
+          <p>Первый тип кошмарного испытания. Выжившего забирает в отдельный лабиринт, где нужно найти выход до окончания таймера.</p>
+          <ul>
+            <li>Первые 3 похищения Хранителя всегда запускают лабиринт</li>
+            <li>Время на прохождение: 30 секунд</li>
+            <li>Провал по таймеру наносит 8 урона</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Арена</div>
+          <p>После первых лабиринтов Хранитель может отправить цель на арену. Задача простая и неприятная: выжить до конца испытания.</p>
+          <ul>
+            <li>Размер арены: 7×7</li>
+            <li>Длительность: 45 секунд</li>
+            <li>На старте появляется 8 враждебных мобов и укрытия</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Гонка со страхом</div>
+          <p>Выживший попадает на дорожку, получает короткий отсчет и должен добежать до финиша, пока его догоняет страх.</p>
+          <ul>
+            <li>Отсчет перед стартом: 3 секунды</li>
+            <li>Время гонки: 30 секунд</li>
+            <li>Если преследователь догоняет цель — это смерть</li>
+            <li>Провал по таймеру наносит 6 урона</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Кокон и Игла пробуждения</div>
+          <p>Когда выжившего забирает в кошмар, на месте похищения появляется кокон. Союзники могут вытащить игрока досрочно, если у них есть игла.</p>
+          <ul>
+            <li>Иглы выдаются примерно трети активных выживших, если в матче есть Хранитель</li>
+            <li>Удар по кокону иглой открывает мини-игру</li>
+            <li>Для спасения нужно 4 успешных попадания</li>
+            <li>Досрочное спасение слегка ранит спасаемого</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Зажигалка кошмара</div>
+          <p>Предмет для кошмарных испытаний, который дает слабый переносной свет. Зажигалку можно включать и выключать, но топливо не бесконечное.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">✦ &nbsp; 🎰 &nbsp; ✦</div>
+
+  <!-- ═══ ДОДЕПОВИЧ ═══ -->
+  <div class="cl-section green" id="dodepovich">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">🎰</span>
+      <span class="cl-section-title">Никита Додепович</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="cl-callout">
+        Додепович — класс про риск. Его предметы не дают стабильной кнопки «победить»: каждый сильный эффект имеет обратную сторону, а казино всегда помнит, что вы у него в долгу.
+      </div>
+      <div class="cards">
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Монетки 50/50</div>
+          <p>ПКМ подбрасывает монетку. Подброс стоит 5 маны и тратит предмет, если игрок не в креативе.</p>
+          <ul>
+            <li><strong>Неуловимость:</strong> инвиз + скорость на 10с или телепорт к случайному маньяку и замедление на 5с</li>
+            <li><strong>Прозрение:</strong> маньяк подсвечен только тебе на 20с или ты подсвечен для всех на 15с</li>
+            <li><strong>Оковы:</strong> ближайший маньяк обездвижен на 7с или обездвижен ты</li>
+            <li><strong>ЗОЖ:</strong> +4 HP или −4 HP</li>
+            <li><strong>Орел:</strong> слепота ближайшему маньяку на 10с или слепота тебе</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Редкие монетки</div>
+          <ul>
+            <li><strong>Долг:</strong> следующий входящий урон блокируется на 60с или следующий входящий урон удваивается</li>
+            <li><strong>Реролл:</strong> повторяет последнюю не-реролл монетку; если истории нет, выбирает случайную</li>
+            <li><strong>Судьба:</strong> воскрешает spectator-выживших и переносит их к случайному маньяку или убивает Додеповича и бьет активных союзников на 5 урона</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Казино-автомат</div>
+          <p>Автомат принимает только монетки Додеповича. Игра стоит 10 маны, тратит вставленную монетку, дает 30 секунд перерыва и ненадолго замедляет игрока.</p>
+          <ul>
+            <li>Может съесть монетку без эффекта</li>
+            <li>Может прокрутить хороший или плохой эффект вставленной монетки</li>
+            <li>Может выдать алмазы, изумруды, уголь, паучий глаз, гнилую плоть, страховку, кредит, джекпот или смерть</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Особые выигрыши автомата</div>
+          <ul>
+            <li><strong>Алмазики:</strong> скорость II и сопротивление на 20с</li>
+            <li><strong>Изумрудики:</strong> +2 HP тебе и ближайшему союзнику</li>
+            <li><strong>Страховка:</strong> отменяет следующий плохой эффект монетки</li>
+            <li><strong>Кредит:</strong> 30с лечения, затем 30с выплаты с процентами</li>
+            <li><strong>Джекпот:</strong> 75с регена, +60% скорости, +9 урона, фейерверки и музыка</li>
+          </ul>
+          <div class="note red-note">После джекпотов риск смертельного исхода автомата становится выше. Казино все записало.</div>
+        </div>
+
+        <div class="card mod">
+          <div class="card-head"><span class="badge badge-mod">ВИЗУАЛ</span> Анимации и звуки</div>
+          <p>Монетки получили отдельную анимацию подброса, автомат — прокрутку, звуки вставки, вращения, выигрыша, смерти и джекпота. Джекпот отдельно синхронизирует музыку для игроков.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ПРИЗРАК ═══ -->
+  <div class="cl-section purple" id="ghost">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">👁</span>
+      <span class="cl-section-title">Призрак</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="cards">
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Призрачная рука</div>
+          <p>Shift + ПКМ по выжившему запускает вселение. Призрак захватывает цель на 30 секунд, получает Speed I, а жертва теряет контроль над телом.</p>
+          <ul>
+            <li>Стоимость: 10 маны</li>
+            <li>Кулдаун: 60 секунд</li>
+            <li>Во время контроля повторный Shift + ПКМ позволяет выйти досрочно</li>
+            <li>После завершения Призрак получает 2 секунды восстановления без возможности нормально атаковать</li>
+          </ul>
+        </div>
+
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Игрушечный нож</div>
+          <p>Оружие Призрака на 2 урона. ПКМ включает полную невидимость без таймера, повторный ПКМ выключает ее и запускает короткое восстановление.</p>
+          <ul>
+            <li>Стоимость входа в инвиз: 3 маны</li>
+            <li>Кулдауна нет</li>
+            <li>Выход из инвиза: 2 секунды стана/стабилизации</li>
+          </ul>
+        </div>
+
+        <div class="card mod">
+          <div class="card-head"><span class="badge badge-mod">ПЕРЕРАБОТАНО</span> Скрытность Призрака</div>
+          <p>Старая броня Призрака убрана. Теперь класс получает белую кожаную броню, которая видна в обычном состоянии, но скрывается во время полной невидимости и одержимости.</p>
+          <ul>
+            <li>Косметика подавляется на время вселения и возвращается после выхода</li>
+            <li>Состояние скрытости синхронизируется для игроков, которые подключились позже</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ КАРТА ═══ -->
+  <div class="cl-section blue" id="fort-map">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">🗺</span>
+      <span class="cl-section-title">Новая карта</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="cards">
+        <div class="card new">
+          <div class="card-head"><span class="badge badge-new">НОВОЕ</span> Форт</div>
+          <p>В список карт добавлен «Форт» — компактная арена из никому неизвестной игры. Карта рассчитана на более плотные столкновения и быстрые решения.</p>
+          <ul>
+            <li>Тип: маленькая карта</li>
+            <li>Темп: быстрые раунды и частые встречи</li>
+            <li>Добавлена отдельная картинка для голосования</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ БАЛАНС И ПОВЕДЕНИЕ 1.1 ═══ -->
+  <div class="cl-section">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">⚖️</span>
+      <span class="cl-section-title">Баланс и важное поведение</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="rebalance-card">
+        <div class="rb-perk-name">Хранитель кошмаров</div>
+        <div class="rb-changes">
+          <div class="rb-row"><span class="rb-param">Дистанция взгляда</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-neutral">40 блоков</span></div>
+          <div class="rb-row"><span class="rb-param">Первые похищения</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-neutral">3 лабиринта</span></div>
+          <div class="rb-row"><span class="rb-param">Иммунитет после испытания</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-buff">20с</span></div>
+          <div class="rb-row"><span class="rb-param">Концентрированный кошмар</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-nerf">−10% рассудка</span></div>
+        </div>
+      </div>
+
+      <div class="rebalance-card">
+        <div class="rb-perk-name">Додепович</div>
+        <div class="rb-changes">
+          <div class="rb-row"><span class="rb-param">Подброс монетки</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-neutral">5 маны</span></div>
+          <div class="rb-row"><span class="rb-param">Игра в автомате</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-neutral">10 маны</span></div>
+          <div class="rb-row"><span class="rb-param">Перерыв автомата</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-neutral">30с</span></div>
+          <div class="rb-row"><span class="rb-param">Джекпот</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-buff">75с</span></div>
+        </div>
+      </div>
+
+      <div class="rebalance-card">
+        <div class="rb-perk-name">Призрак</div>
+        <div class="rb-changes">
+          <div class="rb-row"><span class="rb-param">Вселение</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-neutral">30с</span></div>
+          <div class="rb-row"><span class="rb-param">Кулдаун вселения</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-nerf">60с</span></div>
+          <div class="rb-row"><span class="rb-param">Фулл-инвиз</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-buff">без таймера</span></div>
+          <div class="rb-row"><span class="rb-param">Выход из скрытности</span><span class="rb-old">—</span><span class="rb-arrow">→</span><span class="rb-new-nerf">2с восстановления</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">✦ &nbsp; ⚔ &nbsp; ✦</div>
+
+  <div class="cl-section">
+    <div class="cl-section-head">
+      <span class="cl-section-icon">↩</span>
+      <span class="cl-section-title">Прошлое обновление</span>
+    </div>
+    <div class="cl-section-body">
+      <div class="text-body">
+        <p><a class="clink clink-green" href="changelog_maniac.html">Maniac Reforge · Версия 1.0 →</a></p>
+      </div>
+    </div>
+  </div>
+</div><!-- /container -->
+
+<footer>
+  <div class="footer-name">☠ NecroDwarf ☠</div>
+  <div class="footer-runes">ᚾᛖᚲᚱᛟ ᛞᚹᚨᚱᚠ</div>
+  <p>Некоммерческая гильдия разработчиков · Кованы в любви к коду</p>
+</footer>
+
+<script src="../../js/main.js"></script>
+</body>
+</html>
+
