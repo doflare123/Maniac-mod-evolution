@@ -25,6 +25,7 @@ import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.OpenCoinFlipAnimationPacket;
 import org.example.maniacrevolution.network.packets.OpenSlotMachinePacket;
+import org.example.maniacrevolution.network.packets.SyncJackpotMusicPacket;
 import org.example.maniacrevolution.sound.ModSounds;
 import org.example.maniacrevolution.util.SelectiveGlowingEffect;
 
@@ -388,6 +389,7 @@ public final class DodepovichCasinoManager {
 
     private static void applyJackpot(ServerPlayer player, BlockPos machinePos) {
         player.addEffect(new MobEffectInstance(ModEffects.JACKPOT.get(), JACKPOT_SECONDS * 20, 0, false, true, true));
+        ModNetworking.sendToAllPlayers(new SyncJackpotMusicPacket(player.getUUID(), true));
         launchJackpotFireworks((ServerLevel) player.level(), machinePos);
         player.getServer().getPlayerList().broadcastSystemMessage(
                 Component.literal("§6§lДЖЕКПОТ! §e" + player.getName().getString() + " вошёл в режим удачи Додеповича!"),

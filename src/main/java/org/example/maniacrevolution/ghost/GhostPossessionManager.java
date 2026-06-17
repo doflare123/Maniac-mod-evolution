@@ -12,6 +12,7 @@ import net.minecraft.world.scores.Team;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -427,6 +428,33 @@ public class GhostPossessionManager {
     }
 
     @SubscribeEvent
+    public static void onPossessedHurt(LivingHurtEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer target)
+                || !target.hasEffect(ModEffects.POSSESSION_TIMER.get())
+                || !isPossessed(target)) {
+            return;
+        }
+
+        UUID possessorUuid = TARGET_TO_POSSESSOR.get(target.getUUID());
+        if (possessorUuid != null
+                && event.getSource().getEntity() != null
+                && possessorUuid.equals(event.getSource().getEntity().getUUID())) {
+            return;
+        }
+
+        if (event.getSource().getEntity() instanceof Player attacker
+                && !attacker.getUUID().equals(target.getUUID())
+                && isSurvivor(attacker)) {
+            return;
+        }
+
+        event.setCanceled(true);
+        target.clearFire();
+        target.setDeltaMovement(Vec3.ZERO);
+        target.hurtMarked = true;
+    }
+
+    @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
@@ -567,6 +595,11 @@ public class GhostPossessionManager {
 
     private static boolean isGhostHand(ItemStack stack) {
         return stack.is(ModItems.GHOST_HAND.get());
+    }
+
+    private static boolean isSurvivor(Player player) {
+        Team team = player.getTeam();
+        return team != null && "survivors".equalsIgnoreCase(team.getName());
     }
 
     private static ServerPlayer getPossessedTargetInternal(ServerPlayer possessor) {

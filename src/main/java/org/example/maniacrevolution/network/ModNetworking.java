@@ -403,6 +403,12 @@ public class ModNetworking {
                 .consumerMainThread(SyncGhostVisibilityPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(SyncJackpotMusicPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SyncJackpotMusicPacket::encode)
+                .decoder(SyncJackpotMusicPacket::decode)
+                .consumerMainThread(SyncJackpotMusicPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

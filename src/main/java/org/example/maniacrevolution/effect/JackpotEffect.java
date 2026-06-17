@@ -2,11 +2,15 @@ package org.example.maniacrevolution.effect;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.SyncJackpotMusicPacket;
 
 public class JackpotEffect extends MobEffect {
     private static final String SPEED_MODIFIER = "78b443ba-cb26-46ae-872d-996f2eb173bc";
@@ -28,6 +32,10 @@ public class JackpotEffect extends MobEffect {
 
         if (entity.getHealth() < entity.getMaxHealth()) {
             entity.heal(1.0f);
+        }
+
+        if (entity instanceof ServerPlayer player && entity.tickCount % 40 == 0) {
+            ModNetworking.sendToAllPlayers(new SyncJackpotMusicPacket(player.getUUID(), true));
         }
 
         if (entity.tickCount % 2 == 0) {
@@ -56,5 +64,13 @@ public class JackpotEffect extends MobEffect {
     @Override
     public boolean isDurationEffectTick(int duration, int amplifier) {
         return true;
+    }
+
+    @Override
+    public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributes, int amplifier) {
+        super.removeAttributeModifiers(entity, attributes, amplifier);
+        if (entity instanceof ServerPlayer player) {
+            ModNetworking.sendToAllPlayers(new SyncJackpotMusicPacket(player.getUUID(), false));
+        }
     }
 }
