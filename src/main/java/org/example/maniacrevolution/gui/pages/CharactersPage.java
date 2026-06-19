@@ -224,14 +224,17 @@ public class CharactersPage extends GuidePage {
             s.add(new ExtraText("§7Испытание начинается, когда рассудок выжившего падает до критического состояния. Внутри испытания игрок должен выполнить цель за ограниченное время, пока команда снаружи пытается открыть кокон."));
             s.add(new ExtraText("§7Испытания разделяют команду: один игрок занят выживанием внутри кошмара, остальные должны решить, спасать его иглой или продолжать основные задачи карты."));
             s.add(new ExtraImageCaption(
-                    "guide/mechanics/characters/nightmare/trial_placeholder_1.png", 420, 220,
-                    "Место под скриншот испытания"));
+                    "guide/mechanics/characters/nightmare/maze.png", 420, 220,
+                    "Испытание 1"));
             s.add(new ExtraImageCaption(
-                    "guide/mechanics/characters/nightmare/trial_placeholder_2.png", 420, 220,
-                    "Место под второй скриншот испытания"));
+                    "guide/mechanics/characters/nightmare/area.png", 420, 220,
+                    "Испытание 2"));
             s.add(new ExtraImageCaption(
-                    "guide/mechanics/characters/nightmare/death_road_chaser.png", 420, 220,
-                    "Место под скриншот сущности, которая появляется на дороге смерти"));
+                    "guide/mechanics/characters/nightmare/race.png", 420, 220,
+                    "Испытание 3"));
+            s.add(new ExtraImageCaption(
+                    "guide/mechanics/characters/nightmare/chudic.png", 420, 220,
+                    "Сущности, которая появляется на дороге смерти"));
             EXTRA_SECTIONS.put("keeper_of_nightmares", s);
         }
     }

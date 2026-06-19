@@ -10,6 +10,7 @@ import org.example.maniacrevolution.Maniacrev;
 public final class NightmareHud {
     private static final int PORTRAIT_WIDTH = 72;
     private static final int PORTRAIT_HEIGHT = 88;
+    private static final int TRIAL_TIMER_Y = 38;
     private static final ResourceLocation SCREAMER_TEXTURE =
             Maniacrev.loc("textures/gui/abilities/screamer.jpg");
 
@@ -31,7 +32,7 @@ public final class NightmareHud {
             String text = trialName(ClientNightmareData.getTrialType()) + ": "
                     + ClientNightmareData.getTrialSecondsLeft() + "\u0441";
             int x = screenWidth / 2 - mc.font.width(text) / 2;
-            gui.drawString(mc.font, text, x, 20, 0xFFFFD5FF, true);
+            gui.drawString(mc.font, text, x, TRIAL_TIMER_Y, 0xFFFFD5FF, true);
         }
 
         if (ClientNightmareData.shouldShowScreamer()) {

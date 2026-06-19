@@ -39,24 +39,24 @@ public final class NightmareConfig {
     public static final int SANITY_IMMUNITY_AFTER_TRIAL_TICKS = 20 * 20;
 
     /** Первые N попаданий всегда ведут в лабиринт, после этого включается рандом испытаний. */
-    public static final int FORCED_MAZE_COUNT = 3;
+    public static final int FORCED_MAZE_COUNT = 2;
     /** Длительность испытания лабиринтом. */
-    public static final int MAZE_DURATION_TICKS = 60 * 20;
+    public static final int MAZE_DURATION_TICKS = 30 * 20;
     /** Урон при провале лабиринта по таймеру. */
-    public static final float MAZE_FAIL_DAMAGE = 8.0F;
+    public static final float MAZE_FAIL_DAMAGE = 6.0F;
     /** Длительность Darkness, который постоянно обновляется на игроке в лабиринте. */
     public static final int MAZE_DARKNESS_REFRESH_TICKS = 80;
     /** Дистанция до точки выхода, на которой лабиринт считается пройденным. */
     public static final double MAZE_EXIT_RADIUS = 2.4D;
 
     /** Размер стороны арены в блоках. */
-    public static final int ARENA_SIZE = 7;
+    public static final int ARENA_SIZE = 10;
     /** Высота стен арены. */
     public static final int ARENA_WALL_HEIGHT = 5;
     /** Длительность испытания ареной. */
     public static final int ARENA_DURATION_TICKS = 45 * 20;
     /** Количество враждебных мобов, спавнящихся при старте арены. */
-    public static final int ARENA_MOB_COUNT = 8;
+    public static final int ARENA_MOB_COUNT = 6;
     /** Количество случайно расставленных укрытий/столбов на арене. */
     public static final int ARENA_COVER_COUNT = 10;
 
