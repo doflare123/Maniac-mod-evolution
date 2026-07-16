@@ -13,7 +13,7 @@ public class HudEvents {
 
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-        event.registerAboveAll("custom_hud", new CustomHud());
+        event.registerAboveAll("custom_hud", CustomHud.INSTANCE);
         event.registerAboveAll("guide_update_indicator", new GuideUpdateIndicatorHud());
     }
 }

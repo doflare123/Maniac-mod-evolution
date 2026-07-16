@@ -3,11 +3,15 @@ package org.example.maniacrevolution.hud;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import org.example.maniacrevolution.client.ClientAddictionData;
+import org.example.maniacrevolution.client.ClientFurySwipesData;
 import org.example.maniacrevolution.client.ClientPlagueData;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.ClientGameState;
@@ -20,694 +24,499 @@ import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.mana.ClientManaData;
 import org.example.maniacrevolution.perk.PerkType;
+import org.example.maniacrevolution.util.PlayerModeUtil;
 
 import java.util.List;
 
 public class CustomHud implements IGuiOverlay {
+    public static final CustomHud INSTANCE = new CustomHud();
 
-    // Размеры элементов
-    private static final int MAIN_PANEL_WIDTH = 338;
-    private static final int MAIN_PANEL_HEIGHT = 70;
-    private static final int PERK_ICON_SIZE = 32;
-    private static final int ABILITY_ICON_SIZE = 32;
-    private static final int HOTBAR_SLOT_SIZE = 32;
+    private static final int DOCK_WIDTH = 286;
+    private static final int DOCK_HEIGHT = 50;
+    private static final int PERK_ICON_SIZE = 24;
+    private static final int ABILITY_ICON_SIZE = 24;
+    private static final int HOTBAR_SLOT_SIZE = 20;
     private static final int PENALTY_SLOT_SIZE = 16;
-    private static final int BAR_HEIGHT = 18;
-    private static final int BAR_WIDTH = 200;
+    private static final int RESOURCE_BAR_WIDTH = 136;
+    private static final int RESOURCE_BAR_HEIGHT = 14;
 
-    private static final int MIN_SCREEN_WIDTH = MAIN_PANEL_WIDTH + 120;
-
-    // Цвета
-    private static final int PANEL_BG = 0xCC000000;
-    private static final int PANEL_BORDER = 0xFF444444;
-    private static final int HP_COLOR = 0xFFFF0000;
-    private static final int HP_BG = 0xFF550000;
-    private static final int MANA_COLOR = 0xFF0099FF;
-    private static final int MANA_BG = 0xFF003355;
-    private static final int SLOT_BG = 0xFF222222;
-    private static final int SLOT_BORDER = 0xFF666666;
-    private static final int PENALTY_SLOT_BG = 0xFF330000;
-    private static final int PENALTY_SLOT_BORDER = 0xFFAA0000;
+    private static final int PANEL_BG = 0xB5101216;
+    private static final int PANEL_BORDER = 0xCC59616C;
+    private static final int SLOT_BG = 0xD0181B20;
+    private static final int SLOT_BORDER = 0xCC555D67;
     private static final int SELECTED_SLOT_BORDER = 0xFFFFFFFF;
-    private static final int SELECTED_PERK_BORDER = 0xFFFFFF00;
+    private static final int SELECTED_PERK_BORDER = 0xFFFFC857;
+    private static final int HP_COLOR = 0xFFE04444;
+    private static final int HP_TRAIL_COLOR = 0xFFC98A8A;
+    private static final int MANA_COLOR = 0xFF3C9FE8;
+    private static final int ABSORPTION_COLOR = 0xFFFFC94A;
+    private static final int PENALTY_BG = 0xD02A1115;
+    private static final int PENALTY_BORDER = 0xFFD54A54;
 
-    // Для отображения названия предмета
-    private static ItemStack lastSelectedItem = ItemStack.EMPTY;
-    private static long itemNameShowTime = 0;
-    private static final long ITEM_NAME_DURATION = 5000; // 5 секунд
+    private static final ResourceLocation FLESH_HEAP_TEXTURE =
+            new ResourceLocation("maniacrev", "textures/gui/flesh_heap.png");
+    private static final ResourceLocation FURY_SWIPES_TEXTURE =
+            new ResourceLocation("maniacrev", "textures/gui/fury_swipes.png");
+
+    private static final long ITEM_NAME_DURATION_MS = 1500L;
+    private static final long ITEM_NAME_FADE_MS = 400L;
+
+    private final HudAnimationState animation = new HudAnimationState();
+    private ItemStack lastSelectedItem = ItemStack.EMPTY;
+    private long itemNameShowTime;
 
     @Override
-    public void render(net.minecraftforge.client.gui.overlay.ForgeGui gui, GuiGraphics guiGraphics,
+    public void render(net.minecraftforge.client.gui.overlay.ForgeGui forgeGui, GuiGraphics gui,
                        float partialTick, int screenWidth, int screenHeight) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.options.hideGui || mc.player == null) return;
+        if (Minecraft.getInstance().screen instanceof ChatScreen) return;
+        renderHud(gui, partialTick, screenWidth, screenHeight, false);
+    }
 
+    public void renderAboveChat(GuiGraphics gui, float partialTick) {
+        Minecraft mc = Minecraft.getInstance();
+        renderHud(gui, partialTick, mc.getWindow().getGuiScaledWidth(),
+                mc.getWindow().getGuiScaledHeight(), true);
+    }
+
+    private void renderHud(GuiGraphics gui, float partialTick, int screenWidth,
+                           int screenHeight, boolean chatOpen) {
+        Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-
-        if (player.isCreative() || player.isSpectator()) {
+        if (mc.options.hideGui || player == null || !PlayerModeUtil.isSurvivalOrAdventure(player)
+                || !HudConfig.isCustomHudEnabled()) {
             return;
         }
 
-        if (!HudConfig.isCustomHudEnabled()) {
-            return;
-        }
+        float healthPercent = safeRatio(player.getHealth(), player.getMaxHealth());
+        float manaPercent = ClientManaData.getManaPercentage();
+        boolean hasStatus = hasContextStatus(player);
+        animation.update(healthPercent, manaPercent, player.getInventory().selected, hasStatus, mc.isPaused());
 
-        float scale = calculateScale(screenWidth);
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().scale(scale, scale, 1.0f);
+        int dockX = (screenWidth - DOCK_WIDTH) / 2;
+        int dockY = screenHeight - DOCK_HEIGHT - 4 - (chatOpen ? 14 : 0);
 
-        int scaledWidth = (int) (screenWidth / scale);
-        int scaledHeight = (int) (screenHeight / scale);
+        renderDock(gui, dockX, dockY, player);
+        renderContextStatus(gui, screenWidth / 2, dockY - 4, player);
+        renderItemName(gui, player, screenWidth, dockY);
 
-        int mainX = (scaledWidth - MAIN_PANEL_WIDTH) / 2;
-        int mainY = scaledHeight - MAIN_PANEL_HEIGHT - 5;
+        LevelHud.render(gui, 5, 5);
+        TimerHud.render(gui, screenWidth / 2, 5);
 
-        renderFleshHeap(guiGraphics, scaledWidth / 2, mainY - 10);
-        FurySwipesHud.render(guiGraphics, scaledWidth / 2, mainY - 10);
-        renderMainPanel(guiGraphics, mainX, mainY, player);
-        LevelHud.render(guiGraphics, 5, 5);
-        TimerHud.render(guiGraphics, screenWidth / 2, 5);
-
-        int hotbarY = mainY + (MAIN_PANEL_HEIGHT - (HOTBAR_SLOT_SIZE * 2 + 4)) / 2;
-        renderHotbar(guiGraphics, mainX + MAIN_PANEL_WIDTH + 5, hotbarY, player);
-
-        int penaltyX = mainX + MAIN_PANEL_WIDTH + 5 + (HOTBAR_SLOT_SIZE + 4) * 3 + 8;
-        int penaltyY = mainY + (MAIN_PANEL_HEIGHT - PENALTY_SLOT_SIZE * 3 - 8) / 2;
-        renderPenaltySlots(guiGraphics, penaltyX, penaltyY, player);
-        // Шкала зависимости — правее слотов штрафа
-        int addX = penaltyX + PENALTY_SLOT_SIZE + 4;
-        int addY = mainY + 5;
-        int addH = MAIN_PANEL_HEIGHT - 10;
-        AddictionHud.render(guiGraphics, addX, addY, addH);
-
-        renderPerkKeybindHints(guiGraphics, mainX - 125, mainY + 20);
-        renderItemName(guiGraphics, player, scaledWidth, mainY);
-
-        int generatorX = scaledWidth - 60;
-        int generatorY = scaledHeight - 75;
-        boolean generatorExists = GeneratorChargeHud.render(guiGraphics, generatorX, generatorY);
-
-        if (generatorExists) {
-            String genLabel = "§6Генератор";
-            int labelX = generatorX + 15 - mc.font.width(genLabel) / 2;
-            int labelY = generatorY - 12;
-            guiGraphics.drawString(mc.font, genLabel, labelX, labelY, 0xFFFFFF, true);
-        }
-
-        // Блок взлома компьютеров — показывается только когда идёт игра
+        int trackerX = screenWidth - ComputerHackHud.WIDTH - 5;
+        int trackerY = 5;
         if (ClientGameState.isGameRunning()) {
-            // Правый нижний угол, небольшой отступ
-            int hackHudX = scaledWidth - ComputerHackHud.WIDTH - 5;
-            int hackHudY = (scaledHeight - ComputerHackHud.HEIGHT) / 2;
-            ComputerHackHud.render(guiGraphics, hackHudX, hackHudY);
+            ComputerHackHud.render(gui, trackerX, trackerY);
+            trackerY += ComputerHackHud.HEIGHT + 4;
         }
-
-        guiGraphics.pose().popPose();
+        GeneratorChargeHud.render(gui, screenWidth - GeneratorChargeHud.WIDTH - 5, trackerY);
     }
 
-    /**
-     * Отображает название выбранного предмета
-     */
-    private void renderItemName(GuiGraphics gui, Player player, int screenWidth, int hudTopY) {
-        Minecraft mc = Minecraft.getInstance();
-        ItemStack currentItem = player.getInventory().getSelected();
-        long currentTime = System.currentTimeMillis();
+    private void renderDock(GuiGraphics gui, int x, int y, Player player) {
+        gui.fill(x, y, x + DOCK_WIDTH, y + DOCK_HEIGHT, PANEL_BG);
+        gui.renderOutline(x, y, DOCK_WIDTH, DOCK_HEIGHT, PANEL_BORDER);
+        gui.fill(x + 1, y + 1, x + DOCK_WIDTH - 1, y + 2, 0x88777F89);
 
-        // Обновляем время показа при смене предмета
-        if (!ItemStack.matches(currentItem, lastSelectedItem)) {
-            lastSelectedItem = currentItem.copy();
-            if (!currentItem.isEmpty()) {
-                itemNameShowTime = currentTime;
-            }
-        }
+        int resourcesY = y + 4;
+        renderHealthBar(gui, player, x + 5, resourcesY);
+        renderManaBar(gui, x + 145, resourcesY);
 
-        // Показываем название только если прошло меньше 5 секунд
-        if (!currentItem.isEmpty() && (currentTime - itemNameShowTime) < ITEM_NAME_DURATION) {
-            String itemName = currentItem.getHoverName().getString();
-            int textWidth = mc.font.width(itemName);
-            int textX = (screenWidth - textWidth) / 2;
-            int textY = hudTopY - 25; // НАД HUD
-
-            // Название предмета
-            gui.drawString(mc.font, itemName, textX, textY, 0xFFFFFFFF, true);
-        }
-    }
-
-    /**
-     * Рендер индикатора Flesh Heap
-     */
-    private void renderFleshHeap(GuiGraphics gui, int centerX, int centerY) {
-        int stacks = ClientFleshHeapData.getStacks();
-        if (stacks <= 0) return;
-
-        Minecraft mc = Minecraft.getInstance();
-        final int ICON_SIZE = 16;
-
-        int x = centerX - ICON_SIZE / 2;
-        int y = centerY - ICON_SIZE / 2;
-
-        gui.pose().pushPose();
-
-        ResourceLocation texture = new ResourceLocation("maniacrev", "textures/gui/flesh_heap.png");
-        RenderSystem.setShaderTexture(0, texture);
-        RenderSystem.enableBlend();
-
-        gui.blit(texture, x, y, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
-
-        RenderSystem.disableBlend();
-
-        // Количество стаков НА иконке
-        String stackText = String.valueOf(stacks);
-        int textWidth = mc.font.width(stackText);
-        int textX = centerX - textWidth / 2;
-        int textY = centerY - 4;
-
-        // Черная обводка
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                if (dx != 0 || dy != 0) {
-                    gui.drawString(mc.font, stackText, textX + dx, textY + dy, 0xFF000000, false);
-                }
-            }
-        }
-
-        gui.drawString(mc.font, "§l" + stackText, textX, textY, 0xFFFFFFFF, false);
-
-        gui.pose().popPose();
-    }
-
-    private float calculateScale(int screenWidth) {
-        if (screenWidth < MIN_SCREEN_WIDTH) {
-            return (float) screenWidth / MIN_SCREEN_WIDTH;
-        }
-        return 1.0f;
-    }
-
-    private void renderMainPanel(GuiGraphics gui, int x, int y, Player player) {
-        Minecraft mc = Minecraft.getInstance();
-
-        gui.fill(x, y, x + MAIN_PANEL_WIDTH, y + MAIN_PANEL_HEIGHT, PANEL_BG);
-        gui.renderOutline(x, y, MAIN_PANEL_WIDTH, MAIN_PANEL_HEIGHT, PANEL_BORDER);
-
-        int contentHeight = PERK_ICON_SIZE;
-        int verticalOffset = (MAIN_PANEL_HEIGHT - contentHeight) / 2;
-
-        int currentX = x + 8;
-        int currentY = y + verticalOffset;
-
+        int actionY = y + 22;
+        int currentX = x + 9;
         List<ClientPlayerData.ClientPerkData> perks = ClientPlayerData.getSelectedPerks();
         int activeIndex = ClientPlayerData.getActivePerkIndex();
+        String activateKey = ModKeybinds.ACTIVATE_PERK.getTranslatedKeyMessage().getString();
+        String switchKey = ModKeybinds.SWITCH_PERK.getTranslatedKeyMessage().getString();
 
-        for (int i = 0; i < Math.min(2, perks.size()); i++) {
-            ClientPlayerData.ClientPerkData perk = perks.get(i);
-            renderPerkSlot(gui, perk, currentX, currentY, i == activeIndex);
-            currentX += PERK_ICON_SIZE + 4;
-        }
-
-        // НОВОЕ: Рендер способности предмета
-        IItemWithAbility itemAbility = findItemWithAbility(player);
-        if (itemAbility != null) {
-            renderAbilitySlot(gui, currentX, currentY, itemAbility, player);
-        }
-        currentX += ABILITY_ICON_SIZE + 15;
-
-        int barsY = y + (MAIN_PANEL_HEIGHT - (BAR_HEIGHT * 2 + 4)) / 2;
-        renderHealthBar(gui, player, currentX, barsY);
-        renderManaBar(gui, currentX, barsY + BAR_HEIGHT + 4);
-    }
-
-    /**
-     * НОВОЕ: Поиск предмета со способностью у игрока
-     */
-    /**
-     * ИСПРАВЛЕНО: Поиск предмета со способностью с учетом условий
-     */
-    private IItemWithAbility findItemWithAbility(Player player) {
-        // Проверяем основную руку
-        ItemStack mainHand = player.getMainHandItem();
-        if (mainHand.getItem() instanceof IItemWithAbility ability) {
-            return ability;
-        }
-
-        // Проверяем броню с УСЛОВИЯМИ
-        for (EquipmentSlot slot : EquipmentSlot.values()) {
-            if (slot.getType() != EquipmentSlot.Type.ARMOR) continue;
-
-            ItemStack armorPiece = player.getItemBySlot(slot);
-            if (armorPiece.isEmpty()) continue;
-
-            // ИСПРАВЛЕНО: Проверяем условия для брони
-            if (armorPiece.getItem() instanceof IItemWithAbility ability) {
-                // Для брони некроманта - нужен полный сет
-                if (armorPiece.getItem() instanceof NecromancerArmorItem) {
-                    if (!hasFullNecromancerSet(player)) {
-                        continue; // Пропускаем, если нет полного сета
-                    }
-                }
-
-                // Для медицинской маски - должна быть в слоте шлема
-                if (armorPiece.getItem() instanceof MedicalMaskItem) {
-                    if (slot != EquipmentSlot.HEAD) {
-                        continue;
-                    }
-                }
-
-                return ability;
+        for (int i = 0; i < 2; i++) {
+            String keyName = i == activeIndex ? activateKey : switchKey;
+            if (i < perks.size()) {
+                renderPerkSlot(gui, perks.get(i), currentX, actionY, i == activeIndex,
+                        keyName);
+            } else {
+                renderEmptyEffectSlot(gui, currentX, actionY, PERK_ICON_SIZE, keyName,
+                        i == activeIndex ? 0xFF9D7F3B : 0xFF59616C);
             }
+            currentX += PERK_ICON_SIZE + 2;
         }
 
-        return null;
+        IItemWithAbility ability = findItemWithAbility(player);
+        if (ability != null) {
+            renderAbilitySlot(gui, currentX, actionY, ability, player);
+        } else {
+            renderEmptyEffectSlot(gui, currentX, actionY, ABILITY_ICON_SIZE,
+                    ModKeybinds.ACTIVATE_ARMOR_ABILITY.getTranslatedKeyMessage().getString(),
+                    0xFF4E7188);
+        }
+        currentX += ABILITY_ICON_SIZE + 5;
+
+        renderHotbar(gui, currentX, actionY + 2, player);
+        currentX += HOTBAR_SLOT_SIZE * 6 + 2 * 5 + 5;
+        renderPenaltySlots(gui, currentX, actionY + 4, player);
     }
-
-    /**
-     * НОВОЕ: Проверка полного сета некроманта
-     */
-    private boolean hasFullNecromancerSet(Player player) {
-        for (ItemStack armorSlot : player.getArmorSlots()) {
-            if (!(armorSlot.getItem() instanceof NecromancerArmorItem)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    private void renderPerkSlot(GuiGraphics gui, ClientPlayerData.ClientPerkData perk, int x, int y, boolean selected) {
-        Minecraft mc = Minecraft.getInstance();
-
-        int bgColor = getTypeColor(perk.type());
-        gui.fill(x, y, x + PERK_ICON_SIZE, y + PERK_ICON_SIZE, bgColor);
-
-        int borderColor = selected ? SELECTED_PERK_BORDER : 0xFF666666;
-
-        if (selected) {
-            gui.renderOutline(x - 1, y - 1, PERK_ICON_SIZE + 2, PERK_ICON_SIZE + 2, borderColor);
-        }
-        gui.renderOutline(x, y, PERK_ICON_SIZE, PERK_ICON_SIZE, borderColor);
-
-        if (selected) {
-            String arrow = "▼";
-            int arrowX = x + (PERK_ICON_SIZE - mc.font.width(arrow)) / 2;
-            gui.drawString(mc.font, "§e" + arrow, arrowX, y - 10, 0xFFFFFF, false);
-        }
-
-        renderPerkIcon(gui, perk, x, y, PERK_ICON_SIZE);
-
-        if (perk.isOnCooldown()) {
-            float cdProgress = perk.getCooldownProgress();
-            int cdHeight = (int) (PERK_ICON_SIZE * cdProgress);
-            gui.fill(x, y + PERK_ICON_SIZE - cdHeight, x + PERK_ICON_SIZE, y + PERK_ICON_SIZE, 0xBB000000);
-
-            String cdText = perk.getCooldownSeconds() + "с";
-            int textX = x + (PERK_ICON_SIZE - mc.font.width(cdText)) / 2;
-            int textY = y + PERK_ICON_SIZE / 2 - 4;
-            gui.drawString(mc.font, cdText, textX, textY, 0xFFFFFF, true);
-        }
-
-        // Стоимость маны — правый нижний угол
-        if (perk.hasManaCost()) {
-            String manaText = (int) perk.manaCost() + "";
-            boolean hasEnough = ClientManaData.getMana() >= perk.manaCost();
-            int manaColor = hasEnough ? 0xFF5599FF : 0xFFFF3333;
-
-            int textX = x + PERK_ICON_SIZE - mc.font.width(manaText) - 2;
-            int textY = y + PERK_ICON_SIZE - 9;
-            gui.drawString(mc.font, manaText, textX, textY, manaColor, true);
-        }
-
-        String typeText = getTypeShort(perk.type());
-        int typeColor = getTypeFontColor(perk.type());
-        int typeX = x + (PERK_ICON_SIZE - mc.font.width(typeText)) / 2;
-        int typeY = y + PERK_ICON_SIZE + 2;
-        gui.drawString(mc.font, typeText, typeX, typeY, typeColor, false);
-    }
-
-    private void renderAbilitySlot(GuiGraphics gui, int x, int y, IItemWithAbility ability, Player player) {
-        Minecraft mc = Minecraft.getInstance();
-
-        // Фон
-        gui.fill(x, y, x + ABILITY_ICON_SIZE, y + ABILITY_ICON_SIZE, SLOT_BG);
-        gui.renderOutline(x, y, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, SLOT_BORDER);
-
-        // Иконка способности
-        ResourceLocation icon = ability.getAbilityIcon();
-        try {
-            RenderSystem.setShaderTexture(0, icon);
-            RenderSystem.enableBlend();
-            gui.blit(icon, x, y, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
-            RenderSystem.disableBlend();
-        } catch (Exception e) {
-            gui.drawString(mc.font, "?", x + ABILITY_ICON_SIZE / 2 - 3, y + ABILITY_ICON_SIZE / 2 - 4, 0xFFFFFF, false);
-        }
-
-        // ИСПРАВЛЕНО: Индикатор активности с прогресс-баром
-        if (ability instanceof ITimedAbility timedAbility && timedAbility.isAbilityActive(player)) {
-            float durationProgress = timedAbility.getDurationProgress(player);
-
-            // Круговой прогресс-бар (ободок)
-            renderCircularProgress(gui, x, y, ABILITY_ICON_SIZE, durationProgress, 0xFF55FF55);
-
-            // Опционально: оставшееся время
-            int remainingSec = timedAbility.getRemainingDurationSeconds(player);
-            if (remainingSec > 0) {
-                String timeText = remainingSec + "с";
-                int textX = x + (ABILITY_ICON_SIZE - mc.font.width(timeText)) / 2;
-                int textY = y + ABILITY_ICON_SIZE + 2;
-                gui.drawString(mc.font, "§a" + timeText, textX, textY, 0xFFFFFF, true);
-            }
-        }
-        // Кулдаун (только если способность НЕ активна)
-        else if (ability.isOnCooldown(player)) {
-            float cdProgress = ability.getCooldownProgress(player);
-            int cdHeight = (int) (ABILITY_ICON_SIZE * cdProgress);
-
-            // Затемнение
-            gui.fill(x, y + ABILITY_ICON_SIZE - cdHeight, x + ABILITY_ICON_SIZE, y + ABILITY_ICON_SIZE, 0xBB000000);
-
-            // Текст кулдауна
-            int cooldownSec = ability.getCooldownSeconds(player);
-            String cdText = cooldownSec + "с";
-            int textX = x + (ABILITY_ICON_SIZE - mc.font.width(cdText)) / 2;
-            int textY = y + ABILITY_ICON_SIZE / 2 - 4;
-            gui.drawString(mc.font, "§c" + cdText, textX, textY, 0xFFFFFF, true);
-        }
-
-        // Стоимость маны
-        float manaCost = ability.getManaCost();
-        if (manaCost > 0 && !ability.isOnCooldown(player)) {
-            String costText = String.format("%.0f", manaCost);
-            int costX = x + ABILITY_ICON_SIZE - mc.font.width(costText) - 2;
-            int costY = y + ABILITY_ICON_SIZE - 10;
-
-            gui.fill(costX - 1, costY - 1, costX + mc.font.width(costText) + 1, costY + 9, 0xAA000000);
-
-            float currentMana = ClientManaData.getMana();
-            int color = currentMana >= manaCost ? 0xFF00AAFF : 0xFFFF5555;
-            gui.drawString(mc.font, costText, costX, costY, color, false);
-        }
-    }
-
-    /**
-     * НОВОЕ: Круговой прогресс-бар (ободок вокруг иконки)
-     */
-    private void renderCircularProgress(GuiGraphics gui, int x, int y, int size, float progress, int color) {
-        int borderWidth = 1;
-
-        // Рисуем 4 стороны с учетом прогресса
-        float totalLength = (size * 4) - 4; // Периметр минус углы
-        float currentLength = totalLength * (1.0f - progress); // Инвертируем для убывания
-
-        // Верх (слева направо)
-        if (currentLength > 0) {
-            int topLength = Math.min((int)currentLength, size);
-            gui.fill(x, y - borderWidth, x + topLength, y, color);
-            currentLength -= size;
-        }
-
-        // Право (сверху вниз)
-        if (currentLength > 0) {
-            int rightLength = Math.min((int)currentLength, size);
-            gui.fill(x + size, y, x + size + borderWidth, y + rightLength, color);
-            currentLength -= size;
-        }
-
-        // Низ (справа налево)
-        if (currentLength > 0) {
-            int bottomLength = Math.min((int)currentLength, size);
-            gui.fill(x + size - bottomLength, y + size, x + size, y + size + borderWidth, color);
-            currentLength -= size;
-        }
-
-        // Лево (снизу вверх)
-        if (currentLength > 0) {
-            int leftLength = Math.min((int)currentLength, size);
-            gui.fill(x - borderWidth, y + size - leftLength, x, y + size, color);
-        }
-    }
-
-    /**
-     * НОВОЕ: Пульсирующая рамка для активной способности
-     */
-    private void drawPulsingBorder(GuiGraphics gui, int x, int y, int size) {
-        long time = System.currentTimeMillis();
-        float pulse = (float) Math.sin(time / 200.0) * 0.3f + 0.7f; // 0.4 - 1.0
-
-        int alpha = (int) (pulse * 255);
-        int color = (alpha << 24) | 0x00FF00;
-
-        // Верх и низ
-        gui.fill(x - 1, y - 2, x + size + 1, y - 1, color);
-        gui.fill(x - 1, y + size + 1, x + size + 1, y + size + 2, color);
-
-        // Лево и право
-        gui.fill(x - 2, y - 1, x - 1, y + size + 1, color);
-        gui.fill(x + size + 1, y - 1, x + size + 2, y + size + 1, color);
-    }
-
-    // ════════════════════════════════════════════════════════════════════════════
-//  ЗАМЕНИТЕ существующий метод renderHealthBar в CustomHud.java на этот:
-// ════════════════════════════════════════════════════════════════════════════
 
     private void renderHealthBar(GuiGraphics gui, Player player, int x, int y) {
-        Minecraft mc = Minecraft.getInstance();
+        int innerWidth = RESOURCE_BAR_WIDTH - 2;
+        gui.fill(x, y, x + RESOURCE_BAR_WIDTH, y + RESOURCE_BAR_HEIGHT, 0xE02B1114);
 
-        float health = player.getHealth();
-        float maxHealth = player.getMaxHealth();
-        float healthPercent = health / maxHealth;
+        int trailWidth = Math.round(innerWidth * Mth.clamp(animation.healthTrail(), 0.0f, 1.0f));
+        int healthWidth = Math.round(innerWidth * Mth.clamp(animation.health(), 0.0f, 1.0f));
+        if (trailWidth > 0) gui.fill(x + 1, y + 1, x + 1 + trailWidth, y + RESOURCE_BAR_HEIGHT - 1, HP_TRAIL_COLOR);
+        if (healthWidth > 0) gui.fill(x + 1, y + 1, x + 1 + healthWidth, y + RESOURCE_BAR_HEIGHT - 1, HP_COLOR);
 
-        // ── Фон полосы хп ────────────────────────────────────────────────────
-        gui.fill(x, y, x + BAR_WIDTH, y + BAR_HEIGHT, HP_BG);
+        float plague = Math.min(ClientPlagueData.getProgress(), animation.health());
+        int plagueWidth = Math.round(innerWidth * Mth.clamp(plague, 0.0f, 1.0f));
+        if (plagueWidth > 0) {
+            int plagueColor = lerpColor(0xFF236417, 0xFF6DFF3A, ClientPlagueData.getProgress());
+            gui.fill(x + 1, y + 1, x + 1 + plagueWidth, y + RESOURCE_BAR_HEIGHT - 1, plagueColor);
+        }
 
-        // ── Основная красная полоска хп ───────────────────────────────────────
-        int filledWidth = (int) (BAR_WIDTH * healthPercent);
-        gui.fill(x, y, x + filledWidth, y + BAR_HEIGHT, HP_COLOR);
-
-        // ── Наложение чумы поверх хп-полосы ──────────────────────────────────
-        float plagueProgress = ClientPlagueData.getProgress(); // 0.0 .. 1.0
-        if (plagueProgress > 0f) {
-            // Зелёная полоска заполняется слева направо по мере накопления чумы
-            // и не превышает текущий уровень хп
-            int plagueWidth = (int) (BAR_WIDTH * plagueProgress);
-
-            // Цвет: тёмно-зелёный -> ярко-зелёный при приближении к порогу
-            // lerp от 0x1A3D00 (тёмный) до 0x4CFF00 (яркий)
-            int plagueColor = lerpColor(0xFF1A5C00, 0xFF55FF00, plagueProgress);
-
-            // Рисуем поверх красной полоски
-            gui.fill(x, y, x + plagueWidth, y + BAR_HEIGHT, plagueColor);
-
-            // Слабый пульс на границе (мигающая линия-разделитель)
-            if (plagueProgress > 0.05f) {
-                long time = System.currentTimeMillis();
-                float pulse = (float)(Math.sin(time / 250.0) * 0.5 + 0.5); // 0 .. 1
-                int pulseAlpha = (int)(pulse * 200) + 55; // 55 .. 255
-                int pulseColor = (pulseAlpha << 24) | 0x00FF44;
-
-                // Вертикальная линия на правой границе зелёной полоски
-                gui.fill(x + plagueWidth - 1, y, x + plagueWidth + 1, y + BAR_HEIGHT, pulseColor);
+        float absorption = player.getAbsorptionAmount();
+        if (absorption > 0.0f) {
+            int totalWidth = Math.round(innerWidth * Mth.clamp(
+                    (player.getHealth() + absorption) / player.getMaxHealth(), 0.0f, 1.0f));
+            if (totalWidth > healthWidth) {
+                gui.fill(x + 1 + healthWidth, y + 1, x + 1 + totalWidth,
+                        y + RESOURCE_BAR_HEIGHT - 1, ABSORPTION_COLOR);
             }
         }
 
-        // ── Рамка ─────────────────────────────────────────────────────────────
-        gui.renderOutline(x, y, BAR_WIDTH, BAR_HEIGHT, PANEL_BORDER);
+        gui.renderOutline(x, y, RESOURCE_BAR_WIDTH, RESOURCE_BAR_HEIGHT, PANEL_BORDER);
+        String text = Math.round(player.getHealth()) + " / " + Math.round(player.getMaxHealth());
+        if (absorption > 0.0f) text += " +" + Math.round(absorption);
+        drawCentered(gui, text, x, y + 3, RESOURCE_BAR_WIDTH, 0xFFFFFFFF);
 
-        // ── Текст хп ──────────────────────────────────────────────────────────
-        String hpText = String.format("%.0f / %.0f", health, maxHealth);
-        int textX = x + (BAR_WIDTH - mc.font.width(hpText)) / 2;
-        int textY = y + (BAR_HEIGHT - 8) / 2;
-        gui.drawString(mc.font, hpText, textX, textY, 0xFFFFFFFF, true);
-
-        // ── Регенерация хп ────────────────────────────────────────────────────
-        float hpRegen = ClientHealthData.getHealthRegen();
-        if (Math.abs(hpRegen) > 0.01f) {
-            String regenText = String.format("%+.1f", hpRegen);
-            int regenX = x + BAR_WIDTH - mc.font.width(regenText) - 3;
-            int regenY = y + BAR_HEIGHT - 9;
-
-            int regenColor = hpRegen > 0 ? 0xFF55FF55 : 0xFFFF5555;
-            gui.drawString(mc.font, regenText, regenX, regenY, regenColor, false);
+        float regen = ClientHealthData.getHealthRegen();
+        if (Math.abs(regen) > 0.01f) {
+            String regenText = String.format("%+.1f", regen);
+            int color = regen > 0 ? 0xFF8CFF8C : 0xFFFF9A9A;
+            gui.drawString(Minecraft.getInstance().font, regenText,
+                    x + RESOURCE_BAR_WIDTH - Minecraft.getInstance().font.width(regenText) - 2, y - 8, color, true);
         }
     }
-
-    /**
-     * Линейная интерполяция между двумя ARGB-цветами.
-     * @param t прогресс от 0.0 (colorA) до 1.0 (colorB)
-     */
-    private static int lerpColor(int colorA, int colorB, float t) {
-        int aA = (colorA >> 24) & 0xFF, rA = (colorA >> 16) & 0xFF,
-                gA = (colorA >> 8)  & 0xFF, bA =  colorA        & 0xFF;
-        int aB = (colorB >> 24) & 0xFF, rB = (colorB >> 16) & 0xFF,
-                gB = (colorB >> 8)  & 0xFF, bB =  colorB        & 0xFF;
-
-        int a = (int)(aA + (aB - aA) * t);
-        int r = (int)(rA + (rB - rA) * t);
-        int g = (int)(gA + (gB - gA) * t);
-        int b = (int)(bA + (bB - bA) * t);
-
-        return (a << 24) | (r << 16) | (g << 8) | b;
-    }
-
-// ════════════════════════════════════════════════════════════════════════════
-//  ДОБАВЬТЕ импорт в начало CustomHud.java:
-// ════════════════════════════════════════════════════════════════════════════
-//
 
     private void renderManaBar(GuiGraphics gui, int x, int y) {
-        Minecraft mc = Minecraft.getInstance();
-
-        float mana = ClientManaData.getMana();
-        float maxMana = ClientManaData.getMaxMana();
-        float manaPercent = ClientManaData.getManaPercentage();
-        float regenRate = ClientManaData.getRegenRate();
-
-        gui.fill(x, y, x + BAR_WIDTH, y + BAR_HEIGHT, MANA_BG);
-
-        int filledWidth = (int) (BAR_WIDTH * manaPercent);
-        gui.fill(x, y, x + filledWidth, y + BAR_HEIGHT, MANA_COLOR);
-
-        gui.renderOutline(x, y, BAR_WIDTH, BAR_HEIGHT, PANEL_BORDER);
-
-        String manaText = String.format("%.0f / %.0f", mana, maxMana);
-        int textX = x + (BAR_WIDTH - mc.font.width(manaText)) / 2;
-        int textY = y + (BAR_HEIGHT - 8) / 2;
-        gui.drawString(mc.font, manaText, textX, textY, 0xFFFFFFFF, true);
-
-        if (regenRate > 0.01f) {
-            String regenText = String.format("+%.1f", regenRate);
-            int regenX = x + BAR_WIDTH - mc.font.width(regenText) - 3;
-            int regenY = y + BAR_HEIGHT - 9;
-            gui.drawString(mc.font, regenText, regenX, regenY, 0xFF55AAFF, false);
+        gui.fill(x, y, x + RESOURCE_BAR_WIDTH, y + RESOURCE_BAR_HEIGHT, 0xE0102535);
+        int fillWidth = Math.round((RESOURCE_BAR_WIDTH - 2) * Mth.clamp(animation.mana(), 0.0f, 1.0f));
+        if (fillWidth > 0) {
+            gui.fill(x + 1, y + 1, x + 1 + fillWidth, y + RESOURCE_BAR_HEIGHT - 1, MANA_COLOR);
         }
+        gui.renderOutline(x, y, RESOURCE_BAR_WIDTH, RESOURCE_BAR_HEIGHT, PANEL_BORDER);
+
+        String text = Math.round(ClientManaData.getMana()) + " / " + Math.round(ClientManaData.getMaxMana());
+        drawCentered(gui, text, x, y + 3, RESOURCE_BAR_WIDTH, 0xFFFFFFFF);
+
+        float regen = ClientManaData.getRegenRate();
+        if (regen > 0.01f) {
+            String regenText = String.format("+%.1f", regen);
+            gui.drawString(Minecraft.getInstance().font, regenText,
+                    x + RESOURCE_BAR_WIDTH - Minecraft.getInstance().font.width(regenText) - 2,
+                    y - 8, 0xFF8ED1FF, true);
+        }
+    }
+
+    private void renderPerkSlot(GuiGraphics gui, ClientPlayerData.ClientPerkData perk,
+                                int x, int y, boolean selected, String keyName) {
+        Minecraft mc = Minecraft.getInstance();
+        gui.fill(x, y, x + PERK_ICON_SIZE, y + PERK_ICON_SIZE, SLOT_BG);
+        renderPerkIcon(gui, perk, x, y, PERK_ICON_SIZE);
+        gui.fill(x, y + PERK_ICON_SIZE - 2, x + PERK_ICON_SIZE, y + PERK_ICON_SIZE,
+                getTypeColor(perk.type()));
+        gui.renderOutline(x, y, PERK_ICON_SIZE, PERK_ICON_SIZE,
+                selected ? SELECTED_PERK_BORDER : SLOT_BORDER);
+
+        if (perk.isOnCooldown()) {
+            int cooldownHeight = Math.round(PERK_ICON_SIZE * perk.getCooldownProgress());
+            gui.fill(x, y + PERK_ICON_SIZE - cooldownHeight, x + PERK_ICON_SIZE,
+                    y + PERK_ICON_SIZE, 0xC0000000);
+            String cooldown = perk.getCooldownSeconds() + "с";
+            drawCentered(gui, cooldown, x, y + 8, PERK_ICON_SIZE, 0xFFFFFFFF);
+        } else if (perk.hasManaCost()) {
+            String cost = Integer.toString((int) perk.manaCost());
+            int color = ClientManaData.getMana() >= perk.manaCost() ? 0xFF9ED7FF : 0xFFFF7777;
+            gui.drawString(mc.font, cost, x + PERK_ICON_SIZE - mc.font.width(cost) - 1,
+                    y + PERK_ICON_SIZE - 10, color, true);
+        }
+        renderKeyHint(gui, keyName, x + 1, y + 1, selected ? 0xFFE5B94F : 0xFFB8C0C9);
+    }
+
+    private void renderAbilitySlot(GuiGraphics gui, int x, int y,
+                                   IItemWithAbility ability, Player player) {
+        Minecraft mc = Minecraft.getInstance();
+        gui.fill(x, y, x + ABILITY_ICON_SIZE, y + ABILITY_ICON_SIZE, SLOT_BG);
+        ResourceLocation icon = ability.getAbilityIcon();
+        RenderSystem.enableBlend();
+        gui.blit(icon, x, y, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE,
+                ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
+        RenderSystem.disableBlend();
+        gui.renderOutline(x, y, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, SLOT_BORDER);
+
+        if (ability instanceof ITimedAbility timed && timed.isAbilityActive(player)) {
+            renderRectangularProgress(gui, x, y, ABILITY_ICON_SIZE,
+                    timed.getDurationProgress(player), 0xFF70E28A);
+            int remaining = timed.getRemainingDurationSeconds(player);
+            if (remaining > 0) drawCentered(gui, remaining + "с", x, y + 8, ABILITY_ICON_SIZE, 0xFFFFFFFF);
+        } else if (ability.isOnCooldown(player)) {
+            int cooldownHeight = Math.round(ABILITY_ICON_SIZE * ability.getCooldownProgress(player));
+            gui.fill(x, y + ABILITY_ICON_SIZE - cooldownHeight, x + ABILITY_ICON_SIZE,
+                    y + ABILITY_ICON_SIZE, 0xC0000000);
+            drawCentered(gui, ability.getCooldownSeconds(player) + "с", x, y + 8,
+                    ABILITY_ICON_SIZE, 0xFFFFFFFF);
+        } else if (ability.getManaCost() > 0.0f) {
+            String cost = Integer.toString(Math.round(ability.getManaCost()));
+            int color = ClientManaData.getMana() >= ability.getManaCost() ? 0xFF9ED7FF : 0xFFFF7777;
+            gui.drawString(mc.font, cost, x + ABILITY_ICON_SIZE - mc.font.width(cost) - 1,
+                    y + ABILITY_ICON_SIZE - 10, color, true);
+        }
+        renderKeyHint(gui, ModKeybinds.ACTIVATE_ARMOR_ABILITY.getTranslatedKeyMessage().getString(),
+                x + 1, y + 1, 0xFF79BDEB);
     }
 
     private void renderHotbar(GuiGraphics gui, int x, int y, Player player) {
-        Minecraft mc = Minecraft.getInstance();
-        int selectedSlot = player.getInventory().selected;
-
-        for (int i = 0; i < 6; i++) {
-            int slotX = x + (i % 3) * (HOTBAR_SLOT_SIZE + 4);
-            int slotY = y + (i / 3) * (HOTBAR_SLOT_SIZE + 4);
-
-            gui.fill(slotX, slotY, slotX + HOTBAR_SLOT_SIZE, slotY + HOTBAR_SLOT_SIZE, SLOT_BG);
-
-            boolean isSelected = (i == selectedSlot);
-            int borderColor = isSelected ? SELECTED_SLOT_BORDER : SLOT_BORDER;
-            gui.renderOutline(slotX, slotY, HOTBAR_SLOT_SIZE, HOTBAR_SLOT_SIZE, borderColor);
-
-            ItemStack stack = player.getInventory().getItem(i);
-            if (!stack.isEmpty()) {
-                gui.renderItem(stack, slotX + 8, slotY + 8);
-                gui.renderItemDecorations(mc.font, stack, slotX + 8, slotY + 8);
-            }
-
-            String slotNum = String.valueOf(i + 1);
-            gui.drawString(mc.font, slotNum, slotX + 2, slotY + 2, 0xFFAAAAAA, true);
+        for (int slot = 0; slot < 6; slot++) {
+            int slotX = x + slot * (HOTBAR_SLOT_SIZE + 2);
+            renderItemSlot(gui, player, slot, slotX, y, HOTBAR_SLOT_SIZE, false);
         }
     }
 
     private void renderPenaltySlots(GuiGraphics gui, int x, int y, Player player) {
-        Minecraft mc = Minecraft.getInstance();
-        int selectedSlot = player.getInventory().selected;
-
         for (int i = 0; i < 3; i++) {
-            int slotIndex = 6 + i;
-            int slotX = x;
-            int slotY = y + i * (PENALTY_SLOT_SIZE + 4);
-
-            gui.fill(slotX, slotY, slotX + PENALTY_SLOT_SIZE, slotY + PENALTY_SLOT_SIZE, PENALTY_SLOT_BG);
-
-            boolean isSelected = (slotIndex == selectedSlot);
-            int borderColor = isSelected ? SELECTED_SLOT_BORDER : PENALTY_SLOT_BORDER;
-            gui.renderOutline(slotX, slotY, PENALTY_SLOT_SIZE, PENALTY_SLOT_SIZE, borderColor);
-
-            ItemStack stack = player.getInventory().getItem(slotIndex);
-            if (!stack.isEmpty()) {
-                gui.pose().pushPose();
-                gui.pose().translate(slotX, slotY, 0);
-                gui.pose().scale(0.9f, 0.9f, 0.9f);
-                gui.renderItem(stack, 0, 0);
-                gui.renderItemDecorations(mc.font, stack, 0, 0);
-                gui.pose().popPose();
-            }
-
-            String slotNum = String.valueOf(slotIndex + 1);
-            gui.drawString(mc.font, "§c" + slotNum, slotX + 1, slotY + 1, 0xFFFFFF, true);
+            int slot = i + 6;
+            int slotX = x + i * (PENALTY_SLOT_SIZE + 2);
+            renderItemSlot(gui, player, slot, slotX, y, PENALTY_SLOT_SIZE, true);
         }
     }
 
-    private void renderPerkIcon(GuiGraphics gui, ClientPlayerData.ClientPerkData perk, int x, int y, int size) {
+    private void renderItemSlot(GuiGraphics gui, Player player, int slot, int x, int y,
+                                int size, boolean penalty) {
         Minecraft mc = Minecraft.getInstance();
-        ResourceLocation texture = perk.getIcon();
+        boolean selected = player.getInventory().selected == slot;
+        float scale = animation.selectedSlotScale(slot);
 
-        try {
-            RenderSystem.setShaderTexture(0, texture);
-            RenderSystem.enableBlend();
-            gui.blit(texture, x, y, 0, 0, size, size, size, size);
-            RenderSystem.disableBlend();
-        } catch (Exception e) {
-            String initial = perk.id().substring(0, 1).toUpperCase();
-            gui.drawString(mc.font, initial, x + size / 2 - 3, y + size / 2 - 4, 0xFFFFFF, true);
+        gui.pose().pushPose();
+        gui.pose().translate(x + size / 2.0f, y + size / 2.0f, selected ? 20.0f : 0.0f);
+        gui.pose().scale(scale, scale, 1.0f);
+        int localX = -size / 2;
+        int localY = -size / 2;
+
+        gui.fill(localX, localY, localX + size, localY + size, penalty ? PENALTY_BG : SLOT_BG);
+        gui.renderOutline(localX, localY, size, size,
+                selected ? SELECTED_SLOT_BORDER : penalty ? PENALTY_BORDER : SLOT_BORDER);
+
+        ItemStack stack = player.getInventory().getItem(slot);
+        if (!stack.isEmpty()) {
+            int itemOffset = (size - 16) / 2;
+            gui.renderItem(stack, localX + itemOffset, localY + itemOffset);
+            gui.renderItemDecorations(mc.font, stack, localX + itemOffset, localY + itemOffset);
+        }
+
+        String number = Integer.toString(slot + 1);
+        gui.drawString(mc.font, number, localX + 1, localY + 1,
+                penalty ? 0xFFFF8B92 : 0xFFB9C0C8, true);
+        gui.pose().popPose();
+    }
+
+    private void renderContextStatus(GuiGraphics gui, int centerX, int dockTop, Player player) {
+        float visibility = animation.statusVisibility();
+        if (visibility < 0.02f) return;
+
+        int flesh = ClientFleshHeapData.getStacks();
+        int fury = ClientFurySwipesData.getSelfStackCount();
+        boolean addiction = ClientAddictionData.isVisible();
+        boolean air = player.getAirSupply() < player.getMaxAirSupply();
+
+        int width = 0;
+        if (flesh > 0) width += 20;
+        if (fury > 0) width += (width > 0 ? 3 : 0) + 20;
+        if (addiction) width += (width > 0 ? 3 : 0) + 70;
+        if (air) width += (width > 0 ? 3 : 0) + 43;
+        if (width == 0) return;
+
+        int x = centerX - width / 2;
+        int y = dockTop - 16 + Math.round((1.0f - visibility) * 5.0f);
+        int alpha = Math.round(255.0f * visibility);
+
+        if (flesh > 0) {
+            renderStackStatus(gui, FLESH_HEAP_TEXTURE, flesh, x, y, alpha, 0xFFFFFFFF);
+            x += 23;
+        }
+        if (fury > 0) {
+            renderStackStatus(gui, FURY_SWIPES_TEXTURE, fury, x, y, alpha, 0xFFFF7A3D);
+            x += 23;
+        }
+        if (addiction) {
+            renderAddictionStatus(gui, x, y, alpha);
+            x += 73;
+        }
+        if (air) {
+            int seconds = Math.max(0, (int) Math.ceil(player.getAirSupply() / 20.0f));
+            renderTextStatus(gui, "O2 " + seconds, x, y, 43, alpha, 0xFF6EC8FF);
         }
     }
 
-    /**
-     * НОВОЕ: Отображение подсказок по клавишам управления перками
-     */
-    private void renderPerkKeybindHints(GuiGraphics gui, int x, int y) {
-        Minecraft mc = Minecraft.getInstance();
-
-        // Получаем названия клавиш
-        String activateKey = ModKeybinds.ACTIVATE_PERK.getTranslatedKeyMessage().getString();
-        String switchKey = ModKeybinds.SWITCH_PERK.getTranslatedKeyMessage().getString();
-
-        int hintY = y + (MAIN_PANEL_HEIGHT / 2) - 10;
-
-        // Формируем строки подсказок
-        String activateText = "§7[" + activateKey + "] Активация";
-        String switchText = "§7[" + switchKey + "] Сменить";
-
-        // Вычисляем X координаты с учетом ширины текста (выравнивание по правой стороне)
-        int activateX = x + 120 - mc.font.width(activateText);
-        int switchX = x + 120 - mc.font.width(switchText);
-
-        // Подсказка активации
-        gui.drawString(mc.font, activateText, activateX, hintY, 0xFFAAAAAA, false);
-
-        // Подсказка смены перка
-        gui.drawString(mc.font, switchText, switchX, hintY + 12, 0xFFAAAAAA, false);
+    private void renderStackStatus(GuiGraphics gui, ResourceLocation texture, int value,
+                                   int x, int y, int alpha, int textColor) {
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha / 255.0f);
+        RenderSystem.enableBlend();
+        gui.blit(texture, x + 1, y - 1, 0, 0, 16, 16, 16, 16);
+        RenderSystem.disableBlend();
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        renderCircularProgress(gui, x + 1, y - 1, 16, 1.0f,
+                withAlpha(0xFF9099A4, alpha));
+        String text = Integer.toString(value);
+        int textX = x + 1 + (16 - Minecraft.getInstance().font.width(text)) / 2;
+        gui.drawString(Minecraft.getInstance().font, text, textX, y + 3,
+                withAlpha(textColor, alpha), true);
     }
 
+    private void renderAddictionStatus(GuiGraphics gui, int x, int y, int alpha) {
+        float progress = Mth.clamp(ClientAddictionData.getProgress(), 0.0f, 1.0f);
+        int stage = Mth.clamp(ClientAddictionData.getStage(), 0, 3);
+        int[] colors = {0xFF4FAE57, 0xFFD0B83F, 0xFFE18435, 0xFFD44747};
+        gui.fill(x, y, x + 70, y + 14, withAlpha(0xC0101216, alpha));
+        gui.renderOutline(x, y, 70, 14, withAlpha(PANEL_BORDER, alpha));
+        gui.drawString(Minecraft.getInstance().font, "ЗАВ", x + 3, y + 3,
+                withAlpha(0xFFBFC5CC, alpha), false);
+        int barX = x + 24;
+        int barWidth = 34;
+        gui.fill(barX, y + 5, barX + barWidth, y + 10, withAlpha(0xFF282C31, alpha));
+        gui.fill(barX, y + 5, barX + Math.round(barWidth * progress), y + 10,
+                withAlpha(colors[stage], alpha));
+        gui.drawString(Minecraft.getInstance().font, Integer.toString(stage), x + 62, y + 3,
+                withAlpha(colors[stage], alpha), true);
+    }
+
+    private void renderTextStatus(GuiGraphics gui, String text, int x, int y,
+                                  int width, int alpha, int color) {
+        gui.fill(x, y, x + width, y + 14, withAlpha(0xC0101216, alpha));
+        gui.renderOutline(x, y, width, 14, withAlpha(PANEL_BORDER, alpha));
+        drawCentered(gui, text, x, y + 3, width, withAlpha(color, alpha));
+    }
+
+    private boolean hasContextStatus(Player player) {
+        return ClientFleshHeapData.getStacks() > 0
+                || ClientFurySwipesData.getSelfStackCount() > 0
+                || ClientAddictionData.isVisible()
+                || player.getAirSupply() < player.getMaxAirSupply();
+    }
+
+    private void renderItemName(GuiGraphics gui, Player player, int screenWidth, int dockTop) {
+        ItemStack current = player.getInventory().getSelected();
+        long now = System.currentTimeMillis();
+        if (!ItemStack.matches(current, lastSelectedItem)) {
+            lastSelectedItem = current.copy();
+            itemNameShowTime = current.isEmpty() ? 0L : now;
+        }
+        long age = now - itemNameShowTime;
+        if (current.isEmpty() || age < 0L || age >= ITEM_NAME_DURATION_MS) return;
+
+        float alpha = age <= ITEM_NAME_DURATION_MS - ITEM_NAME_FADE_MS
+                ? 1.0f
+                : (ITEM_NAME_DURATION_MS - age) / (float) ITEM_NAME_FADE_MS;
+        String name = current.getHoverName().getString();
+        int width = Minecraft.getInstance().font.width(name);
+        gui.drawString(Minecraft.getInstance().font, name, (screenWidth - width) / 2,
+                dockTop - 30, withAlpha(0xFFFFFFFF, Math.round(alpha * 255.0f)), true);
+    }
+
+    private IItemWithAbility findItemWithAbility(Player player) {
+        ItemStack mainHand = player.getMainHandItem();
+        if (mainHand.getItem() instanceof IItemWithAbility ability) return ability;
+
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            if (slot.getType() != EquipmentSlot.Type.ARMOR) continue;
+            ItemStack armor = player.getItemBySlot(slot);
+            if (!(armor.getItem() instanceof IItemWithAbility ability)) continue;
+            if (armor.getItem() instanceof NecromancerArmorItem && !hasFullNecromancerSet(player)) continue;
+            if (armor.getItem() instanceof MedicalMaskItem && slot != EquipmentSlot.HEAD) continue;
+            return ability;
+        }
+        return null;
+    }
+
+    private boolean hasFullNecromancerSet(Player player) {
+        for (ItemStack armor : player.getArmorSlots()) {
+            if (!(armor.getItem() instanceof NecromancerArmorItem)) return false;
+        }
+        return true;
+    }
+
+    private void renderCircularProgress(GuiGraphics gui, int x, int y, int size,
+                                        float progress, int color) {
+        int segments = 64;
+        int visibleSegments = Math.round(segments * Mth.clamp(progress, 0.0f, 1.0f));
+        double radius = size / 2.0 - 0.75;
+        double center = (size - 1) / 2.0;
+        for (int i = 0; i < visibleSegments; i++) {
+            double angle = -Math.PI / 2.0 + Math.PI * 2.0 * i / segments;
+            int pointX = x + (int) Math.round(center + Math.cos(angle) * radius);
+            int pointY = y + (int) Math.round(center + Math.sin(angle) * radius);
+            gui.fill(pointX, pointY, pointX + 1, pointY + 1, color);
+        }
+    }
+
+    private void renderRectangularProgress(GuiGraphics gui, int x, int y, int size,
+                                           float progress, int color) {
+        int length = Math.round((size * 4.0f) * Mth.clamp(progress, 0.0f, 1.0f));
+        int top = Math.min(length, size);
+        if (top > 0) gui.fill(x, y, x + top, y + 1, color);
+        length -= top;
+        int right = Math.min(Math.max(length, 0), size);
+        if (right > 0) gui.fill(x + size - 1, y, x + size, y + right, color);
+        length -= right;
+        int bottom = Math.min(Math.max(length, 0), size);
+        if (bottom > 0) gui.fill(x + size - bottom, y + size - 1, x + size, y + size, color);
+        length -= bottom;
+        int left = Math.min(Math.max(length, 0), size);
+        if (left > 0) gui.fill(x, y + size - left, x + 1, y + size, color);
+    }
+
+    private void renderPerkIcon(GuiGraphics gui, ClientPlayerData.ClientPerkData perk,
+                                int x, int y, int size) {
+        RenderSystem.enableBlend();
+        gui.blit(perk.getIcon(), x, y, 0, 0, size, size, size, size);
+        RenderSystem.disableBlend();
+    }
+
+    private void renderEmptyEffectSlot(GuiGraphics gui, int x, int y, int size,
+                                       String keyName, int borderColor) {
+        gui.fill(x, y, x + size, y + size, 0x70181B20);
+        gui.renderOutline(x, y, size, size, borderColor);
+        renderKeyHint(gui, keyName, x + 1, y + 1, borderColor);
+    }
+
+    private void renderKeyHint(GuiGraphics gui, String keyName, int x, int y, int color) {
+        Minecraft mc = Minecraft.getInstance();
+        String key = keyName.length() > 3 ? keyName.substring(0, 3) : keyName;
+        gui.drawString(mc.font, key, x, y, color, true);
+    }
 
     private int getTypeColor(PerkType type) {
         return switch (type) {
-            case PASSIVE -> 0xFF3355FF;
-            case ACTIVE -> 0xFFFF5533;
-            case HYBRID -> 0xFFAA55FF;
-            case PASSIVE_COOLDOWN -> 0xFF3355FF;
+            case PASSIVE, PASSIVE_COOLDOWN -> 0xFF4E78D4;
+            case ACTIVE -> 0xFFD95B50;
+            case HYBRID -> 0xFFB06CD4;
         };
     }
 
-    /**
-     * НОВОЕ: Получение цвета текста для типа перка
-     */
-    private int getTypeFontColor(PerkType type) {
-        return switch (type) {
-            case PASSIVE -> 0xFF5555FF;
-            case ACTIVE -> 0xFFFF5555;
-            case HYBRID -> 0xFFFF55FF;
-            case PASSIVE_COOLDOWN -> 0xFF5555FF;
-        };
+    private static void drawCentered(GuiGraphics gui, String text, int x, int y,
+                                     int width, int color) {
+        Minecraft mc = Minecraft.getInstance();
+        gui.drawString(mc.font, text, x + (width - mc.font.width(text)) / 2, y, color, true);
     }
 
-    /**
-     * НОВОЕ: Получение короткого названия типа перка
-     */
-    private String getTypeShort(PerkType type) {
-        return switch (type) {
-            case PASSIVE -> "П";
-            case ACTIVE -> "А";
-            case HYBRID -> "Г";
-            case PASSIVE_COOLDOWN -> "ПК";
-        };
+    private static float safeRatio(float value, float max) {
+        return max > 0.0f ? Mth.clamp(value / max, 0.0f, 1.0f) : 0.0f;
+    }
+
+    private static int withAlpha(int color, int alpha) {
+        return (Mth.clamp(alpha, 0, 255) << 24) | (color & 0x00FFFFFF);
+    }
+
+    private static int lerpColor(int first, int second, float progress) {
+        float t = Mth.clamp(progress, 0.0f, 1.0f);
+        int r = Math.round(Mth.lerp(t, (first >> 16) & 0xFF, (second >> 16) & 0xFF));
+        int g = Math.round(Mth.lerp(t, (first >> 8) & 0xFF, (second >> 8) & 0xFF));
+        int b = Math.round(Mth.lerp(t, first & 0xFF, second & 0xFF));
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 }

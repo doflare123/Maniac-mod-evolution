@@ -2,43 +2,35 @@ package org.example.maniacrevolution.hud;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.util.Mth;
 import org.example.maniacrevolution.data.ClientPlayerData;
 
-public class LevelHud {
-    private static final int BAR_WIDTH = 100;
-    private static final int BAR_HEIGHT = 7;
+public final class LevelHud {
+    private static final int WIDTH = 94;
+    private static final int HEIGHT = 17;
+    private static float displayedProgress = -1.0f;
+
+    private LevelHud() {
+    }
 
     public static void render(GuiGraphics gui, int x, int y) {
         Minecraft mc = Minecraft.getInstance();
+        float target = Mth.clamp(ClientPlayerData.getExpProgress(), 0.0f, 1.0f);
+        displayedProgress = displayedProgress < 0.0f
+                ? target
+                : Mth.lerp(mc.isPaused() ? 0.0f : 0.14f, displayedProgress, target);
 
-        int level = ClientPlayerData.getLevel();
-        int exp = ClientPlayerData.getExperience();
-        int expNext = ClientPlayerData.getExpForNextLevel();
-        int coins = ClientPlayerData.getCoins();
-        float progress = ClientPlayerData.getExpProgress();
+        gui.fill(x, y, x + WIDTH, y + HEIGHT, 0xB5101216);
+        gui.renderOutline(x, y, WIDTH, HEIGHT, 0xCC59616C);
 
-        // Фон панели
-        gui.fill(x, y, x + 110, y + 45, 0x90000000);
+        String level = "Lv." + ClientPlayerData.getLevel();
+        String coins = "★ " + ClientPlayerData.getCoins();
+        gui.drawString(mc.font, level, x + 4, y + 3, 0xFFFFC857, true);
+        gui.drawString(mc.font, coins, x + WIDTH - mc.font.width(coins) - 4, y + 3, 0xFFFFD966, true);
 
-        // Уровень
-        gui.drawString(mc.font, "§6Уровень: " + level, x + 5, y + 3, 0xFFFFFF, true);
-
-        // Полоска опыта - фон
-        gui.fill(x + 5, y + 25, x + 5 + BAR_WIDTH, y + 25 + BAR_HEIGHT, 0xFF333333);
-
-        // Полоска опыта - заполнение
-        int fillWidth = (int) (BAR_WIDTH * progress);
-        gui.fill(x + 5, y + 25, x + 5 + fillWidth, y + 25 + BAR_HEIGHT, 0xFF00AAFF);
-
-        // Рамка
-        gui.renderOutline(x + 5, y + 25, BAR_WIDTH, BAR_HEIGHT, 0xFF888888);
-
-        // Текст опыта
-        String expText = "§bОпыт: §f" + exp + "/" + expNext;
-        gui.drawString(mc.font, expText, x + 5,
-                y + 14, 0xFFFFFF, true);
-
-        // Монеты
-        gui.drawString(mc.font, "§e\u2B50 " + coins, x + 5, y + 35, 0xFFFFFF, true);
+        int barWidth = WIDTH - 2;
+        gui.fill(x + 1, y + HEIGHT - 3, x + WIDTH - 1, y + HEIGHT - 1, 0xFF272C32);
+        gui.fill(x + 1, y + HEIGHT - 3,
+                x + 1 + Math.round(barWidth * displayedProgress), y + HEIGHT - 1, 0xFF4CA8E8);
     }
 }

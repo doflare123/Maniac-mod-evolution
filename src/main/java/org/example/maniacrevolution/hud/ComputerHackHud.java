@@ -1,62 +1,46 @@
 package org.example.maniacrevolution.hud;
 
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.util.Mth;
 import org.example.maniacrevolution.hack.client.ClientHackData;
 
-/**
- * HUD-блок: прогресс взлома компьютеров.
- * Показывается только когда игра идёт (phase > 0).
- *
- * Использование в CustomHud.render():
- *   ComputerHackHud.render(guiGraphics, x, y);
- */
-public class ComputerHackHud {
+public final class ComputerHackHud {
+    public static final int WIDTH = 104;
+    public static final int HEIGHT = 19;
+    private static int lastHacked = -1;
+    private static long flashUntil;
+    private static float displayedProgress = -1.0f;
 
-    public static final int WIDTH  = 90;
-    public static final int HEIGHT = 36;
-    private static final int BG     = 0xCC000000;
-    private static final int BORDER = 0xFF444444;
+    private ComputerHackHud() {
+    }
 
-    /**
-     * Рендерит блок. Вызывать только если ClientGameState.isGameRunning().
-     *
-     * @param x  левый край блока
-     * @param y  верхний край блока
-     */
-    public static void render(GuiGraphics g, int x, int y) {
-        int hacked = ClientHackData.getTotalHacked();
-        int goal   = ClientHackData.getGoal();
-
+    public static void render(GuiGraphics gui, int x, int y) {
         Minecraft mc = Minecraft.getInstance();
+        int hacked = ClientHackData.getTotalHacked();
+        int goal = ClientHackData.getGoal();
+        float target = goal > 0 ? Mth.clamp((float) hacked / goal, 0.0f, 1.0f) : 0.0f;
+        displayedProgress = displayedProgress < 0.0f
+                ? target
+                : Mth.lerp(mc.isPaused() ? 0.0f : 0.16f, displayedProgress, target);
 
-        // Фон + рамка
-        g.fill(x, y, x + WIDTH, y + HEIGHT, BG);
-        g.renderOutline(x, y, WIDTH, HEIGHT, BORDER);
+        if (lastHacked >= 0 && hacked > lastHacked) flashUntil = Util.getMillis() + 450L;
+        lastHacked = hacked;
+        boolean flashing = Util.getMillis() < flashUntil;
 
-        // Заголовок
-        String title = "§7Компьютеры";
-        int titleX = x + (WIDTH - mc.font.width(title)) / 2;
-        g.drawString(mc.font, title, titleX, y + 4, 0xFFFFFF, false);
+        gui.fill(x, y, x + WIDTH, y + HEIGHT, flashing ? 0xC5243B30 : 0xB5101216);
+        gui.renderOutline(x, y, WIDTH, HEIGHT, flashing ? 0xFF70E28A : 0xCC59616C);
 
-        // Счётчик: X / N  с цветом по прогрессу
-        String counter = "§f" + hacked + " §7/ §f" + goal;
-        int counterX = x + (WIDTH - mc.font.width(counter)) / 2;
-        g.drawString(mc.font, counter, counterX, y + 14, 0xFFFFFF, false);
+        String title = "Компьютеры";
+        String count = hacked + "/" + goal;
+        gui.drawString(mc.font, title, x + 5, y + 3, 0xFFC7CDD4, false);
+        gui.drawString(mc.font, count, x + WIDTH - mc.font.width(count) - 5,
+                y + 3, target >= 1.0f ? 0xFF70E28A : 0xFFFFFFFF, true);
 
-        // Полоска прогресса
-        int barX  = x + 6;
-        int barY  = y + HEIGHT - 9;
-        int barW  = WIDTH - 12;
-        int barH  = 5;
-        float pct = goal > 0 ? Math.min(1f, (float) hacked / goal) : 0f;
-        int filled = (int)(barW * pct);
-
-        g.fill(barX, barY, barX + barW, barY + barH, 0xFF333333);
-        if (filled > 0) {
-            int barColor = pct >= 1f ? 0xFF00FF00 : 0xFF00AAFF;
-            g.fill(barX, barY, barX + filled, barY + barH, barColor);
-        }
-        g.renderOutline(barX, barY, barW, barH, BORDER);
+        gui.fill(x + 1, y + HEIGHT - 3, x + WIDTH - 1, y + HEIGHT - 1, 0xFF272C32);
+        gui.fill(x + 1, y + HEIGHT - 3,
+                x + 1 + Math.round((WIDTH - 2) * displayedProgress), y + HEIGHT - 1,
+                target >= 1.0f ? 0xFF70E28A : 0xFF4CA8E8);
     }
 }

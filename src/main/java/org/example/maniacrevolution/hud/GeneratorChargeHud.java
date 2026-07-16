@@ -1,126 +1,50 @@
 package org.example.maniacrevolution.hud;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.util.Mth;
 import org.example.maniacrevolution.block.entity.FNAFGeneratorBlockEntity;
 
-/**
- * Рендер индикатора заряда FNAF генератора для интеграции в CustomHud
- */
-public class GeneratorChargeHud {
+public final class GeneratorChargeHud {
+    public static final int WIDTH = 104;
+    public static final int HEIGHT = 19;
+    private static float displayedCharge = -1.0f;
 
-    // ВЕРТИКАЛЬНАЯ батарейка
-    private static final int BATTERY_WIDTH = 30;
-    private static final int BATTERY_HEIGHT = 60;
-    private static final int SEGMENT_WIDTH = 20;
-    private static final int SEGMENT_HEIGHT = 8;
-    private static final int SEGMENT_SPACING = 2;
-    private static final int NUM_SEGMENTS = 5;
+    private GeneratorChargeHud() {
+    }
 
-    private static int blinkTimer = 0;
-
-    /**
-     * Рендер индикатора заряда генератора
-     * @param guiGraphics Графический контекст
-     * @param x X координата (левый верхний угол)
-     * @param y Y координата (левый верхний угол)
-     * @return true если генератор найден и отрисован, false если генератора нет
-     */
-    public static boolean render(GuiGraphics guiGraphics, int x, int y) {
+    public static boolean render(GuiGraphics gui, int x, int y) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return false;
 
-        // Ищем генератор в мире
-        FNAFGeneratorBlockEntity generator = findGeneratorInWorld(mc.level);
+        FNAFGeneratorBlockEntity generator = FNAFGeneratorBlockEntity.getInstance();
         if (generator == null) return false;
 
-        blinkTimer++;
+        float charge = Mth.clamp(generator.getChargePercentage(), 0.0f, 1.0f);
+        displayedCharge = displayedCharge < 0.0f
+                ? charge
+                : Mth.lerp(mc.isPaused() ? 0.0f : 0.14f, displayedCharge, charge);
+        int color = getChargeColor(charge);
+        boolean criticalPulse = charge <= 0.2f && (Util.getMillis() / 350L) % 2L == 0L;
 
-        float chargePercent = generator.getChargePercentage();
-        int activeSegments = Math.round(chargePercent * NUM_SEGMENTS);
+        gui.fill(x, y, x + WIDTH, y + HEIGHT, criticalPulse ? 0xC53A1719 : 0xB5101216);
+        gui.renderOutline(x, y, WIDTH, HEIGHT, criticalPulse ? 0xFFE05252 : 0xCC59616C);
 
-        // Рисуем рамку батарейки
-        drawBatteryFrame(guiGraphics, x, y);
+        String title = "Генератор";
+        String value = Math.round(charge * 100.0f) + "%";
+        gui.drawString(mc.font, title, x + 5, y + 3, 0xFFC7CDD4, false);
+        gui.drawString(mc.font, value, x + WIDTH - mc.font.width(value) - 5, y + 3, color, true);
 
-        // Рисуем сегменты заряда
-        if (chargePercent > 0) {
-            drawChargeSegments(guiGraphics, x, y, activeSegments, chargePercent);
-        }
-
-        // Рисуем процент
-        String percentText = String.format("%.0f%%", chargePercent * 100);
-        int textX = x + BATTERY_WIDTH / 2 - mc.font.width(percentText) / 2;
-        int textY = y + BATTERY_HEIGHT + 5;
-        guiGraphics.drawString(mc.font, percentText, textX, textY, getColorForCharge(chargePercent), true);
-
+        gui.fill(x + 1, y + HEIGHT - 3, x + WIDTH - 1, y + HEIGHT - 1, 0xFF272C32);
+        gui.fill(x + 1, y + HEIGHT - 3,
+                x + 1 + Math.round((WIDTH - 2) * displayedCharge), y + HEIGHT - 1, color);
         return true;
     }
 
-    private static void drawBatteryFrame(GuiGraphics guiGraphics, int x, int y) {
-        // Выступ батарейки (верх)
-        int tipWidth = 10;
-        int tipHeight = 4;
-        int tipX = x + (BATTERY_WIDTH - tipWidth) / 2;
-        guiGraphics.fill(tipX, y, tipX + tipWidth, y + tipHeight, 0xFF3F3F3F);
-
-        // Основной корпус батарейки
-        guiGraphics.fill(x, y + tipHeight, x + BATTERY_WIDTH, y + BATTERY_HEIGHT, 0xFF3F3F3F);
-        guiGraphics.fill(x + 2, y + tipHeight + 2, x + BATTERY_WIDTH - 2, y + BATTERY_HEIGHT - 2, 0xFF1A1A1A);
-    }
-
-    private static void drawChargeSegments(GuiGraphics guiGraphics, int x, int y, int activeSegments, float chargePercent) {
-        int startX = x + 5;
-        int startY = y + 10; // Начинаем ниже выступа
-
-        // Рисуем сегменты СНИЗУ ВВЕРХ (как заряд батарейки)
-        for (int i = 0; i < NUM_SEGMENTS; i++) {
-            // Индекс с конца (снизу вверх)
-            int segmentIndex = NUM_SEGMENTS - 1 - i;
-            int segY = startY + i * (SEGMENT_HEIGHT + SEGMENT_SPACING);
-
-            if (segmentIndex < activeSegments) {
-                // Активный сегмент
-                int color = getColorForSegment(segmentIndex, chargePercent);
-                guiGraphics.fill(startX, segY, startX + SEGMENT_WIDTH, segY + SEGMENT_HEIGHT, color);
-            } else {
-                // Неактивный сегмент (тёмно-серый)
-                guiGraphics.fill(startX, segY, startX + SEGMENT_WIDTH, segY + SEGMENT_HEIGHT, 0xFF2A2A2A);
-            }
-        }
-    }
-
-    private static int getColorForSegment(int segmentIndex, float chargePercent) {
-        // Цвет зависит от процента заряда
-        if (chargePercent > 0.6f) {
-            // Зелёный
-            return 0xFF00FF00;
-        } else if (chargePercent > 0.3f) {
-            // Жёлто-оранжевый
-            return 0xFFFFAA00;
-        } else {
-            // Красный
-            return 0xFFFF0000;
-        }
-    }
-
-    private static int getColorForCharge(float chargePercent) {
-        if (chargePercent > 0.6f) {
-            return 0x00FF00; // Зелёный
-        } else if (chargePercent > 0.5f) {
-            return 0xFFAA00; // Оранжевый
-        } else if (chargePercent > 0.3f) {
-            return 0xFF0000; // Красный
-        } else {
-            return 0xFFFF00; // Жёлтый (разряжен)
-        }
-    }
-
-    private static FNAFGeneratorBlockEntity findGeneratorInWorld(Level level) {
-        // Получаем инстанс генератора из статического поля
-        return FNAFGeneratorBlockEntity.getInstance();
+    private static int getChargeColor(float charge) {
+        if (charge > 0.6f) return 0xFF70E28A;
+        if (charge > 0.3f) return 0xFFFFC857;
+        return 0xFFE05252;
     }
 }
