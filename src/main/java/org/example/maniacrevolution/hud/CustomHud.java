@@ -38,8 +38,9 @@ public class CustomHud implements IGuiOverlay {
     private static final int ABILITY_ICON_SIZE = 24;
     private static final int HOTBAR_SLOT_SIZE = 24;
     private static final int PENALTY_SLOT_SIZE = 16;
-    private static final int RESOURCE_BAR_WIDTH = 140;
+    private static final int RESOURCE_BAR_WIDTH = 120;
     private static final int RESOURCE_BAR_HEIGHT = 14;
+    private static final int ADDICTION_INDICATOR_WIDTH = 68;
 
     private static final int PANEL_BG = 0xB5101216;
     private static final int PANEL_BORDER = 0xCC59616C;
@@ -340,7 +341,7 @@ public class CustomHud implements IGuiOverlay {
         int width = 0;
         if (flesh > 0) width += 20;
         if (fury > 0) width += (width > 0 ? 3 : 0) + 20;
-        if (addiction) width += (width > 0 ? 3 : 0) + 70;
+        if (addiction) width += (width > 0 ? 3 : 0) + ADDICTION_INDICATOR_WIDTH;
         if (air) width += (width > 0 ? 3 : 0) + 43;
         if (width == 0) return;
 
@@ -358,7 +359,7 @@ public class CustomHud implements IGuiOverlay {
         }
         if (addiction) {
             renderAddictionStatus(gui, x, y, alpha);
-            x += 73;
+            x += ADDICTION_INDICATOR_WIDTH + 3;
         }
         if (air) {
             int seconds = Math.max(0, (int) Math.ceil(player.getAirSupply() / 20.0f));
@@ -385,17 +386,45 @@ public class CustomHud implements IGuiOverlay {
         float progress = Mth.clamp(ClientAddictionData.getProgress(), 0.0f, 1.0f);
         int stage = Mth.clamp(ClientAddictionData.getStage(), 0, 3);
         int[] colors = {0xFF4FAE57, 0xFFD0B83F, 0xFFE18435, 0xFFD44747};
-        gui.fill(x, y, x + 70, y + 14, withAlpha(0xC0101216, alpha));
-        gui.renderOutline(x, y, 70, 14, withAlpha(PANEL_BORDER, alpha));
-        gui.drawString(Minecraft.getInstance().font, "ЗАВ", x + 3, y + 3,
-                withAlpha(0xFFBFC5CC, alpha), false);
-        int barX = x + 24;
-        int barWidth = 34;
-        gui.fill(barX, y + 5, barX + barWidth, y + 10, withAlpha(0xFF282C31, alpha));
-        gui.fill(barX, y + 5, barX + Math.round(barWidth * progress), y + 10,
-                withAlpha(colors[stage], alpha));
-        gui.drawString(Minecraft.getInstance().font, Integer.toString(stage), x + 62, y + 3,
-                withAlpha(colors[stage], alpha), true);
+        int frameColor = withAlpha(0xFF858E98, alpha);
+        if (stage == 3) {
+            float pulse = (float) (Math.sin(System.currentTimeMillis() / 180.0D) * 0.5D + 0.5D);
+            frameColor = withAlpha(lerpColor(0xFF858E98, 0xFFFF5260, pulse), alpha);
+        }
+
+        gui.fill(x, y + 6, x + 9, y + 8, frameColor);
+        gui.fill(x + 1, y + 7, x + 9, y + 8, withAlpha(0xFF40464E, alpha));
+        gui.fill(x + 8, y + 4, x + 15, y + 10, frameColor);
+        gui.fill(x + 10, y + 5, x + 15, y + 9, withAlpha(0xFF181B20, alpha));
+
+        int barrelX = x + 14;
+        int barrelWidth = 41;
+        int chamberX = barrelX + 2;
+        int chamberWidth = barrelWidth - 4;
+        gui.fill(barrelX, y + 1, barrelX + barrelWidth, y + 13, frameColor);
+        gui.fill(chamberX, y + 3, chamberX + chamberWidth, y + 11,
+                withAlpha(0xFF20252B, alpha));
+
+        int liquidWidth = Math.round(chamberWidth * progress);
+        if (liquidWidth > 0) {
+            gui.fill(chamberX, y + 3, chamberX + liquidWidth, y + 11,
+                    withAlpha(colors[stage], alpha));
+            gui.fill(chamberX, y + 3, chamberX + liquidWidth, y + 4,
+                    withAlpha(lerpColor(colors[stage], 0xFFFFFFFF, 0.35f), alpha));
+        }
+
+        int markColor = withAlpha(0xFFB8C0C9, Math.round(alpha * 0.8f));
+        for (int i = 1; i < 4; i++) {
+            int markX = chamberX + Math.round(chamberWidth * i / 4.0f);
+            gui.fill(markX, y + 3, markX + 1, y + 6, markColor);
+            gui.fill(markX, y + 9, markX + 1, y + 11, markColor);
+        }
+
+        gui.fill(x + 55, y + 5, x + 63, y + 9, frameColor);
+        gui.fill(x + 56, y + 6, x + 63, y + 8, withAlpha(0xFF20242A, alpha));
+        gui.fill(x + 62, y + 2, x + ADDICTION_INDICATOR_WIDTH, y + 12, frameColor);
+        gui.fill(x + 63, y + 4, x + ADDICTION_INDICATOR_WIDTH - 1, y + 10,
+                withAlpha(0xFF20242A, alpha));
     }
 
     private void renderTextStatus(GuiGraphics gui, String text, int x, int y,
