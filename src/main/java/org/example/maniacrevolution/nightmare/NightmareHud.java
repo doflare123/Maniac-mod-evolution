@@ -3,14 +3,26 @@ package org.example.maniacrevolution.nightmare;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.Maniacrev;
 
 public final class NightmareHud {
-    private static final int PORTRAIT_WIDTH = 72;
-    private static final int PORTRAIT_HEIGHT = 88;
+    private static final int PANEL_WIDTH = 104;
+    private static final int PANEL_HEIGHT = 32;
+    private static final int FACE_SIZE = 24;
+    private static final int SEGMENT_COUNT = 5;
+    private static final int SEGMENT_WIDTH = 11;
+    private static final int SEGMENT_HEIGHT = 6;
+    private static final int SEGMENT_GAP = 2;
+    private static final int CUSTOM_HUD_MAX_WIDTH = 368;
+    private static final int CUSTOM_HUD_HEIGHT = 60;
     private static final int TRIAL_TIMER_Y = 38;
+    private static final int PANEL_BG = 0xD0101216;
+    private static final int PANEL_BORDER = 0xFF59616C;
+    private static final int SLOT_BG = 0xE0181B20;
+    private static final int CRITICAL_COLOR = 0xFFE04444;
     private static final ResourceLocation SCREAMER_TEXTURE =
             Maniacrev.loc("textures/gui/abilities/screamer.jpg");
 
@@ -22,10 +34,14 @@ public final class NightmareHud {
 
         if (ClientNightmareData.isVisible()) {
             renderSanityVignette(gui, screenWidth, screenHeight);
-            int portraitX = 8;
-            int portraitY = screenHeight - 128;
-            renderSanityPortrait(gui, mc, portraitX, portraitY);
-            renderSanityResistance(gui, mc, portraitX, portraitY + PORTRAIT_HEIGHT + 5);
+            int panelX = 6;
+            int bottomOffset = 4 + (mc.screen instanceof ChatScreen ? 14 : 0);
+            int panelY = screenHeight - PANEL_HEIGHT - bottomOffset;
+            int customHudLeft = (screenWidth - CUSTOM_HUD_MAX_WIDTH) / 2;
+            if (panelX + PANEL_WIDTH + 4 > customHudLeft) {
+                panelY -= CUSTOM_HUD_HEIGHT + 4;
+            }
+            renderSanityIndicator(gui, mc, panelX, panelY);
         }
 
         if (ClientNightmareData.getTrialType() != NightmareTrialType.NONE) {
@@ -43,42 +59,51 @@ public final class NightmareHud {
         }
     }
 
-    private static void renderSanityPortrait(GuiGraphics gui, Minecraft mc, int x, int y) {
+    private static void renderSanityIndicator(GuiGraphics gui, Minecraft mc, int x, int y) {
         float sanity = ClientNightmareData.getSanityPercent();
         float corruption = 1.0F - sanity;
         long time = System.currentTimeMillis();
         float pulse = (float) (Math.sin(time / 140.0D) * 0.5D + 0.5D);
+        int frameColor = lerpColor(PANEL_BORDER, CRITICAL_COLOR, corruption);
 
-        int px = x;
-        int py = y;
-        int frameColor = lerpColor(0xFF6F5A8A, 0xFFFF2D55, corruption);
-        int glowAlpha = (int) ((35 + 95 * pulse) * corruption);
-        int glowColor = (glowAlpha << 24) | 0xAA0038;
+        gui.fill(x, y, x + PANEL_WIDTH, y + PANEL_HEIGHT, PANEL_BG);
+        gui.renderOutline(x, y, PANEL_WIDTH, PANEL_HEIGHT, frameColor);
+        gui.fill(x + 1, y + 1, x + PANEL_WIDTH - 1, y + 2, 0x88777F89);
 
-        gui.fill(px, py, px + PORTRAIT_WIDTH, py + PORTRAIT_HEIGHT, 0xCC07050D);
-        gui.fill(px + 2, py + 2, px + PORTRAIT_WIDTH - 2, py + PORTRAIT_HEIGHT - 14, 0xEE100818);
-        gui.renderOutline(px, py, PORTRAIT_WIDTH, PORTRAIT_HEIGHT, frameColor);
-        gui.renderOutline(px + 3, py + 3, PORTRAIT_WIDTH - 6, PORTRAIT_HEIGHT - 18, 0x882C1838);
+        int faceX = x + 4;
+        int faceY = y + 4;
+        gui.fill(faceX, faceY, faceX + FACE_SIZE, faceY + FACE_SIZE, SLOT_BG);
+        gui.renderOutline(faceX, faceY, FACE_SIZE, FACE_SIZE, frameColor);
 
         RenderSystem.enableBlend();
-        gui.pose().pushPose();
-        gui.pose().translate(0.0F, 0.0F, 60.0F);
-        float lookX = (float) Math.sin(time / 420.0D) * (8.0F + corruption * 18.0F);
-        float lookY = -6.0F + corruption * 10.0F;
-        InventoryScreen.renderEntityInInventoryFollowsMouse(gui, px + PORTRAIT_WIDTH / 2,
-                py + PORTRAIT_HEIGHT - 18, 32, lookX, lookY, mc.player);
-        gui.pose().popPose();
+        int shakeX = corruption > 0.72F ? (int) (time / 70L % 3L) - 1 : 0;
+        PlayerFaceRenderer.draw(gui, mc.player.getSkinTextureLocation(),
+                faceX + 2 + shakeX, faceY + 2, 20);
 
-        if (corruption > 0.02F) {
-            gui.fill(px + 2, py + 2, px + PORTRAIT_WIDTH - 2, py + PORTRAIT_HEIGHT - 14, glowColor);
+        if (corruption > 0.08F) {
+            int faceTintAlpha = Math.min(105, Math.round(corruption * corruption * 120.0F));
+            gui.fill(faceX + 1, faceY + 1, faceX + FACE_SIZE - 1, faceY + FACE_SIZE - 1,
+                    (faceTintAlpha << 24) | 0x660018);
         }
         if (corruption > 0.72F) {
-            int flash = ((int) (70 + 80 * pulse) << 24) | 0xFF0000;
-            gui.renderOutline(px - 1, py - 1, PORTRAIT_WIDTH + 2, PORTRAIT_HEIGHT + 2, flash);
+            int flash = ((int) (65 + 95 * pulse) << 24) | 0xFF2438;
+            gui.renderOutline(x - 1, y - 1, PANEL_WIDTH + 2, PANEL_HEIGHT + 2, flash);
         }
         RenderSystem.disableBlend();
 
-        renderSanityMarks(gui, px + 9, py + PORTRAIT_HEIGHT - 10, sanity);
+        int contentX = x + 34;
+        String percent = Math.round(sanity * 100.0F) + "%";
+        gui.drawString(mc.font, percent, contentX, y + 6,
+                lerpColor(0xFFE2E5E9, 0xFFFF7A83, corruption), true);
+
+        int immunitySeconds = ClientNightmareData.getSanityImmunitySecondsLeft();
+        if (immunitySeconds > 0) {
+            String immunity = immunitySeconds + "\u0441";
+            gui.drawString(mc.font, immunity, x + PANEL_WIDTH - mc.font.width(immunity) - 5,
+                    y + 6, 0xFF8ED1FF, true);
+        }
+
+        renderSanitySegments(gui, contentX, y + 20, sanity, corruption);
     }
 
     private static void renderSanityVignette(GuiGraphics gui, int screenWidth, int screenHeight) {
@@ -98,27 +123,17 @@ public final class NightmareHud {
         RenderSystem.disableBlend();
     }
 
-    private static void renderSanityResistance(GuiGraphics gui, Minecraft mc, int x, int y) {
-        int secondsLeft = ClientNightmareData.getSanityImmunitySecondsLeft();
-        if (secondsLeft <= 0) {
-            return;
-        }
-
-        String text = "\u0417\u0430\u0449\u0438\u0442\u0430: " + secondsLeft + "\u0441";
-        int width = Math.max(PORTRAIT_WIDTH, mc.font.width(text) + 12);
-        gui.fill(x, y, x + width, y + 14, 0xCC090511);
-        gui.renderOutline(x, y, width, 14, 0xFF7A4D96);
-        gui.fill(x + 3, y + 11, x + width - 3, y + 12, 0xFFD65BFF);
-        gui.drawString(mc.font, text, x + 6, y + 3, 0xFFE9C7FF, true);
-    }
-
-    private static void renderSanityMarks(GuiGraphics gui, int x, int y, float sanity) {
-        int active = Math.max(0, Math.min(5, (int) Math.ceil(sanity * 5.0F)));
-        for (int i = 0; i < 5; i++) {
-            int markX = x + i * 11;
-            int color = i < active ? 0xFFD65BFF : 0xFF26152E;
-            gui.fill(markX + 2, y, markX + 7, y + 5, color);
-            gui.renderOutline(markX + 1, y - 1, 7, 7, 0xFF4B245F);
+    private static void renderSanitySegments(GuiGraphics gui, int x, int y,
+                                             float sanity, float corruption) {
+        int active = Math.max(0, Math.min(SEGMENT_COUNT,
+                (int) Math.ceil(sanity * SEGMENT_COUNT)));
+        int activeColor = lerpColor(0xFFC56BE3, CRITICAL_COLOR, corruption);
+        for (int i = 0; i < SEGMENT_COUNT; i++) {
+            int segmentX = x + i * (SEGMENT_WIDTH + SEGMENT_GAP);
+            gui.fill(segmentX, y, segmentX + SEGMENT_WIDTH, y + SEGMENT_HEIGHT,
+                    i < active ? activeColor : 0xFF252A30);
+            gui.renderOutline(segmentX, y, SEGMENT_WIDTH, SEGMENT_HEIGHT,
+                    i < active ? 0xFF8B939D : 0xFF464D56);
         }
     }
 

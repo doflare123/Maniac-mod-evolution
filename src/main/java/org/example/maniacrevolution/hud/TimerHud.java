@@ -84,7 +84,7 @@ public final class TimerHud {
                                         float scaleY, float darkness) {
         Minecraft mc = Minecraft.getInstance();
         gui.pose().pushPose();
-        gui.pose().translate(x, y + HEIGHT / 2.0f, 0.0f);
+        gui.pose().translate(x, y + HEIGHT / 2, 0.0f);
         gui.pose().scale(1.0f, scaleY, 1.0f);
 
         int top = -HEIGHT / 2;

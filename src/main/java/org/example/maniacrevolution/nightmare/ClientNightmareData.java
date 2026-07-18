@@ -22,7 +22,7 @@ public final class ClientNightmareData {
     }
 
     public static boolean isVisible() {
-        return visible;
+        return true;
     }
 
     public static float getSanityPercent() {

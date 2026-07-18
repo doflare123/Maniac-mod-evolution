@@ -31,13 +31,14 @@ import java.util.List;
 public class CustomHud implements IGuiOverlay {
     public static final CustomHud INSTANCE = new CustomHud();
 
-    private static final int DOCK_WIDTH = 286;
-    private static final int DOCK_HEIGHT = 50;
+    private static final int HUD_HEIGHT = 60;
+    private static final int PANEL_PADDING = 5;
+    private static final int COMPONENT_GAP = 5;
     private static final int PERK_ICON_SIZE = 24;
     private static final int ABILITY_ICON_SIZE = 24;
-    private static final int HOTBAR_SLOT_SIZE = 20;
+    private static final int HOTBAR_SLOT_SIZE = 24;
     private static final int PENALTY_SLOT_SIZE = 16;
-    private static final int RESOURCE_BAR_WIDTH = 136;
+    private static final int RESOURCE_BAR_WIDTH = 140;
     private static final int RESOURCE_BAR_HEIGHT = 14;
 
     private static final int PANEL_BG = 0xB5101216;
@@ -74,8 +75,13 @@ public class CustomHud implements IGuiOverlay {
 
     public void renderAboveChat(GuiGraphics gui, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
+        gui.pose().pushPose();
+        gui.pose().translate(0.0f, 0.0f, 400.0f);
+        RenderSystem.disableDepthTest();
         renderHud(gui, partialTick, mc.getWindow().getGuiScaledWidth(),
                 mc.getWindow().getGuiScaledHeight(), true);
+        RenderSystem.enableDepthTest();
+        gui.pose().popPose();
     }
 
     private void renderHud(GuiGraphics gui, float partialTick, int screenWidth,
@@ -92,12 +98,11 @@ public class CustomHud implements IGuiOverlay {
         boolean hasStatus = hasContextStatus(player);
         animation.update(healthPercent, manaPercent, player.getInventory().selected, hasStatus, mc.isPaused());
 
-        int dockX = (screenWidth - DOCK_WIDTH) / 2;
-        int dockY = screenHeight - DOCK_HEIGHT - 4 - (chatOpen ? 14 : 0);
+        int hudY = screenHeight - HUD_HEIGHT - 4 - (chatOpen ? 14 : 0);
 
-        renderDock(gui, dockX, dockY, player);
-        renderContextStatus(gui, screenWidth / 2, dockY - 4, player);
-        renderItemName(gui, player, screenWidth, dockY);
+        renderDock(gui, screenWidth / 2, hudY, player);
+        renderContextStatus(gui, screenWidth / 2, hudY - 16, player);
+        renderItemName(gui, player, screenWidth, hudY - 27);
 
         LevelHud.render(gui, 5, 5);
         TimerHud.render(gui, screenWidth / 2, 5);
@@ -111,47 +116,55 @@ public class CustomHud implements IGuiOverlay {
         GeneratorChargeHud.render(gui, screenWidth - GeneratorChargeHud.WIDTH - 5, trackerY);
     }
 
-    private void renderDock(GuiGraphics gui, int x, int y, Player player) {
-        gui.fill(x, y, x + DOCK_WIDTH, y + DOCK_HEIGHT, PANEL_BG);
-        gui.renderOutline(x, y, DOCK_WIDTH, DOCK_HEIGHT, PANEL_BORDER);
-        gui.fill(x + 1, y + 1, x + DOCK_WIDTH - 1, y + 2, 0x88777F89);
-
-        int resourcesY = y + 4;
-        renderHealthBar(gui, player, x + 5, resourcesY);
-        renderManaBar(gui, x + 145, resourcesY);
-
-        int actionY = y + 22;
-        int currentX = x + 9;
+    private void renderDock(GuiGraphics gui, int centerX, int y, Player player) {
         List<ClientPlayerData.ClientPerkData> perks = ClientPlayerData.getSelectedPerks();
         int activeIndex = ClientPlayerData.getActivePerkIndex();
         String activateKey = ModKeybinds.ACTIVATE_PERK.getTranslatedKeyMessage().getString();
         String switchKey = ModKeybinds.SWITCH_PERK.getTranslatedKeyMessage().getString();
+        IItemWithAbility ability = findItemWithAbility(player);
+        int effectWidth = PERK_ICON_SIZE * 2 + 2;
+        if (ability != null) effectWidth += ABILITY_ICON_SIZE + 2;
+        int panelWidth = PANEL_PADDING * 2 + RESOURCE_BAR_WIDTH * 2
+                + COMPONENT_GAP * 2 + effectWidth;
+        int panelX = centerX - panelWidth / 2;
+
+        gui.fill(panelX, y, panelX + panelWidth, y + HUD_HEIGHT, PANEL_BG);
+        gui.renderOutline(panelX, y, panelWidth, HUD_HEIGHT, PANEL_BORDER);
+        gui.fill(panelX + 1, y + 1, panelX + panelWidth - 1, y + 2, 0x88777F89);
+
+        int healthX = panelX + PANEL_PADDING;
+        int effectX = healthX + RESOURCE_BAR_WIDTH + COMPONENT_GAP;
+        int manaX = effectX + effectWidth + COMPONENT_GAP;
+        int resourcesY = y + 9;
+        int effectsY = y + 4;
+        renderHealthBar(gui, player, healthX, resourcesY);
+        renderManaBar(gui, manaX, resourcesY);
+
+        int currentX = effectX;
 
         for (int i = 0; i < 2; i++) {
             String keyName = i == activeIndex ? activateKey : switchKey;
             if (i < perks.size()) {
-                renderPerkSlot(gui, perks.get(i), currentX, actionY, i == activeIndex,
+                renderPerkSlot(gui, perks.get(i), currentX, effectsY, i == activeIndex,
                         keyName);
             } else {
-                renderEmptyEffectSlot(gui, currentX, actionY, PERK_ICON_SIZE, keyName,
+                renderEmptyEffectSlot(gui, currentX, effectsY, PERK_ICON_SIZE, keyName,
                         i == activeIndex ? 0xFF9D7F3B : 0xFF59616C);
             }
             currentX += PERK_ICON_SIZE + 2;
         }
 
-        IItemWithAbility ability = findItemWithAbility(player);
         if (ability != null) {
-            renderAbilitySlot(gui, currentX, actionY, ability, player);
-        } else {
-            renderEmptyEffectSlot(gui, currentX, actionY, ABILITY_ICON_SIZE,
-                    ModKeybinds.ACTIVATE_ARMOR_ABILITY.getTranslatedKeyMessage().getString(),
-                    0xFF4E7188);
+            renderAbilitySlot(gui, currentX, effectsY, ability, player);
         }
-        currentX += ABILITY_ICON_SIZE + 5;
 
-        renderHotbar(gui, currentX, actionY + 2, player);
-        currentX += HOTBAR_SLOT_SIZE * 6 + 2 * 5 + 5;
-        renderPenaltySlots(gui, currentX, actionY + 4, player);
+        int hotbarWidth = HOTBAR_SLOT_SIZE * 6 + 2 * 5;
+        int penaltyWidth = PENALTY_SLOT_SIZE * 3 + 2 * 2;
+        int itemRowWidth = hotbarWidth + 6 + penaltyWidth;
+        int itemX = centerX - itemRowWidth / 2;
+        renderHotbar(gui, itemX, y + 32, player);
+        renderPenaltySlots(gui, itemX + hotbarWidth + 6,
+                y + 32 + (HOTBAR_SLOT_SIZE - PENALTY_SLOT_SIZE) / 2, player);
     }
 
     private void renderHealthBar(GuiGraphics gui, Player player, int x, int y) {
@@ -315,7 +328,7 @@ public class CustomHud implements IGuiOverlay {
         gui.pose().popPose();
     }
 
-    private void renderContextStatus(GuiGraphics gui, int centerX, int dockTop, Player player) {
+    private void renderContextStatus(GuiGraphics gui, int centerX, int topY, Player player) {
         float visibility = animation.statusVisibility();
         if (visibility < 0.02f) return;
 
@@ -332,7 +345,7 @@ public class CustomHud implements IGuiOverlay {
         if (width == 0) return;
 
         int x = centerX - width / 2;
-        int y = dockTop - 16 + Math.round((1.0f - visibility) * 5.0f);
+        int y = topY - Math.round((1.0f - visibility) * 3.0f);
         int alpha = Math.round(255.0f * visibility);
 
         if (flesh > 0) {
@@ -399,7 +412,7 @@ public class CustomHud implements IGuiOverlay {
                 || player.getAirSupply() < player.getMaxAirSupply();
     }
 
-    private void renderItemName(GuiGraphics gui, Player player, int screenWidth, int dockTop) {
+    private void renderItemName(GuiGraphics gui, Player player, int screenWidth, int y) {
         ItemStack current = player.getInventory().getSelected();
         long now = System.currentTimeMillis();
         if (!ItemStack.matches(current, lastSelectedItem)) {
@@ -415,12 +428,19 @@ public class CustomHud implements IGuiOverlay {
         String name = current.getHoverName().getString();
         int width = Minecraft.getInstance().font.width(name);
         gui.drawString(Minecraft.getInstance().font, name, (screenWidth - width) / 2,
-                dockTop - 30, withAlpha(0xFFFFFFFF, Math.round(alpha * 255.0f)), true);
+                y, withAlpha(0xFFFFFFFF, Math.round(alpha * 255.0f)), true);
     }
 
     private IItemWithAbility findItemWithAbility(Player player) {
         ItemStack mainHand = player.getMainHandItem();
         if (mainHand.getItem() instanceof IItemWithAbility ability) return ability;
+
+        ItemStack offhand = player.getOffhandItem();
+        if (offhand.getItem() instanceof IItemWithAbility ability) return ability;
+
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.getItem() instanceof IItemWithAbility ability) return ability;
+        }
 
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             if (slot.getType() != EquipmentSlot.Type.ARMOR) continue;

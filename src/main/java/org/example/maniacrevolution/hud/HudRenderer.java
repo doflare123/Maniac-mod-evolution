@@ -1,9 +1,12 @@
 package org.example.maniacrevolution.hud;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
@@ -18,6 +21,11 @@ import org.example.maniacrevolution.util.PlayerModeUtil;
  */
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public class HudRenderer {
+    private static final int ACTIONBAR_GUI_HEIGHT = 86;
+    private static final int CHAT_ACTIONBAR_OFFSET = 14;
+    private static int savedLeftHeight;
+    private static int savedRightHeight;
+    private static boolean actionbarHeightAdjusted;
 
     /**
      * Скрываем ванильные элементы HUD когда активен кастомный
@@ -70,5 +78,38 @@ public class HudRenderer {
         }
 
         event.setCanceled(true);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onActionbarPre(RenderGuiOverlayEvent.Pre event) {
+        if (event.getOverlay() != VanillaGuiOverlay.RECORD_OVERLAY.type()) return;
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || !PlayerModeUtil.isSurvivalOrAdventure(mc.player)
+                || !HudConfig.isCustomHudEnabled() || !(mc.gui instanceof ForgeGui forgeGui)) {
+            return;
+        }
+
+        savedLeftHeight = forgeGui.leftHeight;
+        savedRightHeight = forgeGui.rightHeight;
+        int targetHeight = ACTIONBAR_GUI_HEIGHT
+                + (mc.screen instanceof ChatScreen ? CHAT_ACTIONBAR_OFFSET : 0);
+        forgeGui.leftHeight = Math.max(forgeGui.leftHeight, targetHeight);
+        forgeGui.rightHeight = Math.max(forgeGui.rightHeight, targetHeight);
+        actionbarHeightAdjusted = true;
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onActionbarPost(RenderGuiOverlayEvent.Post event) {
+        if (event.getOverlay() != VanillaGuiOverlay.RECORD_OVERLAY.type()
+                || !actionbarHeightAdjusted) {
+            return;
+        }
+
+        if (Minecraft.getInstance().gui instanceof ForgeGui forgeGui) {
+            forgeGui.leftHeight = savedLeftHeight;
+            forgeGui.rightHeight = savedRightHeight;
+        }
+        actionbarHeightAdjusted = false;
     }
 }
