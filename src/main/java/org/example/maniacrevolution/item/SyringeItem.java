@@ -80,7 +80,7 @@ public class SyringeItem extends Item {
         int usedBefore = cap.getTotalSyringeCount();
         cap.setTotalSyringeCount(usedBefore + 1);
 
-        // ── Снижаем шкалу зависимости на 20% ─────────────────────────────────
+        // ── Снижаем шкалу зависимости на заданную долю ───────────────────────
         float reduction = cap.getAddiction() * AddictionCapability.SYRINGE_REDUCE_PCT;
         cap.setAddiction(cap.getAddiction() - reduction);
 
@@ -156,7 +156,8 @@ public class SyringeItem extends Item {
         // Описание эффекта
         tooltip.add(Component.literal("§b⚡ Адреналин")
                 .withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.literal("  Снижает шкалу зависимости §aна 20%")
+        tooltip.add(Component.literal("  Снижает шкалу зависимости §aна "
+                        + Math.round(AddictionCapability.SYRINGE_REDUCE_PCT * 100) + "%")
                 .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.literal("  Даёт скорость §f(эффекты складываются)")
                 .withStyle(ChatFormatting.GRAY));

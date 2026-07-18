@@ -10,6 +10,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import org.example.maniacrevolution.ModItems;
+import org.example.maniacrevolution.capability.AddictionCapability;
 import org.example.maniacrevolution.client.ClientAddictionData;
 import org.example.maniacrevolution.client.ClientFurySwipesData;
 import org.example.maniacrevolution.client.ClientPlagueData;
@@ -358,7 +360,8 @@ public class CustomHud implements IGuiOverlay {
             x += 23;
         }
         if (addiction) {
-            renderAddictionStatus(gui, x, y, alpha);
+            boolean syringeHeld = player.getMainHandItem().is(ModItems.SYRINGE.get());
+            renderAddictionStatus(gui, x, y, alpha, syringeHeld);
             x += ADDICTION_INDICATOR_WIDTH + 3;
         }
         if (air) {
@@ -382,10 +385,12 @@ public class CustomHud implements IGuiOverlay {
                 withAlpha(textColor, alpha), true);
     }
 
-    private void renderAddictionStatus(GuiGraphics gui, int x, int y, int alpha) {
+    private void renderAddictionStatus(GuiGraphics gui, int x, int y, int alpha,
+                                       boolean syringeHeld) {
         float progress = Mth.clamp(ClientAddictionData.getProgress(), 0.0f, 1.0f);
         int stage = Mth.clamp(ClientAddictionData.getStage(), 0, 3);
         int[] colors = {0xFF4FAE57, 0xFFD0B83F, 0xFFE18435, 0xFFD44747};
+        int syringePreviewColor = 0xFF53F071;
         int frameColor = withAlpha(0xFF858E98, alpha);
         if (stage == 3) {
             float pulse = (float) (Math.sin(System.currentTimeMillis() / 180.0D) * 0.5D + 0.5D);
@@ -411,6 +416,15 @@ public class CustomHud implements IGuiOverlay {
                     withAlpha(colors[stage], alpha));
             gui.fill(chamberX, y + 3, chamberX + liquidWidth, y + 4,
                     withAlpha(lerpColor(colors[stage], 0xFFFFFFFF, 0.35f), alpha));
+
+            if (syringeHeld) {
+                float remainingProgress = progress * (1.0f - AddictionCapability.SYRINGE_REDUCE_PCT);
+                int remainingWidth = Math.round(chamberWidth * remainingProgress);
+                gui.fill(chamberX + remainingWidth, y + 3, chamberX + liquidWidth, y + 11,
+                        withAlpha(syringePreviewColor, alpha));
+                gui.fill(chamberX + remainingWidth, y + 3, chamberX + liquidWidth, y + 4,
+                        withAlpha(lerpColor(syringePreviewColor, 0xFFFFFFFF, 0.4f), alpha));
+            }
         }
 
         int markColor = withAlpha(0xFFB8C0C9, Math.round(alpha * 0.8f));

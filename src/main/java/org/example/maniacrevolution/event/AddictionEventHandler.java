@@ -51,8 +51,8 @@ public class AddictionEventHandler {
         if (!(event.player instanceof ServerPlayer player)) return;
         if (player.level().isClientSide()) return;
 
-        // Игра должна быть активна (phase != 0)
-        if (GameManager.getPhaseValue() == 0) return;
+        // Игра должна быть активна: фаза выставлена и игровой таймер запущен.
+        if (GameManager.getPhaseValue() == 0 || !GameManager.isTimerRunning()) return;
 
         AddictionCapability cap = AddictionCapabilityProvider.get(player);
         if (cap == null) return;
