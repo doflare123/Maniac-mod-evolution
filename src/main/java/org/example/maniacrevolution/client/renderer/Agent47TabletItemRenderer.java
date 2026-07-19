@@ -32,8 +32,8 @@ public class Agent47TabletItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float FACE_MIN_Z = 4.5F / 16.0F;
     private static final float FACE_MAX_Z = 8.9F / 16.0F;
     private static final float TEXT_CENTER_X = 7.5F / 16.0F;
-    private static final float TEXT_TOP_Z = 9.15F / 16.0F;
-    private static final float TEXT_SCALE = 0.011F;
+    private static final float TEXT_CENTER_Z = 10.0F / 16.0F;
+    private static final float TEXT_SCALE = 0.0055F;
 
     public Agent47TabletItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
@@ -98,10 +98,10 @@ public class Agent47TabletItemRenderer extends BlockEntityWithoutLevelRenderer {
         VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(skin));
         PoseStack.Pose pose = poseStack.last();
 
-        vertex(consumer, pose, FACE_MIN_X, y, FACE_MAX_Z, minU, maxV);
-        vertex(consumer, pose, FACE_MAX_X, y, FACE_MAX_Z, maxU, maxV);
-        vertex(consumer, pose, FACE_MAX_X, y, FACE_MIN_Z, maxU, minV);
-        vertex(consumer, pose, FACE_MIN_X, y, FACE_MIN_Z, minU, minV);
+        vertex(consumer, pose, FACE_MIN_X, y, FACE_MAX_Z, maxU, maxV);
+        vertex(consumer, pose, FACE_MAX_X, y, FACE_MAX_Z, maxU, minV);
+        vertex(consumer, pose, FACE_MAX_X, y, FACE_MIN_Z, minU, minV);
+        vertex(consumer, pose, FACE_MIN_X, y, FACE_MIN_Z, minU, maxV);
     }
 
     private static void vertex(VertexConsumer consumer, PoseStack.Pose pose,
@@ -120,10 +120,11 @@ public class Agent47TabletItemRenderer extends BlockEntityWithoutLevelRenderer {
         Font font = Minecraft.getInstance().font;
 
         poseStack.pushPose();
-        poseStack.translate(TEXT_CENTER_X, SURFACE_Y + 0.003F, TEXT_TOP_Z);
+        poseStack.translate(TEXT_CENTER_X, SURFACE_Y + 0.003F, TEXT_CENTER_Z);
+        poseStack.mulPose(Axis.YP.rotationDegrees(-90.0F));
         poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
         poseStack.scale(TEXT_SCALE, -TEXT_SCALE, TEXT_SCALE);
-        font.drawInBatch(text, -font.width(text) / 2.0F, 0.0F, color, false,
+        font.drawInBatch(text, -font.width(text) / 2.0F, -font.lineHeight / 2.0F, color, false,
                 poseStack.last().pose(), buffer, Font.DisplayMode.POLYGON_OFFSET,
                 0, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
