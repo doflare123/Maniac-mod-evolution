@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.gui.GuideScreen;
+import org.example.maniacrevolution.guide.MapGuideRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +12,8 @@ import java.util.List;
 public class MapsPage extends GuidePage {
     private int scrollOffset = 0;
     private int detailScrollOffset = 0; // Новый скролл для детального просмотра
-    private List<MapInfo> maps = new ArrayList<>();
-    private MapInfo selectedMap = null;
+    private List<MapGuideRegistry.Entry> maps = new ArrayList<>();
+    private MapGuideRegistry.Entry selectedMap = null;
 
     public MapsPage(GuideScreen parent) {
         super(parent);
@@ -21,59 +22,7 @@ public class MapsPage extends GuidePage {
 
     private void initMaps() {
         maps.clear();
-
-        maps.add(new MapInfo(
-                "Особняк",
-                "mansion",
-                "§7Классическая карта.",
-                new String[]{
-                        "§e● Особенности:",
-                        "  - Много этажей",
-                        "  - Коридорнность",
-                        "  - Потайные проходы",
-                        "",
-                        "§e● Советы:",
-                        "  §aВыжившим:§r Пытайтесь сокращать путь через потайные проходы (не забывая их закрывать)",
-                        "  §cМаньякам:§r Пытайтесь ловить выживших в узких проходах",
-                        "",
-                        "§e● Размер: §fСредний",
-                        "§e● Сложность: §6★★★☆☆"
-                }
-        ));
-
-        maps.add(new MapInfo(
-                "Пиццерия Фрэдэ",
-                "pizzeria",
-                "§7 Карта основанная на 1 и 2 частях франшизы.",
-                new String[]{
-                        "§e● Особенности:",
-                        "  - Открытая карта",
-                        "  - Вентиляции",
-                        "  - Канализации",
-                        "  - Есть места взаимодействия с окружением",
-                        "",
-                        "§e● Советы:",
-                        "  §aВыжившим:§r Используйте вентиляции для быстрого перемещения к генераторам",
-                        "  §cМаньякам:§r Пытайтесь ловить выживших возле генераторов",
-                        "",
-                        "§e● Размер: §fБольшой",
-                        "§e● Сложность: §6★★★★☆"
-                }
-        ));
-
-        maps.add(new MapInfo(
-                "Промзона",
-                "fort",
-                "§7Заброшенный завод",
-                new String[]{
-                        "§e● Особенности:",
-                        "  - Очень узкое пространство",
-                        "  - Карта для малого количества игроков",
-                        "",
-                        "§e● Размер: §fМаленькая",
-                        "§e● Сложность: §6★★★★☆"
-                }
-        ));
+        maps.addAll(MapGuideRegistry.getAll());
     }
 
     @Override
@@ -120,7 +69,7 @@ public class MapsPage extends GuidePage {
 
         gui.enableScissor(guiLeft + 5, guiTop + 55, guiLeft + guiWidth - 5, guiTop + guiHeight - 10);
 
-        for (MapInfo map : maps) {
+        for (MapGuideRegistry.Entry map : maps) {
             if (y + entryHeight > guiTop + 50 && y < guiTop + guiHeight - 10) {
                 boolean hovered = mouseX >= guiLeft + 10 && mouseX < guiLeft + guiWidth - 10
                         && mouseY >= y && mouseY < y + entryHeight - 5
@@ -139,7 +88,7 @@ public class MapsPage extends GuidePage {
         }
     }
 
-    private void renderMapEntry(GuiGraphics gui, MapInfo map, int x, int y, boolean hovered, int mouseX, int mouseY) {
+    private void renderMapEntry(GuiGraphics gui, MapGuideRegistry.Entry map, int x, int y, boolean hovered, int mouseX, int mouseY) {
         int width = guiWidth - 20;
         int height = 85;
 
@@ -152,10 +101,10 @@ public class MapsPage extends GuidePage {
         renderMapPreview(gui, map, x + 5, y + 5, 75, 75);
 
         // Название
-        gui.drawString(font, "§6§l" + map.name, x + 85, y + 8, 0xFFFFFF, false);
+        gui.drawString(font, "§6§l" + map.name(), x + 85, y + 8, 0xFFFFFF, false);
 
         // Описание
-        List<String> descLines = wrapText(map.description, width - 95);
+        List<String> descLines = wrapText(map.description(), width - 95);
         for (int i = 0; i < Math.min(3, descLines.size()); i++) {
             gui.drawString(font, descLines.get(i), x + 85, y + 22 + i * 11, 0xAAAAAA, false);
         }
@@ -165,8 +114,8 @@ public class MapsPage extends GuidePage {
         }
     }
 
-    private void renderMapPreview(GuiGraphics gui, MapInfo map, int x, int y, int width, int height) {
-        ResourceLocation texture = new ResourceLocation("maniacrev", "textures/gui/maps/" + map.id + ".png");
+    private void renderMapPreview(GuiGraphics gui, MapGuideRegistry.Entry map, int x, int y, int width, int height) {
+        ResourceLocation texture = map.previewTexture();
 
         try {
             RenderSystem.setShaderTexture(0, texture);
@@ -192,7 +141,7 @@ public class MapsPage extends GuidePage {
         gui.drawCenteredString(font, "← Назад", btnX + 35, btnY + 6, 0xFFFFFF);
 
         // Заголовок
-        gui.drawCenteredString(font, "§6§l" + selectedMap.name,
+        gui.drawCenteredString(font, "§6§l" + selectedMap.name(),
                 guiLeft + guiWidth / 2, guiTop + 30, 0xFFFFFF);
 
         // ИСПРАВЛЕНО: Область с прокруткой для контента
@@ -207,21 +156,27 @@ public class MapsPage extends GuidePage {
         y += 110;
 
         // Описание
-        gui.drawString(font, selectedMap.description, guiLeft + 15, y, 0xFFFFFF, false);
+        gui.drawString(font, selectedMap.description(), guiLeft + 15, y, 0xFFFFFF, false);
         y += 15;
 
         // Детали
-        for (String detail : selectedMap.details) {
+        for (String detail : selectedMap.details()) {
             gui.drawString(font, detail, guiLeft + 15, y, 0xFFFFFF, false);
             y += 11;
         }
+
+        y += 4;
+        gui.drawString(font, "§e● Размер: §f" + selectedMap.size(), guiLeft + 15, y, 0xFFFFFF, false);
+        y += 11;
+        gui.drawString(font, "§e● Сложность: §6" + selectedMap.difficultyStars(), guiLeft + 15, y, 0xFFFFFF, false);
+        y += 11;
 
         y += 10; // Отступ после текста
 
         gui.disableScissor();
 
         // ИСПРАВЛЕНО: Индикатор прокрутки
-        int totalHeight = 110 + 15 + (selectedMap.details.length * 11) + 10;
+        int totalHeight = 110 + 15 + (selectedMap.details().size() * 11) + 36;
         int visibleHeight = guiHeight - 75; // Высота видимой области
 
         if (totalHeight > visibleHeight) {
@@ -254,7 +209,7 @@ public class MapsPage extends GuidePage {
                 int y = guiTop + 60 - scrollOffset;
                 int entryHeight = 90;
 
-                for (MapInfo map : maps) {
+                for (MapGuideRegistry.Entry map : maps) {
                     if (mouseY >= y && mouseY < y + entryHeight - 5 &&
                             mouseX >= guiLeft + 10 && mouseX < guiLeft + guiWidth - 10 &&
                             mouseY >= guiTop + 55 && mouseY < guiTop + guiHeight - 10) {
@@ -273,7 +228,7 @@ public class MapsPage extends GuidePage {
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         if (selectedMap != null) {
             // ИСПРАВЛЕНО: Прокрутка в детальном просмотре
-            int totalHeight = 110 + 15 + (selectedMap.details.length * 11) + 10;
+            int totalHeight = 110 + 15 + (selectedMap.details().size() * 11) + 36;
             int visibleHeight = guiHeight - 75;
             int maxScroll = Math.max(0, totalHeight - visibleHeight);
 
@@ -297,17 +252,4 @@ public class MapsPage extends GuidePage {
         return false;
     }
 
-    private static class MapInfo {
-        String name;
-        String id;
-        String description;
-        String[] details;
-
-        MapInfo(String name, String id, String description, String[] details) {
-            this.name = name;
-            this.id = id;
-            this.description = description;
-            this.details = details;
-        }
-    }
 }

@@ -9,6 +9,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import org.example.maniacrevolution.guide.MapGuideRegistry;
 import org.example.maniacrevolution.map.MapData;
 import org.example.maniacrevolution.map.MapRegistry;
 import org.example.maniacrevolution.network.ModNetworking;
@@ -46,14 +47,14 @@ public class SettingsScreen extends Screen {
     private static final int ROW_HEIGHT = 45;
     private static final int ROW_GAP = 5;
 
-    private static final int PANEL_BG = 0xF20D1014;
-    private static final int PANEL_SURFACE = 0xF2161A20;
-    private static final int PANEL_SURFACE_ALT = 0xF21B2027;
-    private static final int PANEL_BORDER = 0xFF59616C;
-    private static final int PANEL_BORDER_SOFT = 0xFF303740;
-    private static final int TEXT_PRIMARY = 0xFFF2F4F7;
-    private static final int TEXT_SECONDARY = 0xFFAAB2BC;
-    private static final int TEXT_MUTED = 0xFF6F7883;
+    private static final int PANEL_BG = 0xF01B222A;
+    private static final int PANEL_SURFACE = 0xF02A323B;
+    private static final int PANEL_SURFACE_ALT = 0xF0343E49;
+    private static final int PANEL_BORDER = 0xFF87929E;
+    private static final int PANEL_BORDER_SOFT = 0xFF4D5864;
+    private static final int TEXT_PRIMARY = 0xFFF7F9FB;
+    private static final int TEXT_SECONDARY = 0xFFC7CED6;
+    private static final int TEXT_MUTED = 0xFF929CA7;
     private static final int ACCENT_GAME = 0xFFFFC857;
     private static final int ACCENT_COMPUTERS = 0xFF59B7E8;
     private static final int ACCENT_DANGER = 0xFFE05A63;
@@ -106,6 +107,9 @@ public class SettingsScreen extends Screen {
     private final List<SettingEntry> gameSettingEntries;
     private final List<SettingEntry> computerSettingEntries;
     private List<Component> hoveredTooltip = List.of();
+    private MapGuideRegistry.Entry hoveredMapPreview;
+    private String activeMapPreviewId;
+    private long mapPreviewStartedAt;
 
     public SettingsScreen() {
         super(Component.literal("Настройки матча"));
@@ -189,16 +193,21 @@ public class SettingsScreen extends Screen {
         renderPanel(gui, mouseX, mouseY, now, deltaSeconds, alpha);
         RenderSystem.disableBlend();
 
-        if (!hoveredTooltip.isEmpty() && visibility > 0.92f) {
+        if (hoveredMapPreview != null && visibility > 0.92f) {
+            renderMapPreviewCard(gui, hoveredMapPreview, mouseX, mouseY, now, alpha);
+        } else if (!hoveredTooltip.isEmpty() && visibility > 0.92f) {
             gui.renderComponentTooltip(font, hoveredTooltip, mouseX, mouseY);
+        }
+        if (hoveredMapPreview == null) {
+            activeMapPreviewId = null;
         }
     }
 
     private void renderBackdrop(GuiGraphics gui, long now, int alpha) {
         renderBackground(gui);
-        int backdropAlpha = Math.min(210, Math.round(alpha * 0.82f));
+        int backdropAlpha = Math.min(190, Math.round(alpha * 0.74f));
         gui.fillGradient(0, 0, width, height,
-                withAlpha(0xFF090C11, backdropAlpha), withAlpha(0xFF111820, backdropAlpha));
+                withAlpha(0xFF15202A, backdropAlpha), withAlpha(0xFF263746, backdropAlpha));
 
         int accent = accentColor();
         for (int i = 0; i < 18; i++) {
@@ -218,6 +227,7 @@ public class SettingsScreen extends Screen {
     private void renderPanel(GuiGraphics gui, int mouseX, int mouseY, long now,
                              float deltaSeconds, int alpha) {
         hoveredTooltip = List.of();
+        hoveredMapPreview = null;
 
         renderPanelShell(gui, alpha);
         renderHeader(gui, mouseX, mouseY, now, alpha);
@@ -235,7 +245,7 @@ public class SettingsScreen extends Screen {
         gui.fill(panelX - 7, panelY + 7, right + 7, bottom + 9,
                 withAlpha(0xFF000000, Math.min(alpha, 105)));
         gui.fill(panelX - 3, panelY - 3, right + 3, bottom + 3,
-                withAlpha(0xFF05070A, Math.min(alpha, 185)));
+                withAlpha(0xFF111820, Math.min(alpha, 185)));
         gui.fill(panelX, panelY, right, bottom, withAlpha(PANEL_BG, alpha));
         gui.renderOutline(panelX, panelY, panelWidth, panelHeight, withAlpha(PANEL_BORDER, alpha));
         gui.fill(panelX + 1, panelY + 1, right - 1, panelY + 3, withAlpha(accentColor(), alpha));
@@ -258,7 +268,7 @@ public class SettingsScreen extends Screen {
         int tileY = panelY + 13;
         int tileSize = 28;
         gui.fill(tileX, tileY, tileX + tileSize, tileY + tileSize,
-                withAlpha(0xFF20262E, alpha));
+                withAlpha(0xFF35404B, alpha));
         gui.renderOutline(tileX, tileY, tileSize, tileSize, withAlpha(accentColor(), alpha));
         gui.drawCenteredString(font, "MR", tileX + tileSize / 2, tileY + 10,
                 withAlpha(TEXT_PRIMARY, alpha));
@@ -308,14 +318,14 @@ public class SettingsScreen extends Screen {
 
         gui.fill(panelX + 1, panelY + HEADER_HEIGHT + 1,
                 panelX + sidebarWidth, footerY,
-                withAlpha(0xFF101419, alpha));
+                withAlpha(0xFF222A33, alpha));
 
         gui.drawString(font, "РАЗДЕЛЫ", sideLeft + 2, panelY + HEADER_HEIGHT + 10,
                 withAlpha(TEXT_MUTED, alpha), false);
 
         int indicatorY = Math.round(categoryIndicatorY);
         gui.fill(sideLeft, indicatorY, sideRight, indicatorY + indicatorHeight,
-                withAlpha(0xFF20262D, alpha));
+                withAlpha(0xFF37424D, alpha));
         gui.fill(sideLeft, indicatorY, sideLeft + 2, indicatorY + indicatorHeight,
                 withAlpha(accentColor(), alpha));
 
@@ -338,7 +348,7 @@ public class SettingsScreen extends Screen {
         boolean hovered = inside(mouseX, mouseY, x, y, width, 37);
         boolean selected = currentCategory == category;
         if (hovered && !selected) {
-            gui.fill(x, y, x + width, y + 37, withAlpha(0xFF1A2026, alpha));
+            gui.fill(x, y, x + width, y + 37, withAlpha(0xFF313B45, alpha));
         }
 
         int color = selected ? accentColor(category) : hovered ? TEXT_PRIMARY : TEXT_SECONDARY;
@@ -423,7 +433,7 @@ public class SettingsScreen extends Screen {
         int badgeX = x + 10;
         int badgeY = y + 12;
         gui.fill(badgeX, badgeY, badgeX + 20, badgeY + 20,
-                withAlpha(0xFF11151A, alpha));
+                withAlpha(0xFF242D36, alpha));
         gui.renderOutline(badgeX, badgeY, 20, 20,
                 withAlpha(entry.isDefault().getAsBoolean() ? PANEL_BORDER_SOFT : accent, alpha));
         String number = String.format(Locale.ROOT, "%02d", index + 1);
@@ -442,6 +452,8 @@ public class SettingsScreen extends Screen {
         }
 
         boolean minusHover = inside(mouseX, mouseY, controls.minusX(), y + 11, 20, 23);
+        boolean valueHover = inside(mouseX, mouseY, controls.valueX(), y + 11,
+                controls.valueWidth(), 23);
         boolean plusHover = inside(mouseX, mouseY, controls.plusX(), y + 11, 20, 23);
         boolean resetHover = inside(mouseX, mouseY, controls.resetX(), y + 13, 18, 19);
 
@@ -450,7 +462,7 @@ public class SettingsScreen extends Screen {
 
         long pulseStarted = valuePulse.getOrDefault(entry.id(), 0L);
         float pulse = Mth.clamp(1.0f - (now - pulseStarted) / 360.0f, 0.0f, 1.0f);
-        int valueBg = lerpColor(0xFF101419, accent, pulse * 0.28f);
+        int valueBg = lerpColor(0xFF202831, accent, pulse * 0.28f);
         int valueBorder = lerpColor(PANEL_BORDER, accent, Math.max(hover * 0.45f, pulse));
         gui.fill(controls.valueX(), y + 11,
                 controls.valueX() + controls.valueWidth(), y + 34,
@@ -474,6 +486,13 @@ public class SettingsScreen extends Screen {
                 setTooltip("Увеличить", "Зажмите Shift, чтобы изменить значение в 5 раз быстрее.", hint);
             } else if (resetHover) {
                 setTooltip("Сбросить параметр", "Вернуть стандартное значение.", hint);
+            } else if (entry.id().equals("map") && valueHover && tempSelectedMap != 0) {
+                hoveredMapPreview = selectedMapGuideEntry();
+                if (hoveredMapPreview != null) {
+                    hoveredTooltip = List.of();
+                } else {
+                    setTooltip(entry.title(), entry.tooltip(), hint);
+                }
             } else {
                 setTooltip(entry.title(), entry.tooltip(), hint);
             }
@@ -557,7 +576,7 @@ public class SettingsScreen extends Screen {
             border = hovered ? 0xFFFFFFFF : lerpColor(accent, 0xFFFFFFFF, 0.28f);
             text = 0xFF0D1115;
         } else {
-            bg = hovered ? lerpColor(0xFF171C22, accent, 0.17f) : 0xFF171C22;
+            bg = hovered ? lerpColor(0xFF28323C, accent, 0.17f) : 0xFF28323C;
             border = hovered ? accent : PANEL_BORDER_SOFT;
             text = hovered ? TEXT_PRIMARY : TEXT_SECONDARY;
         }
@@ -607,6 +626,88 @@ public class SettingsScreen extends Screen {
         gui.enableScissor(x, y - 2, x + availableWidth, y + 11);
         gui.drawString(font, text, x - Math.round(overflow * travel), y, color, false);
         gui.disableScissor();
+    }
+
+    private void renderMapPreviewCard(GuiGraphics gui, MapGuideRegistry.Entry map,
+                                      int mouseX, int mouseY, long now, int screenAlpha) {
+        if (!map.id().equals(activeMapPreviewId)) {
+            activeMapPreviewId = map.id();
+            mapPreviewStartedAt = now;
+        }
+
+        float reveal = easeOutCubic(Mth.clamp((now - mapPreviewStartedAt) / 170.0f, 0.0f, 1.0f));
+        int alpha = Math.min(screenAlpha, Math.round(255.0f * reveal));
+        int cardWidth = Math.min(286, Math.max(230, width - 16));
+        int cardHeight = 137;
+        int x = mouseX + 14;
+        if (x + cardWidth > width - 8) {
+            x = mouseX - cardWidth - 14;
+        }
+        x = Mth.clamp(x, 8, Math.max(8, width - cardWidth - 8));
+
+        int y = mouseY + 12;
+        if (y + cardHeight > height - 8) {
+            y = mouseY - cardHeight - 12;
+        }
+        y = Mth.clamp(y + Math.round((1.0f - reveal) * 5.0f),
+                8, Math.max(8, height - cardHeight - 8));
+
+        // Text rendering is buffered. Flush the settings panel first, then place the entire
+        // preview on the same elevated layer used by vanilla tooltips so older labels cannot
+        // be emitted over the card afterwards.
+        gui.flush();
+        gui.pose().pushPose();
+        gui.pose().translate(0.0f, 0.0f, 400.0f);
+        RenderSystem.disableDepthTest();
+
+        gui.fill(x + 5, y + 6, x + cardWidth + 5, y + cardHeight + 6,
+                withAlpha(0xFF000000, Math.min(alpha, 105)));
+        gui.fill(x, y, x + cardWidth, y + cardHeight, withAlpha(0xFF35414D, alpha));
+        gui.renderOutline(x, y, cardWidth, cardHeight, withAlpha(PANEL_BORDER, alpha));
+        gui.fill(x + 1, y + 1, x + cardWidth - 1, y + 3,
+                withAlpha(ACCENT_GAME, alpha));
+
+        gui.drawString(font, "КАРТА ИЗ ГАЙДА", x + 10, y + 9,
+                withAlpha(TEXT_MUTED, alpha), false);
+
+        int imageX = x + 10;
+        int imageY = y + 24;
+        int imageWidth = 118;
+        int imageHeight = 68;
+        gui.fill(imageX - 1, imageY - 1, imageX + imageWidth + 1, imageY + imageHeight + 1,
+                withAlpha(0xFF171D24, alpha));
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha / 255.0f);
+        gui.blit(map.previewTexture(), imageX, imageY, 0, 0,
+                imageWidth, imageHeight, imageWidth, imageHeight);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem.disableBlend();
+        gui.renderOutline(imageX - 1, imageY - 1, imageWidth + 2, imageHeight + 2,
+                withAlpha(PANEL_BORDER, alpha));
+
+        int infoX = imageX + imageWidth + 11;
+        int infoWidth = Math.max(70, x + cardWidth - infoX - 10);
+        gui.drawString(font, trimToWidth(map.name(), infoWidth), infoX, imageY + 1,
+                withAlpha(TEXT_PRIMARY, alpha), false);
+        gui.drawString(font, "Размер", infoX, imageY + 18,
+                withAlpha(TEXT_MUTED, alpha), false);
+        gui.drawString(font, trimToWidth(map.size(), infoWidth), infoX, imageY + 29,
+                withAlpha(TEXT_SECONDARY, alpha), false);
+        gui.drawString(font, "Сложность", infoX, imageY + 45,
+                withAlpha(TEXT_MUTED, alpha), false);
+        gui.drawString(font, trimToWidth(map.difficultyStars(), infoWidth), infoX, imageY + 56,
+                withAlpha(ACCENT_GAME, alpha), false);
+
+        List<String> description = wrapText(map.description(), cardWidth - 20);
+        int descriptionY = y + 101;
+        for (int i = 0; i < Math.min(3, description.size()); i++) {
+            gui.drawString(font, description.get(i), x + 10, descriptionY + i * 10,
+                    withAlpha(TEXT_SECONDARY, alpha), false);
+        }
+
+        gui.flush();
+        RenderSystem.enableDepthTest();
+        gui.pose().popPose();
     }
 
     @Override
@@ -976,7 +1077,16 @@ public class SettingsScreen extends Screen {
             return "Голосование";
         }
         MapData map = MapRegistry.getMapByNumericId(tempSelectedMap);
-        return map != null ? map.getName() : "Неизвестная карта";
+        if (map == null) {
+            return "Неизвестная карта";
+        }
+        MapGuideRegistry.Entry guideEntry = MapGuideRegistry.getById(map.getId());
+        return guideEntry != null ? guideEntry.name() : map.getName();
+    }
+
+    private MapGuideRegistry.Entry selectedMapGuideEntry() {
+        MapData map = MapRegistry.getMapByNumericId(tempSelectedMap);
+        return map != null ? MapGuideRegistry.getById(map.getId()) : null;
     }
 
     private void resetCategory() {
