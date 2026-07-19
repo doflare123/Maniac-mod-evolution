@@ -125,12 +125,16 @@ public class GameManager {
     // === Таймер ===
 
     public static void startTimer() {
-        currentTime = maxGameTime;
+        // Resume a configured or paused timer instead of discarding its value.
+        // A timer with no time left starts a fresh countdown from the configured maximum.
+        if (currentTime <= 0) {
+            currentTime = maxGameTime;
+        }
         timerRunning = true;
         maniacGlowing = false;
         clearManiacPhaseGlowing();
         syncGameState();
-        Maniacrev.LOGGER.info("Timer started: {} seconds", maxGameTime / 20);
+        Maniacrev.LOGGER.info("Timer started: {} seconds", currentTime / 20);
     }
 
     public static void stopTimer() {

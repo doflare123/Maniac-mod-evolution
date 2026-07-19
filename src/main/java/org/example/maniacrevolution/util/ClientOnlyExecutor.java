@@ -83,6 +83,12 @@ public final class ClientOnlyExecutor {
                 new Object[]{targetName, money, shopItems});
     }
 
+    public static void updateAgent47HeldTabletData(UUID targetUuid, int healthPercent) {
+        run("updateAgent47HeldTabletData",
+                new Class<?>[]{UUID.class, int.class},
+                new Object[]{targetUuid, healthPercent});
+    }
+
     public static void updateDeadPlayers(List<RequestDeadPlayersPacket.DeadPlayerInfo> deadPlayers) {
         run("updateDeadPlayers", new Class<?>[]{List.class}, new Object[]{deadPlayers});
     }

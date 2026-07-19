@@ -2,11 +2,13 @@ package org.example.maniacrevolution.client;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.block.entity.ModBlockEntities;
 import org.example.maniacrevolution.client.renderer.MimicBlockRenderer;
+import org.example.maniacrevolution.client.renderer.Agent47TabletItemRenderer;
 import org.example.maniacrevolution.client.renderer.NetherSwapProjectileRenderer;
 import org.example.maniacrevolution.client.renderer.NightmareCocoonRenderer;
 import org.example.maniacrevolution.client.renderer.PlagueOrbRenderer;
@@ -16,6 +18,11 @@ import org.example.maniacrevolution.hack.client.ComputerBlockRenderer;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientSetupEvents {
+
+    @SubscribeEvent
+    public static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
+        event.register(Agent47TabletItemRenderer.BASE_MODEL);
+    }
 
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {

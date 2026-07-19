@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "2";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -407,6 +407,12 @@ public class ModNetworking {
                 .encoder(SyncJackpotMusicPacket::encode)
                 .decoder(SyncJackpotMusicPacket::decode)
                 .consumerMainThread(SyncJackpotMusicPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(Agent47HeldTabletDataPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(Agent47HeldTabletDataPacket::decode)
+                .encoder(Agent47HeldTabletDataPacket::encode)
+                .consumerMainThread(Agent47HeldTabletDataPacket::handle)
                 .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);

@@ -92,6 +92,10 @@ public class ClientScreenHelper {
         org.example.maniacrevolution.gui.Agent47TabletScreen.updateData(targetName, money, shopItems);
     }
 
+    public static void updateAgent47HeldTabletData(UUID targetUuid, int healthPercent) {
+        ClientAgent47TargetData.update(targetUuid, healthPercent);
+    }
+
     public static void updateDeadPlayers(List<RequestDeadPlayersPacket.DeadPlayerInfo> deadPlayers) {
         org.example.maniacrevolution.gui.ResurrectionScreen.updateDeadPlayers(deadPlayers);
     }
