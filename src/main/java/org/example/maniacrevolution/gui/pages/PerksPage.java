@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.gui.GuideScreen;
+import org.example.maniacrevolution.gui.GuideTheme;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.perk.Perk;
 import org.example.maniacrevolution.perk.PerkPhase;
@@ -47,20 +48,19 @@ public class PerksPage extends GuidePage {
 
     private void renderBackButton(GuiGraphics gui, int mouseX, int mouseY) {
         int btnX = guiLeft + 5;
-        int btnY = guiTop + 5;
+        int btnY = guiTop + 10;
         int btnW = 80;
         int btnH = 18;
 
-        boolean hovered = mouseX >= btnX && mouseX < btnX + btnW && mouseY >= btnY && mouseY < btnY + btnH;
-
-        gui.fill(btnX, btnY, btnX + btnW, btnY + btnH, hovered ? 0xFF444444 : 0xFF333333);
-        gui.renderOutline(btnX, btnY, btnW, btnH, 0xFF666666);
-        gui.drawCenteredString(font, "← Главная", btnX + btnW / 2, btnY + 5, 0xFFFFFF);
+        GuideTheme.drawBackButton(gui, font, btnX, btnY, btnW,
+                "← Главная", GuideTheme.GREEN, mouseX, mouseY);
     }
 
     private void renderPerkList(GuiGraphics gui, int mouseX, int mouseY) {
         // Заголовок
-        gui.drawCenteredString(font, "§6§lПерки и способности", guiLeft + guiWidth / 2, guiTop + 28, 0xFFFFFF);
+        GuideTheme.drawPageTitle(gui, font, "ПЕРКИ И СПОСОБНОСТИ",
+                "Выберите команду и изучите доступные эффекты",
+                guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.GREEN);
 
         // Кнопки категорий
         int btnY = guiTop + 45;
@@ -70,7 +70,7 @@ public class PerksPage extends GuidePage {
         int startX = guiLeft + (guiWidth - (btnWidth * 3 + spacing * 2)) / 2;
 
         renderCategoryButton(gui, mouseX, mouseY, startX, btnY, btnWidth, btnHeight, "§fОбщие", Chapter.COMMON);
-        renderCategoryButton(gui, mouseX, mouseY, startX + btnWidth + spacing, btnY, btnWidth, btnHeight, "§aВыжившие", Chapter.SURVIVORS);
+        renderCategoryButton(gui, mouseX, mouseY, startX + btnWidth + spacing, btnY, btnWidth, btnHeight, "§bВыжившие", Chapter.SURVIVORS);
         renderCategoryButton(gui, mouseX, mouseY, startX + (btnWidth + spacing) * 2, btnY, btnWidth, btnHeight, "§cМаньяки", Chapter.MANIACS);
 
         // Список перков
@@ -99,8 +99,8 @@ public class PerksPage extends GuidePage {
 
         // Подсказка
         if (perks.size() > 5) {
-            gui.drawString(font, "§8Прокрутка: колёсико мыши", guiLeft + guiWidth - 140,
-                    guiTop + guiHeight - 12, 0x666666, false);
+            GuideTheme.drawScrollHint(gui, font, guiLeft + guiWidth - 6,
+                    guiTop + guiHeight - 5);
         }
     }
 
@@ -108,28 +108,25 @@ public class PerksPage extends GuidePage {
         boolean selected = currentChapter == chapter;
         boolean hovered = mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
 
-        int bgColor = selected ? 0xFF444444 : (hovered ? 0xFF3a3a3a : 0xFF2a2a2a);
-        gui.fill(x, y, x + width, y + height, bgColor);
-        gui.renderOutline(x, y, width, height, selected ? 0xFFFFAA00 : 0xFF666666);
-        gui.drawCenteredString(font, text, x + width / 2, y + 5, 0xFFFFFF);
+        GuideTheme.drawButton(gui, font, x, y, width, height, text,
+                chapterAccent(chapter), hovered, selected);
     }
 
     private void renderPerkEntry(GuiGraphics gui, Perk perk, int x, int y, boolean hovered) {
         int width = guiWidth - 20;
         int height = 33;
 
-        gui.fill(x, y, x + width, y + height, hovered ? 0xAA444444 : 0x80333333);
-        if (hovered) gui.renderOutline(x, y, width, height, 0xFFFFAA00);
+        GuideTheme.drawCard(gui, x, y, width, height, GuideTheme.GREEN, hovered);
 
         // Иконка
         renderPerkIcon(gui, perk, x + 3, y + 3, 28);
 
         // Название
-        gui.drawString(font, "§f" + perk.getName().getString(), x + 35, y + 5, 0xFFFFFF, false);
+        gui.drawString(font, perk.getName().getString(), x + 35, y + 5, GuideTheme.TEXT, false);
 
         // Тип и команда
         String info = perk.getType().getDisplayName().getString() + " | " + perk.getTeam().getDisplayName().getString();
-        gui.drawString(font, "§7" + info, x + 35, y + 17, 0xAAAAAA, false);
+        gui.drawString(font, info, x + 35, y + 17, GuideTheme.TEXT_MUTED, false);
 
         // КД
         if (perk.getCooldownTicks() > 0) {
@@ -165,13 +162,13 @@ public class PerksPage extends GuidePage {
         int btnY = guiTop + guiHeight - 25;
         boolean hovered = mouseX >= btnX && mouseX < btnX + 70 && mouseY >= btnY && mouseY < btnY + 20;
 
-        gui.fill(btnX, btnY, btnX + 70, btnY + 20, hovered ? 0xFF555555 : 0xFF333333);
-        gui.renderOutline(btnX, btnY, 70, 20, 0xFF888888);
-        gui.drawCenteredString(font, "← Назад", btnX + 35, btnY + 6, 0xFFFFFF);
+        GuideTheme.drawButton(gui, font, btnX, btnY, 70, 20, "← Назад",
+                GuideTheme.GREEN, hovered, false);
 
         // Заголовок
-        gui.drawCenteredString(font, "§6§l" + selectedPerk.getName().getString(),
-                guiLeft + guiWidth / 2, guiTop + 30, 0xFFFFFF);
+        GuideTheme.drawPageTitle(gui, font, selectedPerk.getName().getString(),
+                "Подробное описание способности",
+                guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.GREEN);
 
         int x = guiLeft + 15;
         int y = guiTop + 50;
@@ -198,7 +195,7 @@ public class PerksPage extends GuidePage {
         }
 
         y += 8;
-        gui.fill(x, y, x + maxWidth, y + 1, 0xFF555555);
+        gui.fill(x, y, x + maxWidth, y + 1, GuideTheme.BORDER_SOFT);
         y += 10;
 
         gui.drawString(font, "§e§lОписание:", x, y, 0xFFFFFF, false);
@@ -266,7 +263,7 @@ public class PerksPage extends GuidePage {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
             // Кнопка "Назад на главную"
-            if (mouseX >= guiLeft + 5 && mouseX < guiLeft + 85 && mouseY >= guiTop + 5 && mouseY < guiTop + 23) {
+            if (mouseX >= guiLeft + 5 && mouseX < guiLeft + 85 && mouseY >= guiTop + 10 && mouseY < guiTop + 28) {
                 parent.switchPage(PageType.MAIN);
                 return true;
             }
@@ -336,6 +333,14 @@ public class PerksPage extends GuidePage {
             case COMMON -> PerkRegistry.getCommonPerks();
             case SURVIVORS -> PerkRegistry.getSurvivorPerks();
             case MANIACS -> PerkRegistry.getManiacPerks();
+        };
+    }
+
+    private int chapterAccent(Chapter chapter) {
+        return switch (chapter) {
+            case COMMON -> GuideTheme.BLUE;
+            case SURVIVORS -> GuideTheme.BLUE;
+            case MANIACS -> GuideTheme.RED;
         };
     }
 

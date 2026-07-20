@@ -9,6 +9,7 @@ import org.example.maniacrevolution.character.CharacterRegistry;
 import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.character.TagRegistry;
 import org.example.maniacrevolution.gui.GuideScreen;
+import org.example.maniacrevolution.gui.GuideTheme;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -397,21 +398,19 @@ public class CharactersPage extends GuidePage {
 
     private void renderBackButton(GuiGraphics gui, int mouseX, int mouseY) {
         int btnX = guiLeft + 5;
-        int btnY = guiTop + 5;
+        int btnY = guiTop + 10;
         int btnW = 80;
         int btnH = 18;
 
-        boolean hovered = mouseX >= btnX && mouseX < btnX + btnW && mouseY >= btnY && mouseY < btnY + btnH;
-
-        gui.fill(btnX, btnY, btnX + btnW, btnY + btnH, hovered ? 0xFF444444 : 0xFF333333);
-        gui.renderOutline(btnX, btnY, btnW, btnH, 0xFF666666);
-        gui.drawCenteredString(font, "← Главная", btnX + btnW / 2, btnY + 5, 0xFFFFFF);
+        GuideTheme.drawBackButton(gui, font, btnX, btnY, btnW,
+                "← Главная", GuideTheme.PURPLE, mouseX, mouseY);
     }
 
     private void renderCharacterList(GuiGraphics gui, int mouseX, int mouseY) {
         // Заголовок
-        gui.drawCenteredString(font, "§6§lПерсонажи режима",
-                guiLeft + guiWidth / 2, guiTop + 28, 0xFFFFFF);
+        GuideTheme.drawPageTitle(gui, font, "ПЕРСОНАЖИ РЕЖИМА",
+                "Роли, сложность и уникальные возможности",
+                guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.PURPLE);
 
         // Фильтры по типу
         renderTypeFilters(gui, mouseX, mouseY);
@@ -467,7 +466,7 @@ public class CharactersPage extends GuidePage {
         int startX = guiLeft + (guiWidth - (btnWidth * 3 + spacing * 2)) / 2;
 
         renderFilterButton(gui, mouseX, mouseY, startX, btnY, btnWidth, btnHeight, "§fВсе", null);
-        renderFilterButton(gui, mouseX, mouseY, startX + btnWidth + spacing, btnY, btnWidth, btnHeight, "§aВыжившие", CharacterType.SURVIVOR);
+        renderFilterButton(gui, mouseX, mouseY, startX + btnWidth + spacing, btnY, btnWidth, btnHeight, "§bВыжившие", CharacterType.SURVIVOR);
         renderFilterButton(gui, mouseX, mouseY, startX + (btnWidth + spacing) * 2, btnY, btnWidth, btnHeight, "§cМаньяки", CharacterType.MANIAC);
     }
 
@@ -475,10 +474,10 @@ public class CharactersPage extends GuidePage {
         boolean selected = (currentFilter == type);
         boolean hovered = mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
 
-        int bgColor = selected ? 0xFF444444 : (hovered ? 0xFF3a3a3a : 0xFF2a2a2a);
-        gui.fill(x, y, x + width, y + height, bgColor);
-        gui.renderOutline(x, y, width, height, selected ? 0xFFFFAA00 : 0xFF666666);
-        gui.drawCenteredString(font, text, x + width / 2, y + 5, 0xFFFFFF);
+        int accent = type == CharacterType.SURVIVOR ? GuideTheme.BLUE
+                : type == CharacterType.MANIAC ? GuideTheme.RED : GuideTheme.PURPLE;
+        GuideTheme.drawButton(gui, font, x, y, width, height, text,
+                accent, hovered, selected);
     }
 
     private void renderTagFilter(GuiGraphics gui, int mouseX, int mouseY, int y) {
@@ -504,10 +503,8 @@ public class CharactersPage extends GuidePage {
 
             boolean hovered = mouseX >= tagX && mouseX < tagX + tagWidth && mouseY >= tagY && mouseY < tagY + 16;
 
-            int bgColor = selected ? 0xFF555555 : (hovered ? 0xFF3a3a3a : 0xFF2a2a2a);
-            gui.fill(tagX, tagY, tagX + tagWidth, tagY + 16, bgColor);
-            gui.renderOutline(tagX, tagY, tagWidth, 16, selected ? 0xFFFFAA00 : 0xFF666666);
-            gui.drawCenteredString(font, "§f" + tag, tagX + tagWidth / 2, tagY + 4, 0xFFFFFF);
+            GuideTheme.drawButton(gui, font, tagX, tagY, tagWidth, 16, tag,
+                    GuideTheme.PURPLE, hovered, selected);
 
             tagX += tagWidth + 3;
             displayedTags++;
@@ -528,10 +525,8 @@ public class CharactersPage extends GuidePage {
         int height = SCALED_FRESCO_HEIGHT + 5;
 
         // Фон
-        gui.fill(x, y, x + width, y + height, hovered ? 0xAA444444 : 0x80333333);
-        if (hovered) {
-            gui.renderOutline(x, y, width, height, 0xFFFFAA00);
-        }
+        int accent = GuideTheme.PURPLE;
+        GuideTheme.drawCard(gui, x, y, width, height, accent, hovered);
 
         // Фреска
         renderFresco(gui, character, x + 5, y + 3, FRESCO_SCALE);
@@ -541,7 +536,7 @@ public class CharactersPage extends GuidePage {
         int infoY = y + 10;
 
         // Имя
-        String typeColor = character.getType() == CharacterType.SURVIVOR ? "§a" : "§c";
+        String typeColor = character.getType() == CharacterType.SURVIVOR ? "§b" : "§c";
         gui.drawString(font, typeColor + "§l" + character.getName(), infoX, infoY, 0xFFFFFF, false);
         infoY += 12;
 
@@ -565,7 +560,7 @@ public class CharactersPage extends GuidePage {
 
         // Подсказка при наведении
         if (hovered) {
-            gui.drawString(font, "§e§oКлик для подробностей →", infoX, y + height - 15, 0xFFAA00, false);
+            gui.drawString(font, "Подробнее  →", infoX, y + height - 15, accent, false);
         }
     }
 
@@ -599,9 +594,8 @@ public class CharactersPage extends GuidePage {
         int btnY = guiTop + guiHeight - 25;
         boolean hovered = mouseX >= btnX && mouseX < btnX + 70 && mouseY >= btnY && mouseY < btnY + 20;
 
-        gui.fill(btnX, btnY, btnX + 70, btnY + 20, hovered ? 0xFF555555 : 0xFF333333);
-        gui.renderOutline(btnX, btnY, 70, 20, 0xFF888888);
-        gui.drawCenteredString(font, "← Назад", btnX + 35, btnY + 6, 0xFFFFFF);
+        GuideTheme.drawButton(gui, font, btnX, btnY, 70, 20, "← Назад",
+                GuideTheme.PURPLE, hovered, false);
 
         // ИСПРАВЛЕНО: Рассчитываем точную высоту контента
         int contentStartY = guiTop + 35;
@@ -666,7 +660,7 @@ public class CharactersPage extends GuidePage {
         detailScrollOffset = Math.min(detailScrollOffset, maxScroll);
 
         // Область скролла
-        gui.enableScissor(guiLeft + 5, guiTop + 30, guiLeft + guiWidth - 5, guiTop + guiHeight - 30);
+        gui.enableScissor(guiLeft + 5, guiTop + 35, guiLeft + guiWidth - 5, guiTop + guiHeight - 30);
 
         int y = contentStartY - detailScrollOffset;
 
@@ -676,7 +670,7 @@ public class CharactersPage extends GuidePage {
 //        y += (int)(FRESCO_HEIGHT * 0.5f) + 10;
 
         // Имя
-        String typeColor = selectedCharacter.getType() == CharacterType.SURVIVOR ? "§a" : "§c";
+        String typeColor = selectedCharacter.getType() == CharacterType.SURVIVOR ? "§b" : "§c";
         gui.drawCenteredString(font, typeColor + "§l" + selectedCharacter.getName(),
                 guiLeft + guiWidth / 2, y, 0xFFFFFF);
         y += 15;
@@ -753,7 +747,7 @@ public class CharactersPage extends GuidePage {
         // ── Дополнительные секции для конкретного персонажа ──────────────────
         if (EXTRA_SECTIONS.containsKey(selectedCharacter.getId())) {
             y += 8;
-            gui.fill(guiLeft + 15, y, guiLeft + guiWidth - 15, y + 1, 0xFF555555);
+            gui.fill(guiLeft + 15, y, guiLeft + guiWidth - 15, y + 1, GuideTheme.BORDER_SOFT);
             y += 6;
             y = renderExtraSections(gui, selectedCharacter.getId(), y, maxWidth);
         }
@@ -762,8 +756,8 @@ public class CharactersPage extends GuidePage {
 
         // ИСПРАВЛЕНО: Показываем индикатор только если есть что прокручивать
         if (totalContentHeight > visibleHeight) {
-            gui.drawString(font, "§8↑↓ Прокрутка", guiLeft + guiWidth - 85,
-                    guiTop + guiHeight - 32, 0xAAAAAA, false);
+            GuideTheme.drawScrollHint(gui, font, guiLeft + guiWidth - 6,
+                    guiTop + guiHeight - 5);
         }
     }
 
@@ -787,7 +781,7 @@ public class CharactersPage extends GuidePage {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
             // Кнопка "Назад на главную"
-            if (mouseX >= guiLeft + 5 && mouseX < guiLeft + 85 && mouseY >= guiTop + 5 && mouseY < guiTop + 23) {
+            if (mouseX >= guiLeft + 5 && mouseX < guiLeft + 85 && mouseY >= guiTop + 10 && mouseY < guiTop + 28) {
                 parent.switchPage(PageType.MAIN);
                 return true;
             }

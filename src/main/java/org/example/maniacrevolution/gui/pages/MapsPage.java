@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.gui.GuideScreen;
+import org.example.maniacrevolution.gui.GuideTheme;
 import org.example.maniacrevolution.guide.MapGuideRegistry;
 
 import java.util.ArrayList;
@@ -46,23 +47,18 @@ public class MapsPage extends GuidePage {
 
     private void renderBackButton(GuiGraphics gui, int mouseX, int mouseY) {
         int btnX = guiLeft + 5;
-        int btnY = guiTop + 5;
+        int btnY = guiTop + 10;
         int btnW = 80;
         int btnH = 18;
 
-        boolean hovered = mouseX >= btnX && mouseX < btnX + btnW && mouseY >= btnY && mouseY < btnY + btnH;
-
-        gui.fill(btnX, btnY, btnX + btnW, btnY + btnH, hovered ? 0xFF444444 : 0xFF333333);
-        gui.renderOutline(btnX, btnY, btnW, btnH, 0xFF666666);
-        gui.drawCenteredString(font, "← Главная", btnX + btnW / 2, btnY + 5, 0xFFFFFF);
+        GuideTheme.drawBackButton(gui, font, btnX, btnY, btnW,
+                "← Главная", GuideTheme.RED, mouseX, mouseY);
     }
 
     private void renderMapList(GuiGraphics gui, int mouseX, int mouseY) {
-        gui.drawCenteredString(font, "§6§lКарты и их особенности",
-                guiLeft + guiWidth / 2, guiTop + 28, 0xFFFFFF);
-
-        gui.drawCenteredString(font, "§7Нажмите на карту для подробностей",
-                guiLeft + guiWidth / 2, guiTop + 42, 0xAAAAAA);
+        GuideTheme.drawPageTitle(gui, font, "КАРТЫ И АРЕНЫ",
+                "Размер, сложность и уникальные особенности",
+                guiLeft + guiWidth / 2, guiTop + 11, GuideTheme.RED);
 
         int y = guiTop + 60 - scrollOffset;
         int entryHeight = 90;
@@ -83,8 +79,8 @@ public class MapsPage extends GuidePage {
         gui.disableScissor();
 
         if (maps.size() > 2) {
-            gui.drawString(font, "§8Прокрутка: колёсико мыши", guiLeft + guiWidth - 140,
-                    guiTop + guiHeight - 12, 0x666666, false);
+            GuideTheme.drawScrollHint(gui, font, guiLeft + guiWidth - 6,
+                    guiTop + guiHeight - 5);
         }
     }
 
@@ -92,25 +88,30 @@ public class MapsPage extends GuidePage {
         int width = guiWidth - 20;
         int height = 85;
 
-        gui.fill(x, y, x + width, y + height, hovered ? 0xAA444444 : 0x80333333);
-        if (hovered) {
-            gui.renderOutline(x, y, width, height, 0xFFFFAA00);
-        }
+        GuideTheme.drawCard(gui, x, y, width, height, GuideTheme.RED, hovered);
 
         // Превью карты
         renderMapPreview(gui, map, x + 5, y + 5, 75, 75);
 
         // Название
-        gui.drawString(font, "§6§l" + map.name(), x + 85, y + 8, 0xFFFFFF, false);
+        gui.drawString(font, map.name(), x + 85, y + 8, GuideTheme.TEXT, false);
 
         // Описание
         List<String> descLines = wrapText(map.description(), width - 95);
         for (int i = 0; i < Math.min(3, descLines.size()); i++) {
-            gui.drawString(font, descLines.get(i), x + 85, y + 22 + i * 11, 0xAAAAAA, false);
+            gui.drawString(font, descLines.get(i), x + 85, y + 22 + i * 11,
+                    GuideTheme.TEXT_SECONDARY, false);
         }
 
+        gui.drawString(font, "Размер: " + map.size(), x + 85, y + 56,
+                GuideTheme.TEXT_MUTED, false);
+        String difficulty = map.difficultyStars();
+        gui.drawString(font, difficulty, x + width - font.width(difficulty) - 8, y + 56,
+                GuideTheme.GOLD, false);
+
         if (hovered) {
-            gui.drawString(font, "§e§oКлик для подробностей →", x + 85, y + height - 15, 0xFFAA00, false);
+            gui.drawString(font, "Подробнее  →", x + width - font.width("Подробнее  →") - 8,
+                    y + height - 15, GuideTheme.RED, false);
         }
     }
 
@@ -124,9 +125,9 @@ public class MapsPage extends GuidePage {
             RenderSystem.disableBlend();
         } catch (Exception e) {
             // Placeholder
-            gui.fill(x, y, x + width, y + height, 0xFF555555);
-            gui.renderOutline(x, y, width, height, 0xFF888888);
-            gui.drawCenteredString(font, "§8🗺", x + width / 2, y + height / 2 - 5, 0xFFFFFF);
+            gui.fill(x, y, x + width, y + height, GuideTheme.SURFACE);
+            gui.renderOutline(x, y, width, height, GuideTheme.BORDER);
+            gui.drawCenteredString(font, "?", x + width / 2, y + height / 2 - 5, GuideTheme.TEXT_MUTED);
         }
     }
 
@@ -136,13 +137,13 @@ public class MapsPage extends GuidePage {
         int btnY = guiTop + guiHeight - 25;
         boolean hovered = mouseX >= btnX && mouseX < btnX + 70 && mouseY >= btnY && mouseY < btnY + 20;
 
-        gui.fill(btnX, btnY, btnX + 70, btnY + 20, hovered ? 0xFF555555 : 0xFF333333);
-        gui.renderOutline(btnX, btnY, 70, 20, 0xFF888888);
-        gui.drawCenteredString(font, "← Назад", btnX + 35, btnY + 6, 0xFFFFFF);
+        GuideTheme.drawButton(gui, font, btnX, btnY, 70, 20, "← Назад",
+                GuideTheme.RED, hovered, false);
 
         // Заголовок
-        gui.drawCenteredString(font, "§6§l" + selectedMap.name(),
-                guiLeft + guiWidth / 2, guiTop + 30, 0xFFFFFF);
+        GuideTheme.drawPageTitle(gui, font, selectedMap.name(),
+                "Подробности выбранной арены",
+                guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.RED);
 
         // ИСПРАВЛЕНО: Область с прокруткой для контента
         gui.enableScissor(guiLeft + 5, guiTop + 45, guiLeft + guiWidth - 5, guiTop + guiHeight - 30);
@@ -156,12 +157,12 @@ public class MapsPage extends GuidePage {
         y += 110;
 
         // Описание
-        gui.drawString(font, selectedMap.description(), guiLeft + 15, y, 0xFFFFFF, false);
+        gui.drawString(font, selectedMap.description(), guiLeft + 15, y, GuideTheme.TEXT, false);
         y += 15;
 
         // Детали
         for (String detail : selectedMap.details()) {
-            gui.drawString(font, detail, guiLeft + 15, y, 0xFFFFFF, false);
+            gui.drawString(font, detail, guiLeft + 15, y, GuideTheme.TEXT, false);
             y += 11;
         }
 
@@ -180,8 +181,8 @@ public class MapsPage extends GuidePage {
         int visibleHeight = guiHeight - 75; // Высота видимой области
 
         if (totalHeight > visibleHeight) {
-            gui.drawString(font, "§8↑↓ Прокрутка", guiLeft + guiWidth - 80,
-                    guiTop + guiHeight - 30, 0x666666, false);
+            GuideTheme.drawScrollHint(gui, font, guiLeft + guiWidth - 6,
+                    guiTop + guiHeight - 5);
         }
     }
 
@@ -189,7 +190,7 @@ public class MapsPage extends GuidePage {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
             // Кнопка "Назад на главную"
-            if (mouseX >= guiLeft + 5 && mouseX < guiLeft + 85 && mouseY >= guiTop + 5 && mouseY < guiTop + 23) {
+            if (mouseX >= guiLeft + 5 && mouseX < guiLeft + 85 && mouseY >= guiTop + 10 && mouseY < guiTop + 28) {
                 parent.switchPage(PageType.MAIN);
                 return true;
             }

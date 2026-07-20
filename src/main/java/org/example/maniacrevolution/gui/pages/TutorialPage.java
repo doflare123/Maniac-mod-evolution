@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.gui.GuideScreen;
+import org.example.maniacrevolution.gui.GuideTheme;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,13 +76,12 @@ public class TutorialPage extends GuidePage {
 
     private void renderTableOfContents(GuiGraphics gui, int mouseX, int mouseY) {
         // Кнопка "← Главная"
-        renderNavButton(gui, mouseX, mouseY, "← Главная", guiLeft + 5, guiTop + 5, 80, 18);
+        renderNavButton(gui, mouseX, mouseY, "← Главная", guiLeft + 5, guiTop + 10, 80, 18);
 
         // Заголовок
-        gui.drawCenteredString(font, "§6§l✦ ПОЛНЫЙ ГАЙД ✦",
-                guiLeft + guiWidth / 2, guiTop + 15, 0xFFFFFF);
-        gui.drawCenteredString(font, "§7Выберите тему:",
-                guiLeft + guiWidth / 2, guiTop + 32, 0xAAAAAA);
+        GuideTheme.drawPageTitle(gui, font, "ПОЛНЫЙ ГАЙД",
+                "Выберите тему для изучения",
+                guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.GOLD);
 
         // Кнопки тем со скроллом
         int clipTop2    = guiTop + TOC_CLIP_TOP_OFFSET;
@@ -99,10 +99,8 @@ public class TutorialPage extends GuidePage {
         // Подсказка прокрутки если список не влезает
         int tocVisible = guiHeight - TOC_CLIP_TOP_OFFSET - 8;
         if (tocTotalHeight() > tocVisible) {
-            gui.fill(guiLeft + guiWidth - 92, guiTop + guiHeight - 18,
-                    guiLeft + guiWidth - 5,  guiTop + guiHeight - 5, 0xAA000000);
-            gui.drawString(font, "§8↑↓ Прокрутка",
-                    guiLeft + guiWidth - 88, guiTop + guiHeight - 15, 0xAAAAAA, false);
+            GuideTheme.drawScrollHint(gui, font, guiLeft + guiWidth - 6,
+                    guiTop + guiHeight - 5);
         }
     }
 
@@ -110,14 +108,14 @@ public class TutorialPage extends GuidePage {
 
     private void renderTopic(GuiGraphics gui, int mouseX, int mouseY) {
         // Кнопка "← Назад"
-        renderNavButton(gui, mouseX, mouseY, "← Назад", guiLeft + 5, guiTop + 5, 80, 18);
+        renderNavButton(gui, mouseX, mouseY, "← Назад", guiLeft + 5, guiTop + 10, 80, 18);
 
         // Заголовок темы
-        gui.drawCenteredString(font, currentTopic.title,
-                guiLeft + guiWidth / 2, guiTop + 15, 0xFFFFFF);
+        GuideTheme.drawPageTitle(gui, font, currentTopic.title, null,
+                guiLeft + guiWidth / 2, guiTop + 11, GuideTheme.GOLD);
 
         // Область прокрутки
-        int clipTop    = guiTop + 30;
+        int clipTop    = guiTop + 35;
         int clipBottom = guiTop + guiHeight - 15;
         gui.enableScissor(guiLeft + 5, clipTop, guiLeft + guiWidth - 5, clipBottom);
 
@@ -147,10 +145,8 @@ public class TutorialPage extends GuidePage {
         // Подсказка прокрутки
         int totalH = sections.stream().mapToInt(s -> s.getHeight(guiWidth - 30)).sum();
         if (totalH > guiHeight - 50) {
-            gui.fill(guiLeft + guiWidth - 92, guiTop + guiHeight - 18,
-                    guiLeft + guiWidth - 5,  guiTop + guiHeight - 5, 0xAA000000);
-            gui.drawString(font, "§8↑↓ Прокрутка",
-                    guiLeft + guiWidth - 88, guiTop + guiHeight - 15, 0xAAAAAA, false);
+            GuideTheme.drawScrollHint(gui, font, guiLeft + guiWidth - 6,
+                    guiTop + guiHeight - 5);
         }
     }
 
@@ -159,9 +155,8 @@ public class TutorialPage extends GuidePage {
     private void renderNavButton(GuiGraphics gui, int mouseX, int mouseY,
                                  String label, int x, int y, int w, int h) {
         boolean hov = mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h;
-        gui.fill(x, y, x + w, y + h, hov ? 0xFF444444 : 0xFF333333);
-        gui.renderOutline(x, y, w, h, 0xFF666666);
-        gui.drawCenteredString(font, label, x + w / 2, y + 5, 0xFFFFFF);
+        GuideTheme.drawButton(gui, font, x, y, w, h, label,
+                GuideTheme.GOLD, hov, false);
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -172,7 +167,7 @@ public class TutorialPage extends GuidePage {
     public boolean mouseClicked(double mx, double my, int button) {
         if (button != 0) return false;
 
-        int navX = guiLeft + 5, navY = guiTop + 5, navW = 80, navH = 18;
+        int navX = guiLeft + 5, navY = guiTop + 10, navW = 80, navH = 18;
 
         if (mx >= navX && mx < navX + navW && my >= navY && my < navY + navH) {
             if (currentTopic == null) {
@@ -557,12 +552,13 @@ public class TutorialPage extends GuidePage {
 
         void renderAt(GuiGraphics gui, int mouseX, int mouseY, int rx, int ry) {
             boolean hov = mouseX >= rx && mouseX < rx + w && mouseY >= ry && mouseY < ry + h;
-            gui.fill(rx, ry, rx + w, ry + h, hov ? 0xFF3a3a3a : 0xFF2a2a2a);
-            gui.renderOutline(rx, ry, w, h, hov ? 0xFFFFAA00 : 0xFF555555);
-            gui.drawString(font, topic.buttonLabel, rx + 10, ry + (h - 8) / 2, 0xFFFFFF, false);
+            GuideTheme.drawCard(gui, rx, ry, w, h, GuideTheme.GOLD, hov);
+            gui.drawString(font, topic.buttonLabel, rx + 12, ry + (h - 8) / 2,
+                    GuideTheme.TEXT, false);
             if (hov) {
                 String arrow = "→";
-                gui.drawString(font, "§7" + arrow, rx + w - font.width(arrow) - 8, ry + (h - 8) / 2, 0xAAAAAA, false);
+                gui.drawString(font, arrow, rx + w - font.width(arrow) - 10,
+                        ry + (h - 8) / 2, GuideTheme.GOLD, false);
             }
         }
     }
@@ -585,7 +581,8 @@ public class TutorialPage extends GuidePage {
         @Override
         void render(GuiGraphics gui, int x, int y, int w, int mx, int my) {
             // Линия-разделитель
-            gui.fill(x, y + 12, x + w, y + 13, 0xFF444444);
+            gui.fill(x, y + 12, x + w, y + 13, GuideTheme.BORDER_SOFT);
+            gui.fill(x, y + 12, x + Math.min(52, w), y + 13, GuideTheme.GOLD);
             gui.drawString(net.minecraft.client.Minecraft.getInstance().font, text, x, y, 0xFFFFFF, false);
         }
     }
@@ -634,8 +631,8 @@ public class TutorialPage extends GuidePage {
                 gui.blit(tex, imgX, y, 0, 0, w, h, w, h);
                 RenderSystem.disableBlend();
             } catch (Exception e) {
-                gui.fill(imgX, y, imgX + w, y + h, 0xFF333333);
-                gui.renderOutline(imgX, y, w, h, 0xFF666666);
+                gui.fill(imgX, y, imgX + w, y + h, GuideTheme.SURFACE);
+                gui.renderOutline(imgX, y, w, h, GuideTheme.BORDER);
                 gui.drawString(net.minecraft.client.Minecraft.getInstance().font,
                         "§8" + path, imgX + 4, y + h / 2 - 4, 0x888888, false);
             }
@@ -664,7 +661,7 @@ public class TutorialPage extends GuidePage {
         void render(GuiGraphics gui, int x, int y, int w, int mx, int my) {
             net.minecraft.client.gui.Font font = net.minecraft.client.Minecraft.getInstance().font;
             boolean hov = mx >= x && mx < x + font.width(text) + 4 && my >= y && my < y + 11;
-            gui.drawString(font, text, x, y, hov ? 0xFFFFDD44 : 0xFFFFAA00, false);
+            gui.drawString(font, text, x, y, hov ? GuideTheme.TEXT : GuideTheme.GOLD, false);
             if (hov) {
                 gui.drawString(font, "§8 (клик)", x + font.width(text) + 2, y, 0x888888, false);
             }
