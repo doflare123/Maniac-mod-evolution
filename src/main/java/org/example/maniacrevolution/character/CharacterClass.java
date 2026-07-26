@@ -90,7 +90,11 @@ public abstract class CharacterClass {
     }
 
     protected void addItem(String name, String description) {
-        this.items.add(new Item(name, description));
+        this.items.add(new Item(name, description, ""));
+    }
+
+    protected void addItem(String name, String description, String lore) {
+        this.items.add(new Item(name, description, lore));
     }
 
     // Вложенные классы для особенностей и предметов
@@ -115,10 +119,12 @@ public abstract class CharacterClass {
     public static class Item {
         private final String name;
         private final String description;
+        private final String lore;
 
-        public Item(String name, String description) {
+        public Item(String name, String description, String lore) {
             this.name = name;
             this.description = description;
+            this.lore = lore == null ? "" : lore;
         }
 
         public String getName() {
@@ -127,6 +133,10 @@ public abstract class CharacterClass {
 
         public String getDescription() {
             return description;
+        }
+
+        public String getLore() {
+            return lore;
         }
     }
 }
