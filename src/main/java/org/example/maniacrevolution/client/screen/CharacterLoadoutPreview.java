@@ -1,10 +1,13 @@
 package org.example.maniacrevolution.client.screen;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.character.CharacterClass;
 
@@ -107,7 +110,7 @@ final class CharacterLoadoutPreview {
                         Placement.OTHER, null);
             }
             case "agent" -> {
-                addDefined(entries, character, 0, new ItemStack(Items.CROSSBOW),
+                addDefined(entries, character, 0, agentPistol(),
                         Placement.MAIN_HAND, null);
                 addDefined(entries, character, 1, new ItemStack(Items.IRON_SWORD),
                         Placement.OFF_HAND, null);
@@ -166,6 +169,19 @@ final class CharacterLoadoutPreview {
         }
 
         return List.copyOf(entries);
+    }
+
+    private static ItemStack agentPistol() {
+        ResourceLocation pistolId = new ResourceLocation("cgm", "pistol");
+        Item pistol = ForgeRegistries.ITEMS.getValue(pistolId);
+        if (pistol == null || pistol == Items.AIR || !ForgeRegistries.ITEMS.containsKey(pistolId)) {
+            return new ItemStack(Items.CROSSBOW);
+        }
+
+        ItemStack stack = new ItemStack(pistol);
+        stack.getOrCreateTag().putInt("AmmoCount", 5);
+        stack.getOrCreateTag().putInt("Color", 1908001);
+        return stack;
     }
 
     private static ItemStack waterPotions() {

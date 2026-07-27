@@ -248,7 +248,7 @@ public class CharacterSelectionScreen extends Screen {
 
         drawHeader(graphics);
         drawCharacterList(graphics, mouseX, mouseY);
-        drawPreview(graphics, mouseX, mouseY);
+        drawPreview(graphics, mouseX, mouseY, partialTick);
         drawDetails(graphics, mouseX, mouseY);
 
         super.render(graphics, mouseX, mouseY, partialTick);
@@ -494,7 +494,7 @@ public class CharacterSelectionScreen extends Screen {
                 0, 0, source.width(), source.height(), source.width(), source.height());
     }
 
-    private void drawPreview(GuiGraphics graphics, int mouseX, int mouseY) {
+    private void drawPreview(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         drawPanel(graphics, previewPanel, "МОДЕЛЬ И ЭКИПИРОВКА");
         CharacterClass selected = selectedCharacter();
         if (selected == null) {
@@ -566,15 +566,20 @@ public class CharacterSelectionScreen extends Screen {
             previewPlayer.setItemSlot(entry.placement().equipmentSlot(), entry.stack().copy());
         }
 
+        float idleTime = (minecraft.level.getGameTime() + partialTick) * 0.05F;
+        float idleYaw = Mth.sin(idleTime * 0.7F) * 0.08F;
+        float idlePitch = Mth.sin(idleTime * 0.45F) * 0.02F;
+        int idleBob = Math.round(Mth.sin(idleTime * 0.9F));
+
         graphics.enableScissor(frescoBackdrop.x(), frescoBackdrop.y(),
                 frescoBackdrop.right(), frescoBackdrop.bottom());
         InventoryScreen.renderEntityInInventoryFollowsAngle(
                 graphics,
                 modelX,
-                modelBottom,
+                modelBottom + idleBob,
                 modelScale,
-                0.0F,
-                0.0F,
+                idleYaw,
+                idlePitch,
                 previewPlayer
         );
         graphics.disableScissor();
