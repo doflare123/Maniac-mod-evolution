@@ -28,6 +28,8 @@ final class CharacterLoadoutPreview {
                 addDefined(entries, character, 0, waterPotions(), Placement.OTHER, "Взрывное зелье воды");
                 add(entries, new ItemStack(Items.BLAZE_POWDER), "Огненный порошок",
                         "Топливо для зельеварки.", Placement.OTHER);
+                addDefined(entries, character, 1, new ItemStack(Items.BREWING_STAND),
+                        Placement.OTHER, null);
                 addAlchemyIngredient(entries, ModItems.MANIAC_REGEN_FRAGMENT.get().getDefaultInstance(),
                         "Часть философского камня", "Медленная регенерация: 5 HP за 1 минуту.");
                 addAlchemyIngredient(entries, ModItems.MANIAC_STRENGTH_FRAGMENT.get().getDefaultInstance(),
@@ -49,9 +51,9 @@ final class CharacterLoadoutPreview {
             }
             case "shaman" -> {
                 addDefined(entries, character, 0, new ItemStack(ModItems.TOTEM_SPAWN_ITEM.get()),
-                        Placement.OTHER, null);
+                        Placement.MAIN_HAND, null);
                 addDefined(entries, character, 1, new ItemStack(ModItems.ANCESTOR_SOUL.get()),
-                        Placement.OTHER, null);
+                        Placement.OFF_HAND, null);
             }
             case "mefedronshchik" -> {
                 addDefined(entries, character, 0, new ItemStack(ModItems.SYRINGE.get()),
@@ -101,7 +103,7 @@ final class CharacterLoadoutPreview {
                         featureDescription(character, "Защита от смерти"), Placement.FEET);
                 addDefined(entries, character, 1, new ItemStack(ModItems.NECROMANCER_STAFF.get()),
                         Placement.MAIN_HAND, null);
-                addDefined(entries, character, 0, new ItemStack(Items.SOUL_SAND),
+                addDefined(entries, character, 0, new ItemStack(ModItems.SALT.get()),
                         Placement.OTHER, null);
             }
             case "agent" -> {
@@ -150,10 +152,10 @@ final class CharacterLoadoutPreview {
                         featureDescription(character, "Генератор"), Placement.OTHER);
             }
             case "keeper_of_nightmares" -> {
-                add(entries, new ItemStack(ModItems.GUARDIAN_HEAD.get()), "Голова Хранителя",
-                        featureDescription(character, "Концентрированный кошмар"), Placement.HEAD);
-                add(entries, new ItemStack(ModItems.NIGHTMARE_LIGHTER.get()), "Кошмарная зажигалка",
-                        "Используется в кошмарных испытаниях.", Placement.MAIN_HAND);
+                addDefined(entries, character, 0, new ItemStack(ModItems.NIGHTMARE_LIGHTER.get()),
+                        Placement.OTHER, null);
+                addDefined(entries, character, 1, new ItemStack(ModItems.AWAKENING_NEEDLE.get()),
+                        Placement.OTHER, null);
             }
             default -> {
                 for (int index = 0; index < character.getItems().size(); index++) {

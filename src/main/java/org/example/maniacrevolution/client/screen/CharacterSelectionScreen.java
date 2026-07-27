@@ -17,6 +17,7 @@ import org.example.maniacrevolution.character.CharacterRegistry;
 import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.character.TagRegistry;
 import org.example.maniacrevolution.client.CharacterSelectionPreferences;
+import org.example.maniacrevolution.data.ClientKeeperFormData;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.gui.GuideTheme;
 import org.example.maniacrevolution.network.ModNetworking;
@@ -239,16 +240,18 @@ public class CharacterSelectionScreen extends Screen {
         cardHits.clear();
         filterHits.clear();
 
+        if (filtersOpen) {
+            drawFilterOverlay(graphics, mouseX, mouseY);
+            drawTooltip(graphics, mouseX, mouseY);
+            return;
+        }
+
         drawHeader(graphics);
         drawCharacterList(graphics, mouseX, mouseY);
         drawPreview(graphics, mouseX, mouseY);
         drawDetails(graphics, mouseX, mouseY);
 
         super.render(graphics, mouseX, mouseY, partialTick);
-
-        if (filtersOpen) {
-            drawFilterOverlay(graphics, mouseX, mouseY);
-        }
 
         drawTooltip(graphics, mouseX, mouseY);
     }
@@ -277,17 +280,18 @@ public class CharacterSelectionScreen extends Screen {
     private void drawCharacterList(GuiGraphics graphics, int mouseX, int mouseY) {
         drawPanel(graphics, listPanel, "ПЕРСОНАЖИ");
 
-        filterButtonRect = new Rect(listPanel.x() + 5, listPanel.y() + 19,
-                Math.max(24, listPanel.width() - 10), 18);
-        int filterCount = activeFilters.size();
-        String filterLabel = filterCount == 0 ? "ФИЛЬТРЫ" : "ФИЛЬТРЫ (" + filterCount + ")";
-        GuideTheme.drawButton(graphics, font, filterButtonRect.x(), filterButtonRect.y(),
-                filterButtonRect.width(), filterButtonRect.height(), trim(filterLabel, filterButtonRect.width() - 8),
-                accent(), filterButtonRect.contains(mouseX, mouseY), filterCount > 0);
+        int controlsY = listPanel.y() + 19;
+        filterButtonRect = new Rect(listPanel.right() - 25, controlsY, 20, 18);
+        cardModeToggleRect = new Rect(listPanel.x() + 5, controlsY,
+                Math.max(24, filterButtonRect.x() - listPanel.x() - 9), 18);
 
-        cardModeToggleRect = new Rect(listPanel.x() + 5, filterButtonRect.bottom() + 4,
-                Math.max(24, listPanel.width() - 10), 17);
         drawCardModeToggle(graphics, mouseX, mouseY);
+
+        int filterCount = activeFilters.size();
+        GuideTheme.drawButton(graphics, font, filterButtonRect.x(), filterButtonRect.y(),
+                filterButtonRect.width(), filterButtonRect.height(), "",
+                accent(), filterButtonRect.contains(mouseX, mouseY), filterCount > 0);
+        drawFilterIcon(graphics, filterButtonRect, filterCount > 0);
 
         cardViewport = new Rect(listPanel.x() + 5, cardModeToggleRect.bottom() + 5,
                 Math.max(10, listPanel.width() - 10),
@@ -307,6 +311,20 @@ public class CharacterSelectionScreen extends Screen {
             drawLargeCardCarousel(graphics, mouseX, mouseY);
         } else {
             drawCompactCards(graphics, mouseX, mouseY);
+        }
+    }
+
+    private void drawFilterIcon(GuiGraphics graphics, Rect button, boolean active) {
+        int iconX = button.x() + (button.width() - 10) / 2;
+        int iconY = button.y() + 4;
+        int color = active ? GuideTheme.TEXT : GuideTheme.TEXT_SECONDARY;
+        graphics.fill(iconX, iconY, iconX + 10, iconY + 2, color);
+        graphics.fill(iconX + 1, iconY + 2, iconX + 9, iconY + 4, color);
+        graphics.fill(iconX + 3, iconY + 4, iconX + 7, iconY + 6, color);
+        graphics.fill(iconX + 4, iconY + 6, iconX + 6, iconY + 11, color);
+        if (active) {
+            graphics.fill(button.right() - 4, button.y() + 3,
+                    button.right() - 2, button.y() + 5, GuideTheme.GOLD);
         }
     }
 
@@ -485,6 +503,12 @@ public class CharacterSelectionScreen extends Screen {
             return;
         }
 
+        Rect frescoBackdrop = new Rect(previewPanel.x() + 2, previewPanel.y() + 18,
+                Math.max(1, previewPanel.width() - 4), Math.max(1, previewPanel.height() - 20));
+        drawCroppedFresco(graphics, selected, frescoBackdrop);
+        graphics.fill(frescoBackdrop.x(), frescoBackdrop.y(), frescoBackdrop.right(), frescoBackdrop.bottom(),
+                0x8A070B10);
+
         List<CharacterLoadoutPreview.Entry> equipment = previewEntries.stream()
                 .filter(entry -> entry.placement().isEquipment())
                 .toList();
@@ -524,6 +548,7 @@ public class CharacterSelectionScreen extends Screen {
                 || !previewPlayer.getGameProfile().getId().equals(minecraft.player.getGameProfile().getId())) {
             previewPlayer = new RemotePlayer(minecraft.level, minecraft.player.getGameProfile());
         }
+        ClientKeeperFormData.setPreviewKeeper(previewPlayer, "keeper_of_nightmares".equals(selected.getId()));
 
         int modelX = previewPanel.x() + previewPanel.width() / 2;
         int modelBottom = previewPanel.bottom() - 5;
@@ -541,15 +566,18 @@ public class CharacterSelectionScreen extends Screen {
             previewPlayer.setItemSlot(entry.placement().equipmentSlot(), entry.stack().copy());
         }
 
-        InventoryScreen.renderEntityInInventoryFollowsMouse(
+        graphics.enableScissor(frescoBackdrop.x(), frescoBackdrop.y(),
+                frescoBackdrop.right(), frescoBackdrop.bottom());
+        InventoryScreen.renderEntityInInventoryFollowsAngle(
                 graphics,
                 modelX,
                 modelBottom,
                 modelScale,
-                (float) modelX - mouseX,
-                (float) (previewPanel.y() + modelHeight / 2) - mouseY,
+                0.0F,
+                0.0F,
                 previewPlayer
         );
+        graphics.disableScissor();
 
         if (equipment.isEmpty()) {
             graphics.drawCenteredString(font, "Без экипировки", modelX,
@@ -762,6 +790,13 @@ public class CharacterSelectionScreen extends Screen {
     }
 
     private void drawTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+        if (!filtersOpen && filterButtonRect.contains(mouseX, mouseY)) {
+            String suffix = activeFilters.isEmpty() ? "" : " (" + activeFilters.size() + ")";
+            graphics.renderComponentTooltip(font,
+                    List.of(Component.literal("§eФильтры персонажей" + suffix)), mouseX, mouseY);
+            return;
+        }
+
         if (filtersOpen && hoveredFilterTag != null) {
             List<Component> tooltip = new ArrayList<>();
             tooltip.add(Component.literal("§e§l" + hoveredFilterTag));
