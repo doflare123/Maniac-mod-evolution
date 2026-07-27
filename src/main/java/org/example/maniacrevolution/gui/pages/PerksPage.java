@@ -223,15 +223,18 @@ public class PerksPage extends GuidePage {
 
         switch (selectedPerk.getType()) {
             case PASSIVE -> {
-                gui.drawString(font, "§9ℹ Пассивный перк", x, y, 0x5555FF, false);
+                gui.drawString(font, "ℹ Пассивный перк", x, y,
+                        selectedPerk.getType().getArgbColor(), false);
                 gui.drawString(font, "§7Эффект работает автоматически", x, y + 11, 0xAAAAAA, false);
             }
             case ACTIVE -> {
-                gui.drawString(font, "§cℹ Активный перк", x, y, 0xFF5555, false);
+                gui.drawString(font, "ℹ Активный перк", x, y,
+                        selectedPerk.getType().getArgbColor(), false);
                 gui.drawString(font, "§7Нажмите [" + keyName + "] для активации", x, y + 11, 0xAAAAAA, false);
             }
             case HYBRID -> {
-                gui.drawString(font, "§dℹ Гибридный перк", x, y, 0xFF55FF, false);
+                gui.drawString(font, "ℹ Гибридный перк", x, y,
+                        selectedPerk.getType().getArgbColor(), false);
                 gui.drawString(font, "§7Пассивный эффект + активация [" + keyName + "]", x, y + 11, 0xAAAAAA, false);
             }
         }

@@ -554,11 +554,7 @@ public class CustomHud implements IGuiOverlay {
     }
 
     private int getTypeColor(PerkType type) {
-        return switch (type) {
-            case PASSIVE, PASSIVE_COOLDOWN -> 0xFF4E78D4;
-            case ACTIVE -> 0xFFD95B50;
-            case HYBRID -> 0xFFB06CD4;
-        };
+        return type.getArgbColor();
     }
 
     private static void drawCentered(GuiGraphics gui, String text, int x, int y,

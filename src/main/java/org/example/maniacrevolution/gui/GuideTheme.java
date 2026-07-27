@@ -21,6 +21,7 @@ public final class GuideTheme {
     public static final int GOLD = 0xFFFFC857;
     public static final int GREEN = 0xFF70E28A;
     public static final int PURPLE = 0xFFC28BFF;
+    public static final int TEAL = 0xFF52D6C7;
     public static final int RED = 0xFFFF7B70;
     public static final int BLUE = 0xFF65BCE8;
 

@@ -112,21 +112,11 @@ public class PerkHud {
     }
 
     private static int getTypeColor(PerkType type) {
-        return switch (type) {
-            case PASSIVE -> 0xFF3355FF;
-            case ACTIVE -> 0xFFFF5533;
-            case HYBRID -> 0xFFAA55FF;
-            case PASSIVE_COOLDOWN -> 0xFF3355FF;
-        };
+        return type.getArgbColor();
     }
 
     private static int getTypeFontColor(PerkType type) {
-        return switch (type) {
-            case PASSIVE -> 0x5555FF;
-            case ACTIVE -> 0xFF5555;
-            case HYBRID -> 0xFF55FF;
-            case PASSIVE_COOLDOWN -> 0x5555FF;
-        };
+        return type.getArgbColor() & 0x00FFFFFF;
     }
 
     private static String getTypeShort(PerkType type) {
