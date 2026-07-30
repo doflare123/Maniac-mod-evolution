@@ -4,8 +4,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +32,13 @@ import org.example.maniacrevolution.mana.ClientManaData;
 import org.example.maniacrevolution.perk.PerkType;
 import org.example.maniacrevolution.util.PlayerModeUtil;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public class CustomHud implements IGuiOverlay {
     public static final CustomHud INSTANCE = new CustomHud();
@@ -40,6 +50,10 @@ public class CustomHud implements IGuiOverlay {
     private static final int ABILITY_ICON_SIZE = 24;
     private static final int HOTBAR_SLOT_SIZE = 24;
     private static final int PENALTY_SLOT_SIZE = 16;
+    private static final int TIMED_EFFECT_SIZE = 22;
+    private static final int TIMED_EFFECT_GAP = 3;
+    private static final int TIMED_EFFECT_SECTION_GAP = 4;
+    private static final int MAX_TIMED_EFFECTS_PER_ROW = 6;
     private static final int RESOURCE_BAR_WIDTH = 120;
     private static final int RESOURCE_BAR_HEIGHT = 14;
     private static final int ADDICTION_INDICATOR_WIDTH = 68;
@@ -66,7 +80,9 @@ public class CustomHud implements IGuiOverlay {
     private static final long ITEM_NAME_FADE_MS = 400L;
 
     private final HudAnimationState animation = new HudAnimationState();
+    private final Map<MobEffect, TimedEffectState> timedEffectStates = new HashMap<>();
     private ItemStack lastSelectedItem = ItemStack.EMPTY;
+    private UUID timedEffectPlayer;
     private long itemNameShowTime;
 
     @Override
@@ -104,8 +120,10 @@ public class CustomHud implements IGuiOverlay {
         int hudY = screenHeight - HUD_HEIGHT - 4 - (chatOpen ? 14 : 0);
 
         renderDock(gui, screenWidth / 2, hudY, player);
-        renderContextStatus(gui, screenWidth / 2, hudY - 16, player);
-        renderItemName(gui, player, screenWidth, hudY - 27);
+        int timedEffectsHeight = renderTimedEffects(gui, partialTick, screenWidth,
+                hudY - TIMED_EFFECT_SECTION_GAP, player);
+        renderContextStatus(gui, screenWidth / 2, hudY - 16 - timedEffectsHeight, player);
+        renderItemName(gui, player, screenWidth, hudY - 27 - timedEffectsHeight);
 
         LevelHud.render(gui, 5, 5);
         TimerHud.render(gui, screenWidth / 2, 5);
@@ -117,6 +135,97 @@ public class CustomHud implements IGuiOverlay {
             trackerY += ComputerHackHud.HEIGHT + 4;
         }
         GeneratorChargeHud.render(gui, screenWidth - GeneratorChargeHud.WIDTH - 5, trackerY);
+    }
+
+    private int renderTimedEffects(GuiGraphics gui, float partialTick, int screenWidth,
+                                   int bottomY, Player player) {
+        if (!player.getUUID().equals(timedEffectPlayer)) {
+            timedEffectStates.clear();
+            timedEffectPlayer = player.getUUID();
+        }
+
+        List<MobEffectInstance> effects = player.getActiveEffects().stream()
+                .filter(MobEffectInstance::showIcon)
+                .filter(effect -> !effect.isInfiniteDuration())
+                .sorted(Comparator.comparing(effect ->
+                        BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect()).toString()))
+                .toList();
+
+        Set<MobEffect> activeEffectTypes = new HashSet<>();
+        for (MobEffectInstance effect : effects) {
+            activeEffectTypes.add(effect.getEffect());
+        }
+        timedEffectStates.keySet().removeIf(effect -> !activeEffectTypes.contains(effect));
+
+        if (effects.isEmpty()) {
+            return 0;
+        }
+
+        int effectsPerRow = Math.min(MAX_TIMED_EFFECTS_PER_ROW,
+                Math.max(1, (screenWidth - 8 + TIMED_EFFECT_GAP)
+                        / (TIMED_EFFECT_SIZE + TIMED_EFFECT_GAP)));
+        int rowCount = (effects.size() + effectsPerRow - 1) / effectsPerRow;
+
+        for (int index = 0; index < effects.size(); index++) {
+            int row = index / effectsPerRow;
+            int indexInRow = index % effectsPerRow;
+            int effectsInRow = Math.min(effectsPerRow, effects.size() - row * effectsPerRow);
+            int rowWidth = effectsInRow * TIMED_EFFECT_SIZE
+                    + (effectsInRow - 1) * TIMED_EFFECT_GAP;
+            int x = (screenWidth - rowWidth) / 2
+                    + indexInRow * (TIMED_EFFECT_SIZE + TIMED_EFFECT_GAP);
+            int y = bottomY - TIMED_EFFECT_SIZE
+                    - row * (TIMED_EFFECT_SIZE + TIMED_EFFECT_GAP);
+            renderTimedEffect(gui, effects.get(index), partialTick, x, y);
+        }
+
+        return rowCount * TIMED_EFFECT_SIZE
+                + (rowCount - 1) * TIMED_EFFECT_GAP
+                + TIMED_EFFECT_SECTION_GAP;
+    }
+
+    private void renderTimedEffect(GuiGraphics gui, MobEffectInstance effect,
+                                   float partialTick, int x, int y) {
+        MobEffect effectType = effect.getEffect();
+        int remainingDuration = Math.max(0, effect.getDuration());
+        TimedEffectState state = timedEffectStates.get(effectType);
+        if (state == null
+                || state.instance != effect
+                || state.amplifier != effect.getAmplifier()
+                || remainingDuration > state.previousRemainingDuration) {
+            state = new TimedEffectState(effect, Math.max(1, remainingDuration),
+                    remainingDuration, effect.getAmplifier());
+            timedEffectStates.put(effectType, state);
+        } else {
+            state.previousRemainingDuration = remainingDuration;
+        }
+
+        float progress = Mth.clamp((remainingDuration - partialTick)
+                / (float) state.totalDuration, 0.0f, 1.0f);
+
+        renderFilledCircle(gui, x, y, TIMED_EFFECT_SIZE, 0xD0181B20);
+        TextureAtlasSprite sprite = Minecraft.getInstance().getMobEffectTextures().get(effectType);
+        RenderSystem.enableBlend();
+        gui.blit(x + 3, y + 3, 0, 16, 16, sprite);
+        RenderSystem.disableBlend();
+
+        renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, 1.0f, 0xB05B626C);
+        int effectColor = lerpColor(0xFF000000 | effectType.getColor(), 0xFFFFFFFF, 0.25f);
+        renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, progress, effectColor);
+    }
+
+    private void renderFilledCircle(GuiGraphics gui, int x, int y, int size, int color) {
+        double center = (size - 1) / 2.0;
+        double radius = size / 2.0 - 1.0;
+        for (int row = 0; row < size; row++) {
+            double distanceY = row - center;
+            double radiusAtRow = Math.sqrt(Math.max(0.0, radius * radius - distanceY * distanceY));
+            int left = (int) Math.ceil(center - radiusAtRow);
+            int right = (int) Math.floor(center + radiusAtRow);
+            if (right >= left) {
+                gui.fill(x + left, y + row, x + right + 1, y + row + 1, color);
+            }
+        }
     }
 
     private void renderDock(GuiGraphics gui, int centerX, int y, Player player) {
@@ -577,5 +686,20 @@ public class CustomHud implements IGuiOverlay {
         int g = Math.round(Mth.lerp(t, (first >> 8) & 0xFF, (second >> 8) & 0xFF));
         int b = Math.round(Mth.lerp(t, first & 0xFF, second & 0xFF));
         return 0xFF000000 | (r << 16) | (g << 8) | b;
+    }
+
+    private static final class TimedEffectState {
+        private final MobEffectInstance instance;
+        private final int totalDuration;
+        private final int amplifier;
+        private int previousRemainingDuration;
+
+        private TimedEffectState(MobEffectInstance instance, int totalDuration,
+                                 int previousRemainingDuration, int amplifier) {
+            this.instance = instance;
+            this.totalDuration = totalDuration;
+            this.previousRemainingDuration = previousRemainingDuration;
+            this.amplifier = amplifier;
+        }
     }
 }

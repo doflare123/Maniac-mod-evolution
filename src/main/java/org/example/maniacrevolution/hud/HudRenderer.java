@@ -53,7 +53,8 @@ public class HudRenderer {
                 event.getOverlay() == VanillaGuiOverlay.ARMOR_LEVEL.type() ||
                 event.getOverlay() == VanillaGuiOverlay.FOOD_LEVEL.type() ||
                 event.getOverlay() == VanillaGuiOverlay.AIR_LEVEL.type() ||
-                event.getOverlay() == VanillaGuiOverlay.EXPERIENCE_BAR.type()) {
+                event.getOverlay() == VanillaGuiOverlay.EXPERIENCE_BAR.type() ||
+                event.getOverlay() == VanillaGuiOverlay.POTION_ICONS.type()) {
 
             event.setCanceled(true);
         }
