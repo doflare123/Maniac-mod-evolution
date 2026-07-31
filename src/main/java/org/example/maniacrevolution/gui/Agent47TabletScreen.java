@@ -606,7 +606,7 @@ public class Agent47TabletScreen extends Screen {
 
     private int typeColor(Agent47ShopConfig.ShopItemType type) {
         return switch (type) {
-            case ITEM -> GuideTheme.BLUE;
+            case ITEM -> GuideTheme.GREEN;
             case DEBUFF_GLOW -> GuideTheme.GOLD;
             case DEBUFF_SLOW -> GuideTheme.TEAL;
             case DEBUFF_WEAK -> GuideTheme.RED;
