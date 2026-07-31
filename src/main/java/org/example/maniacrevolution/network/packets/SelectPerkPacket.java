@@ -8,6 +8,7 @@ import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.perk.Perk;
 import org.example.maniacrevolution.perk.PerkRegistry;
+import org.example.maniacrevolution.settings.GameSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,10 +47,11 @@ public class SelectPerkPacket {
             // Очищаем текущие перки
             data.clearPerks(player);
 
-            // Добавляем новые (максимум 2)
+            // Добавляем новые в пределах текущего серверного лимита.
+            int perkLimit = GameSettings.get(player.server).getPerkLimit();
             int added = 0;
             for (String id : perkIds) {
-                if (added >= 2) break;
+                if (added >= perkLimit) break;
 
                 Perk perk = PerkRegistry.getPerk(id);
                 if (perk != null && data.selectPerk(perk, player)) {

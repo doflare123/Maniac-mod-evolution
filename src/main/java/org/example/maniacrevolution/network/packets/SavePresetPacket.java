@@ -48,7 +48,7 @@ public class SavePresetPacket {
 
             PlayerData data = PlayerDataManager.get(player);
 
-            if (data.createPreset(name, perkIds)) {
+            if (data.createPreset(name, perkIds, player)) {
                 player.displayClientMessage(
                         Component.literal("§aПресет '" + name + "' сохранён!"), false);
             } else {

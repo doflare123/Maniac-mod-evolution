@@ -19,6 +19,8 @@ import org.example.maniacrevolution.perk.Perk;
 import org.example.maniacrevolution.perk.PerkRegistry;
 import org.example.maniacrevolution.perk.PerkTeam;
 import org.example.maniacrevolution.preset.PerkPreset;
+import org.example.maniacrevolution.settings.ClientGameSettings;
+import org.example.maniacrevolution.settings.GameSettings;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -32,13 +34,13 @@ public class PresetScreen extends Screen {
     private static final int HEADER_HEIGHT = 28;
     private static final int FOOTER_HEIGHT = 42;
     private static final int PANEL_HEADER_HEIGHT = 18;
-    private static final int MAX_PERKS = 2;
     private static final int CARD_GAP = 4;
     private static final int PERK_CARD_HEIGHT = 44;
     private static final int PRESET_CARD_HEIGHT = 58;
 
     private final Screen parent;
-    private final List<String> selectedPerksForPreset = new ArrayList<>(MAX_PERKS);
+    private final List<String> selectedPerksForPreset =
+            new ArrayList<>(GameSettings.EXPERIMENTAL_PERK_LIMIT);
     private final List<PresetHit> presetHits = new ArrayList<>();
     private final List<PerkHit> perkHits = new ArrayList<>();
     private final List<SelectedHit> selectedHits = new ArrayList<>();
@@ -155,6 +157,7 @@ public class PresetScreen extends Screen {
 
     @Override
     public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
+        trimSelectionToLimit();
         renderBackground(gui);
         drawBackdrop(gui);
 
@@ -262,16 +265,18 @@ public class PresetScreen extends Screen {
         int infoRight = apply.x() - 6;
         gui.drawString(font, trim(preset.getName(), Math.max(1, infoRight - card.x() - 47)),
                 card.x() + 7, card.y() + 6, GuideTheme.TEXT, false);
-        String amount = preset.getPerkCount() + " / " + MAX_PERKS;
+        int perkLimit = getPerkLimit();
+        int displayedPerkCount = Math.min(preset.getPerkCount(), perkLimit);
+        String amount = displayedPerkCount + " / " + perkLimit;
         gui.drawString(font, amount, infoRight - font.width(amount), card.y() + 6,
-                preset.getPerkCount() == MAX_PERKS ? GuideTheme.GREEN : GuideTheme.GOLD, false);
+                displayedPerkCount == perkLimit ? GuideTheme.GREEN : GuideTheme.GOLD, false);
 
         int slotX = card.x() + 7;
         int slotY = card.y() + 23;
         int slotsWidth = Math.max(1, infoRight - slotX);
         int slotGap = 4;
-        int slotWidth = Math.max(1, (slotsWidth - slotGap) / MAX_PERKS);
-        for (int slot = 0; slot < MAX_PERKS; slot++) {
+        int slotWidth = Math.max(1, (slotsWidth - slotGap * (perkLimit - 1)) / perkLimit);
+        for (int slot = 0; slot < perkLimit; slot++) {
             Rect bounds = new Rect(slotX + slot * (slotWidth + slotGap), slotY,
                     slotWidth, 28);
             String perkId = slot < preset.getPerkIds().size()
@@ -424,15 +429,16 @@ public class PresetScreen extends Screen {
                 GuideTheme.TEXT_MUTED, false);
 
         int y = builderPanel.y() + 62;
-        gui.drawString(font, "СОСТАВ  " + selectedPerksForPreset.size() + " / " + MAX_PERKS,
+        int perkLimit = getPerkLimit();
+        gui.drawString(font, "СОСТАВ  " + selectedPerksForPreset.size() + " / " + perkLimit,
                 x, y, GuideTheme.TEXT_SECONDARY, false);
         y += 13;
-        for (int slot = 0; slot < MAX_PERKS; slot++) {
+        for (int slot = 0; slot < perkLimit; slot++) {
             Rect bounds = new Rect(x, y + slot * 35, contentWidth, 31);
             drawBuilderSlot(gui, slot, bounds, mouseX, mouseY);
         }
 
-        int previewTop = y + MAX_PERKS * 35 + 4;
+        int previewTop = y + perkLimit * 35 + 4;
         if (previewTop >= builderPanel.bottom() - 12) {
             return;
         }
@@ -530,8 +536,8 @@ public class PresetScreen extends Screen {
         String state = errorMessage != null && errorTicks > 0
                 ? errorMessage
                 : selectedPerksForPreset.isEmpty()
-                ? "Выберите один или два перка"
-                : selectedPerksForPreset.size() + " / " + MAX_PERKS + " • готово к сохранению";
+                ? "Выберите от одного до " + getPerkLimit() + " перков"
+                : selectedPerksForPreset.size() + " / " + getPerkLimit() + " • готово к сохранению";
         int stateRight = cancelButton.x() - 7;
         gui.drawString(font, trim(state, Math.max(1, stateRight - footerPanel.x() - 15)),
                 footerPanel.x() + 8, footerPanel.y() + 14,
@@ -760,8 +766,8 @@ public class PresetScreen extends Screen {
                     errorTicks = 0;
                     return true;
                 }
-                if (selectedPerksForPreset.size() >= MAX_PERKS) {
-                    showError("В пресете может быть только два перка");
+                if (selectedPerksForPreset.size() >= getPerkLimit()) {
+                    showError("В пресете может быть не больше " + getPerkLimit() + " перков");
                     return true;
                 }
                 if (!canAddPerkToSelection(perk)) {
@@ -775,6 +781,18 @@ public class PresetScreen extends Screen {
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private int getPerkLimit() {
+        return ClientGameSettings.getPerkLimit();
+    }
+
+    private void trimSelectionToLimit() {
+        int perkLimit = getPerkLimit();
+        if (selectedPerksForPreset.size() > perkLimit) {
+            selectedPerksForPreset.subList(perkLimit, selectedPerksForPreset.size()).clear();
+            showError("Эксперимент с третьим перком выключен");
+        }
     }
 
     @Override

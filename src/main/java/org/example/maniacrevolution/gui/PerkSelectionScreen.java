@@ -17,6 +17,8 @@ import org.example.maniacrevolution.perk.PerkPhase;
 import org.example.maniacrevolution.perk.PerkRegistry;
 import org.example.maniacrevolution.perk.PerkTeam;
 import org.example.maniacrevolution.perk.PerkType;
+import org.example.maniacrevolution.settings.ClientGameSettings;
+import org.example.maniacrevolution.settings.GameSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,10 +35,10 @@ public class PerkSelectionScreen extends Screen {
     private static final int PANEL_HEADER_HEIGHT = 18;
     private static final int CARD_GAP = 4;
     private static final int CARD_HEIGHT = 44;
-    private static final int MAX_SELECTED_PERKS = 2;
 
     private final List<Perk> availablePerks = new ArrayList<>();
-    private final List<String> selectedPerkIds = new ArrayList<>(MAX_SELECTED_PERKS);
+    private final List<String> selectedPerkIds =
+            new ArrayList<>(GameSettings.EXPERIMENTAL_PERK_LIMIT);
     private final List<CardHit> cardHits = new ArrayList<>();
     private final List<SelectedHit> selectedHits = new ArrayList<>();
 
@@ -67,7 +69,7 @@ public class PerkSelectionScreen extends Screen {
     public PerkSelectionScreen() {
         super(Component.literal("Выбор перков"));
         for (ClientPlayerData.ClientPerkData perkData : ClientPlayerData.getSelectedPerks()) {
-            if (selectedPerkIds.size() >= MAX_SELECTED_PERKS) {
+            if (selectedPerkIds.size() >= getPerkLimit()) {
                 break;
             }
             if (PerkRegistry.getPerk(perkData.id()) != null) {
@@ -165,6 +167,7 @@ public class PerkSelectionScreen extends Screen {
 
     @Override
     public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
+        trimSelectionToLimit();
         renderBackground(gui);
         drawBackdrop(gui);
 
@@ -345,9 +348,9 @@ public class PerkSelectionScreen extends Screen {
 
         String state = selectedPerkIds.contains(perk.getId())
                 ? "ВЫБРАН • СЛОТ " + (selectedPerkIds.indexOf(perk.getId()) + 1)
-                : selectedPerkIds.size() >= MAX_SELECTED_PERKS ? "НАБОР ЗАПОЛНЕН" : "ДОСТУПЕН";
+                : selectedPerkIds.size() >= getPerkLimit() ? "НАБОР ЗАПОЛНЕН" : "ДОСТУПЕН";
         int stateColor = selectedPerkIds.contains(perk.getId()) ? GuideTheme.GREEN
-                : selectedPerkIds.size() >= MAX_SELECTED_PERKS ? GuideTheme.TEXT_MUTED
+                : selectedPerkIds.size() >= getPerkLimit() ? GuideTheme.TEXT_MUTED
                 : typeColor(perk.getType());
         gui.drawString(font, trim(state, titleWidth), titleX, y + iconSize - 9, stateColor, false);
 
@@ -419,7 +422,8 @@ public class PerkSelectionScreen extends Screen {
                 footerPanel.right() - 1, footerPanel.y() + 2, GuideTheme.GREEN);
 
         int labelWidth = Math.min(88, Math.max(52, footerPanel.width() / 4));
-        String loadoutTitle = "НАБОР " + selectedPerkIds.size() + " / " + MAX_SELECTED_PERKS;
+        int perkLimit = getPerkLimit();
+        String loadoutTitle = "НАБОР " + selectedPerkIds.size() + " / " + perkLimit;
         gui.drawString(font, trim(loadoutTitle, Math.max(1, labelWidth - 10)),
                 footerPanel.x() + 7, footerPanel.y() + 7,
                 GuideTheme.TEXT, false);
@@ -432,14 +436,14 @@ public class PerkSelectionScreen extends Screen {
                 : selectionMessage;
         gui.drawString(font, trim(status, Math.max(1, labelWidth - 10)),
                 footerPanel.x() + 7, footerPanel.y() + 19,
-                selectedPerkIds.size() == MAX_SELECTED_PERKS ? GuideTheme.GREEN : GuideTheme.GOLD,
+                selectedPerkIds.size() == perkLimit ? GuideTheme.GREEN : GuideTheme.GOLD,
                 false);
 
         int slotsX = footerPanel.x() + labelWidth;
         int slotsWidth = Math.max(1, footerPanel.right() - 6 - slotsX);
         int slotGap = 4;
-        int slotWidth = Math.max(1, (slotsWidth - slotGap) / 2);
-        for (int slot = 0; slot < MAX_SELECTED_PERKS; slot++) {
+        int slotWidth = Math.max(1, (slotsWidth - slotGap * (perkLimit - 1)) / perkLimit);
+        for (int slot = 0; slot < perkLimit; slot++) {
             Rect bounds = new Rect(slotsX + slot * (slotWidth + slotGap),
                     footerPanel.y() + 5, slotWidth, 27);
             drawSelectedSlot(gui, slot, bounds, mouseX, mouseY);
@@ -660,12 +664,12 @@ public class PerkSelectionScreen extends Screen {
             selectionMessage = selectedPerkIds.isEmpty() ? "Набор пуст" : "Нужен ещё один";
             return;
         }
-        if (selectedPerkIds.size() >= MAX_SELECTED_PERKS) {
+        if (selectedPerkIds.size() >= getPerkLimit()) {
             selectionMessage = "Слоты заняты";
             return;
         }
         selectedPerkIds.add(perk.getId());
-        selectionMessage = selectedPerkIds.size() == MAX_SELECTED_PERKS
+        selectionMessage = selectedPerkIds.size() == getPerkLimit()
                 ? "Набор готов" : "Нужен ещё один";
     }
 
@@ -690,8 +694,21 @@ public class PerkSelectionScreen extends Screen {
     }
 
     private void confirm() {
+        trimSelectionToLimit();
         ModNetworking.CHANNEL.sendToServer(new SelectPerkPacket(selectedPerkIds));
         onClose();
+    }
+
+    private int getPerkLimit() {
+        return ClientGameSettings.getPerkLimit();
+    }
+
+    private void trimSelectionToLimit() {
+        int perkLimit = getPerkLimit();
+        if (selectedPerkIds.size() > perkLimit) {
+            selectedPerkIds.subList(perkLimit, selectedPerkIds.size()).clear();
+            selectionMessage = "Эксперимент с третьим перком выключен";
+        }
     }
 
     @Override

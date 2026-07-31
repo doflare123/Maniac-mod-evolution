@@ -7,6 +7,9 @@ public class ClientGameSettings {
     private static int   gameTime      = 10;
     private static int   selectedMap   = 0;
 
+    // ── Эксперименты ─────────────────────────────────────────────────────
+    private static boolean threePerksEnabled = GameSettings.DEFAULT_THREE_PERKS_ENABLED;
+
     // ── Компьютеры ────────────────────────────────────────────────────────
     private static float hackPointsRequired   = 15.0f;
     private static float pointsPerPlayer      = 0.1f;
@@ -47,11 +50,21 @@ public class ClientGameSettings {
         computersNeededForWin = computersNeeded;
     }
 
+    public static void setExperimentSettings(boolean enableThreePerks) {
+        threePerksEnabled = enableThreePerks;
+    }
+
     // ── Геттеры — Игра ────────────────────────────────────────────────────
     public static int   getHpBoost()       { return hpBoost; }
     public static int   getManiacCount()   { return maniacCount; }
     public static int   getGameTime()      { return gameTime; }
     public static int   getSelectedMap()   { return selectedMap; }
+    public static boolean isThreePerksEnabled() { return threePerksEnabled; }
+    public static int getPerkLimit() {
+        return threePerksEnabled
+                ? GameSettings.EXPERIMENTAL_PERK_LIMIT
+                : GameSettings.DEFAULT_PERK_LIMIT;
+    }
 
     // ── Геттеры — Компьютеры ──────────────────────────────────────────────
     public static float getHackPointsRequired()    { return hackPointsRequired; }

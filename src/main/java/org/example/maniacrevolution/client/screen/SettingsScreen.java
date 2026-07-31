@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import org.example.maniacrevolution.guide.MapGuideRegistry;
+import org.example.maniacrevolution.client.gui.SettingsToggle;
 import org.example.maniacrevolution.map.MapData;
 import org.example.maniacrevolution.map.MapRegistry;
 import org.example.maniacrevolution.network.ModNetworking;
@@ -37,7 +38,7 @@ import java.util.function.Supplier;
  * of the in-game HUD.</p>
  */
 public class SettingsScreen extends Screen {
-    private enum Category { GAME, COMPUTERS }
+    private enum Category { GAME, COMPUTERS, EXPERIMENTS }
 
     private static final int PANEL_MAX_WIDTH = 600;
     private static final int PANEL_MAX_HEIGHT = 410;
@@ -57,6 +58,7 @@ public class SettingsScreen extends Screen {
     private static final int TEXT_MUTED = 0xFF929CA7;
     private static final int ACCENT_GAME = 0xFFFFC857;
     private static final int ACCENT_COMPUTERS = 0xFF59B7E8;
+    private static final int ACCENT_EXPERIMENTS = 0xFFC28BFF;
     private static final int ACCENT_DANGER = 0xFFE05A63;
     private static final int ACCENT_SUCCESS = 0xFF70E28A;
 
@@ -78,6 +80,7 @@ public class SettingsScreen extends Screen {
     private float tempQteSuccessBonus;
     private float tempQteCritBonus;
     private int tempComputersNeededForWin;
+    private boolean tempThreePerksEnabled;
 
     private int panelX;
     private int panelY;
@@ -110,6 +113,7 @@ public class SettingsScreen extends Screen {
     private MapGuideRegistry.Entry hoveredMapPreview;
     private String activeMapPreviewId;
     private long mapPreviewStartedAt;
+    private SettingsToggle threePerksToggle;
 
     public SettingsScreen() {
         super(Component.literal("Настройки матча"));
@@ -139,12 +143,22 @@ public class SettingsScreen extends Screen {
         tempQteSuccessBonus = ClientGameSettings.getQteSuccessBonus();
         tempQteCritBonus = ClientGameSettings.getQteCritBonus();
         tempComputersNeededForWin = ClientGameSettings.getComputersNeededForWin();
+        tempThreePerksEnabled = ClientGameSettings.isThreePerksEnabled();
     }
 
     @Override
     protected void init() {
         super.init();
         calculateLayout();
+        threePerksToggle = addRenderableWidget(new SettingsToggle(
+                0, 0, SettingsToggle.DEFAULT_WIDTH, SettingsToggle.DEFAULT_HEIGHT,
+                Component.literal("Разрешить третий перк"), tempThreePerksEnabled,
+                ACCENT_EXPERIMENTS,
+                (toggle, enabled) -> {
+                    tempThreePerksEnabled = enabled;
+                    markChanged("three_perks");
+                }));
+        threePerksToggle.visible = false;
         if (openedAt == 0L) {
             openedAt = System.currentTimeMillis();
             lastFrameAt = openedAt;
@@ -159,7 +173,7 @@ public class SettingsScreen extends Screen {
         panelX = (width - panelWidth) / 2;
         basePanelY = (height - panelHeight) / 2;
         panelY = basePanelY;
-        sidebarWidth = panelWidth < 470 ? 96 : 116;
+        sidebarWidth = panelWidth < 470 ? 102 : 124;
         updateDynamicLayout();
     }
 
@@ -314,6 +328,7 @@ public class SettingsScreen extends Screen {
         int sideRight = panelX + sidebarWidth - 8;
         int firstY = categoryButtonY(Category.GAME);
         int secondY = categoryButtonY(Category.COMPUTERS);
+        int thirdY = categoryButtonY(Category.EXPERIMENTS);
         int indicatorHeight = 37;
 
         gui.fill(panelX + 1, panelY + HEADER_HEIGHT + 1,
@@ -333,9 +348,11 @@ public class SettingsScreen extends Screen {
                 sideRight - sideLeft, mouseX, mouseY, alpha);
         drawCategoryButton(gui, Category.COMPUTERS, sideLeft, secondY,
                 sideRight - sideLeft, mouseX, mouseY, alpha);
+        drawCategoryButton(gui, Category.EXPERIMENTS, sideLeft, thirdY,
+                sideRight - sideLeft, mouseX, mouseY, alpha);
 
         int hintY = footerY - 33;
-        if (hintY > secondY + 43) {
+        if (hintY > thirdY + 43) {
             gui.drawString(font, "ПОДСКАЗКА", sideLeft + 2, hintY,
                     withAlpha(TEXT_MUTED, alpha), false);
             gui.drawString(font, "Shift  ×5", sideLeft + 2, hintY + 12,
@@ -353,42 +370,62 @@ public class SettingsScreen extends Screen {
 
         int color = selected ? accentColor(category) : hovered ? TEXT_PRIMARY : TEXT_SECONDARY;
         drawCategoryIcon(gui, category, x + 9, y + 10, color, alpha);
-        String name = category == Category.GAME ? "Матч" : "Компьютеры";
+        String name = switch (category) {
+            case GAME -> "Матч";
+            case COMPUTERS -> "Компьютеры";
+            case EXPERIMENTS -> panelWidth < 470 ? "Эксперим." : "Эксперименты";
+        };
         int textX = x + 29;
         int maxTextWidth = width - 34;
         gui.drawString(font, trimToWidth(name, maxTextWidth), textX, y + 9,
                 withAlpha(color, alpha), false);
-        String count = category == Category.GAME ? "4 параметра" : "11 параметров";
+        String count = switch (category) {
+            case GAME -> "4 параметра";
+            case COMPUTERS -> "11 параметров";
+            case EXPERIMENTS -> "1 параметр";
+        };
         gui.drawString(font, trimToWidth(count, maxTextWidth), textX, y + 21,
                 withAlpha(TEXT_MUTED, alpha), false);
 
         if (hovered) {
-            setTooltip(name, category == Category.GAME
-                    ? "Основные правила и карта текущего матча."
-                    : "Скорость взлома, QTE и условия победы.", null);
+            String description = switch (category) {
+                case GAME -> "Основные правила и карта текущего матча.";
+                case COMPUTERS -> "Скорость взлома, QTE и условия победы.";
+                case EXPERIMENTS -> "Нестабильные и тестовые правила матча.";
+            };
+            setTooltip(category == Category.EXPERIMENTS ? "Эксперименты" : name,
+                    description, null);
         }
     }
 
     private void renderCategoryHeader(GuiGraphics gui, int mouseX, int mouseY, int alpha) {
-        String title = currentCategory == Category.GAME ? "НАСТРОЙКИ МАТЧА" : "СИСТЕМА ВЗЛОМА";
-        String subtitle = currentCategory == Category.GAME
-                ? "Базовые правила следующего раунда"
-                : "Баланс компьютеров, помощников и QTE";
+        String title = switch (currentCategory) {
+            case GAME -> "НАСТРОЙКИ МАТЧА";
+            case COMPUTERS -> "СИСТЕМА ВЗЛОМА";
+            case EXPERIMENTS -> "ЭКСПЕРИМЕНТЫ";
+        };
+        String subtitle = switch (currentCategory) {
+            case GAME -> "Базовые правила следующего раунда";
+            case COMPUTERS -> "Баланс компьютеров, помощников и QTE";
+            case EXPERIMENTS -> "Тестовые механики и нестандартные правила";
+        };
         gui.drawString(font, title, contentLeft, panelY + HEADER_HEIGHT + 10,
                 withAlpha(TEXT_PRIMARY, alpha), false);
         gui.drawString(font, trimToWidth(subtitle, Math.max(60, contentRight - contentLeft - 112)),
                 contentLeft, panelY + HEADER_HEIGHT + 23,
                 withAlpha(TEXT_MUTED, alpha), false);
 
-        String resetLabel = panelWidth < 470 ? "Сброс" : "Сбросить раздел";
-        int resetWidth = font.width(resetLabel) + 14;
-        int resetX = contentRight - resetWidth;
-        int resetY = panelY + HEADER_HEIGHT + 12;
-        boolean hovered = inside(mouseX, mouseY, resetX, resetY, resetWidth, 19);
-        drawButton(gui, resetX, resetY, resetWidth, 19, resetLabel,
-                ACCENT_DANGER, hovered, false, alpha);
-        if (hovered) {
-            setTooltip("Сбросить раздел", "Вернуть значения этого раздела по умолчанию.", null);
+        if (hasCurrentCategorySettings()) {
+            String resetLabel = panelWidth < 470 ? "Сброс" : "Сбросить раздел";
+            int resetWidth = font.width(resetLabel) + 14;
+            int resetX = contentRight - resetWidth;
+            int resetY = panelY + HEADER_HEIGHT + 12;
+            boolean hovered = inside(mouseX, mouseY, resetX, resetY, resetWidth, 19);
+            drawButton(gui, resetX, resetY, resetWidth, 19, resetLabel,
+                    ACCENT_DANGER, hovered, false, alpha);
+            if (hovered) {
+                setTooltip("Сбросить раздел", "Вернуть значения этого раздела по умолчанию.", null);
+            }
         }
     }
 
@@ -400,6 +437,13 @@ public class SettingsScreen extends Screen {
         contentSlide = Math.round((1.0f - transition) * 7.0f);
 
         gui.enableScissor(contentLeft - 2, rowsTop, contentRight + 2, rowsBottom);
+        boolean experiments = currentCategory == Category.EXPERIMENTS;
+        updateThreePerksToggle(experiments, contentAlpha);
+        if (experiments) {
+            renderExperimentRow(gui, mouseX, mouseY, contentSlide, contentAlpha);
+        } else if (entries.isEmpty()) {
+            renderEmptyCategory(gui, contentSlide, contentAlpha);
+        }
         for (int i = 0; i < entries.size(); i++) {
             SettingEntry entry = entries.get(i);
             int rowY = Math.round(rowsTop + i * (ROW_HEIGHT + ROW_GAP) - scrollOffset) + contentSlide;
@@ -410,6 +454,65 @@ public class SettingsScreen extends Screen {
                     contentRight - contentLeft, mouseX, mouseY, now, deltaSeconds, contentAlpha);
         }
         gui.disableScissor();
+    }
+
+    private void updateThreePerksToggle(boolean visible, int alpha) {
+        if (threePerksToggle == null) {
+            return;
+        }
+        threePerksToggle.visible = visible && !closing;
+        threePerksToggle.active = threePerksToggle.visible;
+        threePerksToggle.setAlpha(alpha / 255.0f);
+        threePerksToggle.setX(contentRight - threePerksToggle.getWidth() - 12);
+        threePerksToggle.setY(rowsTop + 12 + contentSlide);
+    }
+
+    private void renderExperimentRow(GuiGraphics gui, int mouseX, int mouseY,
+                                     int slide, int alpha) {
+        int rowY = rowsTop + slide;
+        int rowWidth = contentRight - contentLeft;
+        boolean hovered = inside(mouseX, mouseY, contentLeft, rowY, rowWidth, ROW_HEIGHT);
+        int background = hovered ? PANEL_SURFACE_ALT : PANEL_SURFACE;
+
+        gui.fill(contentLeft, rowY, contentRight, rowY + ROW_HEIGHT,
+                withAlpha(background, alpha));
+        gui.renderOutline(contentLeft, rowY, rowWidth, ROW_HEIGHT,
+                withAlpha(hovered ? ACCENT_EXPERIMENTS : PANEL_BORDER_SOFT, alpha));
+        gui.fill(contentLeft, rowY, contentLeft + 3, rowY + ROW_HEIGHT,
+                withAlpha(tempThreePerksEnabled ? ACCENT_EXPERIMENTS : PANEL_BORDER, alpha));
+
+        int textX = contentLeft + 12;
+        int textWidth = Math.max(30, threePerksToggle.getX() - textX - 9);
+        gui.drawString(font, trimToWidth("Третий слот перка", textWidth),
+                textX, rowY + 8, withAlpha(TEXT_PRIMARY, alpha), false);
+        gui.drawString(font, trimToWidth("Разрешает игрокам выбирать до трёх перков", textWidth),
+                textX, rowY + 23, withAlpha(TEXT_MUTED, alpha), false);
+
+        threePerksToggle.render(gui, mouseX, mouseY, 0.0f);
+        if (hovered) {
+            setTooltip("Третий слот перка",
+                    "Включает экспериментальный лимит в три перка для выбора, пресетов и HUD.",
+                    "При выключении третий перк будет снят у игроков, а его ячейка исчезнет.");
+        }
+    }
+
+    private void renderEmptyCategory(GuiGraphics gui, int slide, int alpha) {
+        int areaWidth = contentRight - contentLeft;
+        int height = Math.min(78, Math.max(50, rowsBottom - rowsTop - 12));
+        int y = rowsTop + Math.max(6, (rowsBottom - rowsTop - height) / 2) + slide;
+        int accent = accentColor();
+
+        gui.fill(contentLeft, y, contentRight, y + height, withAlpha(PANEL_SURFACE, alpha));
+        gui.renderOutline(contentLeft, y, areaWidth, height, withAlpha(accent, alpha));
+        gui.fill(contentLeft, y, contentLeft + 3, y + height, withAlpha(accent, alpha));
+
+        int centerX = contentLeft + areaWidth / 2;
+        gui.drawCenteredString(font,
+                trimToWidth("РАЗДЕЛ ГОТОВ К ЭКСПЕРИМЕНТАМ", Math.max(20, areaWidth - 20)),
+                centerX, y + Math.max(11, height / 2 - 13), withAlpha(TEXT_PRIMARY, alpha));
+        gui.drawCenteredString(font,
+                trimToWidth("Тестовые параметры появятся здесь позже.", Math.max(20, areaWidth - 20)),
+                centerX, y + Math.max(24, height / 2 + 2), withAlpha(TEXT_MUTED, alpha));
     }
 
     private void renderSettingRow(GuiGraphics gui, SettingEntry entry, int index, int x, int y,
@@ -574,7 +677,7 @@ public class SettingsScreen extends Screen {
         if (filled) {
             bg = hovered ? lerpColor(accent, 0xFFFFFFFF, 0.12f) : accent;
             border = hovered ? 0xFFFFFFFF : lerpColor(accent, 0xFFFFFFFF, 0.28f);
-            text = 0xFF0D1115;
+            text = TEXT_PRIMARY;
         } else {
             bg = hovered ? lerpColor(0xFF28323C, accent, 0.17f) : 0xFF28323C;
             border = hovered ? accent : PANEL_BORDER_SOFT;
@@ -593,17 +696,31 @@ public class SettingsScreen extends Screen {
     private void drawCategoryIcon(GuiGraphics gui, Category category, int x, int y,
                                   int color, int alpha) {
         int c = withAlpha(color, alpha);
-        if (category == Category.GAME) {
-            gui.renderOutline(x, y + 3, 14, 9, c);
-            gui.fill(x + 3, y + 6, x + 8, y + 7, c);
-            gui.fill(x + 5, y + 4, x + 6, y + 9, c);
-            gui.fill(x + 10, y + 5, x + 11, y + 6, c);
-            gui.fill(x + 12, y + 8, x + 13, y + 9, c);
-        } else {
-            gui.renderOutline(x, y + 1, 14, 10, c);
-            gui.fill(x + 2, y + 3, x + 12, y + 9, withAlpha(0xFF18232B, alpha));
-            gui.fill(x + 6, y + 11, x + 8, y + 13, c);
-            gui.fill(x + 3, y + 13, x + 11, y + 14, c);
+        switch (category) {
+            case GAME -> {
+                gui.renderOutline(x, y + 3, 14, 9, c);
+                gui.fill(x + 3, y + 6, x + 8, y + 7, c);
+                gui.fill(x + 5, y + 4, x + 6, y + 9, c);
+                gui.fill(x + 10, y + 5, x + 11, y + 6, c);
+                gui.fill(x + 12, y + 8, x + 13, y + 9, c);
+            }
+            case COMPUTERS -> {
+                gui.renderOutline(x, y + 1, 14, 10, c);
+                gui.fill(x + 2, y + 3, x + 12, y + 9, withAlpha(0xFF18232B, alpha));
+                gui.fill(x + 6, y + 11, x + 8, y + 13, c);
+                gui.fill(x + 3, y + 13, x + 11, y + 14, c);
+            }
+            case EXPERIMENTS -> {
+                gui.fill(x + 5, y + 1, x + 9, y + 3, c);
+                gui.fill(x + 6, y + 3, x + 8, y + 7, c);
+                gui.fill(x + 4, y + 7, x + 10, y + 8, c);
+                gui.fill(x + 3, y + 8, x + 11, y + 12, c);
+                gui.fill(x + 4, y + 12, x + 10, y + 13, c);
+                gui.fill(x + 5, y + 9, x + 6, y + 10,
+                        withAlpha(0xFFFFFFFF, alpha));
+                gui.fill(x + 8, y + 10, x + 9, y + 11,
+                        withAlpha(0xFFFFFFFF, alpha));
+            }
         }
     }
 
@@ -735,17 +852,24 @@ public class SettingsScreen extends Screen {
             }
         }
 
-        String resetCategoryLabel = panelWidth < 470 ? "Сброс" : "Сбросить раздел";
-        int resetCategoryWidth = font.width(resetCategoryLabel) + 14;
-        int resetCategoryX = contentRight - resetCategoryWidth;
-        int resetCategoryY = panelY + HEADER_HEIGHT + 12;
-        if (inside(mx, my, resetCategoryX, resetCategoryY, resetCategoryWidth, 19)) {
-            resetCategory();
-            playClick(0.82f);
-            return true;
+        if (hasCurrentCategorySettings()) {
+            String resetCategoryLabel = panelWidth < 470 ? "Сброс" : "Сбросить раздел";
+            int resetCategoryWidth = font.width(resetCategoryLabel) + 14;
+            int resetCategoryX = contentRight - resetCategoryWidth;
+            int resetCategoryY = panelY + HEADER_HEIGHT + 12;
+            if (inside(mx, my, resetCategoryX, resetCategoryY, resetCategoryWidth, 19)) {
+                resetCategory();
+                playClick(0.82f);
+                return true;
+            }
         }
 
         if (handleSettingClick(mx, my)) {
+            return true;
+        }
+
+        if (currentCategory == Category.EXPERIMENTS && threePerksToggle != null
+                && threePerksToggle.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
 
@@ -837,7 +961,8 @@ public class SettingsScreen extends Screen {
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_TAB) {
-            switchCategory(currentCategory == Category.GAME ? Category.COMPUTERS : Category.GAME);
+            Category[] categories = Category.values();
+            switchCategory(categories[(currentCategory.ordinal() + 1) % categories.length]);
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
@@ -867,7 +992,11 @@ public class SettingsScreen extends Screen {
         scrollOffset = 0.0f;
         targetScroll = 0.0f;
         categoryChangedAt = System.currentTimeMillis();
-        playClick(category == Category.GAME ? 0.96f : 1.04f);
+        playClick(switch (category) {
+            case GAME -> 0.96f;
+            case COMPUTERS -> 1.04f;
+            case EXPERIMENTS -> 1.12f;
+        });
     }
 
     private void markChanged(String id) {
@@ -898,12 +1027,20 @@ public class SettingsScreen extends Screen {
     }
 
     private int categoryButtonY(Category category) {
-        return panelY + HEADER_HEIGHT + 28 + category.ordinal() * 43;
+        int firstY = panelY + HEADER_HEIGHT + 28;
+        int categoryCount = Category.values().length;
+        int availableHeight = Math.max(0, footerY - firstY - 37);
+        int step = categoryCount <= 1 ? 0 : Math.min(43, availableHeight / (categoryCount - 1));
+        return firstY + category.ordinal() * step;
     }
 
     private int maxScroll() {
         int totalHeight = currentEntries().size() * (ROW_HEIGHT + ROW_GAP) - ROW_GAP;
         return Math.max(0, totalHeight - Math.max(1, rowsBottom - rowsTop));
+    }
+
+    private boolean hasCurrentCategorySettings() {
+        return currentCategory == Category.EXPERIMENTS || !currentEntries().isEmpty();
     }
 
     private ControlLayout controlLayout(int rowX, int rowWidth) {
@@ -916,7 +1053,11 @@ public class SettingsScreen extends Screen {
     }
 
     private List<SettingEntry> currentEntries() {
-        return currentCategory == Category.GAME ? gameSettingEntries : computerSettingEntries;
+        return switch (currentCategory) {
+            case GAME -> gameSettingEntries;
+            case COMPUTERS -> computerSettingEntries;
+            case EXPERIMENTS -> List.of();
+        };
     }
 
     private List<SettingEntry> buildGameEntries() {
@@ -1090,6 +1231,14 @@ public class SettingsScreen extends Screen {
     }
 
     private void resetCategory() {
+        if (currentCategory == Category.EXPERIMENTS) {
+            tempThreePerksEnabled = GameSettings.DEFAULT_THREE_PERKS_ENABLED;
+            if (threePerksToggle != null) {
+                threePerksToggle.setValue(tempThreePerksEnabled);
+            }
+            valuePulse.put("three_perks", System.currentTimeMillis());
+            return;
+        }
         for (SettingEntry entry : currentEntries()) {
             entry.reset().run();
             valuePulse.put(entry.id(), System.currentTimeMillis());
@@ -1115,6 +1264,10 @@ public class SettingsScreen extends Screen {
         tempQteSuccessBonus = GameSettings.DEFAULT_QTE_SUCCESS_BONUS;
         tempQteCritBonus = GameSettings.DEFAULT_QTE_CRIT_BONUS;
         tempComputersNeededForWin = GameSettings.DEFAULT_COMPUTERS_NEEDED;
+        tempThreePerksEnabled = GameSettings.DEFAULT_THREE_PERKS_ENABLED;
+        if (threePerksToggle != null) {
+            threePerksToggle.setValue(tempThreePerksEnabled);
+        }
         long now = System.currentTimeMillis();
         for (SettingEntry entry : currentEntries()) {
             valuePulse.put(entry.id(), now);
@@ -1128,7 +1281,8 @@ public class SettingsScreen extends Screen {
                 tempHackPointsRequired, tempPointsPerPlayer, tempPointsPerSpecialist,
                 tempMaxBonusPlayers, tempHackerRadius, tempSupportRadius,
                 tempQteIntervalMin, tempQteIntervalMax, tempQteSuccessBonus,
-                tempQteCritBonus, tempComputersNeededForWin));
+                tempQteCritBonus, tempComputersNeededForWin,
+                tempThreePerksEnabled));
 
         ClientGameSettings.setSettings(tempHpBoost, tempManiacCount, tempGameTime, tempSelectedMap);
         ClientGameSettings.setComputerSettings(
@@ -1136,6 +1290,7 @@ public class SettingsScreen extends Screen {
                 tempMaxBonusPlayers, tempHackerRadius, tempSupportRadius,
                 tempQteIntervalMin, tempQteIntervalMax, tempQteSuccessBonus,
                 tempQteCritBonus, tempComputersNeededForWin);
+        ClientGameSettings.setExperimentSettings(tempThreePerksEnabled);
 
         if (giveToAll) {
             ModNetworking.sendToServer(new GiveSettingsToAllPacket());
@@ -1156,7 +1311,8 @@ public class SettingsScreen extends Screen {
                 + Float.floatToIntBits(tempHackerRadius) + ":" + Float.floatToIntBits(tempSupportRadius) + ":"
                 + tempQteIntervalMin + ":" + tempQteIntervalMax + ":"
                 + Float.floatToIntBits(tempQteSuccessBonus) + ":"
-                + Float.floatToIntBits(tempQteCritBonus) + ":" + tempComputersNeededForWin;
+                + Float.floatToIntBits(tempQteCritBonus) + ":" + tempComputersNeededForWin + ":"
+                + tempThreePerksEnabled;
     }
 
     private void setTooltip(String title, String description, String hint) {
@@ -1211,7 +1367,11 @@ public class SettingsScreen extends Screen {
     }
 
     private int accentColor(Category category) {
-        return category == Category.GAME ? ACCENT_GAME : ACCENT_COMPUTERS;
+        return switch (category) {
+            case GAME -> ACCENT_GAME;
+            case COMPUTERS -> ACCENT_COMPUTERS;
+            case EXPERIMENTS -> ACCENT_EXPERIMENTS;
+        };
     }
 
     private static float roundHundredths(float value) {

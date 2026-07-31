@@ -15,6 +15,9 @@ public class GameSettings extends SavedData {
     private int gameTime      = 10;
     private int selectedMap   = 0;
 
+    // ── Эксперименты ─────────────────────────────────────────────────────
+    private boolean threePerksEnabled = false;
+
     // ── Настройки компьютеров (из HackConfig) ────────────────────────────
     private float hackPointsRequired         = 15.0f;
     private float pointsPerPlayer            = 0.1f;
@@ -33,6 +36,9 @@ public class GameSettings extends SavedData {
     public static final int   DEFAULT_MANIAC_COUNT           = 1;
     public static final int   DEFAULT_GAME_TIME              = 10;
     public static final int   DEFAULT_SELECTED_MAP           = 0;
+    public static final boolean DEFAULT_THREE_PERKS_ENABLED  = false;
+    public static final int DEFAULT_PERK_LIMIT                = 2;
+    public static final int EXPERIMENTAL_PERK_LIMIT           = 3;
 
     // ── Дефолты — Компьютеры ──────────────────────────────────────────────
     public static final float DEFAULT_HACK_POINTS_REQUIRED   = 15.0f;
@@ -54,6 +60,10 @@ public class GameSettings extends SavedData {
     public int   getManiacCount()   { return maniacCount; }
     public int   getGameTime()      { return gameTime; }
     public int   getSelectedMap()   { return selectedMap; }
+    public boolean isThreePerksEnabled() { return threePerksEnabled; }
+    public int getPerkLimit() {
+        return threePerksEnabled ? EXPERIMENTAL_PERK_LIMIT : DEFAULT_PERK_LIMIT;
+    }
 
     // ── Геттеры — Компьютеры ──────────────────────────────────────────────
     public float getHackPointsRequired()    { return hackPointsRequired; }
@@ -73,6 +83,7 @@ public class GameSettings extends SavedData {
     public void setManiacCount(int v)     { maniacCount   = Math.max(1, v);               setDirty(); }
     public void setGameTime(int v)        { gameTime      = Math.max(1, v);               setDirty(); }
     public void setSelectedMap(int v)     { selectedMap   = v;                            setDirty(); }
+    public void setThreePerksEnabled(boolean enabled) { threePerksEnabled = enabled; setDirty(); }
 
     // ── Сеттеры — Компьютеры ──────────────────────────────────────────────
     public void setHackPointsRequired(float v)   { hackPointsRequired  = Math.max(1f, v);         setDirty(); }
@@ -93,6 +104,7 @@ public class GameSettings extends SavedData {
         maniacCount          = DEFAULT_MANIAC_COUNT;
         gameTime             = DEFAULT_GAME_TIME;
         selectedMap          = DEFAULT_SELECTED_MAP;
+        threePerksEnabled    = DEFAULT_THREE_PERKS_ENABLED;
         hackPointsRequired   = DEFAULT_HACK_POINTS_REQUIRED;
         pointsPerPlayer      = DEFAULT_POINTS_PER_PLAYER;
         pointsPerSpecialist  = DEFAULT_POINTS_PER_SPECIALIST;
@@ -114,6 +126,7 @@ public class GameSettings extends SavedData {
         tag.putInt("maniacCount", maniacCount);
         tag.putInt("gameTime", gameTime);
         tag.putInt("selectedMap", selectedMap);
+        tag.putBoolean("threePerksEnabled", threePerksEnabled);
         tag.putFloat("hackPointsRequired", hackPointsRequired);
         tag.putFloat("pointsPerPlayer", pointsPerPlayer);
         tag.putFloat("pointsPerSpecialist", pointsPerSpecialist);
@@ -134,6 +147,9 @@ public class GameSettings extends SavedData {
         s.maniacCount          = tag.getInt("maniacCount");
         s.gameTime             = tag.getInt("gameTime");
         s.selectedMap          = tag.getInt("selectedMap");
+        s.threePerksEnabled    = tag.contains("threePerksEnabled")
+                ? tag.getBoolean("threePerksEnabled")
+                : DEFAULT_THREE_PERKS_ENABLED;
         s.hackPointsRequired   = tag.contains("hackPointsRequired")  ? tag.getFloat("hackPointsRequired")  : DEFAULT_HACK_POINTS_REQUIRED;
         s.pointsPerPlayer      = tag.contains("pointsPerPlayer")     ? tag.getFloat("pointsPerPlayer")     : DEFAULT_POINTS_PER_PLAYER;
         s.pointsPerSpecialist  = tag.contains("pointsPerSpecialist") ? tag.getFloat("pointsPerSpecialist") : DEFAULT_POINTS_PER_SPECIALIST;

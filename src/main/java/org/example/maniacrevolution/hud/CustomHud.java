@@ -30,6 +30,7 @@ import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.mana.ClientManaData;
 import org.example.maniacrevolution.perk.PerkType;
+import org.example.maniacrevolution.settings.ClientGameSettings;
 import org.example.maniacrevolution.util.PlayerModeUtil;
 
 import java.util.Comparator;
@@ -234,7 +235,8 @@ public class CustomHud implements IGuiOverlay {
         String activateKey = ModKeybinds.ACTIVATE_PERK.getTranslatedKeyMessage().getString();
         String switchKey = ModKeybinds.SWITCH_PERK.getTranslatedKeyMessage().getString();
         IItemWithAbility ability = findItemWithAbility(player);
-        int effectWidth = PERK_ICON_SIZE * 2 + 2;
+        int perkLimit = ClientGameSettings.getPerkLimit();
+        int effectWidth = PERK_ICON_SIZE * perkLimit + 2 * (perkLimit - 1);
         if (ability != null) effectWidth += ABILITY_ICON_SIZE + 2;
         int panelWidth = PANEL_PADDING * 2 + RESOURCE_BAR_WIDTH * 2
                 + COMPONENT_GAP * 2 + effectWidth;
@@ -254,7 +256,7 @@ public class CustomHud implements IGuiOverlay {
 
         int currentX = effectX;
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < perkLimit; i++) {
             String keyName = i == activeIndex ? activateKey : switchKey;
             if (i < perks.size()) {
                 renderPerkSlot(gui, perks.get(i), currentX, effectsY, i == activeIndex,

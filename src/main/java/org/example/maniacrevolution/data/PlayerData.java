@@ -4,6 +4,7 @@ import org.example.maniacrevolution.cosmetic.CosmeticData;
 import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.perk.*;
 import org.example.maniacrevolution.preset.PerkPreset;
+import org.example.maniacrevolution.settings.GameSettings;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -19,8 +20,9 @@ public class PlayerData {
     private int experience = 0;
     private int coins = 0;
 
-    // Выбранные перки на текущую игру (максимум 2)
-    private final List<PerkInstance> selectedPerks = new ArrayList<>(2);
+    // Выбранные перки на текущую игру (2 или 3 с экспериментом)
+    private final List<PerkInstance> selectedPerks =
+            new ArrayList<>(GameSettings.EXPERIMENTAL_PERK_LIMIT);
     private int activePerkIndex = 0;
 
     // Выбранные классы на сервере. Scoreboard остаётся для датапака, это источник для логики мода.
@@ -110,7 +112,7 @@ public class PlayerData {
     }
 
     public boolean selectPerk(Perk perk, ServerPlayer player) {
-        if (selectedPerks.size() >= 2) return false;
+        if (selectedPerks.size() >= GameSettings.get(player.server).getPerkLimit()) return false;
 
         for (PerkInstance inst : selectedPerks) {
             if (inst.getPerk().getId().equals(perk.getId())) return false;
@@ -146,6 +148,13 @@ public class PlayerData {
 
     }
 
+    public void trimPerksToLimit(ServerPlayer player) {
+        int limit = GameSettings.get(player.server).getPerkLimit();
+        while (selectedPerks.size() > limit) {
+            deselectPerk(selectedPerks.size() - 1, player);
+        }
+    }
+
     public void switchActivePerk() {
         if (selectedPerks.size() > 1) {
             activePerkIndex = (activePerkIndex + 1) % selectedPerks.size();
@@ -162,9 +171,10 @@ public class PlayerData {
 
     public void increaseMaxPresets() { maxPresets++; }
 
-    public boolean createPreset(String name, List<String> perkIds) {
+    public boolean createPreset(String name, List<String> perkIds, ServerPlayer player) {
         if (presets.size() >= maxPresets) return false;
-        if (perkIds.isEmpty() || perkIds.size() > 2) return false;
+        if (perkIds.isEmpty()
+                || perkIds.size() > GameSettings.get(player.server).getPerkLimit()) return false;
 
         presets.add(new PerkPreset(name, perkIds));
         return true;

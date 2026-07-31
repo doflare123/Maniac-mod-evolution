@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.perk.PerkType;
+import org.example.maniacrevolution.settings.ClientGameSettings;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class PerkHud {
         int activeIndex = ClientPlayerData.getActivePerkIndex();
 
         // Рендерим каждый перк
-        for (int i = 0; i < perks.size(); i++) {
+        for (int i = 0; i < Math.min(perks.size(), ClientGameSettings.getPerkLimit()); i++) {
             ClientPlayerData.ClientPerkData perk = perks.get(i);
             int perkX = x + 5 + i * (ICON_SIZE + SPACING);
             int perkY = y + 5;

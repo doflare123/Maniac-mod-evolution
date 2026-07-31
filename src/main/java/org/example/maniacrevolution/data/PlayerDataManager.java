@@ -106,6 +106,7 @@ public class PlayerDataManager {
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             PlayerData data = getOrCreate(player.getUUID());
+            data.trimPerksToLimit(player);
             migrateClassFromScoreboardIfMissing(player, data);
             syncToClient(player);
             syncClassToClient(player);
