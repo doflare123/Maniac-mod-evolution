@@ -50,7 +50,11 @@ public class ClientPlayerData {
                     perk.cooldown(),
                     perk.maxCooldown(),
                     PerkType.values()[perk.typeOrdinal()],
-                    perk.manaCost()
+                    perk.manaCost(),
+                    perk.chargeCount(),
+                    perk.chargeRemaining(),
+                    perk.chargeDuration(),
+                    System.currentTimeMillis()
             ));
         }
 
@@ -117,13 +121,22 @@ public class ClientPlayerData {
         return null;
     }
 
-    public record ClientPerkData(String id, int cooldown, int maxCooldown, PerkType type, float manaCost) {
+    public record ClientPerkData(String id, int cooldown, int maxCooldown, PerkType type,
+                                 float manaCost, int chargeCount, int chargeRemaining,
+                                 int chargeDuration, long chargeSyncMillis) {
         public boolean isOnCooldown() { return cooldown > 0; }
         public int getCooldownSeconds() { return (cooldown + 19) / 20; }
         public float getCooldownProgress() {
             return maxCooldown > 0 ? (float) cooldown / maxCooldown : 0;
         }
         public boolean hasManaCost() { return manaCost > 0; }
+        public boolean isCharged() { return type == PerkType.CHARGED; }
+        public float getChargeProgress() {
+            if (chargeCount <= 0 || chargeDuration <= 0) return 0.0f;
+            float elapsedTicks = (System.currentTimeMillis() - chargeSyncMillis) / 50.0f;
+            return net.minecraft.util.Mth.clamp(
+                    (chargeRemaining - elapsedTicks) / chargeDuration, 0.0f, 1.0f);
+        }
 
         public String getDisplayName() {
             var perk = PerkRegistry.getPerk(id);

@@ -23,6 +23,7 @@ import org.example.maniacrevolution.maze.MazeManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.NightmareScreamerPacket;
 import org.example.maniacrevolution.network.packets.SyncNightmarePacket;
+import org.example.maniacrevolution.perk.perks.survivor.RealityAnchorPerk;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -190,7 +191,11 @@ public final class NightmareManager {
         }
 
         if (state.sanity <= NightmareConfig.SANITY_BREAKPOINT && tick >= state.abductionCooldownUntil) {
-            startTrial(player, state, tick);
+            if (RealityAnchorPerk.tryDelayNightmare(player)) {
+                state.abductionCooldownUntil = tick + RealityAnchorPerk.NIGHTMARE_DELAY_TICKS;
+            } else {
+                startTrial(player, state, tick);
+            }
         }
     }
 

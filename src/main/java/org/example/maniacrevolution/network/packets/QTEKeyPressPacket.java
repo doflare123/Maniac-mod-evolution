@@ -9,6 +9,7 @@ import org.example.maniacrevolution.hack.HackConfig;
 import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.perk.perks.maniac.CatchMistakesPerk;
 import org.example.maniacrevolution.perk.perks.survivor.IdealychPerk;
+import org.example.maniacrevolution.perk.perks.survivor.RealityAnchorPerk;
 import org.example.maniacrevolution.util.ScoreboardUtil;
 
 import java.util.function.Supplier;
@@ -60,6 +61,7 @@ public class QTEKeyPressPacket {
                 // Идеалыч
                 if (packet.critical) {
                     IdealychPerk.onCriticalHit(player);
+                    RealityAnchorPerk.onCriticalQTE(player);
                 } else {
                     IdealychPerk.onNormalHit(player);
                 }

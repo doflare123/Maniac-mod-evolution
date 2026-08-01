@@ -21,8 +21,7 @@ import org.example.maniacrevolution.util.PlayerModeUtil;
  */
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public class HudRenderer {
-    private static final int ACTIONBAR_GUI_HEIGHT = 86;
-    private static final int CHAT_ACTIONBAR_OFFSET = 14;
+    private static final int ACTIONBAR_LANE_OFFSET = 21;
     private static int savedLeftHeight;
     private static int savedRightHeight;
     private static boolean actionbarHeightAdjusted;
@@ -93,8 +92,8 @@ public class HudRenderer {
 
         savedLeftHeight = forgeGui.leftHeight;
         savedRightHeight = forgeGui.rightHeight;
-        int targetHeight = ACTIONBAR_GUI_HEIGHT
-                + (mc.screen instanceof ChatScreen ? CHAT_ACTIONBAR_OFFSET : 0);
+        int targetHeight = CustomHud.getBottomContentTopOffset(
+                mc.player, mc.screen instanceof ChatScreen) + ACTIONBAR_LANE_OFFSET;
         forgeGui.leftHeight = Math.max(forgeGui.leftHeight, targetHeight);
         forgeGui.rightHeight = Math.max(forgeGui.rightHeight, targetHeight);
         actionbarHeightAdjusted = true;

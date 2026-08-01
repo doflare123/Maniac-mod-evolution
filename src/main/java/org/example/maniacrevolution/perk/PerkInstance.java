@@ -1,7 +1,16 @@
 package org.example.maniacrevolution.perk;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
+import org.example.maniacrevolution.data.PlayerDataManager;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Экземпляр перка у конкретного игрока.
@@ -11,6 +20,9 @@ public class PerkInstance {
     private final Perk perk;
     private int cooldownRemaining = 0;
     private boolean passiveApplied = false;
+    private final List<Integer> chargeDurationsRemaining = new ArrayList<>();
+    private int chargesGrantedThisGame = 0;
+    private final Set<String> matchFlags = new HashSet<>();
 
     public PerkInstance(Perk perk) {
         this.perk = perk;
@@ -45,9 +57,95 @@ public class PerkInstance {
         this.cooldownRemaining = 0;
     }
 
+    // === Временные заряды ===
+
+    public boolean isChargedPerk() {
+        return perk instanceof ChargedPerk;
+    }
+
+    public int getChargeCount() {
+        return chargeDurationsRemaining.size();
+    }
+
+    /** Оставшееся время самого старого заряда — именно его показывает HUD. */
+    public int getChargeRemainingTicks() {
+        return chargeDurationsRemaining.stream().min(Integer::compareTo).orElse(0);
+    }
+
+    public int getChargeDurationTicks() {
+        return perk instanceof ChargedPerk charged ? charged.getChargeDurationTicks() : 0;
+    }
+
+    public int getChargesGrantedThisGame() {
+        return chargesGrantedThisGame;
+    }
+
+    public boolean grantCharge(ServerPlayer player) {
+        if (!(perk instanceof ChargedPerk charged)) return false;
+        if (chargeDurationsRemaining.size() >= charged.getMaxStoredCharges()) return false;
+        if (chargesGrantedThisGame >= charged.getMaxChargesPerGame()) return false;
+
+        chargeDurationsRemaining.add(charged.getChargeDurationTicks());
+        chargesGrantedThisGame++;
+        charged.onChargeGained(player, chargeDurationsRemaining.size());
+        PlayerDataManager.syncToClient(player);
+        return true;
+    }
+
+    public boolean consumeCharge(ServerPlayer player) {
+        if (!(perk instanceof ChargedPerk charged) || chargeDurationsRemaining.isEmpty()) {
+            return false;
+        }
+
+        int oldestIndex = 0;
+        for (int i = 1; i < chargeDurationsRemaining.size(); i++) {
+            if (chargeDurationsRemaining.get(i) < chargeDurationsRemaining.get(oldestIndex)) {
+                oldestIndex = i;
+            }
+        }
+        chargeDurationsRemaining.remove(oldestIndex);
+        charged.onChargeConsumed(player, chargeDurationsRemaining.size());
+        PlayerDataManager.syncToClient(player);
+        return true;
+    }
+
+    public boolean hasMatchFlag(String flag) {
+        return matchFlags.contains(flag);
+    }
+
+    public void setMatchFlag(String flag) {
+        matchFlags.add(flag);
+    }
+
+    private void resetMatchState() {
+        chargeDurationsRemaining.clear();
+        chargesGrantedThisGame = 0;
+        matchFlags.clear();
+    }
+
+    private void tickCharges(ServerPlayer player) {
+        if (!(perk instanceof ChargedPerk charged) || chargeDurationsRemaining.isEmpty()) return;
+
+        int expired = 0;
+        for (int i = chargeDurationsRemaining.size() - 1; i >= 0; i--) {
+            int remaining = chargeDurationsRemaining.get(i) - 1;
+            if (remaining <= 0) {
+                chargeDurationsRemaining.remove(i);
+                expired++;
+            } else {
+                chargeDurationsRemaining.set(i, remaining);
+            }
+        }
+        for (int i = 0; i < expired; i++) {
+            charged.onChargeExpired(player, chargeDurationsRemaining.size());
+        }
+    }
+
     // === Тик ===
 
     public void tick(ServerPlayer player, PerkPhase currentPhase) {
+        tickCharges(player);
+
         // Уменьшаем кулдаун
         if (cooldownRemaining > 0) {
             cooldownRemaining--;
@@ -158,9 +256,8 @@ public class PerkInstance {
     // === Игровые события ===
 
     public void onGameStart(ServerPlayer player) {
-        if (perk.getActivePhases().contains(PerkPhase.START)) {
-            perk.onGameStart(player);
-        }
+        resetMatchState();
+        perk.onGameStart(player);
     }
 
     public void onPhaseChange(ServerPlayer player, PerkPhase newPhase) {
@@ -183,6 +280,7 @@ public class PerkInstance {
             perk.removePassiveEffect(player);
             passiveApplied = false;
         }
+        resetMatchState();
     }
 
     // === Сериализация ===
@@ -192,6 +290,14 @@ public class PerkInstance {
         tag.putString("perkId", perk.getId());
         tag.putInt("cooldown", cooldownRemaining);
         tag.putBoolean("passiveApplied", passiveApplied);
+        tag.putIntArray("chargeDurations",
+                chargeDurationsRemaining.stream().mapToInt(Integer::intValue).toArray());
+        tag.putInt("chargesGrantedThisGame", chargesGrantedThisGame);
+        ListTag flagsTag = new ListTag();
+        for (String flag : matchFlags) {
+            flagsTag.add(StringTag.valueOf(flag));
+        }
+        tag.put("matchFlags", flagsTag);
         return tag;
     }
 
@@ -203,6 +309,20 @@ public class PerkInstance {
         PerkInstance instance = new PerkInstance(perk);
         instance.cooldownRemaining = tag.getInt("cooldown");
         instance.passiveApplied = tag.getBoolean("passiveApplied");
+        if (perk instanceof ChargedPerk charged) {
+            int[] durations = tag.getIntArray("chargeDurations");
+            for (int duration : durations) {
+                if (duration > 0 && instance.chargeDurationsRemaining.size() < charged.getMaxStoredCharges()) {
+                    instance.chargeDurationsRemaining.add(Math.min(duration, charged.getChargeDurationTicks()));
+                }
+            }
+            instance.chargesGrantedThisGame = Math.min(
+                    tag.getInt("chargesGrantedThisGame"), charged.getMaxChargesPerGame());
+        }
+        ListTag flagsTag = tag.getList("matchFlags", Tag.TAG_STRING);
+        for (int i = 0; i < flagsTag.size(); i++) {
+            instance.matchFlags.add(flagsTag.getString(i));
+        }
         return instance;
     }
 

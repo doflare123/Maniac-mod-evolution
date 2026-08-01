@@ -14,6 +14,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.capability.AddictionCapability;
 import org.example.maniacrevolution.client.ClientAddictionData;
@@ -55,6 +56,8 @@ public class CustomHud implements IGuiOverlay {
     private static final int TIMED_EFFECT_GAP = 3;
     private static final int TIMED_EFFECT_SECTION_GAP = 4;
     private static final int MAX_TIMED_EFFECTS_PER_ROW = 6;
+    private static final int MAX_VISIBLE_TIMED_EFFECTS = MAX_TIMED_EFFECTS_PER_ROW * 2;
+    private static final int CHAT_HUD_OFFSET = 14;
     private static final int RESOURCE_BAR_WIDTH = 120;
     private static final int RESOURCE_BAR_HEIGHT = 14;
     private static final int ADDICTION_INDICATOR_WIDTH = 68;
@@ -118,7 +121,7 @@ public class CustomHud implements IGuiOverlay {
         boolean hasStatus = hasContextStatus(player);
         animation.update(healthPercent, manaPercent, player.getInventory().selected, hasStatus, mc.isPaused());
 
-        int hudY = screenHeight - HUD_HEIGHT - 4 - (chatOpen ? 14 : 0);
+        int hudY = screenHeight - HUD_HEIGHT - 4 - (chatOpen ? CHAT_HUD_OFFSET : 0);
 
         renderDock(gui, screenWidth / 2, hudY, player);
         int timedEffectsHeight = renderTimedEffects(gui, partialTick, screenWidth,
@@ -145,26 +148,29 @@ public class CustomHud implements IGuiOverlay {
             timedEffectPlayer = player.getUUID();
         }
 
-        List<MobEffectInstance> effects = player.getActiveEffects().stream()
-                .filter(MobEffectInstance::showIcon)
-                .filter(effect -> !effect.isInfiniteDuration())
-                .sorted(Comparator.comparing(effect ->
-                        BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect()).toString()))
+        List<MobEffectInstance> allEffects = player.getActiveEffects().stream()
+                .filter(CustomHud::isVisibleTimedEffect)
+                .sorted(Comparator
+                        .comparingInt(CustomHud::getTimedEffectPriority)
+                        .thenComparing(effect ->
+                                BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect()).toString()))
                 .toList();
 
         Set<MobEffect> activeEffectTypes = new HashSet<>();
-        for (MobEffectInstance effect : effects) {
+        for (MobEffectInstance effect : allEffects) {
             activeEffectTypes.add(effect.getEffect());
+            updateTimedEffectState(effect);
         }
         timedEffectStates.keySet().removeIf(effect -> !activeEffectTypes.contains(effect));
 
+        List<MobEffectInstance> effects = allEffects.stream()
+                .limit(MAX_VISIBLE_TIMED_EFFECTS)
+                .toList();
         if (effects.isEmpty()) {
             return 0;
         }
 
-        int effectsPerRow = Math.min(MAX_TIMED_EFFECTS_PER_ROW,
-                Math.max(1, (screenWidth - 8 + TIMED_EFFECT_GAP)
-                        / (TIMED_EFFECT_SIZE + TIMED_EFFECT_GAP)));
+        int effectsPerRow = MAX_TIMED_EFFECTS_PER_ROW;
         int rowCount = (effects.size() + effectsPerRow - 1) / effectsPerRow;
 
         for (int index = 0; index < effects.size(); index++) {
@@ -190,15 +196,8 @@ public class CustomHud implements IGuiOverlay {
         MobEffect effectType = effect.getEffect();
         int remainingDuration = Math.max(0, effect.getDuration());
         TimedEffectState state = timedEffectStates.get(effectType);
-        if (state == null
-                || state.instance != effect
-                || state.amplifier != effect.getAmplifier()
-                || remainingDuration > state.previousRemainingDuration) {
-            state = new TimedEffectState(effect, Math.max(1, remainingDuration),
-                    remainingDuration, effect.getAmplifier());
-            timedEffectStates.put(effectType, state);
-        } else {
-            state.previousRemainingDuration = remainingDuration;
+        if (state == null) {
+            state = updateTimedEffectState(effect);
         }
 
         float progress = Mth.clamp((remainingDuration - partialTick)
@@ -213,6 +212,49 @@ public class CustomHud implements IGuiOverlay {
         renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, 1.0f, 0xB05B626C);
         int effectColor = lerpColor(0xFF000000 | effectType.getColor(), 0xFFFFFFFF, 0.25f);
         renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, progress, effectColor);
+    }
+
+    private TimedEffectState updateTimedEffectState(MobEffectInstance effect) {
+        MobEffect effectType = effect.getEffect();
+        int remainingDuration = Math.max(0, effect.getDuration());
+        TimedEffectState state = timedEffectStates.get(effectType);
+        if (state == null
+                || state.instance != effect
+                || state.amplifier != effect.getAmplifier()
+                || remainingDuration > state.previousRemainingDuration) {
+            state = new TimedEffectState(effect, Math.max(1, remainingDuration),
+                    remainingDuration, effect.getAmplifier());
+            timedEffectStates.put(effectType, state);
+        } else {
+            state.previousRemainingDuration = remainingDuration;
+        }
+        return state;
+    }
+
+    private static boolean isVisibleTimedEffect(MobEffectInstance effect) {
+        return effect.showIcon() && !effect.isInfiniteDuration();
+    }
+
+    private static int getTimedEffectPriority(MobEffectInstance effect) {
+        ResourceLocation id = BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect());
+        return id != null && Maniacrev.MODID.equals(id.getNamespace()) ? 0 : 1;
+    }
+
+    public static int getTimedEffectSectionHeight(Player player) {
+        if (player == null) return 0;
+        int effectCount = (int) Math.min(MAX_VISIBLE_TIMED_EFFECTS,
+                player.getActiveEffects().stream().filter(CustomHud::isVisibleTimedEffect).count());
+        if (effectCount == 0) return 0;
+        int rowCount = (effectCount + MAX_TIMED_EFFECTS_PER_ROW - 1)
+                / MAX_TIMED_EFFECTS_PER_ROW;
+        return rowCount * TIMED_EFFECT_SIZE
+                + (rowCount - 1) * TIMED_EFFECT_GAP
+                + TIMED_EFFECT_SECTION_GAP;
+    }
+
+    public static int getBottomContentTopOffset(Player player, boolean chatOpen) {
+        return HUD_HEIGHT + 4 + 27 + getTimedEffectSectionHeight(player)
+                + (chatOpen ? CHAT_HUD_OFFSET : 0);
     }
 
     private void renderFilledCircle(GuiGraphics gui, int x, int y, int size, int color) {
@@ -363,7 +405,39 @@ public class CustomHud implements IGuiOverlay {
             gui.drawString(mc.font, cost, x + PERK_ICON_SIZE - mc.font.width(cost) - 1,
                     y + PERK_ICON_SIZE - 10, color, true);
         }
+        if (perk.isCharged()) {
+            renderPerkChargeBadge(gui, perk,
+                    x + PERK_ICON_SIZE - 12, y + PERK_ICON_SIZE - 12);
+        }
         renderKeyHint(gui, keyName, x + 1, y + 1, selected ? 0xFFE5B94F : 0xFFB8C0C9);
+    }
+
+    private void renderPerkChargeBadge(GuiGraphics gui, ClientPlayerData.ClientPerkData perk,
+                                       int x, int y) {
+        int size = 11;
+        renderFilledCircle(gui, x, y, size, 0xE0181B20);
+        renderCircularProgress(gui, x, y, size, 1.0f, 0xD05B626C);
+        if (perk.chargeCount() > 0) {
+            renderCircularProgress(gui, x, y, size, perk.getChargeProgress(), 0xFF70E28A);
+        }
+
+        String count = Integer.toString(perk.chargeCount());
+        int color = perk.chargeCount() > 0 ? 0xFFFFFFFF : 0xFF8A929B;
+        drawScaledCentered(gui, count, x, y, size, 0.75f, color);
+    }
+
+    private static void drawScaledCentered(GuiGraphics gui, String text, int x, int y,
+                                           int size, float scale, int color) {
+        Minecraft mc = Minecraft.getInstance();
+        float centerX = x + size / 2.0f;
+        float textTop = y + (size - mc.font.lineHeight * scale) / 2.0f;
+        int drawX = Math.round(centerX / scale - mc.font.width(text) / 2.0f + 1.0f / scale);
+        int drawY = Math.round(textTop / scale);
+
+        gui.pose().pushPose();
+        gui.pose().scale(scale, scale, 1.0f);
+        gui.drawString(mc.font, text, drawX, drawY, color, true);
+        gui.pose().popPose();
     }
 
     private void renderAbilitySlot(GuiGraphics gui, int x, int y,

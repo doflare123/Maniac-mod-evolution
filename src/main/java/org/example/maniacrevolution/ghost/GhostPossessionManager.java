@@ -29,6 +29,7 @@ import org.example.maniacrevolution.network.packets.SyncAbilityCooldownPacket;
 import org.example.maniacrevolution.network.packets.SyncGhostPossessionPacket;
 import org.example.maniacrevolution.item.GhostHandItem;
 import org.example.maniacrevolution.util.ManaUtil;
+import org.example.maniacrevolution.perk.perks.survivor.RealityAnchorPerk;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -115,6 +116,7 @@ public class GhostPossessionManager {
         GhostLoadoutManager.suppressCosmetics(possessor);
         syncClientState(possessor, true, true, target.getId());
         syncClientState(target, true, false, -1);
+        RealityAnchorPerk.onPossessionStarted(target);
         ModNetworking.sendToPlayer(new SyncAbilityCooldownPacket(ModItems.GHOST_HAND.get(), 0, POSSESSION_COOLDOWN_TICKS / 20, 0), possessor);
 
         possessor.displayClientMessage(Component.literal("§dВы вселились в " + target.getName().getString()), false);
@@ -144,6 +146,34 @@ public class GhostPossessionManager {
 
     public static boolean isPossessed(Player player) {
         return player != null && TARGET_TO_POSSESSOR.containsKey(player.getUUID());
+    }
+
+    /** Сокращает оставшееся время активной одержимости указанной жертвы. */
+    public static boolean shortenPossession(ServerPlayer target, int reductionTicks) {
+        if (target == null || target.getServer() == null || reductionTicks <= 0) return false;
+
+        UUID possessorUuid = TARGET_TO_POSSESSOR.get(target.getUUID());
+        if (possessorUuid == null) return false;
+
+        PossessionState state = ACTIVE_POSSESSIONS.get(possessorUuid);
+        if (state == null) return false;
+
+        long now = target.getServer().getTickCount();
+        long shortenedEnd = Math.max(now + 1L, state.endTick() - reductionTicks);
+        if (shortenedEnd >= state.endTick()) return false;
+
+        PossessionState shortened = new PossessionState(state.targetUuid(), state.startTick(), shortenedEnd);
+        ACTIVE_POSSESSIONS.put(possessorUuid, shortened);
+
+        int remainingTicks = (int) Math.max(1L, shortenedEnd - now);
+        ServerPlayer possessor = target.getServer().getPlayerList().getPlayer(possessorUuid);
+        target.removeEffect(ModEffects.POSSESSION_TIMER.get());
+        applyPossessionTimer(target, remainingTicks);
+        if (possessor != null) {
+            possessor.removeEffect(ModEffects.POSSESSION_TIMER.get());
+            applyPossessionTimer(possessor, remainingTicks);
+        }
+        return true;
     }
 
     public static String getStatus(Player player) {

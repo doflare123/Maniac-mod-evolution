@@ -292,6 +292,8 @@
   "perk.maniacrev.family_discord.name": "Family Discord",
   "perk.maniacrev.griefer.name": "Griefer",
   "perk.maniacrev.guiding_light.name": "Guiding Light",
+  "perk.maniacrev.reality_anchor.name": "Reality Anchor",
+  "perk.maniacrev.reality_anchor.desc": "A critical QTE creates a stability charge for %s seconds. Up to %s charges can be gained per game. A charge automatically reduces Ghost possession by %s seconds, delays a zero-sanity nightmare once per game by %s seconds, or reduces Fear, Silence, or Stun duration by %s%%.",
   "item.maniacrev.nether_swap": "Nether swap",
   "item.maniacrev.microphone": "Microphone",
   "item.maniacrev.toy_knife": "Toy Knife",

@@ -7,7 +7,8 @@ public enum PerkType {
     PASSIVE("Пассивный", ChatFormatting.GOLD, 0xFFFFC857),
     ACTIVE("Активный", ChatFormatting.AQUA, 0xFF52D6C7),
     HYBRID("Гибридный", ChatFormatting.LIGHT_PURPLE, 0xFFC28BFF),
-    PASSIVE_COOLDOWN("Пассивный", ChatFormatting.GOLD, 0xFFFFC857);
+    PASSIVE_COOLDOWN("Пассивный", ChatFormatting.GOLD, 0xFFFFC857),
+    CHARGED("Зарядный", ChatFormatting.GREEN, 0xFF70E28A);
 
     private final String displayName;
     private final ChatFormatting color;
@@ -31,6 +32,6 @@ public enum PerkType {
     }
 
     public boolean hasPassiveAbility() {
-        return this == PASSIVE || this == HYBRID;
+        return this == PASSIVE || this == HYBRID || this == CHARGED;
     }
 }

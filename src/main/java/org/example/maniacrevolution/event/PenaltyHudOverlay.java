@@ -3,6 +3,7 @@ package org.example.maniacrevolution.event;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -12,6 +13,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.config.HudConfig;
+import org.example.maniacrevolution.hud.CustomHud;
 import org.example.maniacrevolution.util.PlayerModeUtil;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
@@ -50,7 +52,9 @@ public final class PenaltyHudOverlay {
         int textWidth = mc.font.width(warning);
         int width = textWidth + 12;
         int x = (screenWidth - width) / 2;
-        int y = screenHeight - 104 + Math.round((1.0f - alpha) * 4.0f);
+        int contentTopY = screenHeight - CustomHud.getBottomContentTopOffset(
+                player, mc.screen instanceof ChatScreen);
+        int y = contentTopY - 21 + Math.round((1.0f - alpha) * 4.0f);
         int alphaByte = Math.round(alpha * 255.0f);
 
         gui.fill(x, y, x + width, y + 17, (Math.min(alphaByte, 205) << 24) | 0x00241115);

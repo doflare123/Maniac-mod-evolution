@@ -22,7 +22,7 @@ public class PerkRegistry {
         register(new HedgehogSkinPerk());
         register(new FootballFanPerk());
 
-        // Перки выживших (11 штук)
+        // Перки выживших (12 штук)
         register(new MimicPerk());
         register(new WallhackPerk());
         register(new LastBreathPerk());
@@ -34,6 +34,7 @@ public class PerkRegistry {
         register(new AltruistExePerk());
         register(new MagicLoverPerk());
         register(new IdealychPerk());
+        register(new RealityAnchorPerk());
 
         // Перки маньяка (10 штук)
         register(new BloodflowPerk());

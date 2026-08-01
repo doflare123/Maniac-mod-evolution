@@ -260,6 +260,8 @@
   "perk.maniacrev.family_discord.name": "Семейный Раздор",
   "perk.maniacrev.griefer.name": "Грифер",
   "perk.maniacrev.guiding_light.name": "Путеводная Света",
+  "perk.maniacrev.reality_anchor.name": "Якорь реальности",
+  "perk.maniacrev.reality_anchor.desc": "Критическое QTE создаёт заряд стабильности на %s сек. За игру можно получить до %s зарядов. Заряд автоматически сокращает одержимость Призрака на %s сек., один раз за игру откладывает кошмар при нулевом рассудке на %s сек. либо сокращает Fear, Silence или Stun на %s%%.",
   "item.maniacrev.nether_swap": "Nether swap",
   "item.maniacrev.microphone": "Микрофон",
   "item.maniacrev.coin_elusiveness": "Монетка Неуловимости",

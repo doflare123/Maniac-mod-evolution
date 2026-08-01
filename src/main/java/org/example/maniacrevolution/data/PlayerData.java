@@ -111,6 +111,15 @@ public class PlayerData {
         return null;
     }
 
+    public PerkInstance getPerkInstance(String perkId) {
+        for (PerkInstance instance : selectedPerks) {
+            if (instance.getPerk().getId().equals(perkId)) {
+                return instance;
+            }
+        }
+        return null;
+    }
+
     public boolean selectPerk(Perk perk, ServerPlayer player) {
         if (selectedPerks.size() >= GameSettings.get(player.server).getPerkLimit()) return false;
 

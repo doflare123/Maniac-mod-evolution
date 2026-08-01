@@ -83,7 +83,7 @@ public abstract class Perk {
 
     /** Проверка, может ли игрок использовать активную способность */
     public boolean canActivate(ServerPlayer player, PerkPhase currentPhase) {
-        if (type == PerkType.PASSIVE || type == PerkType.PASSIVE_COOLDOWN) return false;
+        if (!type.hasActiveAbility()) return false;
         if (!isActiveInPhase(currentPhase)) return false;
         if (player.gameMode.getGameModeForPlayer() != net.minecraft.world.level.GameType.ADVENTURE) {
             return false;

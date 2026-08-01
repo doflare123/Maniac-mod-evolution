@@ -126,6 +126,7 @@ public class PerkHud {
             case ACTIVE -> "АКТ";
             case HYBRID -> "ГИБ";
             case PASSIVE_COOLDOWN -> "ПАС";
+            case CHARGED -> "ЗАР";
         };
     }
 }

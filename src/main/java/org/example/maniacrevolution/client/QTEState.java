@@ -2,13 +2,21 @@ package org.example.maniacrevolution.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.util.Mth;
 import org.example.maniacrevolution.keybind.ModKeybinds;
+import org.example.maniacrevolution.config.HudConfig;
+import org.example.maniacrevolution.hud.CustomHud;
+import org.example.maniacrevolution.util.PlayerModeUtil;
 
 import java.util.Random;
 
 public class QTEState {
     private static final int BASE_QTE_DURATION   = 750;
     private static final int BOX_SIZE            = 100;
+    private static final int LABEL_SPACE         = 15;
+    private static final int CUSTOM_HUD_BOTTOM_LANE_OFFSET = 38;
+    private static final int SCREEN_TOP_MARGIN   = 5;
     private static final int BASE_GREEN_ZONE_SIZE = 25;
     // Толерантность: рамка считается "в зелёной зоне" когда её размер
     // попадает в диапазон [greenZoneSize - tolerance, greenZoneSize + tolerance].
@@ -66,7 +74,31 @@ public class QTEState {
     public void render(GuiGraphics g) {
         Minecraft mc = Minecraft.getInstance();
         int cx = mc.getWindow().getGuiScaledWidth()  / 2;
-        int cy = mc.getWindow().getGuiScaledHeight() - 135;
+        int screenHeight = mc.getWindow().getGuiScaledHeight();
+        int cy = screenHeight - 135;
+        float renderScale = 1.0f;
+        if (mc.player != null
+                && PlayerModeUtil.isSurvivalOrAdventure(mc.player)
+                && HudConfig.isCustomHudEnabled()) {
+            int contentTopOffset = CustomHud.getBottomContentTopOffset(
+                    mc.player, mc.screen instanceof ChatScreen);
+            int maxBottomY = screenHeight - contentTopOffset - CUSTOM_HUD_BOTTOM_LANE_OFFSET;
+            int availableHeight = Math.max(1, maxBottomY - SCREEN_TOP_MARGIN);
+            renderScale = Math.min(1.0f, availableHeight / (float) (BOX_SIZE + LABEL_SPACE));
+
+            float topExtent = (BOX_SIZE / 2.0f + LABEL_SPACE) * renderScale;
+            float bottomExtent = BOX_SIZE / 2.0f * renderScale;
+            float minCenterY = SCREEN_TOP_MARGIN + topExtent;
+            float maxCenterY = maxBottomY - bottomExtent;
+            cy = Math.round(Mth.clamp((float) cy, minCenterY, Math.max(minCenterY, maxCenterY)));
+        }
+
+        g.pose().pushPose();
+        if (renderScale < 1.0f) {
+            g.pose().translate(cx, cy, 0.0f);
+            g.pose().scale(renderScale, renderScale, 1.0f);
+            g.pose().translate(-cx, -cy, 0.0f);
+        }
 
         int boxX = cx - BOX_SIZE / 2;
         int boxY = cy - BOX_SIZE / 2;
@@ -118,7 +150,8 @@ public class QTEState {
                 : getEnglishKeybindName(requiredKey);
         String display = "Press: " + keyLabel;
         int textW = mc.font.width(display);
-        g.drawString(mc.font, display, cx - textW / 2, boxY - 15, 0xFFFFFF);
+        g.drawString(mc.font, display, cx - textW / 2, boxY - LABEL_SPACE, 0xFFFFFF);
+        g.pose().popPose();
     }
 
     /**
