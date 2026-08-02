@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.perk.perks.survivor;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -28,6 +29,12 @@ public class WallhackPerk extends Perk {
                 .team(PerkTeam.SURVIVOR)
                 .phases(PerkPhase.ANY)
                 .cooldown(45));
+    }
+
+    @Override
+    public Component getDescription() {
+        return Component.translatable("perk.maniacrev.wallhack.desc",
+                HIGHLIGHT_DURATION / 20, (int) MAX_DISTANCE);
     }
 
     @Override

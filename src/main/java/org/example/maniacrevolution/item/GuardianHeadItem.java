@@ -45,12 +45,12 @@ public class GuardianHeadItem extends ArmorItem implements IActivatableArmor, II
     @Override
     public boolean canActivate(ServerPlayer player) {
         if (!NightmareManager.getInstance().isKeeper(player)) {
-            player.displayClientMessage(Component.literal("Эта способность привязана к форме Хранителя кошмаров"), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.guardian_head.wrong_class"), true);
             return false;
         }
         if (ArmorAbilityCooldownManager.isOnCooldown(player, this)) {
-            player.displayClientMessage(Component.literal("Кошмар восстанавливается: " +
-                    ArmorAbilityCooldownManager.getRemainingCooldown(player, this) / 20 + "с"), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.guardian_head.cooldown",
+                    ArmorAbilityCooldownManager.getRemainingCooldown(player, this) / 20), true);
             return false;
         }
         return true;
@@ -58,9 +58,9 @@ public class GuardianHeadItem extends ArmorItem implements IActivatableArmor, II
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("Способность: " + getAbilityName()).withStyle(ChatFormatting.DARK_PURPLE));
+        tooltip.add(Component.translatable("tooltip.maniacrev.ability", getAbilityName()).withStyle(ChatFormatting.DARK_PURPLE));
         tooltip.add(Component.literal(getAbilityDescription()).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("Кулдаун: " + getMaxCooldownSeconds() + "с").withStyle(ChatFormatting.BLUE));
+        tooltip.add(Component.translatable("tooltip.maniacrev.cooldown", getMaxCooldownSeconds()).withStyle(ChatFormatting.BLUE));
     }
 
     @Override
@@ -70,12 +70,13 @@ public class GuardianHeadItem extends ArmorItem implements IActivatableArmor, II
 
     @Override
     public String getAbilityName() {
-        return "Концентрированный кошмар";
+        return Component.translatable("ability.maniacrev.guardian_head.name").getString();
     }
 
     @Override
     public String getAbilityDescription() {
-        return "Резкий кошмар у цели во взгляде. Снимает 10% рассудка.";
+        return Component.translatable("ability.maniacrev.guardian_head.desc",
+                Math.round(NightmareConfig.CONCENTRATED_NIGHTMARE_SANITY_PERCENT * 100.0F)).getString();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.perk.perks.maniac;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -22,6 +23,12 @@ public class IAmSpeedPerk extends Perk {
                 .team(PerkTeam.MANIAC)
                 .phases(PerkPhase.ANY)
         );
+    }
+
+    @Override
+    public Component getDescription() {
+        return Component.translatable("perk.maniacrev.i_am_speed.desc",
+                SPEED_AMPLIFIER + 1, SPEED_DURATION_TICKS / 20);
     }
 
     /**

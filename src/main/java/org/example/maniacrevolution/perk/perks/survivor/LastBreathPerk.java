@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.perk.perks.survivor;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -29,6 +30,11 @@ public class LastBreathPerk extends Perk {
                 .type(PerkType.PASSIVE)
                 .team(PerkTeam.SURVIVOR)
                 .phases(PerkPhase.ANY));
+    }
+
+    @Override
+    public Component getDescription() {
+        return Component.translatable("perk.maniacrev.last_breath.desc", GLOW_DURATION / 20);
     }
 
     /**

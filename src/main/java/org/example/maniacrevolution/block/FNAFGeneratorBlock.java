@@ -49,10 +49,10 @@ public class FNAFGeneratorBlock extends Block implements EntityBlock {
                     if (generator.isPowered()) {
                         generator.setPowered(false);
                         level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 1.0f, 0.8f);
-                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cГенератор выключен!"), true);
+                        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.maniacrev.generator.turned_off"), true);
                         return InteractionResult.SUCCESS;
                     } else {
-                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cГенератор уже выключен!"), true);
+                        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.maniacrev.generator.already_off"), true);
                         return InteractionResult.FAIL;
                     }
                 }
@@ -62,15 +62,15 @@ public class FNAFGeneratorBlock extends Block implements EntityBlock {
                     if (!generator.isPowered()) {
                         generator.setPowered(true);
                         level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 1.0f, 1.2f);
-                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§aГенератор включен!"), true);
+                        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.maniacrev.generator.turned_on"), true);
                         return InteractionResult.SUCCESS;
                     } else {
-                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§aГенератор уже работает!"), true);
+                        player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.maniacrev.generator.already_on"), true);
                         return InteractionResult.FAIL;
                     }
                 }
 
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal("§7Вы не можете использовать генератор"), true);
+                player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.maniacrev.generator.forbidden"), true);
                 return InteractionResult.FAIL;
             }
         }

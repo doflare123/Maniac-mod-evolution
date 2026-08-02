@@ -57,15 +57,8 @@ public class EjectionPerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("Когда кладёшь выжившего или убиваешь — ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal("ближайший компьютер откатывается на "
-                        + (int)(ROLLBACK_PERCENT * 100) + "%.")
-                        .withStyle(ChatFormatting.RED))
-                .append(Component.literal(" Только если прогресс > 0. КД: " + COOLDOWN_SEC + " сек. Стоимость: ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal((int) MANA_COST + " маны.")
-                        .withStyle(ChatFormatting.AQUA));
+        return Component.translatable("perk.maniacrev.ejection.desc",
+                (int) (ROLLBACK_PERCENT * 100));
     }
 
     // ── Пассивный эффект ──────────────────────────────────────────────────

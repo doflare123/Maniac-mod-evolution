@@ -28,7 +28,7 @@ public class ActivatePerkPacket {
             if (player == null) return;
 
             if (GhostPossessionManager.isPossessed(player)) {
-                player.displayClientMessage(Component.literal("§5Одержимость не позволяет использовать перки."), true);
+                player.displayClientMessage(Component.translatable("message.maniacrev.perk.possessed"), true);
                 return;
             }
 
@@ -36,13 +36,13 @@ public class ActivatePerkPacket {
             PerkInstance active = data.getActivePerk();
 
             if (active == null) {
-                player.displayClientMessage(Component.literal("§cУ вас нет выбранных перков!"), true);
+                player.displayClientMessage(Component.translatable("message.maniacrev.perk.none_selected"), true);
                 return;
             }
 
             PerkPhase phase = GameManager.getCurrentPhase();
             if (phase == null) {
-                player.displayClientMessage(Component.literal("§cИгра не запущена!"), true);
+                player.displayClientMessage(Component.translatable("message.maniacrev.game.not_started"), true);
                 return;
             }
 
@@ -50,7 +50,7 @@ public class ActivatePerkPacket {
             if (player.hasEffect(org.example.maniacrevolution.effect.ModEffects.SILENCE.get())) {
                 int remaining = player.getEffect(org.example.maniacrevolution.effect.ModEffects.SILENCE.get()).getDuration() / 20;
                 player.displayClientMessage(
-                        Component.literal("§c🔇 Тишина! Перки заблокированы ещё " + remaining + " сек."), true);
+                        Component.translatable("message.maniacrev.perk.silenced", remaining), true);
                 PlayerDataManager.syncToClient(player);
                 return;
             }
@@ -59,21 +59,19 @@ public class ActivatePerkPacket {
 
             switch (result) {
                 case SUCCESS -> player.displayClientMessage(
-                        net.minecraft.network.chat.Component.literal("§a")
-                                .append(active.getPerk().getName())
-                                .append(" активирован!"), true);
+                        Component.translatable("message.maniacrev.perk.activated", active.getPerk().getName()), true);
                 case ON_COOLDOWN -> player.displayClientMessage(
-                        Component.literal("§cПерк на перезарядке! Осталось: " + active.getCooldownRemainingSeconds() + " сек"), true);
+                        Component.translatable("message.maniacrev.perk.cooldown", active.getCooldownRemainingSeconds()), true);
                 case WRONG_PHASE -> player.displayClientMessage(
-                        Component.literal("§cПерк недоступен в этой фазе игры!"), true);
+                        Component.translatable("message.maniacrev.perk.wrong_phase"), true);
                 case WRONG_GAMEMODE -> player.displayClientMessage(
-                        Component.literal("§cПерки работают только в режиме Приключения!"), true);
+                        Component.translatable("message.maniacrev.perk.wrong_gamemode"), true);
                 case NOT_ACTIVE_PERK -> player.displayClientMessage(
-                        Component.literal("§eВыберите активный перк!"), true);
+                        Component.translatable("message.maniacrev.perk.not_active"), true);
                 case NOT_ENOUGH_MANA -> player.displayClientMessage(
-                        Component.literal("§b\uD83D\uDE30 Недостаточно маны для активации перка!"), true);
+                        Component.translatable("message.maniacrev.perk.not_enough_mana"), true);
                 case CONDITION_NOT_MET -> player.displayClientMessage(
-                        Component.literal("§cУсловие не выполнено!"), true);
+                        Component.translatable("message.maniacrev.perk.condition_not_met"), true);
             }
 
             PlayerDataManager.syncToClient(player);

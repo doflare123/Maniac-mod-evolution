@@ -31,7 +31,7 @@ public class HookEntity extends Projectile {
             SynchedEntityData.defineId(HookEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final double HOOK_SPEED = 4.5;
-    private static final double MAX_DISTANCE = 24.0;
+    public static final double MAX_DISTANCE = 24.0;
     private static final double PULL_SPEED = 1.0;
 
     private Vec3 startPos;

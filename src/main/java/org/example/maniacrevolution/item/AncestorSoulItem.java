@@ -46,9 +46,8 @@ public class AncestorSoulItem extends Item {
 
         player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + heal));
 
-        sp.displayClientMessage(Component.literal(String.format(
-                "§d✦ Душа предков: §f+%.0f HP §7(выживших-зрителей: §f%d§7)",
-                heal, spectatorCount)), true);
+        sp.displayClientMessage(Component.translatable("message.maniacrev.ancestor_soul.used",
+                Math.round(heal), spectatorCount), true);
 
         if (!sp.isCreative()) stack.shrink(1);
         return InteractionResultHolder.consume(stack);
@@ -70,14 +69,13 @@ public class AncestorSoulItem extends Item {
                                 List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.empty());
-        tooltip.add(Component.literal("§dДуша предков").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.literal("  Базовое лечение: §f" + (int) BASE_HEAL + " HP")
+        tooltip.add(Component.translatable("tooltip.maniacrev.ancestor_soul.title").withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("tooltip.maniacrev.ancestor_soul.base", (int) BASE_HEAL)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal(
-                        "  §f+" + (int) BONUS_PER_SPECTATOR + " HP §7за каждого выжившего в spectator")
+        tooltip.add(Component.translatable("tooltip.maniacrev.ancestor_soul.bonus", (int) BONUS_PER_SPECTATOR)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal(
-                        "  §8Формула: " + (int) BASE_HEAL + " + " + (int) BONUS_PER_SPECTATOR + " × кол-во")
+        tooltip.add(Component.translatable("tooltip.maniacrev.ancestor_soul.formula",
+                        (int) BASE_HEAL, (int) BONUS_PER_SPECTATOR)
                 .withStyle(ChatFormatting.DARK_GRAY));
     }
 }

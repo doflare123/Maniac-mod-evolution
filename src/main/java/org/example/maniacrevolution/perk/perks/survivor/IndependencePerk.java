@@ -38,18 +38,8 @@ public class IndependencePerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("Когда до конца нокдауна остаётся ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal(TRIGGER_SECONDS + " сек.")
-                        .withStyle(ChatFormatting.RED))
-                .append(Component.literal(" — активируй перк чтобы встать с ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal((int) REVIVE_HP + " HP")
-                        .withStyle(ChatFormatting.YELLOW))
-                .append(Component.literal(". Одноразовый. Стоимость: ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal((int) MANA_COST + " маны.")
-                        .withStyle(ChatFormatting.AQUA));
+        return Component.translatable("perk.maniacrev.independence.desc",
+                TRIGGER_SECONDS, (int) REVIVE_HP);
     }
 
     // ── Активация ─────────────────────────────────────────────────────────

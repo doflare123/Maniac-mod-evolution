@@ -1,5 +1,7 @@
 package org.example.maniacrevolution.character;
 
+import net.minecraft.network.chat.Component;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,6 +10,43 @@ import java.util.Map;
  */
 public class TagRegistry {
     private static final Map<String, String> TAG_DESCRIPTIONS = new HashMap<>();
+    private static final Map<String, String> TAG_KEYS = Map.ofEntries(
+            Map.entry("Поддержка", "support"),
+            Map.entry("Мобильность", "mobility"),
+            Map.entry("Отвлечение", "distraction"),
+            Map.entry("Хаккер", "hacker"),
+            Map.entry("Видение", "vision"),
+            Map.entry("Живучесть", "survivability"),
+            Map.entry("Побег", "escape"),
+            Map.entry("Помеха", "hindrance"),
+            Map.entry("Прогресс", "scaling"),
+            Map.entry("Неожиданность", "surprise"),
+            Map.entry("AoE", "aoe"),
+            Map.entry("Контроль", "control"),
+            Map.entry("Периодический урон", "damage_over_time"),
+            Map.entry("Призыватель", "summoner"),
+            Map.entry("Преследователь", "chaser"),
+            Map.entry("Ближний бой", "melee"),
+            Map.entry("Дальний бой", "ranged"),
+            Map.entry("Универсал", "versatile"),
+            Map.entry("Техник", "technician"),
+            Map.entry("Зелья", "potions"),
+            Map.entry("Скорость", "speed"),
+            Map.entry("Риск", "risk"),
+            Map.entry("Агрессивный", "aggressive"),
+            Map.entry("Интеллект", "intelligence"),
+            Map.entry("Мистика", "mystic"),
+            Map.entry("Скрытность", "stealth"),
+            Map.entry("Страх", "fear"),
+            Map.entry("Яды", "poisons"),
+            Map.entry("Контроль зоны", "zone_control"),
+            Map.entry("Дебаффы", "debuffs"),
+            Map.entry("Прыгскеры", "jumpscares"),
+            Map.entry("Психология", "psychology"),
+            Map.entry("Психологическое давление", "psychological_pressure"),
+            Map.entry("Испытания", "trials"),
+            Map.entry("Агрессор", "aggressor")
+    );
 
     static {
         // Тэги выживших
@@ -54,7 +93,19 @@ public class TagRegistry {
      * Получить описание тэга
      */
     public static String getTagDescription(String tag) {
-        return TAG_DESCRIPTIONS.getOrDefault(tag, tag);
+        String suffix = TAG_KEYS.get(tag);
+        if (suffix == null) return TAG_DESCRIPTIONS.getOrDefault(tag, tag);
+        String key = "character.maniacrev.tag." + suffix + ".description";
+        String translated = Component.translatable(key).getString();
+        return translated.equals(key) ? TAG_DESCRIPTIONS.getOrDefault(tag, tag) : translated;
+    }
+
+    public static String getTagDisplayName(String tag) {
+        String suffix = TAG_KEYS.get(tag);
+        if (suffix == null) return tag;
+        String key = "character.maniacrev.tag." + suffix + ".name";
+        String translated = Component.translatable(key).getString();
+        return translated.equals(key) ? tag : translated;
     }
 
     /**

@@ -9,6 +9,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.perk.perks.maniac.GrieferPerk;
+import org.example.maniacrevolution.perk.perks.survivor.EmergencyOverclockPerk;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -348,6 +349,15 @@ public class HackManager {
         return activeSessions.containsKey(pos);
     }
 
+    /** Проверяет, является ли игрок хакером или текущим помощником в активной сессии. */
+    public boolean isParticipatingInActiveHack(ServerPlayer player) {
+        if (player == null) return false;
+        for (HackSession session : activeSessions.values()) {
+            if (session.hasQTEParticipant(player)) return true;
+        }
+        return false;
+    }
+
     // ── Утилиты ───────────────────────────────────────────────────────────────
 
     static void executeCommand(MinecraftServer server, String cmd) {
@@ -398,20 +408,38 @@ public class HackManager {
     public void applyQTEBonus(net.minecraft.server.level.ServerPlayer player, boolean critical) {
         for (HackSession session : activeSessions.values()) {
             if (session.hasQTEParticipant(player)) {
-                float bonus = critical
-                        ? HackConfig.QTE_CRIT_BONUS
-                        : HackConfig.QTE_SUCCESS_BONUS;
+                boolean emergencyOverclock = EmergencyOverclockPerk.isActive(player);
+                float bonus = emergencyOverclock
+                        ? EmergencyOverclockPerk.getQteBonusPoints(critical)
+                        : critical ? HackConfig.QTE_CRIT_BONUS : HackConfig.QTE_SUCCESS_BONUS;
                 session.currentPoints = Math.min(
                         session.currentPoints + bonus,
                         HackConfig.HACK_POINTS_REQUIRED);
-                Maniacrev.LOGGER.debug("[HackManager] QTE {} bonus +{} for {} -> {}",
+                Maniacrev.LOGGER.debug("[HackManager] QTE {}{} bonus +{} for {} -> {}",
                         critical ? "CRIT" : "normal",
+                        emergencyOverclock ? " emergency-overclock" : "",
                         bonus,
                         player.getName().getString(),
                         session.currentPoints);
                 return;
             }
         }
+    }
+
+    /** Снимает абсолютное количество очков за провал перегруженного QTE. */
+    public boolean applyQTEPenalty(ServerPlayer player, float penalty) {
+        if (player == null || penalty <= 0.0F) return false;
+        for (HackSession session : activeSessions.values()) {
+            if (session.hasQTEParticipant(player)) {
+                session.currentPoints = Math.max(0.0F, session.currentPoints - penalty);
+                Maniacrev.LOGGER.debug("[HackManager] QTE emergency-overclock penalty -{} for {} -> {}",
+                        penalty,
+                        player.getName().getString(),
+                        session.currentPoints);
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Совместимость */

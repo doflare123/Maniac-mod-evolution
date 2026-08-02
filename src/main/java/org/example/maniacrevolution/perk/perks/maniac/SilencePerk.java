@@ -35,24 +35,8 @@ public class SilencePerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("Накладывает ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal("Тишину")
-                        .withStyle(ChatFormatting.DARK_PURPLE))
-                .append(Component.literal(" на всех в радиусе ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal((int) RADIUS + " блоков")
-                        .withStyle(ChatFormatting.RED))
-                .append(Component.literal(" на ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal(DURATION_SEC + " сек.")
-                        .withStyle(ChatFormatting.RED))
-                .append(Component.literal(" — запрещает использовать активные перки.")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal(" КД: " + COOLDOWN_SEC + " сек. Стоимость: ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal((int) MANA_COST + " маны.")
-                        .withStyle(ChatFormatting.AQUA));
+        return Component.translatable("perk.maniacrev.silence.desc",
+                (int) RADIUS, DURATION_SEC);
     }
 
     @Override

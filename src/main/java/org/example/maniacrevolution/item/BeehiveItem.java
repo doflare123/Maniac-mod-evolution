@@ -30,6 +30,7 @@ public class BeehiveItem extends Item {
     public static final int BEE_COUNT   = 5;
     public static final int RAGE_TICKS  = 200; // 10 сек
     public static final int EAT_TICKS   = 60;  // 3 сек
+    public static final int DAMAGE_REDUCTION_PERCENT = 100;
 
     public static final FoodProperties FOOD = new FoodProperties.Builder()
             .nutrition(2).saturationMod(0f).alwaysEat().build();
@@ -66,8 +67,7 @@ public class BeehiveItem extends Item {
             );
             level.addFreshEntity(bee);
         }
-        player.displayClientMessage(
-                Component.literal("§4§lЯРОСТЬ! §cПчёлы вышли на охоту!"), true);
+        player.displayClientMessage(Component.translatable("message.maniacrev.beehive.rage"), true);
     }
 
     @Override
@@ -75,11 +75,11 @@ public class BeehiveItem extends Item {
                                 List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.empty());
-        tooltip.add(Component.literal("§6Улей").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.literal("  §cЯрость §7на " + RAGE_TICKS/20 + " сек").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Резистенс 100% к урону").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Спавнит §e" + BEE_COUNT + " §7разъярённых пчёл").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Пчёлы атакуют выживших в радиусе §f10 §7блоков").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Поедание: §f3 сек §7| Любая сытость").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.beehive.title").withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("tooltip.maniacrev.beehive.rage", RAGE_TICKS / 20).withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.beehive.resistance", DAMAGE_REDUCTION_PERCENT).withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.beehive.bees", BEE_COUNT).withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.beehive.targeting").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.beehive.eating", EAT_TICKS / 20).withStyle(ChatFormatting.GRAY));
     }
 }

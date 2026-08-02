@@ -3,6 +3,7 @@ package org.example.maniacrevolution.gui.pages;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import org.example.maniacrevolution.gui.GuideScreen;
 
 import java.util.ArrayList;
@@ -96,5 +97,14 @@ public abstract class GuidePage {
         }
 
         return lines;
+    }
+
+    protected static String tr(String key, Object... args) {
+        return Component.translatable(key, args).getString();
+    }
+
+    protected static String trOr(String key, String fallback, Object... args) {
+        String translated = tr(key, args);
+        return translated.equals(key) ? fallback : translated;
     }
 }

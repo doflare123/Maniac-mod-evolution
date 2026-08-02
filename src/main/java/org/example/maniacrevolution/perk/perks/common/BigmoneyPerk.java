@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.perk.perks.common;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.perk.*;
@@ -17,6 +18,12 @@ public class BigmoneyPerk extends Perk {
                 .type(PerkType.PASSIVE)
                 .team(PerkTeam.ALL)
                 .phases(PerkPhase.ANY));
+    }
+
+    @Override
+    public Component getDescription() {
+        return Component.translatable("perk.maniacrev.bigmoney.desc",
+                Math.round((BONUS_MULTIPLIER - 1.0f) * 100.0f));
     }
 
     /**

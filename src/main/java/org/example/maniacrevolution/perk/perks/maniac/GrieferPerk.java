@@ -44,16 +44,7 @@ public class GrieferPerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("После взлома компьютера выжившими — ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal("самый заряженный компьютер")
-                        .withStyle(ChatFormatting.RED))
-                .append(Component.literal(" блокируется на ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal(BLOCK_SEC + " сек.")
-                        .withStyle(ChatFormatting.RED))
-                .append(Component.literal(" КД: " + COOLDOWN_SEC + " сек.")
-                        .withStyle(ChatFormatting.WHITE));
+        return Component.translatable("perk.maniacrev.griefer.desc", BLOCK_SEC);
     }
 
     // ── Пассивный эффект ──────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.perk.perks.common;
 
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -43,6 +44,12 @@ public class FearWavePerk extends Perk {
                 .phases(PerkPhase.MIDGAME, PerkPhase.REVERSAL)
                 .manaCost(10f)
                 .cooldown(70)); // 60 секунд КД
+    }
+
+    @Override
+    public Component getDescription() {
+        return Component.translatable("perk.maniacrev.fear_wave.desc",
+                (int) RADIUS, FEAR_DURATION / 20);
     }
 
     @Override

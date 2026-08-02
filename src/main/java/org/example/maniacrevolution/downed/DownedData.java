@@ -12,6 +12,8 @@ public class DownedData {
 
     /** Тиков нужно держать ПКМ чтобы поднять (5 сек × 20 тиков) */
     public static final int REVIVE_HOLD_TICKS = 5 * 20;
+    public static final int NORMAL_REVIVE_TICKS = 6 * 20;
+    public static final int MEDIC_REVIVE_TICKS = 3 * 20;
 
     // ── Поля ───────────────────────────────────────────────────────────────
     private DownedState state = DownedState.ALIVE;
@@ -33,7 +35,7 @@ public class DownedData {
      * 120 = 6 сек (обычный), 60 = 3 сек (медик).
      * Устанавливается при начале подъёма.
      */
-    private int requiredReviveTicks = 120;
+    private int requiredReviveTicks = NORMAL_REVIVE_TICKS;
 
     /**
      * Серверный тик последнего клика хелпера.
@@ -97,7 +99,7 @@ public class DownedData {
     public void cancelRevive() {
         reviverUUID = null;
         reviveProgressTicks = 0;
-        requiredReviveTicks = 120;
+        requiredReviveTicks = NORMAL_REVIVE_TICKS;
         lastReviveInteractTick = -1;
     }
 

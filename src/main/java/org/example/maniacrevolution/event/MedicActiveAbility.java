@@ -22,7 +22,8 @@ import java.util.List;
 @Mod.EventBusSubscriber
 public class MedicActiveAbility {
 
-    private static final double DAMAGE_SHARE_RADIUS = 4.0;
+    public static final double DAMAGE_SHARE_RADIUS = 4.0;
+    public static final float DAMAGE_SHARE_FRACTION = 0.5F;
     private static final String SURVIVORS_TEAM = "survivors";
     private static final String NBT_KEY_ACTIVE = "MedicAbilityActive";
     private static final float MANA_COST_PER_ACTIVATION = 30.0f;
@@ -40,7 +41,7 @@ public class MedicActiveAbility {
         if (nearestAlly == null) return;
 
         float originalDamage = event.getAmount();
-        float sharedDamage = originalDamage * 0.5F;
+        float sharedDamage = originalDamage * DAMAGE_SHARE_FRACTION;
 
         event.setAmount(sharedDamage);
         nearestAlly.hurt(victim.damageSources().generic(), sharedDamage);

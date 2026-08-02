@@ -41,16 +41,8 @@ public class FamilyDiscordPerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("Когда ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal("2+ выживших")
-                        .withStyle(ChatFormatting.YELLOW))
-                .append(Component.literal(" взламывают один компьютер — подсвечивает их для тебя на ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal(GLOW_DURATION / 20 + " сек.")
-                        .withStyle(ChatFormatting.YELLOW))
-                .append(Component.literal(" КД: " + COOLDOWN_SEC + " сек.")
-                        .withStyle(ChatFormatting.WHITE));
+        return Component.translatable("perk.maniacrev.family_discord.desc",
+                2, GLOW_DURATION / 20);
     }
 
     // ── Пассивный эффект ──────────────────────────────────────────────────

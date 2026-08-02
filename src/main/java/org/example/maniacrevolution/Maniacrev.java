@@ -180,7 +180,7 @@ public class Maniacrev {
         if (!GameManager.isTimerRunning()) return;
 
         player.setGameMode(GameType.SPECTATOR);
-        player.sendSystemMessage(Component.literal("§7Игра уже идёт. Вы переведены в режим наблюдателя."));
+            player.sendSystemMessage(Component.translatable("message.maniacrev.join.spectator"));
         LOGGER.info("Player {} joined during active game — set to spectator", player.getName().getString());
     }
 

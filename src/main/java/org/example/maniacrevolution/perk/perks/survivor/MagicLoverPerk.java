@@ -48,12 +48,7 @@ public class MagicLoverPerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("После подъёма союзника получаешь ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal((int) MANA_REWARD + " ед. маны.")
-                        .withStyle(ChatFormatting.AQUA))
-                .append(Component.literal(" КД: " + COOLDOWN_SEC + " сек.")
-                        .withStyle(ChatFormatting.WHITE));
+        return Component.translatable("perk.maniacrev.magic_lover.desc", (int) MANA_REWARD);
     }
 
     // ── Пассивный эффект ──────────────────────────────────────────────────

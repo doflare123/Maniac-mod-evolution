@@ -89,13 +89,14 @@ public class AddictionEventHandler {
         applyStageEffects(player, cap.getStage());
 
         // ── Шанс смерти на стадии 3 при 3+ шприцах ───────────────────────────
-        if (cap.getStage() == 3 && cap.getTotalSyringeCount() >= 3) {
+        if (cap.getStage() == AddictionCapability.DANGER_STAGE
+                && cap.getTotalSyringeCount() >= AddictionCapability.DANGER_MIN_TOTAL_SYRINGES) {
             cap.tickDeathCheck();
             if (cap.getDeathCheckTimer() >= AddictionCapability.DEATH_CHECK_INTERVAL) {
                 cap.resetDeathCheck();
                 if (RANDOM.nextFloat() < AddictionCapability.STAGE3_DEATH_CHANCE) {
-                    killWithMessage(player, "§4§l" + player.getName().getString()
-                            + " §c— сердце не выдержало давления зависимости");
+                    killWithMessage(player, Component.translatable(
+                            "message.maniacrev.syringe.death.addiction", player.getDisplayName()));
                     return;
                 }
             }
@@ -144,12 +145,12 @@ public class AddictionEventHandler {
                 == ADDICT_CLASS_VALUE;
     }
 
-    public static void killWithMessage(ServerPlayer player, String message) {
+    public static void killWithMessage(ServerPlayer player, Component message) {
         // Убиваем через пустоту (игнорирует броню)
         player.hurt(player.level().damageSources().fellOutOfWorld(), Float.MAX_VALUE);
         if (player.getServer() != null) {
             player.getServer().getPlayerList().broadcastSystemMessage(
-                    Component.literal(message), false
+                    message, false
             );
         }
     }

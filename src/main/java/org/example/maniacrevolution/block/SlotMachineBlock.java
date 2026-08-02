@@ -111,27 +111,27 @@ public class SlotMachineBlock extends Block {
 
         ItemStack stack = player.getItemInHand(hand);
         if (!(stack.getItem() instanceof DodepovichCoinItem coinItem)) {
-            player.displayClientMessage(Component.literal("§7Автомат принимает только монетки Додеповича."), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.slot_machine.coin_only"), true);
             return InteractionResult.FAIL;
         }
 
         if (!DodepovichCasinoManager.isDodepovich(serverPlayer)) {
-            player.displayClientMessage(Component.literal("§cТолько Додепович может играть на этом автомате."), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.slot_machine.wrong_class"), true);
             return InteractionResult.FAIL;
         }
 
         if (serverPlayer.hasEffect(ModEffects.JACKPOT.get())) {
-            player.displayClientMessage(Component.literal("§6Во время джекпота автомат больше не принимает ставки."), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.slot_machine.jackpot_active"), true);
             return InteractionResult.FAIL;
         }
 
         if (serverPlayer.hasEffect(ModEffects.DODEPOVICH_SLOT_COOLDOWN.get())) {
-            player.displayClientMessage(Component.literal("§6Казино на перерыве. Подожди перед следующим прокрутом."), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.slot_machine.cooldown"), true);
             return InteractionResult.FAIL;
         }
 
         if (!ManaUtil.consumeMana(serverPlayer, MANA_COST)) {
-            player.displayClientMessage(Component.literal("§bНедостаточно маны. Игра в автомате стоит 10 маны."), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.not_enough_mana", (int) MANA_COST), true);
             return InteractionResult.FAIL;
         }
 

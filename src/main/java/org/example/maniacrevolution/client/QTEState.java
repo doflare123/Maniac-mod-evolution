@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.client;
 
+import org.example.maniacrevolution.perk.perks.survivor.QuickReflexesPerk;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -47,10 +48,10 @@ public class QTEState {
         this.startTime = System.currentTimeMillis();
 
         if (hasQuickReflexes) {
-            this.qteDuration      = BASE_QTE_DURATION + 450;
-            this.greenZoneSize    = (int)(BASE_GREEN_ZONE_SIZE * 1.06f);
-            this.successTolerance = (int)(BASE_SUCCESS_TOLERANCE * 1.05f);
-            this.critZoneSize     = (int)(BASE_CRIT_ZONE_SIZE * 1.1f);
+            this.qteDuration      = BASE_QTE_DURATION + QuickReflexesPerk.BONUS_TIME_MS;
+            this.greenZoneSize    = (int)(BASE_GREEN_ZONE_SIZE * QuickReflexesPerk.GREEN_ZONE_MULTIPLIER);
+            this.successTolerance = (int)(BASE_SUCCESS_TOLERANCE * QuickReflexesPerk.SUCCESS_TOLERANCE_MULTIPLIER);
+            this.critZoneSize     = (int)(BASE_CRIT_ZONE_SIZE * QuickReflexesPerk.CRIT_ZONE_MULTIPLIER);
         } else {
             this.qteDuration      = BASE_QTE_DURATION;
             this.greenZoneSize    = BASE_GREEN_ZONE_SIZE;

@@ -69,19 +69,19 @@ public class QTEClientHandler {
         switch (hit) {
             case CRIT -> {
                 mc.player.displayClientMessage(
-                        net.minecraft.network.chat.Component.literal("§6★ КРИТ!"), true);
+                        net.minecraft.network.chat.Component.translatable("message.maniacrev.qte.critical"), true);
                 mc.getSoundManager().play(SimpleSoundInstance.forUI(
                         ModSounds.QTE_CRIT.get(), 1.0f));
             }
             case SUCCESS -> {
                 mc.player.displayClientMessage(
-                        net.minecraft.network.chat.Component.literal("§aПопал!"), true);
+                        net.minecraft.network.chat.Component.translatable("message.maniacrev.qte.success"), true);
                 mc.getSoundManager().play(SimpleSoundInstance.forUI(
                         ModSounds.QTE_SUCCESS.get(), 1.0f));
             }
             default -> {
                 mc.player.displayClientMessage(
-                        net.minecraft.network.chat.Component.literal("§cПромах!"), true);
+                        net.minecraft.network.chat.Component.translatable("message.maniacrev.qte.fail"), true);
                 mc.getSoundManager().play(SimpleSoundInstance.forUI(
                         ModSounds.QTE_FAIL.get(), 1.0f));
             }

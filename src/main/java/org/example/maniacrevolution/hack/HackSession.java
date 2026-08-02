@@ -10,6 +10,7 @@ import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.perk.perks.survivor.AltruistExePerk;
 import org.example.maniacrevolution.perk.perks.survivor.DutchHelmPerk;
 import org.example.maniacrevolution.perk.perks.survivor.IdealychPerk;
+import org.example.maniacrevolution.perk.perks.survivor.EmergencyOverclockPerk;
 import org.example.maniacrevolution.dodepovich.DodepovichCasinoManager;
 
 import java.util.*;
@@ -143,6 +144,12 @@ public class HackSession {
 
         for (ServerPlayer sp : allParticipants) {
             if (sp != hacker && count >= HackConfig.MAX_BONUS_PLAYERS) break;
+
+            // Аварийный разгон заменяет обычный вклад владельца ставкой на QTE.
+            if (EmergencyOverclockPerk.isActive(sp)) {
+                if (sp != hacker) count++;
+                continue;
+            }
 
             float points = isSpecialist(sp)
                     ? HackConfig.POINTS_PER_SPECIALIST_PER_SECOND

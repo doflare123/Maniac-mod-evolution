@@ -48,18 +48,8 @@ public class AltruistExePerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("После подъёма союзника получаешь эффект ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal("Альтруист.exe")
-                        .withStyle(ChatFormatting.GREEN))
-                .append(Component.literal(" на " + DURATION_SEC + " сек. — ")
-                        .withStyle(ChatFormatting.YELLOW))
-                .append(Component.literal("+" + (int)(HACK_BONUS * 100) + "% к скорости взлома.")
-                        .withStyle(ChatFormatting.GREEN))
-                .append(Component.literal(" КД: " + COOLDOWN_SEC + " сек. Стоимость: ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal((int) MANA_COST + " маны.")
-                        .withStyle(ChatFormatting.AQUA));
+        return Component.translatable("perk.maniacrev.altruist_exe.desc",
+                DURATION_SEC, (int) (HACK_BONUS * 100));
     }
 
     @Override

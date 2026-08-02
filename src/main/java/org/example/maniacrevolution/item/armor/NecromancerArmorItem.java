@@ -125,7 +125,7 @@ public class NecromancerArmorItem extends ArmorItem implements IItemWithAbility 
 
     @Override
     public String getAbilityName() {
-        return "Защита от смерти";
+        return Component.translatable("ability.maniacrev.necromancer_armor.name").getString();
     }
 
     @Override

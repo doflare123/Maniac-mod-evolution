@@ -8,8 +8,10 @@ import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterRegistry;
 import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.character.TagRegistry;
+import org.example.maniacrevolution.capability.AddictionCapability;
 import org.example.maniacrevolution.gui.GuideScreen;
 import org.example.maniacrevolution.gui.GuideTheme;
+import org.example.maniacrevolution.item.SyringeItem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,7 +93,7 @@ public class CharactersPage extends GuidePage {
             s.add(new ExtraImageCaption(
                     "guide/mechanics/characters/agent_effect.png", 400, 220,
                     "Так выглядит экран у цели при получении метки"));
-            EXTRA_SECTIONS.put("agent", s);
+            registerExtraSections("agent", s);
         }
 
         // ── freddy_bear ───────────────────────────────────────────────────────
@@ -104,7 +106,7 @@ public class CharactersPage extends GuidePage {
             s.add(new ExtraImageCaption(
                     "guide/mechanics/characters/generator.png", 400, 220,
                     "Как выглядит генератор Фредди в мире"));
-            EXTRA_SECTIONS.put("freddy_bear", s);
+            registerExtraSections("freddy_bear", s);
         }
 
         // ── plague_doctor ─────────────────────────────────────────────────────
@@ -118,7 +120,7 @@ public class CharactersPage extends GuidePage {
             s.add(new ExtraImageCaption(
                     "guide/mechanics/characters/plague.png", 400, 180,
                     "Зелёный прогресс на полоске HP = накопленная чума"));
-            EXTRA_SECTIONS.put("plague_doctor", s);
+            registerExtraSections("plague_doctor", s);
         }
 
         // ── alchemist ─────────────────────────────────────────────────────────
@@ -131,7 +133,7 @@ public class CharactersPage extends GuidePage {
             s.add(new ExtraImageCaption(
                     "guide/mechanics/characters/alch.png", 400, 220,
                     "Подсветка зельеварок на карте"));
-            EXTRA_SECTIONS.put("alchemist", s);
+            registerExtraSections("alchemist", s);
         }
 
         // ── doctor ────────────────────────────────────────────────────────────
@@ -148,7 +150,7 @@ public class CharactersPage extends GuidePage {
             s.add(new ExtraImageCaption(
                     "guide/mechanics/characters/medic_interface.png", 400, 220,
                     "Полный интерфейс доктора"));
-            EXTRA_SECTIONS.put("doctor", s);
+            registerExtraSections("doctor", s);
         }
 
         // ── mefedronshchik ──────────────────────────────────────────────────────
@@ -174,20 +176,29 @@ public class CharactersPage extends GuidePage {
             s.add(new ExtraSpacer(8));
             // ── Описание шприца ──
             s.add(new ExtraHeader("§b§l⚡ Шприц адреналина"));
-            s.add(new ExtraText("§b● §fСнижает шкалу зависимости §aна 20%§f."));
+            s.add(new ExtraText("§b● §fСнижает текущую шкалу зависимости §aна %s%%§f.",
+                    Math.round(AddictionCapability.SYRINGE_REDUCE_PCT * 100)));
             s.add(new ExtraText("§b● §fДаёт скорость §7(эффекты складываются)§f."));
             s.add(new ExtraSpacer(4));
             s.add(new ExtraText("§e⚠ Деградация эффекта:"));
-            s.add(new ExtraText("  §71-й шприц:§f Скорость 3 §7на §f8 сек§f."));
-            s.add(new ExtraText("  §7Каждый следующий:§c -1 сек §7длительности."));
-            s.add(new ExtraText("  §7Каждые 3 шприца:§c -1 уровень §7скорости."));
+            s.add(new ExtraText("  §71-й шприц:§f Скорость %s §7на §f%s сек§f.",
+                    SyringeItem.BASE_AMPLIFIER + 1, SyringeItem.BASE_DURATION_SECS));
+            s.add(new ExtraText("  §7Каждый следующий:§c -1 сек §7длительности, минимум %s сек.",
+                    SyringeItem.MIN_DURATION_SECS));
+            s.add(new ExtraText("  §7Каждые %s шприца:§c -1 уровень §7скорости.",
+                    SyringeItem.AMPLIFIER_LOSS_INTERVAL));
             s.add(new ExtraSpacer(4));
             s.add(new ExtraDangerText("§4☠ Опасность:"));
-            s.add(new ExtraDangerText("  §c4 шприца подряд §7(< 20 сек) = §4§lСМЕРТЬ"));
-            s.add(new ExtraDangerText("  §cСтадия 3 + 3 общих §7= §c10%/сек шанс смерти"));
+            s.add(new ExtraDangerText("  §c%s шприца подряд §7(за %s сек.) = §4§lСМЕРТЬ",
+                    SyringeItem.OVERDOSE_SYRINGES, AddictionCapability.SYRINGE_WINDOW_TICKS / 20));
+            s.add(new ExtraDangerText("  §cСтадия %s + %s шприца §7= §c%s%% шанс смерти каждые %s сек.",
+                    AddictionCapability.DANGER_STAGE,
+                    AddictionCapability.DANGER_MIN_TOTAL_SYRINGES,
+                    Math.round(AddictionCapability.STAGE3_DEATH_CHANCE * 100),
+                    AddictionCapability.DEATH_CHECK_INTERVAL / 20));
             s.add(new ExtraSpacer(4));
             s.add(new ExtraText("§7Каждый шприц ускоряет ломку."));
-            EXTRA_SECTIONS.put("mefedronshchik", s);
+            registerExtraSections("mefedronshchik", s);
         }
 
         {
@@ -236,8 +247,18 @@ public class CharactersPage extends GuidePage {
             s.add(new ExtraImageCaption(
                     "guide/mechanics/characters/nightmare/chudic.png", 420, 220,
                     "Сущности, которая появляется на дороге смерти"));
-            EXTRA_SECTIONS.put("keeper_of_nightmares", s);
+            registerExtraSections("keeper_of_nightmares", s);
         }
+    }
+
+    private static void registerExtraSections(String characterId, List<ExtraSection> sections) {
+        int textIndex = 0;
+        for (ExtraSection section : sections) {
+            if (!(section instanceof ExtraSpacer)) {
+                section.translationKey = "guide.maniacrev.character_extra." + characterId + "." + textIndex++;
+            }
+        }
+        EXTRA_SECTIONS.put(characterId, sections);
     }
 
     // ── Рендер доп. секций ────────────────────────────────────────────────────
@@ -270,6 +291,13 @@ public class CharactersPage extends GuidePage {
     // ── Вспомогательные классы секций ────────────────────────────────────────
 
     private abstract static class ExtraSection {
+        String translationKey;
+        Object[] translationArgs = new Object[0];
+
+        String localized(String fallback) {
+            return trOr(translationKey, fallback, translationArgs);
+        }
+
         abstract int height(net.minecraft.client.gui.Font font, int maxWidth);
         /** Рендерит секцию и возвращает следующий Y. */
         abstract int render(GuiGraphics gui, net.minecraft.client.gui.Font font, int x, int y, int maxWidth);
@@ -284,7 +312,7 @@ public class CharactersPage extends GuidePage {
         @Override
         int render(GuiGraphics gui, net.minecraft.client.gui.Font f, int x, int y, int w) {
             gui.fill(x, y + 13, x + w, y + 14, 0xFF444444);
-            gui.drawString(f, text, x, y, 0xFFFFFF, false);
+            gui.drawString(f, localized(text), x, y, 0xFFFFFF, false);
             return y + 18;
         }
     }
@@ -292,10 +320,11 @@ public class CharactersPage extends GuidePage {
     private static class ExtraText extends ExtraSection {
         final String text;
         ExtraText(String text) { this.text = text; }
+        ExtraText(String text, Object... args) { this.text = text; this.translationArgs = args; }
 
         private List<String> lines(net.minecraft.client.gui.Font f, int w) {
             List<String> result = new ArrayList<>();
-            String[] words = text.split(" ");
+            String[] words = localized(text).split(" ");
             StringBuilder line = new StringBuilder();
             for (String word : words) {
                 String test = line.length() > 0 ? line + " " + word : word;
@@ -322,10 +351,11 @@ public class CharactersPage extends GuidePage {
     private static class ExtraDangerText extends ExtraSection {
         final String text;
         ExtraDangerText(String text) { this.text = text; }
+        ExtraDangerText(String text, Object... args) { this.text = text; this.translationArgs = args; }
 
         private List<String> lines(net.minecraft.client.gui.Font f, int w) {
             List<String> result = new ArrayList<>();
-            String[] words = text.split(" ");
+            String[] words = localized(text).split(" ");
             StringBuilder line = new StringBuilder();
             for (String word : words) {
                 String test = line.length() > 0 ? line + " " + word : word;
@@ -380,7 +410,7 @@ public class CharactersPage extends GuidePage {
                 gui.drawString(f, "§8" + path, imgX + 4, y + h / 2 - 4, 0x888888, false);
             }
             // Подпись
-            gui.drawCenteredString(f, "§8§o" + caption, x + maxWidth / 2, y + h + 2, 0xAAAAAA);
+            gui.drawCenteredString(f, "§8§o" + localized(caption), x + maxWidth / 2, y + h + 2, 0xAAAAAA);
             return y + h + 6 + 13;
         }
     }
@@ -403,13 +433,13 @@ public class CharactersPage extends GuidePage {
         int btnH = 18;
 
         GuideTheme.drawBackButton(gui, font, btnX, btnY, btnW,
-                "← Главная", GuideTheme.PURPLE, mouseX, mouseY);
+                tr("guide.maniacrev.back_main"), GuideTheme.PURPLE, mouseX, mouseY);
     }
 
     private void renderCharacterList(GuiGraphics gui, int mouseX, int mouseY) {
         // Заголовок
-        GuideTheme.drawPageTitle(gui, font, "ПЕРСОНАЖИ РЕЖИМА",
-                "Роли, сложность и уникальные возможности",
+        GuideTheme.drawPageTitle(gui, font, tr("guide.maniacrev.characters.title"),
+                tr("guide.maniacrev.characters.subtitle"),
                 guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.PURPLE);
 
         // Фильтры по типу
@@ -465,9 +495,9 @@ public class CharactersPage extends GuidePage {
         int spacing = 5;
         int startX = guiLeft + (guiWidth - (btnWidth * 3 + spacing * 2)) / 2;
 
-        renderFilterButton(gui, mouseX, mouseY, startX, btnY, btnWidth, btnHeight, "§fВсе", null);
-        renderFilterButton(gui, mouseX, mouseY, startX + btnWidth + spacing, btnY, btnWidth, btnHeight, "§bВыжившие", CharacterType.SURVIVOR);
-        renderFilterButton(gui, mouseX, mouseY, startX + (btnWidth + spacing) * 2, btnY, btnWidth, btnHeight, "§cМаньяки", CharacterType.MANIAC);
+        renderFilterButton(gui, mouseX, mouseY, startX, btnY, btnWidth, btnHeight, tr("guide.maniacrev.characters.all"), null);
+        renderFilterButton(gui, mouseX, mouseY, startX + btnWidth + spacing, btnY, btnWidth, btnHeight, tr("guide.maniacrev.characters.survivors"), CharacterType.SURVIVOR);
+        renderFilterButton(gui, mouseX, mouseY, startX + (btnWidth + spacing) * 2, btnY, btnWidth, btnHeight, tr("guide.maniacrev.characters.maniacs"), CharacterType.MANIAC);
     }
 
     private void renderFilterButton(GuiGraphics gui, int mouseX, int mouseY, int x, int y, int width, int height, String text, CharacterType type) {
@@ -489,8 +519,9 @@ public class CharactersPage extends GuidePage {
         int tagY = y;
         int maxTagY = y + 36; // ИСПРАВЛЕНО: Максимум 2 строки тегов
 
-        gui.drawString(font, "§7Фильтр:", tagX, tagY + 4, 0xAAAAAA, false);
-        tagX += font.width("Фильтр: ") + 5;
+        String filterLabel = tr("guide.maniacrev.characters.filter");
+        gui.drawString(font, filterLabel, tagX, tagY + 4, 0xAAAAAA, false);
+        tagX += font.width(filterLabel) + 5;
 
         int displayedTags = 0;
         int maxTags = 12; // ИСПРАВЛЕНО: Максимум 12 тегов
@@ -499,11 +530,12 @@ public class CharactersPage extends GuidePage {
             if (displayedTags >= maxTags) break; // ИСПРАВЛЕНО: Ограничение
 
             boolean selected = tag.equals(selectedTag);
-            int tagWidth = font.width(tag) + 8;
+            String tagName = TagRegistry.getTagDisplayName(tag);
+            int tagWidth = font.width(tagName) + 8;
 
             boolean hovered = mouseX >= tagX && mouseX < tagX + tagWidth && mouseY >= tagY && mouseY < tagY + 16;
 
-            GuideTheme.drawButton(gui, font, tagX, tagY, tagWidth, 16, tag,
+            GuideTheme.drawButton(gui, font, tagX, tagY, tagWidth, 16, tagName,
                     GuideTheme.PURPLE, hovered, selected);
 
             tagX += tagWidth + 3;
@@ -548,19 +580,20 @@ public class CharactersPage extends GuidePage {
         }
 
         // Сложность
-        gui.drawString(font, "§7Сложность: " + character.getDifficultyStars(), infoX, infoY, 0xFFFFFF, false);
+        gui.drawString(font, tr("guide.maniacrev.characters.difficulty", character.getDifficultyStars()), infoX, infoY, 0xFFFFFF, false);
         infoY += 11;
 
         // Теги (первые 3)
         List<String> tags = character.getTags();
         if (!tags.isEmpty()) {
-            String tagText = tags.stream().limit(3).collect(Collectors.joining("§7, §e"));
+            String tagText = tags.stream().limit(3).map(TagRegistry::getTagDisplayName)
+                    .collect(Collectors.joining("§7, §e"));
             gui.drawString(font, "§e" + tagText, infoX, infoY, 0xFFFFFF, false);
         }
 
         // Подсказка при наведении
         if (hovered) {
-            gui.drawString(font, "Подробнее  →", infoX, y + height - 15, accent, false);
+            gui.drawString(font, tr("guide.maniacrev.details") + "  →", infoX, y + height - 15, accent, false);
         }
     }
 
@@ -594,7 +627,7 @@ public class CharactersPage extends GuidePage {
         int btnY = guiTop + guiHeight - 25;
         boolean hovered = mouseX >= btnX && mouseX < btnX + 70 && mouseY >= btnY && mouseY < btnY + 20;
 
-        GuideTheme.drawButton(gui, font, btnX, btnY, 70, 20, "← Назад",
+        GuideTheme.drawButton(gui, font, btnX, btnY, 70, 20, tr("guide.maniacrev.back"),
                 GuideTheme.PURPLE, hovered, false);
 
         // ИСПРАВЛЕНО: Рассчитываем точную высоту контента
@@ -621,7 +654,7 @@ public class CharactersPage extends GuidePage {
             calculatedY += 12; // Заголовок
             for (String tag : selectedCharacter.getTags()) {
                 String desc = TagRegistry.getTagDescription(tag);
-                String fullText = "● " + tag + ": " + desc;
+                String fullText = "● " + TagRegistry.getTagDisplayName(tag) + ": " + desc;
                 // ИСПРАВЛЕНО: Учитываем перенос длинных тегов
                 calculatedY += wrapText(fullText, maxWidth - 5).size() * 11;
             }
@@ -676,7 +709,7 @@ public class CharactersPage extends GuidePage {
         y += 15;
 
         // Сложность
-        gui.drawCenteredString(font, "§7Сложность: " + selectedCharacter.getDifficultyStars(),
+        gui.drawCenteredString(font, tr("guide.maniacrev.characters.difficulty", selectedCharacter.getDifficultyStars()),
                 guiLeft + guiWidth / 2, y, 0xFFFFFF);
         y += 15;
 
@@ -690,12 +723,12 @@ public class CharactersPage extends GuidePage {
 
         // Теги
         if (!selectedCharacter.getTags().isEmpty()) {
-            gui.drawString(font, "§e§lТеги:", guiLeft + 15, y, 0xFFFFFF, false);
+            gui.drawString(font, tr("guide.maniacrev.characters.tags"), guiLeft + 15, y, 0xFFFFFF, false);
             y += 12;
 
             for (String tag : selectedCharacter.getTags()) {
                 String desc = TagRegistry.getTagDescription(tag);
-                String fullText = "§e● " + tag + "§7: " + desc;
+                String fullText = "§e● " + TagRegistry.getTagDisplayName(tag) + "§7: " + desc;
 
                 // ИСПРАВЛЕНО: Переносим длинные теги
                 List<String> tagLines = wrapText(fullText, maxWidth - 5);
@@ -709,7 +742,7 @@ public class CharactersPage extends GuidePage {
 
         // Особенности
         if (!selectedCharacter.getFeatures().isEmpty()) {
-            gui.drawString(font, "§e§lОсобенности:", guiLeft + 15, y, 0xFFFFFF, false);
+            gui.drawString(font, tr("guide.maniacrev.characters.features"), guiLeft + 15, y, 0xFFFFFF, false);
             y += 12;
 
             for (CharacterClass.Feature feature : selectedCharacter.getFeatures()) {
@@ -728,7 +761,7 @@ public class CharactersPage extends GuidePage {
 
         // Предметы
         if (!selectedCharacter.getItems().isEmpty()) {
-            gui.drawString(font, "§e§lПредметы:", guiLeft + 15, y, 0xFFFFFF, false);
+            gui.drawString(font, tr("guide.maniacrev.characters.items"), guiLeft + 15, y, 0xFFFFFF, false);
             y += 12;
 
             for (CharacterClass.Item item : selectedCharacter.getItems()) {
@@ -772,7 +805,7 @@ public class CharactersPage extends GuidePage {
                 tooltip.add(Component.literal("§7" + combatType));
             }
 
-            tooltip.add(Component.literal("§7Клик для подробностей"));
+            tooltip.add(Component.translatable("guide.maniacrev.click_details"));
             gui.renderComponentTooltip(font, tooltip, mouseX, mouseY);
         }
     }
@@ -825,10 +858,10 @@ public class CharactersPage extends GuidePage {
                 // Фильтр по тегам
                 if (currentFilter != null) {
                     int tagY = guiTop + 70;
-                    int tagX = guiLeft + 10 + font.width("Фильтр: ") + 5;
+                    int tagX = guiLeft + 10 + font.width(tr("guide.maniacrev.characters.filter")) + 5;
 
                     for (String tag : getAvailableTags()) {
-                        int tagWidth = font.width(tag) + 8;
+                        int tagWidth = font.width(TagRegistry.getTagDisplayName(tag)) + 8;
 
                         if (mouseX >= tagX && mouseX < tagX + tagWidth && mouseY >= tagY && mouseY < tagY + 16) {
                             selectedTag = selectedTag != null && selectedTag.equals(tag) ? null : tag;
@@ -866,7 +899,7 @@ public class CharactersPage extends GuidePage {
             h += 12;
             for (String tag : character.getTags()) {
                 String desc = TagRegistry.getTagDescription(tag);
-                h += wrapText("● " + tag + ": " + desc, maxWidth - 5).size() * 11;
+                h += wrapText("● " + TagRegistry.getTagDisplayName(tag) + ": " + desc, maxWidth - 5).size() * 11;
             }
             h += 10;
         }
@@ -938,8 +971,8 @@ public class CharactersPage extends GuidePage {
     }
 
     private String getCombatType(CharacterClass character) {
-        if (character.getTags().contains("Ближний бой")) return "Ближний бой";
-        if (character.getTags().contains("Дальний бой")) return "Дальний бой";
+        if (character.getTags().contains("Ближний бой")) return TagRegistry.getTagDisplayName("Ближний бой");
+        if (character.getTags().contains("Дальний бой")) return TagRegistry.getTagDisplayName("Дальний бой");
         return null;
     }
 

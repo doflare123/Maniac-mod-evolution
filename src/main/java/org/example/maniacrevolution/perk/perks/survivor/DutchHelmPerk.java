@@ -32,12 +32,8 @@ public class DutchHelmPerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("За каждого союзника заряжающего тот же компьютер: ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal("+" + (int)(BONUS_PER_PLAYER * 100) + "% к скорости зарядки.")
-                        .withStyle(ChatFormatting.GREEN))
-                .append(Component.literal(" Работает только у одного владельца перка на компьютер.")
-                        .withStyle(ChatFormatting.GRAY));
+        return Component.translatable("perk.maniacrev.dutch_helm.desc",
+                (int) (BONUS_PER_PLAYER * 100));
     }
 
     // ── Пассивный эффект ──────────────────────────────────────────────────

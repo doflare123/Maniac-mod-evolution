@@ -26,6 +26,7 @@ import java.util.UUID;
 
 public class ToyKnifeItem extends Item implements ITimedAbility {
     public static final float MANA_COST = 3.0f;
+    public static final float BASE_DAMAGE = 2.0f;
     private static final UUID DAMAGE_UUID = UUID.fromString("77d6a3a6-ffea-4402-b4af-2a65ac65dfc0");
     private static final UUID SPEED_UUID = UUID.fromString("a4ef69d8-038f-4ef4-87de-5f9342252acf");
 
@@ -49,7 +50,7 @@ public class ToyKnifeItem extends Item implements ITimedAbility {
         }
 
         ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-        builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(DAMAGE_UUID, "Toy knife damage", 1.0, AttributeModifier.Operation.ADDITION));
+        builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(DAMAGE_UUID, "Toy knife damage", BASE_DAMAGE - 1.0, AttributeModifier.Operation.ADDITION));
         builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(SPEED_UUID, "Toy knife speed", -2.2, AttributeModifier.Operation.ADDITION));
         return builder.build();
     }
@@ -57,11 +58,12 @@ public class ToyKnifeItem extends Item implements ITimedAbility {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.empty());
-        tooltip.add(Component.literal("§fИгрушечный нож").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.literal("  §7Урон: §f2"));
-        tooltip.add(Component.literal("  §7ПКМ: бесконечная полная невидимость."));
-        tooltip.add(Component.literal("  §7Повторный ПКМ: выход §f2 сек§7 без возможности бить."));
-        tooltip.add(Component.literal("  §7Кулдаун: §fнет"));
+        tooltip.add(Component.translatable("tooltip.maniacrev.toy_knife.title").withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("tooltip.maniacrev.toy_knife.damage", BASE_DAMAGE));
+        tooltip.add(Component.translatable("tooltip.maniacrev.toy_knife.invisibility"));
+        tooltip.add(Component.translatable("tooltip.maniacrev.toy_knife.recovery",
+                GhostStealthManager.RECOVERY_TICKS / 20));
+        tooltip.add(Component.translatable("tooltip.maniacrev.toy_knife.cooldown"));
     }
 
     @Override
@@ -71,12 +73,13 @@ public class ToyKnifeItem extends Item implements ITimedAbility {
 
     @Override
     public String getAbilityName() {
-        return "Фантомный срыв";
+        return Component.translatable("ability.maniacrev.toy_knife.name").getString();
     }
 
     @Override
     public String getAbilityDescription() {
-        return "Полная невидимость, после выхода 2 сек восстановления.";
+        return Component.translatable("ability.maniacrev.toy_knife.desc",
+                GhostStealthManager.RECOVERY_TICKS / 20).getString();
     }
 
     @Override

@@ -121,12 +121,12 @@ public class BandageItem extends Item {
             targetPlayer.heal(4.0F); // 1 сердце = 2 HP
             level.playSound(null, targetPlayer.blockPosition(), SoundEvents.PLAYER_LEVELUP,
                     SoundSource.PLAYERS, 0.5F, 1.5F);
-            player.displayClientMessage(Component.literal("§aВы вылечили " + targetPlayer.getName().getString()), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.bandage.healed_other", targetPlayer.getName()), true);
         } else {
             player.heal(2.0F);
             level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP,
                     SoundSource.PLAYERS, 0.5F, 1.5F);
-            player.displayClientMessage(Component.literal("§aВы вылечили себя"), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.bandage.healed_self"), true);
         }
 
         // Уменьшаем количество бинтов
@@ -141,7 +141,7 @@ public class BandageItem extends Item {
     public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
         // Если игрок отпустил кнопку раньше времени - отменяем лечение
         if (entity instanceof Player player) {
-            player.displayClientMessage(Component.literal("§cЛечение прервано"), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.bandage.interrupted"), true);
         }
     }
 }

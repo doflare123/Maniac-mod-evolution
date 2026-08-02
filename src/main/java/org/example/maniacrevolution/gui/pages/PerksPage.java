@@ -53,13 +53,13 @@ public class PerksPage extends GuidePage {
         int btnH = 18;
 
         GuideTheme.drawBackButton(gui, font, btnX, btnY, btnW,
-                "← Главная", GuideTheme.GREEN, mouseX, mouseY);
+                tr("guide.maniacrev.back_main"), GuideTheme.GREEN, mouseX, mouseY);
     }
 
     private void renderPerkList(GuiGraphics gui, int mouseX, int mouseY) {
         // Заголовок
-        GuideTheme.drawPageTitle(gui, font, "ПЕРКИ И СПОСОБНОСТИ",
-                "Выберите команду и изучите доступные эффекты",
+        GuideTheme.drawPageTitle(gui, font, tr("guide.maniacrev.perks.title"),
+                tr("guide.maniacrev.perks.subtitle"),
                 guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.GREEN);
 
         // Кнопки категорий
@@ -69,9 +69,9 @@ public class PerksPage extends GuidePage {
         int spacing = 5;
         int startX = guiLeft + (guiWidth - (btnWidth * 3 + spacing * 2)) / 2;
 
-        renderCategoryButton(gui, mouseX, mouseY, startX, btnY, btnWidth, btnHeight, "§fОбщие", Chapter.COMMON);
-        renderCategoryButton(gui, mouseX, mouseY, startX + btnWidth + spacing, btnY, btnWidth, btnHeight, "§bВыжившие", Chapter.SURVIVORS);
-        renderCategoryButton(gui, mouseX, mouseY, startX + (btnWidth + spacing) * 2, btnY, btnWidth, btnHeight, "§cМаньяки", Chapter.MANIACS);
+        renderCategoryButton(gui, mouseX, mouseY, startX, btnY, btnWidth, btnHeight, tr("guide.maniacrev.perks.common"), Chapter.COMMON);
+        renderCategoryButton(gui, mouseX, mouseY, startX + btnWidth + spacing, btnY, btnWidth, btnHeight, tr("guide.maniacrev.perks.survivors"), Chapter.SURVIVORS);
+        renderCategoryButton(gui, mouseX, mouseY, startX + (btnWidth + spacing) * 2, btnY, btnWidth, btnHeight, tr("guide.maniacrev.perks.maniacs"), Chapter.MANIACS);
 
         // Список перков
         List<Perk> perks = getPerksForChapter();
@@ -130,13 +130,13 @@ public class PerksPage extends GuidePage {
 
         // КД
         if (perk.getCooldownTicks() > 0) {
-            String cd = "КД: " + (perk.getCooldownTicks() / 20) + "с";
+            String cd = tr("guide.maniacrev.perks.cooldown_short", perk.getCooldownTicks() / 20);
             gui.drawString(font, "§c" + cd, x + width - font.width(cd) - 5, y + 5, 0xFF5555, false);
         }
 
         // Стоимость маны
         if (perk.getManaCost() > 0) {
-            String manaText = (int) perk.getManaCost() + " ед. маны";
+            String manaText = tr("guide.maniacrev.perks.mana_short", (int) perk.getManaCost());
             gui.drawString(font, "§b" + manaText,
                     x + width - font.width(manaText) - 5, y + 17, 0x55AAFF, false);
         }
@@ -162,12 +162,12 @@ public class PerksPage extends GuidePage {
         int btnY = guiTop + guiHeight - 25;
         boolean hovered = mouseX >= btnX && mouseX < btnX + 70 && mouseY >= btnY && mouseY < btnY + 20;
 
-        GuideTheme.drawButton(gui, font, btnX, btnY, 70, 20, "← Назад",
+        GuideTheme.drawButton(gui, font, btnX, btnY, 70, 20, tr("guide.maniacrev.back"),
                 GuideTheme.GREEN, hovered, false);
 
         // Заголовок
         GuideTheme.drawPageTitle(gui, font, selectedPerk.getName().getString(),
-                "Подробное описание способности",
+                tr("guide.maniacrev.perks.details_subtitle"),
                 guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.GREEN);
 
         int x = guiLeft + 15;
@@ -175,22 +175,22 @@ public class PerksPage extends GuidePage {
         int maxWidth = guiWidth - 30;
 
         // Информация
-        gui.drawString(font, "§7Тип: §f" + selectedPerk.getType().getDisplayName().getString(), x, y, 0xFFFFFF, false);
+        gui.drawString(font, tr("guide.maniacrev.perks.type", selectedPerk.getType().getDisplayName()), x, y, 0xFFFFFF, false);
         y += 14;
 
-        gui.drawString(font, "§7Команда: §f" + selectedPerk.getTeam().getDisplayName().getString(), x, y, 0xFFFFFF, false);
+        gui.drawString(font, tr("guide.maniacrev.perks.team", selectedPerk.getTeam().getDisplayName()), x, y, 0xFFFFFF, false);
         y += 14;
 
-        gui.drawString(font, "§7Фазы: §f" + getPhasesString(selectedPerk), x, y, 0xFFFFFF, false);
+        gui.drawString(font, tr("guide.maniacrev.perks.phases", getPhasesString(selectedPerk)), x, y, 0xFFFFFF, false);
         y += 14;
 
         if (selectedPerk.getCooldownTicks() > 0) {
-            gui.drawString(font, "§cКулдаун: " + (selectedPerk.getCooldownTicks() / 20) + " секунд", x, y, 0xFFFFFF, false);
+            gui.drawString(font, tr("guide.maniacrev.perks.cooldown", selectedPerk.getCooldownTicks() / 20), x, y, 0xFFFFFF, false);
             y += 14;
         }
 
         if (selectedPerk.getManaCost() > 0) {
-            gui.drawString(font, "§bМана: " + (int) selectedPerk.getManaCost(), x, y, 0xFFFFFF, false);
+            gui.drawString(font, tr("guide.maniacrev.perks.mana", (int) selectedPerk.getManaCost()), x, y, 0xFFFFFF, false);
             y += 14;
         }
 
@@ -198,7 +198,7 @@ public class PerksPage extends GuidePage {
         gui.fill(x, y, x + maxWidth, y + 1, GuideTheme.BORDER_SOFT);
         y += 10;
 
-        gui.drawString(font, "§e§lОписание:", x, y, 0xFFFFFF, false);
+        gui.drawString(font, tr("guide.maniacrev.perks.description"), x, y, 0xFFFFFF, false);
         y += 14;
 
         String description = selectedPerk.getDescription().getString();
@@ -223,26 +223,26 @@ public class PerksPage extends GuidePage {
 
         switch (selectedPerk.getType()) {
             case PASSIVE -> {
-                gui.drawString(font, "ℹ Пассивный перк", x, y,
+                gui.drawString(font, tr("guide.maniacrev.perks.hint.passive.title"), x, y,
                         selectedPerk.getType().getArgbColor(), false);
-                gui.drawString(font, "§7Эффект работает автоматически", x, y + 11, 0xAAAAAA, false);
+                gui.drawString(font, tr("guide.maniacrev.perks.hint.passive.desc"), x, y + 11, 0xAAAAAA, false);
             }
             case ACTIVE -> {
-                gui.drawString(font, "ℹ Активный перк", x, y,
+                gui.drawString(font, tr("guide.maniacrev.perks.hint.active.title"), x, y,
                         selectedPerk.getType().getArgbColor(), false);
-                gui.drawString(font, "§7Нажмите [" + keyName + "] для активации", x, y + 11, 0xAAAAAA, false);
+                gui.drawString(font, tr("guide.maniacrev.perks.hint.active.desc", keyName), x, y + 11, 0xAAAAAA, false);
             }
             case HYBRID -> {
-                gui.drawString(font, "ℹ Гибридный перк", x, y,
+                gui.drawString(font, tr("guide.maniacrev.perks.hint.hybrid.title"), x, y,
                         selectedPerk.getType().getArgbColor(), false);
-                gui.drawString(font, "§7Пассивный эффект + активация [" + keyName + "]", x, y + 11, 0xAAAAAA, false);
+                gui.drawString(font, tr("guide.maniacrev.perks.hint.hybrid.desc", keyName), x, y + 11, 0xAAAAAA, false);
             }
         }
     }
 
     private String getPhasesString(Perk perk) {
         if (perk.getActivePhases().contains(PerkPhase.ANY)) {
-            return "§aЛюбая";
+            return "§a" + PerkPhase.ANY.getDisplayName().getString();
         }
         StringBuilder sb = new StringBuilder();
         for (PerkPhase phase : perk.getActivePhases()) {
@@ -257,7 +257,7 @@ public class PerksPage extends GuidePage {
         if (selectedPerk == null && hoveredPerk != null) {
             List<Component> tooltip = new ArrayList<>();
             tooltip.add(Component.literal("§e" + hoveredPerk.getName().getString()));
-            tooltip.add(Component.literal("§7Нажмите для подробностей").withStyle(ChatFormatting.ITALIC));
+            tooltip.add(Component.translatable("guide.maniacrev.click_details").withStyle(ChatFormatting.ITALIC));
             gui.renderComponentTooltip(font, tooltip, mouseX, mouseY);
         }
     }

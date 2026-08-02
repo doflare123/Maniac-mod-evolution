@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.character;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 import org.example.maniacrevolution.Maniacrev;
 
 import java.util.ArrayList;
@@ -37,15 +38,13 @@ public abstract class CharacterClass {
         return id;
     }
 
-    public String getName() { return name; }
+    public String getName() { return localize("character.maniacrev." + id + ".name", name); }
 
     public CharacterType getType() {
         return type;
     }
 
-    public String getDescription() {
-        return description;
-    }
+    public String getDescription() { return localize("character.maniacrev." + id + ".description", description); }
 
     public List<String> getTags() {
         return tags;
@@ -86,57 +85,78 @@ public abstract class CharacterClass {
     }
 
     protected void addFeature(String name, String description) {
-        this.features.add(new Feature(name, description));
+        int index = this.features.size();
+        this.features.add(new Feature(
+                "character.maniacrev." + id + ".feature." + index,
+                name, description, new Object[0]));
     }
 
     protected void addItem(String name, String description) {
-        this.items.add(new Item(name, description, ""));
+        addItem(name, description, "");
     }
 
     protected void addItem(String name, String description, String lore) {
-        this.items.add(new Item(name, description, lore));
+        int index = this.items.size();
+        this.items.add(new Item(
+                "character.maniacrev." + id + ".item." + index,
+                name, description, lore, new Object[0]));
+    }
+
+    private static String localize(String key, String fallback, Object... args) {
+        String value = Component.translatable(key, args).getString();
+        return value.equals(key) ? fallback : value;
     }
 
     // Вложенные классы для особенностей и предметов
     public static class Feature {
+        private final String translationKey;
         private final String name;
         private final String description;
+        private final Object[] descriptionArgs;
 
-        public Feature(String name, String description) {
+        public Feature(String translationKey, String name, String description, Object[] descriptionArgs) {
+            this.translationKey = translationKey;
             this.name = name;
             this.description = description;
+            this.descriptionArgs = descriptionArgs;
         }
 
         public String getName() {
-            return name;
+            return localize(translationKey + ".name", name);
         }
 
         public String getDescription() {
-            return description;
+            return localize(translationKey + ".description", description, descriptionArgs);
         }
+
+        public boolean hasSourceName(String sourceName) { return name.equals(sourceName); }
     }
 
     public static class Item {
+        private final String translationKey;
         private final String name;
         private final String description;
         private final String lore;
+        private final Object[] descriptionArgs;
 
-        public Item(String name, String description, String lore) {
+        public Item(String translationKey, String name, String description, String lore, Object[] descriptionArgs) {
+            this.translationKey = translationKey;
             this.name = name;
             this.description = description;
             this.lore = lore == null ? "" : lore;
+            this.descriptionArgs = descriptionArgs;
         }
 
         public String getName() {
-            return name;
+            return localize(translationKey + ".name", name);
         }
 
         public String getDescription() {
-            return description;
+            return localize(translationKey + ".description", description, descriptionArgs);
         }
 
         public String getLore() {
-            return lore;
+            return lore.isBlank() ? "" : localize(translationKey + ".lore", lore);
         }
     }
 }

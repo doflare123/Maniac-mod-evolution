@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.perk;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import org.example.maniacrevolution.mana.ManaProvider;
@@ -111,18 +112,18 @@ public abstract class Perk {
     public List<Component> getTooltip() {
         return List.of(
                 getName().copy().withStyle(net.minecraft.ChatFormatting.GOLD),
-                Component.literal("Тип: ").withStyle(net.minecraft.ChatFormatting.GRAY)
-                        .append(type.getDisplayName()),
-                Component.literal("Команда: ").withStyle(net.minecraft.ChatFormatting.GRAY)
-                        .append(team.getDisplayName()),
-                Component.literal("Фазы: ").withStyle(net.minecraft.ChatFormatting.GRAY)
-                        .append(getPhasesString()),
+                Component.translatable("perk.maniacrev.tooltip.type", type.getDisplayName())
+                        .withStyle(net.minecraft.ChatFormatting.GRAY),
+                Component.translatable("perk.maniacrev.tooltip.team", team.getDisplayName())
+                        .withStyle(net.minecraft.ChatFormatting.GRAY),
+                Component.translatable("perk.maniacrev.tooltip.phases", getPhasesString())
+                        .withStyle(net.minecraft.ChatFormatting.GRAY),
                 cooldownTicks > 0 ?
-                        Component.literal("КД: " + (cooldownTicks / 20) + " сек")
+                        Component.translatable("perk.maniacrev.tooltip.cooldown", cooldownTicks / 20)
                                 .withStyle(net.minecraft.ChatFormatting.RED) :
                         Component.empty(),
                 manaCost > 0 ?
-                        Component.literal("Мана: " + (int) manaCost)
+                        Component.translatable("perk.maniacrev.tooltip.mana", (int) manaCost)
                                 .withStyle(net.minecraft.ChatFormatting.AQUA) :
                         Component.empty(),
                 Component.empty(),
@@ -132,14 +133,16 @@ public abstract class Perk {
 
     private Component getPhasesString() {
         if (activePhases.contains(PerkPhase.ANY)) {
-            return Component.literal("Любая").withStyle(net.minecraft.ChatFormatting.GREEN);
+            return PerkPhase.ANY.getDisplayName().copy().withStyle(net.minecraft.ChatFormatting.GREEN);
         }
-        StringBuilder sb = new StringBuilder();
+        MutableComponent result = Component.empty();
+        boolean first = true;
         for (PerkPhase phase : activePhases) {
-            if (sb.length() > 0) sb.append(", ");
-            sb.append(phase.getDisplayName().getString());
+            if (!first) result.append(Component.literal(", "));
+            result.append(phase.getDisplayName());
+            first = false;
         }
-        return Component.literal(sb.toString()).withStyle(net.minecraft.ChatFormatting.YELLOW);
+        return result.withStyle(net.minecraft.ChatFormatting.YELLOW);
     }
 
     // === Builder ===

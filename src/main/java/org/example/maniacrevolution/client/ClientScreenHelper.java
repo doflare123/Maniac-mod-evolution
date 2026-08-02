@@ -115,10 +115,8 @@ public class ClientScreenHelper {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null && cooldownSeconds > 0) {
             mc.player.displayClientMessage(
-                    Component.literal(String.format("В§eРљСѓР»РґР°СѓРЅ РѕС‚СЃР»РµР¶РёРІР°РЅРёСЏ: %d СЃРµРє",
-                            cooldownSeconds)),
-                    true
-            );
+                    Component.translatable("message.maniacrev.agent.tracking_cooldown", cooldownSeconds),
+                    true);
         }
     }
 

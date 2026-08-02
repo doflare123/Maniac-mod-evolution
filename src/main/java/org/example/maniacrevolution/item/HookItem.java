@@ -119,13 +119,13 @@ public class HookItem extends SwordItem implements IItemWithAbility {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal(""));
-        tooltip.add(Component.literal("§6Способность: §e" + getAbilityName()).withStyle(ChatFormatting.GOLD));
-        tooltip.add(Component.literal("§7" + getAbilityDescription()).withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.ability", getAbilityName()).withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.literal(getAbilityDescription()).withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.literal(""));
-        tooltip.add(Component.literal("§9Стоимость: §b" + (int)MANA_COST + " маны").withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("§9Кулдаун: §b" + (COOLDOWN_TICKS / 20) + "с").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.maniacrev.mana_cost", (int) MANA_COST).withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.maniacrev.cooldown", COOLDOWN_TICKS / 20).withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal(""));
-        tooltip.add(Component.literal("§8ПКМ для активации").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.right_click_activate").withStyle(ChatFormatting.DARK_GRAY));
     }
 
     // === Реализация IItemWithAbility ===
@@ -137,12 +137,12 @@ public class HookItem extends SwordItem implements IItemWithAbility {
 
     @Override
     public String getAbilityName() {
-        return "И куда собрался?";
+        return Component.translatable("ability.maniacrev.hook.name").getString();
     }
 
     @Override
     public String getAbilityDescription() {
-        return "Киньте хук (дальность 12 блоков) и притяните к себе существо";
+        return Component.translatable("ability.maniacrev.hook.desc", (int) HookEntity.MAX_DISTANCE).getString();
     }
 
     @Override

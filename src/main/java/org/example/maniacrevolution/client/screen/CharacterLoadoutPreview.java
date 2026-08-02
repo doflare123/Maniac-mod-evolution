@@ -256,7 +256,7 @@ final class CharacterLoadoutPreview {
 
     private static String featureDescription(CharacterClass character, String featureName) {
         return character.getFeatures().stream()
-                .filter(feature -> feature.getName().equals(featureName))
+                .filter(feature -> feature.hasSourceName(featureName))
                 .map(CharacterClass.Feature::getDescription)
                 .findFirst()
                 .orElse("");

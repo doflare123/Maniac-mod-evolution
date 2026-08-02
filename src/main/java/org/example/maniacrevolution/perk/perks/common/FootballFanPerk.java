@@ -48,20 +48,8 @@ public class FootballFanPerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("Стой неподвижно ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal(DURATION_SURVIVOR + " сек.")
-                        .withStyle(ChatFormatting.AQUA))
-                .append(Component.literal(" (выжившие) или ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal(DURATION_MANIAC + " сек.")
-                        .withStyle(ChatFormatting.AQUA))
-                .append(Component.literal(" (маньяк) — и получи ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal("Балтику")
-                        .withStyle(ChatFormatting.YELLOW))
-                .append(Component.literal("! Одноразовый.")
-                        .withStyle(ChatFormatting.GRAY));
+        return Component.translatable("perk.maniacrev.football_fan.desc",
+                DURATION_SURVIVOR, DURATION_MANIAC);
     }
 
     // ── Активация ─────────────────────────────────────────────────────────

@@ -76,7 +76,7 @@ public class PlagueLanternItem extends Item implements ITimedAbility {
         if (manaData == null || !manaData.consumeMana(MANA_COST)) {
             // Недостаточно маны — показываем сообщение в action bar
             player.displayClientMessage(
-                    Component.translatable("item.maniacrev.plague_lantern.no_mana"), true
+                    Component.translatable("message.maniacrev.not_enough_mana", (int) MANA_COST), true
             );
             return InteractionResultHolder.fail(stack);
         }
@@ -97,8 +97,12 @@ public class PlagueLanternItem extends Item implements ITimedAbility {
         return new ResourceLocation(Maniacrev.MODID, "textures/gui/abilities/plague_lantern.png");
     }
 
-    @Override public String getAbilityName() { return "Сгусток чумы"; }
-    @Override public String getAbilityDescription() { return "Бросает сгусток чумы"; }
+    @Override public String getAbilityName() {
+        return Component.translatable("ability.maniacrev.plague_lantern.name").getString();
+    }
+    @Override public String getAbilityDescription() {
+        return Component.translatable("ability.maniacrev.plague_lantern.desc").getString();
+    }
     @Override public float getManaCost() { return MANA_COST; }
     @Override public int getMaxCooldownSeconds() { return COOLDOWN_SECONDS; }
 

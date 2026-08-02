@@ -35,12 +35,7 @@ public class MentalBondPerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("Подсвечивает союзников-выживших в радиусе ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal((int) RADIUS + " блоков")
-                        .withStyle(ChatFormatting.AQUA))
-                .append(Component.literal(" только для тебя.")
-                        .withStyle(ChatFormatting.WHITE));
+        return Component.translatable("perk.maniacrev.mental_bond.desc", (int) RADIUS);
     }
 
     // ── Тик ───────────────────────────────────────────────────────────────

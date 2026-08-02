@@ -56,7 +56,7 @@ public class TotemSpawnItem extends Item {
 
         TotemEntity totem = ModEntities.SHAMAN_TOTEM.get().create(sl);
         if (totem == null) {
-            sp.sendSystemMessage(Component.literal("§cОшибка: не удалось создать тотем (entity null)"));
+            sp.sendSystemMessage(Component.translatable("message.maniacrev.totem.create_failed"));
             return InteractionResult.FAIL;
         }
 
@@ -67,11 +67,11 @@ public class TotemSpawnItem extends Item {
 
         boolean added = sl.addFreshEntity(totem);
         if (!added) {
-            sp.sendSystemMessage(Component.literal("§cОшибка: тотем не удалось заспавнить"));
+            sp.sendSystemMessage(Component.translatable("message.maniacrev.totem.spawn_failed"));
             return InteractionResult.FAIL;
         }
 
-        sp.displayClientMessage(Component.literal("§6✦ Тотем заспавнен"), true);
+        sp.displayClientMessage(Component.translatable("message.maniacrev.totem.spawned"), true);
 
         if (!player.isCreative()) {
             ctx.getItemInHand().shrink(1);
@@ -85,15 +85,14 @@ public class TotemSpawnItem extends Item {
                                 List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.empty());
-        tooltip.add(Component.literal("§6Тотем шамана").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.literal("  §7ПКМ по блоку — установить тотем")
+        tooltip.add(Component.translatable("tooltip.maniacrev.totem.title").withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("tooltip.maniacrev.totem.place")
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Подсвечивает маньяков в радиусе §f"
-                        + (int) TotemEntity.GLOW_RADIUS + " §7блоков")
+        tooltip.add(Component.translatable("tooltip.maniacrev.totem.radius", (int) TotemEntity.GLOW_RADIUS)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Умирает от §f" + TotemEntity.MAX_HITS + " §7ударов маньяка")
+        tooltip.add(Component.translatable("tooltip.maniacrev.totem.health", TotemEntity.MAX_HITS)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  §8Только маньяки могут его уничтожить")
+        tooltip.add(Component.translatable("tooltip.maniacrev.totem.restriction")
                 .withStyle(ChatFormatting.DARK_GRAY));
     }
 }

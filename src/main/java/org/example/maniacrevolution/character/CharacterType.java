@@ -1,22 +1,24 @@
 package org.example.maniacrevolution.character;
 
+import net.minecraft.network.chat.Component;
+
 /**
  * Тип персонажа - Выживший или Маньяк
  */
 public enum CharacterType {
-    SURVIVOR("Выживший", "SurvivorClass"),
-    MANIAC("Маньяк", "ManiacClass");
+    SURVIVOR("survivor", "SurvivorClass"),
+    MANIAC("maniac", "ManiacClass");
 
-    private final String displayName;
+    private final String translationSuffix;
     private final String scoreboardName;
 
-    CharacterType(String displayName, String scoreboardName) {
-        this.displayName = displayName;
+    CharacterType(String translationSuffix, String scoreboardName) {
+        this.translationSuffix = translationSuffix;
         this.scoreboardName = scoreboardName;
     }
 
     public String getDisplayName() {
-        return displayName;
+        return Component.translatable("character.maniacrev.type." + translationSuffix).getString();
     }
 
     public String getScoreboardName() {

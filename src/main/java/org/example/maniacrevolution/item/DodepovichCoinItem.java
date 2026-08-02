@@ -43,12 +43,12 @@ public class DodepovichCoinItem extends Item {
         }
 
         if (!DodepovichCasinoManager.isDodepovich(serverPlayer)) {
-            player.displayClientMessage(Component.literal("§cТолько Додепович умеет правильно подбрасывать эти монетки."), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.coin.wrong_class"), true);
             return InteractionResultHolder.fail(stack);
         }
 
         if (!ManaUtil.consumeMana(serverPlayer, MANA_COST)) {
-            player.displayClientMessage(Component.literal("§bНедостаточно маны. Подброс монетки стоит 5 маны."), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.not_enough_mana", (int) MANA_COST), true);
             return InteractionResultHolder.fail(stack);
         }
 
@@ -62,7 +62,7 @@ public class DodepovichCoinItem extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
-        return Component.literal("§6" + coin.getDisplayName());
+        return Component.translatable("item.maniacrev." + coin.getId()).withStyle(ChatFormatting.GOLD);
     }
 
     @Override

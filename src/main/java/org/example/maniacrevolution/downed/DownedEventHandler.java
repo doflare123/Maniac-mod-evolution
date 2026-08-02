@@ -289,11 +289,11 @@ public class DownedEventHandler {
                 net.minecraft.world.scores.Score score = helper.getScoreboard()
                         .getOrCreatePlayerScore(helper.getScoreboardName(), obj);
                 if (score.getScore() == 5) {
-                    return 3 * 20; // медик — 3 сек
+                    return DownedData.MEDIC_REVIVE_TICKS;
                 }
             }
         }
-        return 6 * 20; // обычный — 6 сек
+        return DownedData.NORMAL_REVIVE_TICKS;
     }
 
     private static void handleAllyRevive(ServerPlayer helper, ServerPlayer target, DownedData targetData) {

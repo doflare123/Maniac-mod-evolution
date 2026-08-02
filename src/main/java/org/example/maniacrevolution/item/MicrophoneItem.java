@@ -65,7 +65,7 @@ public class MicrophoneItem extends SwordItem implements IItemWithAbility {
         // Проверяем и тратим ману
         var mana = player.getCapability(ManaProvider.MANA).orElse(null);
         if (mana == null || !mana.consumeMana(MANA_COST)) {
-            sp.displayClientMessage(Component.literal("§cНедостаточно маны!"), true);
+            sp.displayClientMessage(Component.translatable("message.maniacrev.not_enough_mana", (int) MANA_COST), true);
             return InteractionResultHolder.fail(stack);
         }
 
@@ -127,8 +127,12 @@ public class MicrophoneItem extends SwordItem implements IItemWithAbility {
     public ResourceLocation getAbilityIcon() {
         return new ResourceLocation(Maniacrev.MODID, "textures/gui/abilities/microphone.png");
     }
-    @Override public String getAbilityName()        { return "Музыкальная волна"; }
-    @Override public String getAbilityDescription() { return "Станит выживших в радиусе 5 блоков"; }
+    @Override public String getAbilityName() {
+        return Component.translatable("ability.maniacrev.microphone.name").getString();
+    }
+    @Override public String getAbilityDescription() {
+        return Component.translatable("ability.maniacrev.microphone.desc", STUN_SECS, (int) WAVE_RADIUS).getString();
+    }
     @Override public float  getManaCost()           { return MANA_COST; }
     @Override public int    getMaxCooldownSeconds() { return COOLDOWN_SECS; }
 
@@ -161,17 +165,15 @@ public class MicrophoneItem extends SwordItem implements IItemWithAbility {
                                 List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.empty());
-        tooltip.add(Component.literal("§b♪ Микрофон").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.literal("  §b[ПКМ] Музыкальная волна")
+        tooltip.add(Component.translatable("tooltip.maniacrev.microphone.title").withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("tooltip.maniacrev.microphone.action")
                 .withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal(
-                        "  Максимальное замедление на §f" + STUN_SECS + " сек")
+        tooltip.add(Component.translatable("tooltip.maniacrev.microphone.stun", STUN_SECS)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal(
-                        "  Радиус: §f" + (int) WAVE_RADIUS + " §7блоков | "
-                                + "Мана: §f" + (int) MANA_COST + " §7| КД: §f" + COOLDOWN_SECS + " сек")
+        tooltip.add(Component.translatable("tooltip.maniacrev.microphone.stats",
+                        (int) WAVE_RADIUS, (int) MANA_COST, COOLDOWN_SECS)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Действует только на выживших")
+        tooltip.add(Component.translatable("tooltip.maniacrev.microphone.targets")
                 .withStyle(ChatFormatting.DARK_GRAY));
     }
 

@@ -269,7 +269,7 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
 
     @Override
     public String getAbilityName() {
-        return "Телепортация к жертве";
+        return Component.translatable("ability.maniacrev.death_scythe.name").getString();
     }
 
     @Override
@@ -293,10 +293,10 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal(""));
-        tooltip.add(Component.literal("§6Способность: §5" + getAbilityName() + " (Правый клик)").withStyle(ChatFormatting.GOLD));
-        tooltip.add(Component.literal("§7ПКМ: Телепортация к случайному выжившему").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("§9Стоимость: §b" + (int)MANA_COST + " маны").withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("§9Кулдаун: §b" + getMaxCooldownSeconds() + "с").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.maniacrev.ability", getAbilityName()).withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.translatable("ability.maniacrev.death_scythe.desc").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.mana_cost", (int) MANA_COST).withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.maniacrev.cooldown", getMaxCooldownSeconds()).withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal(""));
         super.appendHoverText(stack, level, tooltip, flag);
     }

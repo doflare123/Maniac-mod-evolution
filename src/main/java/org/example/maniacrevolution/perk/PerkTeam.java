@@ -6,22 +6,22 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.scores.PlayerTeam;
 
 public enum PerkTeam {
-    MANIAC("Маньяк", ChatFormatting.DARK_RED, "maniac"),
-    SURVIVOR("Выживший", ChatFormatting.GREEN, "survivors"),
-    ALL("Все", ChatFormatting.WHITE, null);
+    MANIAC("maniac", ChatFormatting.DARK_RED, "maniac"),
+    SURVIVOR("survivor", ChatFormatting.GREEN, "survivors"),
+    ALL("all", ChatFormatting.WHITE, null);
 
-    private final String displayName;
+    private final String translationSuffix;
     private final ChatFormatting color;
     private final String teamName; // Название команды в scoreboard
 
-    PerkTeam(String displayName, ChatFormatting color, String teamName) {
-        this.displayName = displayName;
+    PerkTeam(String translationSuffix, ChatFormatting color, String teamName) {
+        this.translationSuffix = translationSuffix;
         this.color = color;
         this.teamName = teamName;
     }
 
     public Component getDisplayName() {
-        return Component.literal(displayName).withStyle(color);
+        return Component.translatable("perk.maniacrev.team." + translationSuffix).withStyle(color);
     }
 
     public ChatFormatting getColor() { return color; }

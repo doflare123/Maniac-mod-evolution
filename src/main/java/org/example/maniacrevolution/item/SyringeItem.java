@@ -29,13 +29,16 @@ import java.util.List;
  * Базовая длительность: 8 сек → каждый следующий -1 сек (мин 1 сек).
  * Базовый уровень: скорость 3 → каждые 3 шприца -1 (мин скорость 1).
  *
- * Смерть от передоза: 3 подряд без 20-сек перерыва.
- * Смерть на стадии 3: если totalSyringes >= 3 → 10%/сек.
+ * Смерть от передоза: 4 подряд без 20-сек перерыва.
+ * Смерть на стадии 3: если totalSyringes >= 3 → 1%/сек.
  */
 public class SyringeItem extends Item {
 
-    private static final int BASE_DURATION_SECS = 8;
-    private static final int BASE_AMPLIFIER     = 2; // скорость 3
+    public static final int BASE_DURATION_SECS = 8;
+    public static final int BASE_AMPLIFIER = 2; // скорость 3
+    public static final int MIN_DURATION_SECS = 1;
+    public static final int AMPLIFIER_LOSS_INTERVAL = 3;
+    public static final int OVERDOSE_SYRINGES = 4;
 
     public SyringeItem(Properties props) { super(props); }
 
@@ -48,8 +51,7 @@ public class SyringeItem extends Item {
         if (!(player instanceof ServerPlayer sp)) return InteractionResultHolder.fail(stack);
 
         if (!AddictionEventHandler.isAddictClass(sp)) {
-            sp.displayClientMessage(
-                    Component.literal("§cЭтот предмет только для зависимого"), true);
+            sp.displayClientMessage(Component.translatable("message.maniacrev.syringe.wrong_class"), true);
             return InteractionResultHolder.fail(stack);
         }
 
@@ -67,13 +69,13 @@ public class SyringeItem extends Item {
         cap.setLastSyringeTick(now);
 
         // ── Смерть от передоза: 3 подряд ─────────────────────────────────────
-        if (cap.getConsecSyringes() >= 4) {
+        if (cap.getConsecSyringes() >= OVERDOSE_SYRINGES) {
             cap.setConsecSyringes(0);
             cap.setTotalSyringeCount(cap.getTotalSyringeCount() + 1);
             cap.syncToClient(sp);
             if (!sp.isCreative()) stack.shrink(1);
             AddictionEventHandler.killWithMessage(sp,
-                    "§4§l" + sp.getName().getString() + " §c— сердце не выдержало давления");
+                    Component.translatable("message.maniacrev.syringe.death.overdose", sp.getDisplayName()));
             return InteractionResultHolder.consume(stack);
         }
 
@@ -85,8 +87,8 @@ public class SyringeItem extends Item {
         cap.setAddiction(cap.getAddiction() - reduction);
 
         // ── Эффект скорости (СКЛАДЫВАЕТСЯ с уже активным) ────────────────────
-        int amplifier    = Math.max(0, BASE_AMPLIFIER - (usedBefore / 3));
-        int durationSecs = Math.max(1, BASE_DURATION_SECS - usedBefore);
+        int amplifier    = Math.max(0, BASE_AMPLIFIER - (usedBefore / AMPLIFIER_LOSS_INTERVAL));
+        int durationSecs = Math.max(MIN_DURATION_SECS, BASE_DURATION_SECS - usedBefore);
         int newTicks     = durationSecs * 20;
 
         // Получаем уже активный эффект скорости
@@ -106,9 +108,8 @@ public class SyringeItem extends Item {
                     false, true, true));
         }
 
-        sp.displayClientMessage(Component.literal(
-                String.format("§bАдреналин! §7Скорость %d на %d сек",
-                        amplifier + 1, durationSecs)), true);
+        sp.displayClientMessage(Component.translatable("message.maniacrev.syringe.used",
+                amplifier + 1, durationSecs), true);
 
         // ── Звук стука сердца при высоком totalSyringeCount ───────────────────
         // Порог: 2+ шприца (предупреждение перед возможной смертью)
@@ -154,41 +155,49 @@ public class SyringeItem extends Item {
         tooltip.add(Component.empty());
 
         // Описание эффекта
-        tooltip.add(Component.literal("§b⚡ Адреналин")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.title")
                 .withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.literal("  Снижает шкалу зависимости §aна "
-                        + Math.round(AddictionCapability.SYRINGE_REDUCE_PCT * 100) + "%")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.reduction",
+                        Math.round(AddictionCapability.SYRINGE_REDUCE_PCT * 100))
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Даёт скорость §f(эффекты складываются)")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.speed")
                 .withStyle(ChatFormatting.GRAY));
 
         tooltip.add(Component.empty());
 
         // Деградация
-        tooltip.add(Component.literal("§e⚠ Деградация эффекта:")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.degradation")
                 .withStyle(ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("  1-й шприц: §fСкорость 3 §7на §f8 сек")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.first",
+                        BASE_AMPLIFIER + 1, BASE_DURATION_SECS)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Каждый следующий: §c-1 сек §7длительности")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.duration_loss",
+                        BASE_DURATION_SECS - Math.max(MIN_DURATION_SECS, BASE_DURATION_SECS - 1),
+                        MIN_DURATION_SECS)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Каждые 3 шприца: §c-1 уровень §7скорости")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.level_loss", AMPLIFIER_LOSS_INTERVAL)
                 .withStyle(ChatFormatting.GRAY));
 
         tooltip.add(Component.empty());
 
         // Опасность
-        tooltip.add(Component.literal("§4☠ Опасность:")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.danger")
                 .withStyle(ChatFormatting.DARK_RED));
-        tooltip.add(Component.literal("  §c4 шприца подряд §7(< 20 сек) = §4СМЕРТЬ")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.overdose",
+                        OVERDOSE_SYRINGES, AddictionCapability.SYRINGE_WINDOW_TICKS / 20)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  §cСтадия 3 + 3 общих §7= 10%/сек шанс смерти")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.stage_death",
+                        AddictionCapability.DANGER_STAGE,
+                        AddictionCapability.DANGER_MIN_TOTAL_SYRINGES,
+                        Math.round(AddictionCapability.STAGE3_DEATH_CHANCE * 100.0f),
+                        AddictionCapability.DEATH_CHECK_INTERVAL / 20)
                 .withStyle(ChatFormatting.GRAY));
 
         tooltip.add(Component.empty());
 
         // Подсказка по ускорению ломки
-        tooltip.add(Component.literal("§c4⟳ Каждый шприц ускоряет ломку на §c"
-                        + (int)(AddictionCapability.SYRINGE_SPEED_BONUS * 100) + "%")
+        tooltip.add(Component.translatable("tooltip.maniacrev.syringe.addiction_speed",
+                        Math.round(AddictionCapability.SYRINGE_SPEED_BONUS * 100.0f))
                 .withStyle(ChatFormatting.GRAY));
     }
 }

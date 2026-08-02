@@ -9,6 +9,7 @@ import org.example.maniacrevolution.hack.HackConfig;
 import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.perk.perks.maniac.CatchMistakesPerk;
 import org.example.maniacrevolution.perk.perks.survivor.IdealychPerk;
+import org.example.maniacrevolution.perk.perks.survivor.EmergencyOverclockPerk;
 import org.example.maniacrevolution.perk.perks.survivor.RealityAnchorPerk;
 import org.example.maniacrevolution.util.ScoreboardUtil;
 
@@ -66,6 +67,7 @@ public class QTEKeyPressPacket {
                     IdealychPerk.onNormalHit(player);
                 }
             } else {
+                EmergencyOverclockPerk.onQteFailed(player);
                 boolean perkActivated = CatchMistakesPerk.onQTEFailed(player);
                 // Идеалыч
                 IdealychPerk.onMiss(player);

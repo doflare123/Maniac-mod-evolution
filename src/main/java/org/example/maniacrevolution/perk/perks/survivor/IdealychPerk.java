@@ -45,26 +45,12 @@ public class IdealychPerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("Идеальное QTE: ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal("+1% к скорости взлома")
-                        .withStyle(ChatFormatting.GREEN))
-                .append(Component.literal(", стакается до ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal("+" + MAX_BONUS_STACKS + "%.")
-                        .withStyle(ChatFormatting.GREEN))
-                .append(Component.literal(" Обычное попадание: сбрасывает эффект.")
-                        .withStyle(ChatFormatting.YELLOW))
-                .append(Component.literal(" Промах: ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal("-1%")
-                        .withStyle(ChatFormatting.RED))
-                .append(Component.literal(", до ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal("-" + MAX_DEBUFF_STACKS + "%.")
-                        .withStyle(ChatFormatting.RED))
-                .append(Component.literal(" Сбрасывается при конце взлома.")
-                        .withStyle(ChatFormatting.GRAY));
+        int percentPerStack = Math.round(BONUS_PER_STACK * 100.0f);
+        return Component.translatable("perk.maniacrev.idealych.desc",
+                percentPerStack,
+                percentPerStack * MAX_BONUS_STACKS,
+                percentPerStack,
+                percentPerStack * MAX_DEBUFF_STACKS);
     }
 
     // ── Пассивный эффект ──────────────────────────────────────────────────

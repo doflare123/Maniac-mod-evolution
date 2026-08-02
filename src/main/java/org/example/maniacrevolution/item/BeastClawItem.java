@@ -83,7 +83,7 @@ public class BeastClawItem extends Item implements IItemWithAbility {
         // Проверяем ману
         var mana = player.getCapability(ManaProvider.MANA).orElse(null);
         if (mana == null || !mana.consumeMana(LEAP_MANA_COST)) {
-            sp.displayClientMessage(Component.literal("§cНедостаточно маны!"), true);
+            sp.displayClientMessage(Component.translatable("message.maniacrev.not_enough_mana", (int) LEAP_MANA_COST), true);
             return InteractionResultHolder.fail(stack);
         }
 
@@ -181,8 +181,13 @@ public class BeastClawItem extends Item implements IItemWithAbility {
     public ResourceLocation getAbilityIcon() {
         return new ResourceLocation(Maniacrev.MODID, "textures/gui/abilities/beast_claw.png");
     }
-    @Override public String getAbilityName()        { return "Прыжок зверя"; }
-    @Override public String getAbilityDescription() { return "Прыгает вперёд, сбивая врагов при приземлении"; }
+    @Override public String getAbilityName() {
+        return Component.translatable("ability.maniacrev.beast_claw.name").getString();
+    }
+    @Override public String getAbilityDescription() {
+        return Component.translatable("ability.maniacrev.beast_claw.desc",
+                LEAP_LAND_DAMAGE, LEAP_LAND_RADIUS).getString();
+    }
     @Override public float  getManaCost()           { return LEAP_MANA_COST; }
     @Override public int    getMaxCooldownSeconds() { return LEAP_COOLDOWN_SECS; }
 
@@ -215,21 +220,21 @@ public class BeastClawItem extends Item implements IItemWithAbility {
                                 List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.empty());
-        tooltip.add(Component.literal("§6⚔ Коготь зверя").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.literal("  Базовый урон: §f" + (int)BASE_DAMAGE)
+        tooltip.add(Component.translatable("tooltip.maniacrev.beast_claw.title").withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("tooltip.maniacrev.beast_claw.damage", BASE_DAMAGE)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  §c[Fury Swipes] §7+0.5 урона за каждый стак")
+        tooltip.add(Component.translatable("tooltip.maniacrev.beast_claw.stacks")
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Стак живёт §f20 сек §7независимо от других")
+        tooltip.add(Component.translatable("tooltip.maniacrev.beast_claw.stack_duration")
                 .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.empty());
-        tooltip.add(Component.literal("§b[ПКМ] Прыжок зверя")
+        tooltip.add(Component.translatable("tooltip.maniacrev.beast_claw.action")
                 .withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("  Прыжок вперёд, урон §f" + (int)LEAP_LAND_DAMAGE
-                        + " §7в радиусе §f" + (int)LEAP_LAND_RADIUS + " §7блока")
+        tooltip.add(Component.translatable("tooltip.maniacrev.beast_claw.leap",
+                        LEAP_LAND_DAMAGE, LEAP_LAND_RADIUS)
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("  Кулдаун: §f" + LEAP_COOLDOWN_SECS
-                        + " сек §7| Мана: §f" + (int)LEAP_MANA_COST)
+        tooltip.add(Component.translatable("tooltip.maniacrev.beast_claw.stats",
+                        LEAP_COOLDOWN_SECS, (int) LEAP_MANA_COST)
                 .withStyle(ChatFormatting.GRAY));
     }
 

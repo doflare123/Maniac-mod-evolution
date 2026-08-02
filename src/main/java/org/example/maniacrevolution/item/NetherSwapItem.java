@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.item;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -108,7 +109,7 @@ public class NetherSwapItem extends Item implements IItemWithAbility {
         }).orElse(false);
 
         if (!hasEnoughMana) {
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§cНедостаточно маны!"));
+            player.sendSystemMessage(Component.translatable("message.maniacrev.not_enough_mana", (int) MANA_COST));
             return;
         }
 
@@ -212,10 +213,14 @@ public class NetherSwapItem extends Item implements IItemWithAbility {
     }
 
     @Override
-    public String getAbilityName() { return "Квантовая телепортация"; }
+    public String getAbilityName() {
+        return Component.translatable("ability.maniacrev.nether_swap.name").getString();
+    }
 
     @Override
-    public String getAbilityDescription() { return "Меняет местами с целью"; }
+    public String getAbilityDescription() {
+        return Component.translatable("ability.maniacrev.nether_swap.desc", SCAN_RANGE).getString();
+    }
 
     @Override
     public float getManaCost() { return MANA_COST; }

@@ -28,7 +28,7 @@ public class GhostHandItem extends Item implements IItemWithAbility {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!level.isClientSide) {
-            player.displayClientMessage(Component.literal("§7Удерживайте Shift и нажмите ПКМ по выжившему."), true);
+            player.displayClientMessage(Component.translatable("message.maniacrev.ghost_hand.hint"), true);
         }
         return InteractionResultHolder.success(stack);
     }
@@ -36,11 +36,12 @@ public class GhostHandItem extends Item implements IItemWithAbility {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.empty());
-        tooltip.add(Component.literal("§dПризрачная рука").withStyle(ChatFormatting.BOLD));
-        tooltip.add(Component.literal("  §7Shift + ПКМ по выжившему: вселение на 30 сек."));
-        tooltip.add(Component.literal("  §7Во время контроля Shift + ПКМ: досрочно выйти."));
-        tooltip.add(Component.literal("  §7Во время вселения цель получает §fSpeed I§7."));
-        tooltip.add(Component.literal("  §7Кулдаун: §f" + getMaxCooldownSeconds() + " сек."));
+        tooltip.add(Component.translatable("tooltip.maniacrev.ghost_hand.title").withStyle(ChatFormatting.BOLD));
+        tooltip.add(Component.translatable("tooltip.maniacrev.ghost_hand.possess",
+                GhostPossessionManager.POSSESSION_DURATION_TICKS / 20));
+        tooltip.add(Component.translatable("tooltip.maniacrev.ghost_hand.exit"));
+        tooltip.add(Component.translatable("tooltip.maniacrev.ghost_hand.speed"));
+        tooltip.add(Component.translatable("tooltip.maniacrev.ghost_hand.cooldown", getMaxCooldownSeconds()));
     }
 
     @Override
@@ -50,12 +51,12 @@ public class GhostHandItem extends Item implements IItemWithAbility {
 
     @Override
     public String getAbilityName() {
-        return "Вселение";
+        return Component.translatable("ability.maniacrev.ghost_hand.name").getString();
     }
 
     @Override
     public String getAbilityDescription() {
-        return "Shift + ПКМ по выжившему захватывает его тело.";
+        return Component.translatable("ability.maniacrev.ghost_hand.desc").getString();
     }
 
     @Override

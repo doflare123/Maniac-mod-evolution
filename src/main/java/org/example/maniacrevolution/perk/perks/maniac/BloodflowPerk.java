@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.perk.perks.maniac;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -32,6 +33,11 @@ public class BloodflowPerk extends Perk {
                 .phases(PerkPhase.ANY)
                 .cooldown(COOLDOWN_SECONDS)
         );
+    }
+
+    @Override
+    public Component getDescription() {
+        return Component.translatable("perk.maniacrev.bloodflow.desc", EFFECT_DURATION_TICKS / 20);
     }
 
     @Override

@@ -52,12 +52,12 @@ public class MapsPage extends GuidePage {
         int btnH = 18;
 
         GuideTheme.drawBackButton(gui, font, btnX, btnY, btnW,
-                "← Главная", GuideTheme.RED, mouseX, mouseY);
+                tr("guide.maniacrev.back_main"), GuideTheme.RED, mouseX, mouseY);
     }
 
     private void renderMapList(GuiGraphics gui, int mouseX, int mouseY) {
-        GuideTheme.drawPageTitle(gui, font, "КАРТЫ И АРЕНЫ",
-                "Размер, сложность и уникальные особенности",
+        GuideTheme.drawPageTitle(gui, font, tr("guide.maniacrev.maps.title"),
+                tr("guide.maniacrev.maps.subtitle"),
                 guiLeft + guiWidth / 2, guiTop + 11, GuideTheme.RED);
 
         int y = guiTop + 60 - scrollOffset;
@@ -103,14 +103,15 @@ public class MapsPage extends GuidePage {
                     GuideTheme.TEXT_SECONDARY, false);
         }
 
-        gui.drawString(font, "Размер: " + map.size(), x + 85, y + 56,
+        gui.drawString(font, tr("guide.maniacrev.maps.size", map.size()), x + 85, y + 56,
                 GuideTheme.TEXT_MUTED, false);
         String difficulty = map.difficultyStars();
         gui.drawString(font, difficulty, x + width - font.width(difficulty) - 8, y + 56,
                 GuideTheme.GOLD, false);
 
         if (hovered) {
-            gui.drawString(font, "Подробнее  →", x + width - font.width("Подробнее  →") - 8,
+            String details = tr("guide.maniacrev.details") + "  →";
+            gui.drawString(font, details, x + width - font.width(details) - 8,
                     y + height - 15, GuideTheme.RED, false);
         }
     }
@@ -137,12 +138,12 @@ public class MapsPage extends GuidePage {
         int btnY = guiTop + guiHeight - 25;
         boolean hovered = mouseX >= btnX && mouseX < btnX + 70 && mouseY >= btnY && mouseY < btnY + 20;
 
-        GuideTheme.drawButton(gui, font, btnX, btnY, 70, 20, "← Назад",
+        GuideTheme.drawButton(gui, font, btnX, btnY, 70, 20, tr("guide.maniacrev.back"),
                 GuideTheme.RED, hovered, false);
 
         // Заголовок
         GuideTheme.drawPageTitle(gui, font, selectedMap.name(),
-                "Подробности выбранной арены",
+                tr("guide.maniacrev.maps.details_subtitle"),
                 guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.RED);
 
         // ИСПРАВЛЕНО: Область с прокруткой для контента
@@ -167,9 +168,9 @@ public class MapsPage extends GuidePage {
         }
 
         y += 4;
-        gui.drawString(font, "§e● Размер: §f" + selectedMap.size(), guiLeft + 15, y, 0xFFFFFF, false);
+        gui.drawString(font, tr("guide.maniacrev.maps.detail_size", selectedMap.size()), guiLeft + 15, y, 0xFFFFFF, false);
         y += 11;
-        gui.drawString(font, "§e● Сложность: §6" + selectedMap.difficultyStars(), guiLeft + 15, y, 0xFFFFFF, false);
+        gui.drawString(font, tr("guide.maniacrev.maps.difficulty", selectedMap.difficultyStars()), guiLeft + 15, y, 0xFFFFFF, false);
         y += 11;
 
         y += 10; // Отступ после текста

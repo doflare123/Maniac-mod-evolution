@@ -5,6 +5,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.gui.GuideScreen;
 import org.example.maniacrevolution.gui.GuideTheme;
+import org.example.maniacrevolution.downed.DownedData;
+import org.example.maniacrevolution.hack.HackConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,11 +78,11 @@ public class TutorialPage extends GuidePage {
 
     private void renderTableOfContents(GuiGraphics gui, int mouseX, int mouseY) {
         // Кнопка "← Главная"
-        renderNavButton(gui, mouseX, mouseY, "← Главная", guiLeft + 5, guiTop + 10, 80, 18);
+        renderNavButton(gui, mouseX, mouseY, tr("guide.maniacrev.back_main"), guiLeft + 5, guiTop + 10, 80, 18);
 
         // Заголовок
-        GuideTheme.drawPageTitle(gui, font, "ПОЛНЫЙ ГАЙД",
-                "Выберите тему для изучения",
+        GuideTheme.drawPageTitle(gui, font, tr("guide.maniacrev.tutorial.title"),
+                tr("guide.maniacrev.tutorial.subtitle"),
                 guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.GOLD);
 
         // Кнопки тем со скроллом
@@ -108,10 +110,10 @@ public class TutorialPage extends GuidePage {
 
     private void renderTopic(GuiGraphics gui, int mouseX, int mouseY) {
         // Кнопка "← Назад"
-        renderNavButton(gui, mouseX, mouseY, "← Назад", guiLeft + 5, guiTop + 10, 80, 18);
+        renderNavButton(gui, mouseX, mouseY, tr("guide.maniacrev.back"), guiLeft + 5, guiTop + 10, 80, 18);
 
         // Заголовок темы
-        GuideTheme.drawPageTitle(gui, font, currentTopic.title, null,
+        GuideTheme.drawPageTitle(gui, font, currentTopic.title(), null,
                 guiLeft + guiWidth / 2, guiTop + 11, GuideTheme.GOLD);
 
         // Область прокрутки
@@ -236,22 +238,15 @@ public class TutorialPage extends GuidePage {
     // ═════════════════════════════════════════════════════════════════════════
 
     private enum Topic {
-        INTRO       ("§e§l📖 Введение, правила и фазы игры", "§6§lВведение, правила и фазы игры"),
-        HUD         ("§e§l🖥 Кастомный HUD и мана",            "§6§lКастомный HUD и мана"),
-        BEFORE_START("§e§l🎮 Перед стартом и места спавна",    "§6§lПеред стартом и места спавна"),
-        COMPUTERS   ("§e§l💻 Взлом компьютеров",               "§6§lВзлом компьютеров"),
-        DOWNED      ("§e§l💀 При смерти / Нокдаун",            "§6§lПри смерти — Нокдаун"),
-        MAP_FEATURES("§e§l🗺 Особенности карт",                "§6§lОсобенности карт"),
-        PERKS       ("§e§l⚡ Система перков",                  "§6§lСистема перков"),
-        END         ("§e§l✨ Заключение",                      "§6§lЗаключение");
+        INTRO("intro"), HUD("hud"), BEFORE_START("before_start"), COMPUTERS("computers"),
+        DOWNED("downed"), MAP_FEATURES("map_features"), PERKS("perks"), END("end");
 
-        final String buttonLabel;  // Текст кнопки в оглавлении
-        final String title;        // Заголовок страницы темы
+        final String id;
 
-        Topic(String buttonLabel, String title) {
-            this.buttonLabel = buttonLabel;
-            this.title       = title;
-        }
+        Topic(String id) { this.id = id; }
+
+        String buttonLabel() { return t("guide.maniacrev.tutorial.topic." + id + ".button"); }
+        String title() { return t("guide.maniacrev.tutorial.topic." + id + ".title"); }
 
         /** Строит список секций для данной темы. */
         List<Section> buildSections() {
@@ -271,28 +266,21 @@ public class TutorialPage extends GuidePage {
 
         private static List<Section> buildIntro() {
             var s = new ArrayList<Section>();
-            s.add(new TextSection(
-                    "Добро пожаловать в режим Maniac! Это асимметричный PvP-режим, вдохновлённый игрой DBD, " +
-                            "где команда выживших противостоит маньякам. Выживание требует командной работы, стратегии " +
-                            "и умения использовать перки."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.intro.welcome")));
             s.add(new SpacerSection(10));
-            s.add(new HeaderSection("§e§l⚔ Основные правила"));
-            s.add(new TextSection("§7Команды:§r Игроки делятся на §bВыживших§r и §cМаньяков§r."));
-            s.add(new TextSection("§7Цель выживших:§r Взломать все компьютеры и убить маньяка до окончания времени."));
-            s.add(new TextSection("§7Цель маньяков:§r Устранить всех выживших или дожить до конца таймера."));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.intro.rules")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.intro.teams")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.intro.survivor_goal")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.intro.maniac_goal")));
             s.add(new SpacerSection(12));
-            s.add(new HeaderSection("§e§l⏱ Фазы игры"));
-            s.add(new TextSection("Игра делится на три фазы — они меняют условия и доступные перки."));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.intro.phases")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.intro.phases_desc")));
             s.add(new SpacerSection(6));
-            s.add(new TextSection("§6§lФаза 1 — Охота.§r Маньяки ищут выживших. Некоторые перки недоступны."));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.intro.phase_1")));
             s.add(new SpacerSection(4));
-            s.add(new TextSection("§6§lФаза 2 — Мидгейм.§r Прошла половина времени. Открываются дополнительные перки. Игра становится интенсивнее."));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.intro.phase_2")));
             s.add(new SpacerSection(4));
-            s.add(new TextSection(
-                    "§6§lФаза 3 — Переворот.§r Наступает после взлома нужного числа компьютеров. " +
-                            "Выжившие получают карточки для сейфов с оружием."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.intro.phase_3")));
             return s;
         }
 
@@ -300,25 +288,16 @@ public class TutorialPage extends GuidePage {
 
         private static List<Section> buildHud() {
             var s = new ArrayList<Section>();
-            s.add(new TextSection(
-                    "В игре используется полностью кастомный HUD. Здоровье отображается в виде полоски, " +
-                            "добавлена система маны для способностей (у некоторых классов) и слоты перков."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.hud.overview")));
             s.add(new SpacerSection(5));
             s.add(new ImageSection("guide/before_start_game/custom_hud.png", 450, 150));
             s.add(new SpacerSection(5));
-            s.add(new TextSection(
-                    "В HUD отображаются выбранные перки и способности. Вы можете видеть манакост, " +
-                            "назначенные кнопки, тип перка и кулдаун после применения."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.hud.elements")));
             s.add(new SpacerSection(5));
             s.add(new ImageSection("guide/before_start_game/full_custom_hud.png", 450, 150));
             s.add(new SpacerSection(10));
-            s.add(new HeaderSection("§e§l💧 Система маны"));
-            s.add(new TextSection(
-                    "Мана — конечный ресурс. Её менеджмент является ключевой механикой у классов " +
-                            "с активными скиллами. Следите за полоской маны в HUD."
-            ));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.hud.mana_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.hud.mana_desc")));
             return s;
         }
 
@@ -326,53 +305,41 @@ public class TutorialPage extends GuidePage {
 
         private static List<Section> buildBeforeStart() {
             var s = new ArrayList<Section>();
-            s.add(new HeaderSection("§e§l1. Выбор карты"));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.before.map_title")));
             s.add(new ImageSection("guide/before_start_game/pick_map.png", 450, 400));
-            s.add(new TextSection(
-                    "Выбираете карту, подтверждаете. При равном распределении голосов запускается " +
-                            "анимация рандомизации, и в чате появляется выбранная карта."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.map_desc")));
             s.add(new SpacerSection(10));
-            s.add(new HeaderSection("§e§l2. Предметы при старте"));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.before.items_title")));
             s.add(new ImageSection("guide/before_start_game/items_for_game.png", 200, 150));
-            s.add(new TextSection("При распределении по командам вам выдаются:"));
-            s.add(new TextSection("§7● §61 слот§r — выбор перков"));
-            s.add(new TextSection("§7● §62 слот§r — выбор класса (текстура зависит от команды)"));
-            s.add(new TextSection("§7● §63 слот§r — кнопка готовности"));
-            s.add(new TextSection("Кнопку готовности можно нажать только после выбора перков, класса и карты."));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.items_desc")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.slot_perks", 1)));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.slot_class", 2)));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.slot_ready", 3)));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.ready_requirement")));
             s.add(new SpacerSection(10));
-            s.add(new HeaderSection("§e§l3. Выбор перков"));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.before.perks_title")));
             s.add(new ImageSection("guide/before_start_game/perks.png", 450, 300));
-            s.add(new TextSection(
-                    "Наведитесь на перк чтобы узнать что он делает, на какой стадии работает, " +
-                            "его тип и перезарядку. Кликните левой кнопкой для выбора — выбранный перк обведётся зелёным."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.perks_desc")));
             s.add(new SpacerSection(10));
-            s.add(new HeaderSection("§e§l4. Выбор персонажа"));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.before.character_title")));
             s.add(new ImageSection("guide/before_start_game/pick_hero.png", 450, 450));
-            s.add(new TextSection(
-                    "В компактном режиме листайте вертикальный список персонажей колесом мыши. " +
-                            "Тумблер «Крупные карточки» показывает фреску целиком и переключает героев горизонтально; " +
-                            "выбранный режим сохраняется. Кнопка «Фильтры» отбирает классы по ролям. " +
-                            "Наведитесь на экипировку или предмет, чтобы увидеть его описание и прописанный лор. " +
-                            "После выбора нажмите «Выбрать персонажа»."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.character_desc")));
             s.add(new SpacerSection(10));
-            s.add(new HeaderSection("§e§l5. Готовность"));
-            s.add(new TextSection("После выбора класса и перков активируйте предмет готовности. Когда все готовы:"));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.before.ready_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.ready_desc")));
             s.add(new ImageSection("guide/before_start_game/start_game.png", 450, 50));
             s.add(new SpacerSection(14));
-            s.add(new HeaderSection("§e§l6. Места спавна"));
-            s.add(new TextSection("§e§lОсобняк"));
-            s.add(new TextSection("§bВыжившие:"));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.before.spawns_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.mansion")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.survivors")));
             s.add(new ImageSection("guide/start_game/start_survivors_mansion.png", 500, 300));
-            s.add(new TextSection("§cМаньяки:"));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.maniacs")));
             s.add(new ImageSection("guide/start_game/start_maniac_mansion.png", 500, 300));
             s.add(new SpacerSection(10));
-            s.add(new TextSection("§e§lПиццерия Фрэдэ"));
-            s.add(new TextSection("§bВыжившие:"));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.pizzeria")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.survivors")));
             s.add(new ImageSection("guide/start_game/start_survivors_freddy.png", 500, 300));
-            s.add(new TextSection("§cМаньяки:"));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.before.maniacs")));
             s.add(new ImageSection("guide/start_game/start_maniac_freddy.png", 500, 300));
             return s;
         }
@@ -383,50 +350,33 @@ public class TutorialPage extends GuidePage {
             var s = new ArrayList<Section>();
             s.add(new ImageSection("guide/maps/computers_watch.png", 550, 300));
             s.add(new SpacerSection(6));
-            s.add(new HeaderSection("§e§l🖱 Как начать взлом"));
-            s.add(new TextSection(
-                    "Подойдите к компьютеру в радиусе 1 блока и нажмите §lправую кнопку мыши§r. " +
-                            "Начнётся взлом. Активирующий игрок не может отходить дальше 1 блока — иначе взлом прервётся."
-            ));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.computers.start_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.computers.start_desc", HackConfig.HACKER_RADIUS)));
             s.add(new SpacerSection(8));
-            s.add(new HeaderSection("§e§l👥 Помощь при взломе"));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.computers.help_title")));
             s.add(new ImageSection("guide/maps/active_computer.png", 450, 250));
-            s.add(new TextSection(
-                    "Союзники могут ускорить взлом, находясь в радиусе §b3 блоков§r от компьютера. " +
-                            "Эта область обозначена §fбелыми частицами§r при активном взломе."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.computers.help_desc", HackConfig.SUPPORT_RADIUS)));
             s.add(new SpacerSection(8));
-            s.add(new HeaderSection("§e§l⚡ QTE — мини-игра взлома"));
-            s.add(new TextSection(
-                    "Раз в 3–5 секунд появляется QTE: сжимающаяся рамка. " +
-                            "Нужно нажать нужную клавишу когда рамка совпадёт с целевой областью."
-            ));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.computers.qte_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.computers.qte_desc",
+                    HackConfig.QTE_INTERVAL_MIN_SECONDS, HackConfig.QTE_INTERVAL_MAX_SECONDS)));
             s.add(new ImageSection("guide/mechanics/qte.png", 200, 200));
             s.add(new SpacerSection(4));
-            s.add(new TextSection("§7● §aЗелёная зона§7 — обычный успех, небольшой бонус к прогрессу взлома."));
-            s.add(new TextSection("§7● §dФиолетовая зона§7 — §l§dкритический успех§r§7, значительно ускоряет взлом."));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.computers.qte_success")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.computers.qte_critical")));
             s.add(new SpacerSection(8));
-            s.add(new HeaderSection("§e§l📊 Индикатор прогресса"));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.computers.progress_title")));
             s.add(new ImageSection("guide/in_game/count_computers.png", 200, 80));
-            s.add(new TextSection(
-                    "В правой части экрана отображается счётчик взломанных компьютеров. " +
-                            "Он показывает сколько уже взломано из нужного количества для победы."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.computers.progress_desc",
+                    HackConfig.COMPUTERS_NEEDED_FOR_WIN)));
             s.add(new SpacerSection(8));
-            s.add(new HeaderSection("§e§l🔦 Подсветка компьютеров"));
-            s.add(new TextSection(
-                    "В начале игры компьютеры подсвечиваются для всех. " +
-                            "§cМаньяки§r видят их всю игру, §bвыжившие§r — только первые 40 секунд."
-            ));
-            s.add(new TextSection(
-                    "Если на карте есть «Алхимик», ему также всю игру подсвечиваются зельеварки."
-            ));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.computers.glow_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.computers.glow_desc")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.computers.alchemist_glow")));
             s.add(new SpacerSection(8));
-            s.add(new HeaderSection("§e§l🏆 Конец игры — Переворот"));
-            s.add(new TextSection(
-                    "После взлома нужного числа компьютеров выжившие получают ключ-карты для сейфов с оружием " +
-                            "(количество ограничено)."
-            ));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.computers.end_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.computers.end_desc",
+                    HackConfig.COMPUTERS_NEEDED_FOR_WIN)));
             s.add(new ImageSection("guide/maps/safe_with_weapon.png", 450, 300));
             return s;
         }
@@ -437,26 +387,19 @@ public class TutorialPage extends GuidePage {
             var s = new ArrayList<Section>();
             s.add(new ImageSection("guide/mechanics/downed.png", 400, 250));
             s.add(new SpacerSection(8));
-            s.add(new TextSection(
-                    "У каждого §bвыжившего§r есть второй шанс. После смертельного удара он не умирает сразу, " +
-                            "а падает в нокдаун — ложится на землю. Это срабатывает §l только один раз§r за игру."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.downed.overview")));
             s.add(new SpacerSection(8));
-            s.add(new HeaderSection("§e§l⏱ Поднятие"));
-            s.add(new TextSection("§7● §fОбычный игрок§7 поднимает за §a6 секунд§7."));
-            s.add(new TextSection("§7● §bМедик§7 поднимает за §a3 секунды§7 — вдвое быстрее."));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.downed.revive_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.downed.normal_revive",
+                    DownedData.NORMAL_REVIVE_TICKS / 20)));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.downed.medic_revive",
+                    DownedData.MEDIC_REVIVE_TICKS / 20)));
             s.add(new SpacerSection(8));
-            s.add(new HeaderSection("§e§l⚠ Особые условия"));
-            s.add(new TextSection(
-                    "Если ты §cпоследний не лежащий выживший§r — нокдауна не будет: " +
-                            "следующий смертельный удар убьёт тебя сразу. " +
-                            "Исключение — перк на автоподнятие."
-            ));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.downed.conditions_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.downed.last_survivor")));
             s.add(new SpacerSection(8));
-            s.add(new TextSection(
-                    "§7Лёжа на земле, выживший ждёт §e60 секунд§7. " +
-                            "Если за это время его никто не поднял — он умирает."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.downed.timeout",
+                    DownedData.DOWNED_TIMEOUT_TICKS / 20)));
             return s;
         }
 
@@ -464,16 +407,16 @@ public class TutorialPage extends GuidePage {
 
         private static List<Section> buildMapFeatures() {
             var s = new ArrayList<Section>();
-            s.add(new HeaderSection("§e§lОсобняк — потайные ходы"));
-            s.add(new TextSection("Потайные двери:"));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.maps.mansion_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.maps.secret_doors")));
             s.add(new ImageSection("guide/mechanics/close_door.png", 450, 200));
             s.add(new ImageSection("guide/mechanics/open_door.png",  450, 200));
             s.add(new SpacerSection(5));
-            s.add(new TextSection("Потайные люки:"));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.maps.secret_hatches")));
             s.add(new ImageSection("guide/mechanics/close_hatch.png", 450, 200));
             s.add(new ImageSection("guide/mechanics/open_hatch.png",  450, 200));
             s.add(new SpacerSection(10));
-            s.add(new HeaderSection("§e§lПиццерия Фрэдэ — канализации и вентиляции"));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.maps.pizzeria_title")));
             s.add(new ImageSection("guide/mechanics/ventilation.png", 450, 200));
             return s;
         }
@@ -482,32 +425,28 @@ public class TutorialPage extends GuidePage {
 
         private static List<Section> buildPerks() {
             var s = new ArrayList<Section>();
-            s.add(new TextSection(
-                    "Перки — уникальные способности, дающие преимущества. Каждый игрок выбирает перки перед игрой."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.overview")));
             s.add(new SpacerSection(8));
-            s.add(new HeaderSection("§e§l🎯 Типы по механике"));
-            s.add(new TextSection("§9● Пассивные§r — работают автоматически, не требуют активации."));
-            s.add(new TextSection("§c● Активные§r — нужно нажать клавишу для применения."));
-            s.add(new TextSection("§d● Гибридные§r — пассивный эффект + возможность активации."));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.perks.mechanics_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.passive")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.active")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.hybrid")));
             s.add(new SpacerSection(10));
-            s.add(new HeaderSection("§e§l👥 Типы по команде"));
-            s.add(new TextSection("§7● §bПерки выживших§r — доступны только команде выживших."));
-            s.add(new TextSection("§7● §cПерки маньяков§r — доступны только маньякам."));
-            s.add(new TextSection("§7● §fОбщие перки§r — могут взять обе стороны."));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.perks.teams_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.survivor")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.maniac")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.common")));
             s.add(new SpacerSection(10));
-            s.add(new HeaderSection("§e§l⏱ Фаза активации перка"));
-            s.add(new TextSection(
-                    "§c§lВажно!§r Обращайте внимание на фазу в которой работает перк:"
-            ));
-            s.add(new TextSection("§7● §6Фаза 1 (Охота)§r — перк сработает/начнёт работу с самого начала игры."));
-            s.add(new TextSection("§7● §6Фаза 2 (Мидгейм)§r — перк активируется только после наступления мидгейма."));
-            s.add(new TextSection("§7● §6Фаза 3 (Переворот)§r — перк становится доступен лишь в финальной фазе."));
-            s.add(new TextSection("§7● §aЛюбая фаза§r — перк работает всегда."));
+            s.add(new HeaderSection(t("guide.maniacrev.tutorial.perks.phase_title")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.phase_warning")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.phase_1")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.phase_2")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.phase_3")));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.phase_any")));
             s.add(new SpacerSection(4));
-            s.add(new TextSection("§8Подробнее о фазах — в теме «Введение, правила и фазы игры»."));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.perks.phase_more")));
             s.add(new SpacerSection(10));
-            s.add(new LinkSection("§e§n➤ Полный список перков и способностей", PageType.PERKS));
+            s.add(new LinkSection(t("guide.maniacrev.tutorial.perks.link"), PageType.PERKS));
             return s;
         }
 
@@ -515,19 +454,11 @@ public class TutorialPage extends GuidePage {
 
         private static List<Section> buildEnd() {
             var s = new ArrayList<Section>();
-            s.add(new TextSection(
-                    "Это основные механики режима! Дальше — свободное плавание: изучайте карту, " +
-                            "придумывайте фишечки и находите интересные комбинации перков. Удачи и приятной игры!"
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.end.summary")));
             s.add(new SpacerSection(10));
-            s.add(new TextSection(
-                    "§7§lP.S.§r Если вам понравится карта, заходите в наш ТГК: §9§nhttps://t.me/necrodwarfs§r " +
-                            "или найдите нас по §9@necrodwarfs§r в Telegram."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.end.community")));
             s.add(new SpacerSection(10));
-            s.add(new TextSection(
-                    "§6§lГайд не одноразовый!§r Откройте его повторно через бинд клавиши в настройках."
-            ));
+            s.add(new TextSection(t("guide.maniacrev.tutorial.end.reopen")));
             return s;
         }
     }
@@ -556,7 +487,7 @@ public class TutorialPage extends GuidePage {
         void renderAt(GuiGraphics gui, int mouseX, int mouseY, int rx, int ry) {
             boolean hov = mouseX >= rx && mouseX < rx + w && mouseY >= ry && mouseY < ry + h;
             GuideTheme.drawCard(gui, rx, ry, w, h, GuideTheme.GOLD, hov);
-            gui.drawString(font, topic.buttonLabel, rx + 12, ry + (h - 8) / 2,
+            gui.drawString(font, topic.buttonLabel(), rx + 12, ry + (h - 8) / 2,
                     GuideTheme.TEXT, false);
             if (hov) {
                 String arrow = "→";
@@ -666,7 +597,7 @@ public class TutorialPage extends GuidePage {
             boolean hov = mx >= x && mx < x + font.width(text) + 4 && my >= y && my < y + 11;
             gui.drawString(font, text, x, y, hov ? GuideTheme.TEXT : GuideTheme.GOLD, false);
             if (hov) {
-                gui.drawString(font, "§8 (клик)", x + font.width(text) + 2, y, 0x888888, false);
+                gui.drawString(font, t("guide.maniacrev.click"), x + font.width(text) + 2, y, 0x888888, false);
             }
         }
     }
@@ -690,5 +621,9 @@ public class TutorialPage extends GuidePage {
         }
         if (line.length() > 0) lines.add(line.toString());
         return lines;
+    }
+
+    private static String t(String key, Object... args) {
+        return tr(key, args);
     }
 }

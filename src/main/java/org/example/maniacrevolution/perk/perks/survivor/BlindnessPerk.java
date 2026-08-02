@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.perk.perks.survivor;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -30,6 +31,12 @@ public class BlindnessPerk extends Perk {
                 .manaCost(10f)
                 .cooldown(COOLDOWN_SECONDS)
         );
+    }
+
+    @Override
+    public Component getDescription() {
+        return Component.translatable("perk.maniacrev.blindness.desc",
+                PASSIVE_RADIUS, PASSIVE_DURATION_TICKS / 20, ACTIVE_DURATION_TICKS / 20);
     }
 
     @Override

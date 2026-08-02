@@ -1,5 +1,6 @@
 package org.example.maniacrevolution.perk.perks.survivor;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import org.example.maniacrevolution.perk.*;
 
@@ -11,14 +12,25 @@ import org.example.maniacrevolution.perk.*;
 public class QuickReflexesPerk extends Perk {
 
     // Бонусы
-    public static final int BONUS_TIME_MS = 2500; // +0.25 секунды
-    public static final float BONUS_SPACE_MULTIPLIER = 2.1f; // +10%
+    public static final int BONUS_TIME_MS = 450;
+    public static final float GREEN_ZONE_MULTIPLIER = 1.06f;
+    public static final float SUCCESS_TOLERANCE_MULTIPLIER = 1.05f;
+    public static final float CRIT_ZONE_MULTIPLIER = 1.10f;
 
     public QuickReflexesPerk() {
         super(new Builder("quick_reflexes")
                 .type(PerkType.PASSIVE)
                 .team(PerkTeam.SURVIVOR)
                 .phases(PerkPhase.ANY));
+    }
+
+    @Override
+    public Component getDescription() {
+        return Component.translatable("perk.maniacrev.quick_reflexes.desc",
+                BONUS_TIME_MS,
+                Math.round((GREEN_ZONE_MULTIPLIER - 1.0f) * 100.0f),
+                Math.round((SUCCESS_TOLERANCE_MULTIPLIER - 1.0f) * 100.0f),
+                Math.round((CRIT_ZONE_MULTIPLIER - 1.0f) * 100.0f));
     }
 
     /**

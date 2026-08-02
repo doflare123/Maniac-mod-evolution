@@ -4,24 +4,24 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 public enum PerkPhase {
-    START("Начало игры", ChatFormatting.AQUA, -1),      // Особая фаза - при вызове /maniacrev start
-    HUNT("Охота", ChatFormatting.YELLOW, 1),             // phaseGame = 1
-    MIDGAME("Мидгейм", ChatFormatting.GOLD, 2),          // phaseGame = 2
-    REVERSAL("Переворот", ChatFormatting.RED, 3),        // phaseGame = 3
-    ANY("Любая", ChatFormatting.WHITE, -1);              // Работает всегда (кроме phaseGame = 0)
+    START("start", ChatFormatting.AQUA, -1),      // Особая фаза - при вызове /maniacrev start
+    HUNT("hunt", ChatFormatting.YELLOW, 1),             // phaseGame = 1
+    MIDGAME("midgame", ChatFormatting.GOLD, 2),          // phaseGame = 2
+    REVERSAL("reversal", ChatFormatting.RED, 3),        // phaseGame = 3
+    ANY("any", ChatFormatting.WHITE, -1);              // Работает всегда (кроме phaseGame = 0)
 
-    private final String displayName;
+    private final String translationSuffix;
     private final ChatFormatting color;
     private final int scoreboardValue;
 
-    PerkPhase(String displayName, ChatFormatting color, int scoreboardValue) {
-        this.displayName = displayName;
+    PerkPhase(String translationSuffix, ChatFormatting color, int scoreboardValue) {
+        this.translationSuffix = translationSuffix;
         this.color = color;
         this.scoreboardValue = scoreboardValue;
     }
 
     public Component getDisplayName() {
-        return Component.literal(displayName).withStyle(color);
+        return Component.translatable("perk.maniacrev.phase." + translationSuffix).withStyle(color);
     }
 
     public ChatFormatting getColor() { return color; }

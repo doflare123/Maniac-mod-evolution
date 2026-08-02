@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.item;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -48,8 +49,7 @@ public class BongItem extends Item implements IItemWithAbility {
         // Проверяем и тратим ману
         var mana = player.getCapability(ManaProvider.MANA).orElse(null);
         if (mana == null || !mana.consumeMana(MANA_COST)) {
-            sp.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§cНедостаточно маны!"), true);
+            sp.displayClientMessage(Component.translatable("message.maniacrev.not_enough_mana", (int) MANA_COST), true);
             return InteractionResultHolder.fail(stack);
         }
 
@@ -75,9 +75,12 @@ public class BongItem extends Item implements IItemWithAbility {
     @Override public ResourceLocation getAbilityIcon() {
         return new ResourceLocation(Maniacrev.MODID, "textures/gui/abilities/bong.png");
     }
-    @Override public String getAbilityName()        { return "Облако дыма"; }
+    @Override public String getAbilityName() {
+        return Component.translatable("ability.maniacrev.bong.name").getString();
+    }
     @Override public String getAbilityDescription() {
-        return "Создаёт облако дыма на 5 сек. Все в радиусе 5 блоков получают плавное падение.";
+        return Component.translatable("ability.maniacrev.bong.desc",
+                BongCloudEntity.DURATION_TICKS / 20, (int) BongCloudEntity.RADIUS).getString();
     }
     @Override public float  getManaCost()           { return MANA_COST; }
     @Override public int    getMaxCooldownSeconds() { return COOLDOWN_SECS; }

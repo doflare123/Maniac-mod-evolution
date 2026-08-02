@@ -18,6 +18,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.Level;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.client.ClientAbilityData;
+import org.example.maniacrevolution.event.MedicActiveAbility;
 import org.example.maniacrevolution.item.IItemWithAbility;
 import org.example.maniacrevolution.item.ITimedAbility;
 import org.example.maniacrevolution.mana.ManaProvider;
@@ -53,14 +54,14 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         String keyName = getActivationKeyName();
-        tooltip.add(Component.literal("§6Способность: §e" + getAbilityName()).withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.translatable("tooltip.maniacrev.ability", getAbilityName()).withStyle(ChatFormatting.GOLD));
         tooltip.add(Component.literal("§7" + getAbilityDescription()).withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.literal(""));
-        tooltip.add(Component.literal("§9Стоимость: §b" + (int)MANA_COST + " маны").withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("§9Длительность: §b" + (DURATION_TICKS / 20) + "с").withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("§9Кулдаун: §b" + (COOLDOWN_TICKS / 20) + "с").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.maniacrev.mana_cost", (int) MANA_COST).withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.maniacrev.duration", DURATION_TICKS / 20).withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.maniacrev.cooldown", COOLDOWN_TICKS / 20).withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal(""));
-        tooltip.add(Component.literal("§8Нажмите [" + keyName + "] для активации").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.activate_key", keyName).withStyle(ChatFormatting.DARK_GRAY));
     }
 
     @Override
@@ -72,7 +73,7 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
         boolean manaConsumed = player.getCapability(ManaProvider.MANA).map(mana -> {
             if (!mana.consumeMana(MANA_COST)) {
                 player.displayClientMessage(
-                        Component.literal("§cНедостаточно маны! (Нужно: " + (int)MANA_COST + ")"),
+                        Component.translatable("message.maniacrev.not_enough_mana", (int) MANA_COST),
                         true
                 );
                 return false;
@@ -96,7 +97,7 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
         ArmorAbilityCooldownManager.syncToClient(player, this, DURATION_TICKS / 20);
 
         player.displayClientMessage(
-                Component.literal("§a✓ " + getAbilityName() + " активирована! (" + (DURATION_TICKS / 20) + "с)"),
+                Component.translatable("message.maniacrev.ability.activated", getAbilityName(), DURATION_TICKS / 20),
                 false
         );
 
@@ -116,7 +117,7 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
         if (ArmorAbilityCooldownManager.isOnCooldown(player, this)) {
             int remaining = ArmorAbilityCooldownManager.getRemainingCooldown(player, this);
             player.displayClientMessage(
-                    Component.literal("§cКулдаун: " + (remaining / 20) + "с"),
+                    Component.translatable("message.maniacrev.ability.cooldown", remaining / 20),
                     true
             );
             return false;
@@ -124,7 +125,7 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
 
         if (isAbilityActive(player)) {
             player.displayClientMessage(
-                    Component.literal("§cСпособность уже активна!"),
+                    Component.translatable("message.maniacrev.ability.already_active"),
                     true
             );
             return false;
@@ -150,7 +151,7 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
 
     @Override
     public String getAbilityName() {
-        return "Спасибо папаша";
+        return Component.translatable("ability.maniacrev.medical_mask.name").getString();
     }
 
     private String getActivationKeyName() {
@@ -159,7 +160,9 @@ public class MedicalMaskItem extends ArmorItem implements IActivatableArmor, ITi
 
     @Override
     public String getAbilityDescription() {
-        return "Входящий урон делится с ближайшим союзником (50%) в радиусе 4 блоков";
+        return Component.translatable("ability.maniacrev.medical_mask.desc",
+                Math.round(MedicActiveAbility.DAMAGE_SHARE_FRACTION * 100.0F),
+                (int) MedicActiveAbility.DAMAGE_SHARE_RADIUS).getString();
     }
 
     /**

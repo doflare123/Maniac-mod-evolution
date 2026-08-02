@@ -40,7 +40,7 @@ public class GuideScreen extends Screen {
     }
 
     public GuideScreen(GuidePage.PageType initialPage) {
-        super(Component.literal("Гайд по режиму"));
+        super(Component.translatable("guide.maniacrev.title"));
         GuideProgressClient.markCurrentGuideSeen();
 
         mainPage = new MainPage(this);

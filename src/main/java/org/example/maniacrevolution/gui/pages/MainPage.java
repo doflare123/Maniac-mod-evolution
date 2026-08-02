@@ -28,27 +28,27 @@ public class MainPage extends GuidePage {
         int rightX = leftX + cardWidth + gap;
         int secondY = startY + cardHeight + gap;
 
-        cards.add(new MenuCard("01", "ПОЛНЫЙ ГАЙД", "Правила, подготовка к матчу и все игровые механики.",
+        cards.add(new MenuCard("01", tr("guide.maniacrev.main.tutorial.title"), tr("guide.maniacrev.main.tutorial.desc"),
                 leftX, startY, cardWidth, cardHeight, GuideTheme.GOLD, PageType.TUTORIAL));
-        cards.add(new MenuCard("02", "ПЕРСОНАЖИ", "Выжившие, маньяки, предметы и уникальные особенности.",
+        cards.add(new MenuCard("02", tr("guide.maniacrev.main.characters.title"), tr("guide.maniacrev.main.characters.desc"),
                 rightX, startY, cardWidth, cardHeight, GuideTheme.PURPLE, PageType.CHARACTERS));
-        cards.add(new MenuCard("03", "ПЕРКИ", "Пассивные и активные способности для обеих команд.",
+        cards.add(new MenuCard("03", tr("guide.maniacrev.main.perks.title"), tr("guide.maniacrev.main.perks.desc"),
                 leftX, secondY, cardWidth, cardHeight, GuideTheme.GREEN, PageType.PERKS));
-        cards.add(new MenuCard("04", "КАРТЫ", "Размер, сложность и особенности каждой игровой арены.",
+        cards.add(new MenuCard("04", tr("guide.maniacrev.main.maps.title"), tr("guide.maniacrev.main.maps.desc"),
                 rightX, secondY, cardWidth, cardHeight, GuideTheme.RED, PageType.MAPS));
     }
 
     @Override
     public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
-        GuideTheme.drawPageTitle(gui, font, "БАЗА ЗНАНИЙ",
-                "Всё необходимое для следующего матча",
+        GuideTheme.drawPageTitle(gui, font, tr("guide.maniacrev.main.title"),
+                tr("guide.maniacrev.main.subtitle"),
                 guiLeft + guiWidth / 2, guiTop + 10, GuideTheme.GOLD);
 
         for (MenuCard card : cards) {
             card.render(gui, mouseX, mouseY);
         }
 
-        String hint = "Выберите раздел  •  ESC — закрыть";
+        String hint = tr("guide.maniacrev.main.hint");
         gui.drawCenteredString(font, hint, guiLeft + guiWidth / 2,
                 guiTop + guiHeight - 17, GuideTheme.TEXT_MUTED);
     }
@@ -117,7 +117,7 @@ public class MainPage extends GuidePage {
                         GuideTheme.TEXT_SECONDARY, false);
             }
 
-            String action = hovered ? "ОТКРЫТЬ  →" : "→";
+            String action = hovered ? tr("guide.maniacrev.open") + "  →" : "→";
             gui.drawString(font, action, x + width - font.width(action) - 12,
                     y + height - 17, animatedAccent, false);
         }

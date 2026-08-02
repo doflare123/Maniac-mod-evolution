@@ -37,22 +37,8 @@ public class HedgehogSkinPerk extends Perk {
 
     @Override
     public Component getDescription() {
-        return Component.literal("При активации в течение ")
-                .withStyle(ChatFormatting.WHITE)
-                .append(Component.literal(DURATION_SECONDS + " сек.")
-                        .withStyle(ChatFormatting.YELLOW))
-                .append(Component.literal(" каждый удар по тебе дополнительно наносит ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal((int)(ThornEffect.REFLECT_PERCENT * 100) + "% урона")
-                        .withStyle(ChatFormatting.RED))
-                .append(Component.literal(" обратно атакующему. Кулдаун: ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal(COOLDOWN_SEC + " сек.")
-                        .withStyle(ChatFormatting.RED))
-                .append(Component.literal(" Стоимость: ")
-                        .withStyle(ChatFormatting.WHITE))
-                .append(Component.literal((int) MANA_COST + " маны.")
-                        .withStyle(ChatFormatting.AQUA));
+        return Component.translatable("perk.maniacrev.hedgehog_skin.desc",
+                DURATION_SECONDS, (int) (ThornEffect.REFLECT_PERCENT * 100));
     }
 
     // ── Активация ─────────────────────────────────────────────────────────
