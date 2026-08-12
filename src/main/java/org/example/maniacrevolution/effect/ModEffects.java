@@ -84,6 +84,42 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> JACKPOT =
             MOB_EFFECTS.register("jackpot", JackpotEffect::new);
 
+    public static final RegistryObject<MobEffect> ACCELERATION =
+            MOB_EFFECTS.register("acceleration", AccelerationEffect::new);
+
+    public static final RegistryObject<MobEffect> SCREAM =
+            MOB_EFFECTS.register("scream", ScreamEffect::new);
+
+    public static final RegistryObject<MobEffect> SLOWDOWN =
+            MOB_EFFECTS.register("slowdown", SlowdownEffect::new);
+
+    public static final RegistryObject<MobEffect> PAINT_PROTECTION =
+            MOB_EFFECTS.register("paint_protection", PaintProtectionEffect::new);
+
+    public static final RegistryObject<MobEffect> BOUQUET =
+            MOB_EFFECTS.register("bouquet", BouquetEffect::new);
+
+    public static final RegistryObject<MobEffect> SHAKEN_MEMORY =
+            MOB_EFFECTS.register("shaken_memory", ShakenMemoryEffect::new);
+
+    public static final RegistryObject<MobEffect> FORGET_ME_NOT_CALL =
+            MOB_EFFECTS.register("forget_me_not_call", ForgetMeNotCallEffect::new);
+
+    public static final RegistryObject<MobEffect> ROSE_COLORED_GLASSES =
+            MOB_EFFECTS.register("rose_colored_glasses", RoseColoredGlassesEffect::new);
+
+    public static final RegistryObject<MobEffect> ORCHID_RECORDING =
+            MOB_EFFECTS.register("orchid_recording", OrchidRecordingEffect::new);
+
+    public static final RegistryObject<MobEffect> SBER_SPROUT_SESSION =
+            MOB_EFFECTS.register("sber_sprout_session", SberSproutSessionEffect::new);
+
+    public static final RegistryObject<MobEffect> RED_GUIDANCE =
+            MOB_EFFECTS.register("red_guidance", RedGuidanceEffect::new);
+
+    public static final RegistryObject<MobEffect> GREEN_CHARGE =
+            MOB_EFFECTS.register("green_charge", GreenChargeEffect::new);
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }

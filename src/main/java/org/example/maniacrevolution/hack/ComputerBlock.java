@@ -21,6 +21,9 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.example.maniacrevolution.ModItems;
+import org.example.maniacrevolution.sbersprout.SberSproutManager;
+import org.example.maniacrevolution.colorroulette.ColorRouletteManager;
 
 import javax.annotation.Nullable;
 
@@ -79,8 +82,20 @@ public class ComputerBlock extends BaseEntityBlock {
             return InteractionResult.CONSUME;
         }
 
+        // Синяя карта рулетки применяется к незавершённому компьютеру обеими командами.
+        if (sp.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.ADVENTURE
+                && player.getItemInHand(hand).is(ModItems.BLUE_COLOR_CARD.get())) {
+            return ColorRouletteManager.useBlueCard(sp, pos, be, player.getItemInHand(hand))
+                    ? InteractionResult.CONSUME : InteractionResult.FAIL;
+        }
+
         // Adventure + survivors: взлом
         if (isSurvivorAdventure(sp)) {
+            if (player.getItemInHand(hand).is(ModItems.SBER_SPROUT.get())) {
+                return SberSproutManager.tryPlant(sp, pos, be,
+                        player.getItemInHand(hand))
+                        ? InteractionResult.CONSUME : InteractionResult.FAIL;
+            }
             HackManager.get().onPlayerActivate(sp, pos, be.getComputerId());
             return InteractionResult.CONSUME;
         }

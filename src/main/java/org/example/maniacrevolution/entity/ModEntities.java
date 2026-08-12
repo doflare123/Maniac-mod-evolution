@@ -89,6 +89,40 @@ public class ModEntities {
                             .fireImmune()
                             .build("fear_chaser"));
 
+    public static final RegistryObject<EntityType<ForgetMeNotEntity>> FORGET_ME_NOT =
+            ENTITIES.register("forget_me_not", () ->
+                    EntityType.Builder.<ForgetMeNotEntity>of(
+                                    ForgetMeNotEntity::new, MobCategory.MISC)
+                            .sized(0.72F, 0.82F)
+                            .clientTrackingRange(64)
+                            .updateInterval(20)
+                            .noSummon()
+                            .fireImmune()
+                            .build("forget_me_not"));
+
+    public static final RegistryObject<EntityType<PinkOrchidIllusionEntity>> PINK_ORCHID_ILLUSION =
+            ENTITIES.register("pink_orchid_illusion", () ->
+                    EntityType.Builder.<PinkOrchidIllusionEntity>of(
+                                    PinkOrchidIllusionEntity::new, MobCategory.MISC)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(128)
+                            .updateInterval(1)
+                            .noSave()
+                            .noSummon()
+                            .fireImmune()
+                            .build("pink_orchid_illusion"));
+
+    public static final RegistryObject<EntityType<RedColorCardProjectile>> RED_COLOR_CARD_PROJECTILE =
+            ENTITIES.register("red_color_card_projectile", () ->
+                    EntityType.Builder.<RedColorCardProjectile>of(
+                                    RedColorCardProjectile::new, MobCategory.MISC)
+                            .sized(0.25F, 0.25F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .noSave()
+                            .noSummon()
+                            .build("red_color_card_projectile"));
+
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
     }

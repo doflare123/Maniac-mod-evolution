@@ -26,6 +26,7 @@ import org.example.maniacrevolution.block.entity.ModBlockEntities;
 import org.example.maniacrevolution.client.model.HookModel;
 import org.example.maniacrevolution.client.model.TotemModel;
 import org.example.maniacrevolution.client.renderer.HookRenderer;
+import org.example.maniacrevolution.client.renderer.ForgetMeNotRenderer;
 import org.example.maniacrevolution.client.renderer.TotemRenderer;
 import org.example.maniacrevolution.command.*;
 import org.example.maniacrevolution.cosmetic.CosmeticRegistry;
@@ -36,6 +37,7 @@ import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.entity.TotemEntity;
 import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.maze.MazeTickHandler;
 import org.example.maniacrevolution.hack.HackCommands;
 import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.hack.ModHackRegistry;
@@ -97,8 +99,11 @@ public class Maniacrev {
         ModHackRegistry.ITEMS.register(modEventBus);
         // =========================================================
 
+        MinecraftForge.EVENT_BUS.register(new MazeTickHandler());
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(new GameManager());
         MinecraftForge.EVENT_BUS.register(new PlayerDataManager());
+        MinecraftForge.EVENT_BUS.register(new org.example.maniacrevolution.downed.DownedEventHandler());
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -202,6 +207,7 @@ public class Maniacrev {
         public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(ModEntities.HOOK.get(), HookRenderer::new);
             event.registerEntityRenderer(ModEntities.SHAMAN_TOTEM.get(), TotemRenderer::new);
+            event.registerEntityRenderer(ModEntities.FORGET_ME_NOT.get(), ForgetMeNotRenderer::new);
         }
 
         @SubscribeEvent
@@ -223,6 +229,9 @@ public class Maniacrev {
             // Тотем шамана
             event.put(ModEntities.SHAMAN_TOTEM.get(),
                     TotemEntity.createAttributes().build());
+
+            event.put(ModEntities.PINK_ORCHID_ILLUSION.get(),
+                    net.minecraft.world.entity.LivingEntity.createLivingAttributes().build());
         }
     }
 }

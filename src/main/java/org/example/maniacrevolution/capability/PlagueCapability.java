@@ -8,6 +8,8 @@ import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SyncPlaguePacket;
 
+import java.util.UUID;
+
 /**
  * Capability для хранения накопленного времени чумы на игроке.
  *
@@ -34,6 +36,9 @@ public class PlagueCapability {
     /** Флаг: был ли эффект на игроке в ПРОШЛОМ тике (для инкремента) */
     private boolean hadEffectLastTick = false;
 
+    /** Последний маньяк, применивший чуму; нужен для отложенного урона. */
+    private UUID sourceManiacId;
+
     // ─── Геттеры / сеттеры ───────────────────────────────────────────────────
 
     public int getAccumulatedTicks() {
@@ -57,6 +62,14 @@ public class PlagueCapability {
         this.hadEffectLastTick = value;
     }
 
+    public UUID getSourceManiacId() {
+        return sourceManiacId;
+    }
+
+    public void setSourceManiacId(UUID sourceManiacId) {
+        this.sourceManiacId = sourceManiacId;
+    }
+
     // ─── Накопление ──────────────────────────────────────────────────────────
 
     /**
@@ -77,11 +90,15 @@ public class PlagueCapability {
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putInt("accumulatedTicks", accumulatedTicks);
+        if (sourceManiacId != null) {
+            tag.putUUID("sourceManiacId", sourceManiacId);
+        }
         return tag;
     }
 
     public void deserializeNBT(CompoundTag tag) {
         accumulatedTicks = tag.getInt("accumulatedTicks");
+        sourceManiacId = tag.hasUUID("sourceManiacId") ? tag.getUUID("sourceManiacId") : null;
     }
 
     // ─── Синхронизация с клиентом ────────────────────────────────────────────

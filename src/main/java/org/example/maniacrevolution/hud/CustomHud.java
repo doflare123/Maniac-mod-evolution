@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.hud;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -18,12 +19,15 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.capability.AddictionCapability;
 import org.example.maniacrevolution.client.ClientAddictionData;
+import org.example.maniacrevolution.client.BouquetClientHandler;
 import org.example.maniacrevolution.client.ClientFurySwipesData;
 import org.example.maniacrevolution.client.ClientPlagueData;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.ClientGameState;
 import org.example.maniacrevolution.data.ClientPlayerData;
+import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.fleshheap.ClientFleshHeapData;
+import org.example.maniacrevolution.flower.FlowerVariant;
 import org.example.maniacrevolution.item.IItemWithAbility;
 import org.example.maniacrevolution.item.ITimedAbility;
 import org.example.maniacrevolution.item.armor.MedicalMaskItem;
@@ -31,6 +35,7 @@ import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.mana.ClientManaData;
 import org.example.maniacrevolution.perk.PerkType;
+import org.example.maniacrevolution.perk.perks.maniac.BouquetToTheOtherSidePerk;
 import org.example.maniacrevolution.settings.ClientGameSettings;
 import org.example.maniacrevolution.util.PlayerModeUtil;
 
@@ -61,6 +66,12 @@ public class CustomHud implements IGuiOverlay {
     private static final int RESOURCE_BAR_WIDTH = 120;
     private static final int RESOURCE_BAR_HEIGHT = 14;
     private static final int ADDICTION_INDICATOR_WIDTH = 68;
+    private static final int BOUQUET_FLOWER_ICON_CENTER = 8;
+    private static final int BOUQUET_FLOWER_HORIZONTAL_SPACING = 5;
+    private static final int BOUQUET_FLOWER_CENTER_Y_OFFSET = 2;
+    private static final int BOUQUET_FLOWER_SIDE_Y_OFFSET = 1;
+    private static final float BOUQUET_FLOWER_SCALE = 0.68F;
+    private static final float BOUQUET_FLOWER_SIDE_ROTATION_DEGREES = 22.0F;
 
     private static final int PANEL_BG = 0xB5101216;
     private static final int PANEL_BORDER = 0xCC59616C;
@@ -82,6 +93,8 @@ public class CustomHud implements IGuiOverlay {
 
     private static final long ITEM_NAME_DURATION_MS = 1500L;
     private static final long ITEM_NAME_FADE_MS = 400L;
+    private static int activePerkCenterX = Integer.MIN_VALUE;
+    private static int activePerkCenterY = Integer.MIN_VALUE;
 
     private final HudAnimationState animation = new HudAnimationState();
     private final Map<MobEffect, TimedEffectState> timedEffectStates = new HashMap<>();
@@ -200,7 +213,8 @@ public class CustomHud implements IGuiOverlay {
             state = updateTimedEffectState(effect);
         }
 
-        float progress = Mth.clamp((remainingDuration - partialTick)
+        float progress = effect.isInfiniteDuration() ? 1.0F
+                : Mth.clamp((remainingDuration - partialTick)
                 / (float) state.totalDuration, 0.0f, 1.0f);
 
         renderFilledCircle(gui, x, y, TIMED_EFFECT_SIZE, 0xD0181B20);
@@ -212,6 +226,12 @@ public class CustomHud implements IGuiOverlay {
         renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, 1.0f, 0xB05B626C);
         int effectColor = lerpColor(0xFF000000 | effectType.getColor(), 0xFFFFFFFF, 0.25f);
         renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, progress, effectColor);
+        if (effectType == ModEffects.GREEN_CHARGE.get()) {
+            String stacks = Integer.toString(effect.getAmplifier() + 1);
+            int textX = x + TIMED_EFFECT_SIZE - Minecraft.getInstance().font.width(stacks) - 1;
+            gui.drawString(Minecraft.getInstance().font, stacks, textX,
+                    y + TIMED_EFFECT_SIZE - 9, 0xFFFFFFFF, true);
+        }
     }
 
     private TimedEffectState updateTimedEffectState(MobEffectInstance effect) {
@@ -232,7 +252,8 @@ public class CustomHud implements IGuiOverlay {
     }
 
     private static boolean isVisibleTimedEffect(MobEffectInstance effect) {
-        return effect.showIcon() && !effect.isInfiniteDuration();
+        return effect.showIcon() && (!effect.isInfiniteDuration()
+                || effect.getEffect() == ModEffects.GREEN_CHARGE.get());
     }
 
     private static int getTimedEffectPriority(MobEffectInstance effect) {
@@ -300,6 +321,10 @@ public class CustomHud implements IGuiOverlay {
 
         for (int i = 0; i < perkLimit; i++) {
             String keyName = i == activeIndex ? activateKey : switchKey;
+            if (i == activeIndex) {
+                activePerkCenterX = currentX + PERK_ICON_SIZE / 2;
+                activePerkCenterY = effectsY + PERK_ICON_SIZE / 2;
+            }
             if (i < perks.size()) {
                 renderPerkSlot(gui, perks.get(i), currentX, effectsY, i == activeIndex,
                         keyName);
@@ -410,6 +435,56 @@ public class CustomHud implements IGuiOverlay {
                     x + PERK_ICON_SIZE - 12, y + PERK_ICON_SIZE - 12);
         }
         renderKeyHint(gui, keyName, x + 1, y + 1, selected ? 0xFFE5B94F : 0xFFB8C0C9);
+        if (BouquetToTheOtherSidePerk.ID.equals(perk.id())) {
+            renderBouquet(gui, x, y);
+        }
+    }
+
+    public static int getActivePerkCenterX(int screenWidth) {
+        return activePerkCenterX == Integer.MIN_VALUE ? screenWidth / 2 : activePerkCenterX;
+    }
+
+    public static int getActivePerkCenterY(int screenHeight) {
+        return activePerkCenterY == Integer.MIN_VALUE ? screenHeight - HUD_HEIGHT / 2
+                : activePerkCenterY;
+    }
+
+    private void renderBouquet(GuiGraphics gui, int perkX, int perkY) {
+        List<FlowerVariant> flowers = BouquetClientHandler.getHudFlowers();
+        int count = Math.min(BouquetToTheOtherSidePerk.MAX_FLOWERS, flowers.size());
+        for (int index = 0; index < count; index++) {
+            FlowerVariant variant = flowers.get(index);
+            ItemStack stack = new ItemStack(
+                    BuiltInRegistries.BLOCK.get(variant.getBlockId()).asItem()
+            );
+            if (stack.isEmpty()) {
+                continue;
+            }
+
+            float centeredIndex = index - (count - 1) / 2.0F;
+            float offsetX = centeredIndex * BOUQUET_FLOWER_HORIZONTAL_SPACING;
+            float rotation = count == 1
+                    ? 0.0F
+                    : centeredIndex * BOUQUET_FLOWER_SIDE_ROTATION_DEGREES;
+            int offsetY = index == count / 2 && count % 2 == 1
+                    ? BOUQUET_FLOWER_CENTER_Y_OFFSET
+                    : BOUQUET_FLOWER_SIDE_Y_OFFSET;
+
+            gui.pose().pushPose();
+            gui.pose().translate(
+                    perkX + PERK_ICON_SIZE / 2.0F + offsetX,
+                    perkY + offsetY,
+                    250.0F
+            );
+            gui.pose().mulPose(Axis.ZP.rotationDegrees(rotation));
+            gui.pose().scale(BOUQUET_FLOWER_SCALE, BOUQUET_FLOWER_SCALE, 1.0F);
+            gui.renderItem(
+                    stack,
+                    -BOUQUET_FLOWER_ICON_CENTER,
+                    -BOUQUET_FLOWER_ICON_CENTER
+            );
+            gui.pose().popPose();
+        }
     }
 
     private void renderPerkChargeBadge(GuiGraphics gui, ClientPlayerData.ClientPerkData perk,

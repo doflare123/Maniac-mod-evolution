@@ -27,6 +27,7 @@ class NightmarePlayerState {
     List<ItemStack> savedMainInventory;
     List<ItemStack> savedArmorInventory;
     List<ItemStack> savedOffhandInventory;
+    UUID responsibleKeeperId;
 
     boolean isInTrial() {
         return trialType != NightmareTrialType.NONE;
@@ -43,5 +44,6 @@ class NightmarePlayerState {
         trialArea = null;
         trialEndsAt = 0L;
         raceStartsAt = 0L;
+        responsibleKeeperId = null;
     }
 }

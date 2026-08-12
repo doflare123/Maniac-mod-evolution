@@ -9,6 +9,7 @@ public class DownedData {
     // ── Константы ──────────────────────────────────────────────────────────
     /** Тиков до автосмерти (60 сек × 20 тиков) */
     public static final int DOWNED_TIMEOUT_TICKS = 60 * 20;
+    public static final float DEFAULT_SELF_REVIVE_MANA_MULTIPLIER = 1.0F;
 
     /** Тиков нужно держать ПКМ чтобы поднять (5 сек × 20 тиков) */
     public static final int REVIVE_HOLD_TICKS = 5 * 20;
@@ -20,6 +21,12 @@ public class DownedData {
 
     /** Сколько тиков игрок уже лежит */
     private int downedTicksElapsed = 0;
+
+    /** Индивидуальный лимит текущего нокдауна. */
+    private int downedTimeoutTicks = DOWNED_TIMEOUT_TICKS;
+
+    /** Множитель цены самостоятельного подъёма в текущем нокдауне. */
+    private float selfReviveManaMultiplier = DEFAULT_SELF_REVIVE_MANA_MULTIPLIER;
 
     /**
      * UUID игрока который сейчас поднимает этого игрока.
@@ -63,6 +70,24 @@ public class DownedData {
     public void setDownedTicksElapsed(int t) { this.downedTicksElapsed = t; }
     public void incrementDownedTicks() { downedTicksElapsed++; }
 
+    public int getDownedTimeoutTicks() { return downedTimeoutTicks; }
+    public void setDownedTimeoutTicks(int ticks) {
+        downedTimeoutTicks = Math.max(1, ticks);
+    }
+
+    public float getSelfReviveManaMultiplier() { return selfReviveManaMultiplier; }
+    public void setSelfReviveManaMultiplier(float multiplier) {
+        selfReviveManaMultiplier = Math.max(
+                DEFAULT_SELF_REVIVE_MANA_MULTIPLIER,
+                multiplier
+        );
+    }
+
+    public void resetDownedModifiers() {
+        downedTimeoutTicks = DOWNED_TIMEOUT_TICKS;
+        selfReviveManaMultiplier = DEFAULT_SELF_REVIVE_MANA_MULTIPLIER;
+    }
+
     public UUID getReviverUUID() { return reviverUUID; }
     public void setReviverUUID(UUID uuid) { this.reviverUUID = uuid; }
 
@@ -88,6 +113,7 @@ public class DownedData {
     public void fullReset() {
         state = DownedState.ALIVE;
         downedTicksElapsed = 0;
+        resetDownedModifiers();
         reviverUUID = null;
         reviveProgressTicks = 0;
         usedSecondChance = false;
@@ -114,6 +140,8 @@ public class DownedData {
         CompoundTag tag = new CompoundTag();
         tag.putString("state", state.name());
         tag.putInt("downedTicks", downedTicksElapsed);
+        tag.putInt("downedTimeoutTicks", downedTimeoutTicks);
+        tag.putFloat("selfReviveManaMultiplier", selfReviveManaMultiplier);
         tag.putBoolean("usedSecondChance", usedSecondChance);
         tag.putDouble("originalMaxHp", originalMaxHp);
         // reviverUUID и reviveProgressTicks не сохраняем — они сессионные
@@ -127,6 +155,13 @@ public class DownedData {
             state = DownedState.ALIVE;
         }
         downedTicksElapsed = tag.getInt("downedTicks");
+        downedTimeoutTicks = tag.contains("downedTimeoutTicks")
+                ? Math.max(1, tag.getInt("downedTimeoutTicks"))
+                : DOWNED_TIMEOUT_TICKS;
+        selfReviveManaMultiplier = tag.contains("selfReviveManaMultiplier")
+                ? Math.max(DEFAULT_SELF_REVIVE_MANA_MULTIPLIER,
+                tag.getFloat("selfReviveManaMultiplier"))
+                : DEFAULT_SELF_REVIVE_MANA_MULTIPLIER;
         usedSecondChance = tag.getBoolean("usedSecondChance");
         originalMaxHp = tag.contains("originalMaxHp") ? tag.getDouble("originalMaxHp") : -1;
         reviverUUID = null;

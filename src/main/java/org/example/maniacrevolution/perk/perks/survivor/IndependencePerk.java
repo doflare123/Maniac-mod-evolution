@@ -9,6 +9,7 @@ import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.downed.DownedData;
 import org.example.maniacrevolution.downed.DownedEventHandler;
 import org.example.maniacrevolution.downed.DownedState;
+import org.example.maniacrevolution.mana.ManaProvider;
 import org.example.maniacrevolution.perk.*;
 
 /**
@@ -48,7 +49,7 @@ public class IndependencePerk extends Perk {
     public boolean meetsActivationCondition(ServerPlayer player) {
         DownedData data = DownedCapability.get(player);
         if (data == null || data.getState() != DownedState.DOWNED) return false;
-        int remaining = DownedData.DOWNED_TIMEOUT_TICKS - data.getDownedTicksElapsed();
+        int remaining = data.getDownedTimeoutTicks() - data.getDownedTicksElapsed();
         return remaining <= TRIGGER_SECONDS * 20;
     }
 
@@ -67,7 +68,7 @@ public class IndependencePerk extends Perk {
         }
 
         // Проверяем что осталось ≤ TRIGGER_SECONDS секунд
-        int remaining = DownedData.DOWNED_TIMEOUT_TICKS - data.getDownedTicksElapsed();
+        int remaining = data.getDownedTimeoutTicks() - data.getDownedTicksElapsed();
         int triggerTicks = TRIGGER_SECONDS * 20;
 
         if (remaining > triggerTicks) {
@@ -85,6 +86,34 @@ public class IndependencePerk extends Perk {
         selfRevive(player, data);
     }
 
+    @Override
+    public boolean hasMana(ServerPlayer player) {
+        float adjustedCost = getAdjustedManaCost(player);
+        return player.getCapability(ManaProvider.MANA)
+                .map(mana -> mana.getMana() >= adjustedCost)
+                .orElse(false);
+    }
+
+    @Override
+    public boolean consumeMana(ServerPlayer player) {
+        float adjustedCost = getAdjustedManaCost(player);
+        return player.getCapability(ManaProvider.MANA).map(mana -> {
+            if (mana.getMana() < adjustedCost) {
+                return false;
+            }
+            mana.consumeMana(adjustedCost);
+            return true;
+        }).orElse(false);
+    }
+
+    private static float getAdjustedManaCost(ServerPlayer player) {
+        DownedData data = DownedCapability.get(player);
+        float multiplier = data == null
+                ? DownedData.DEFAULT_SELF_REVIVE_MANA_MULTIPLIER
+                : data.getSelfReviveManaMultiplier();
+        return MANA_COST * multiplier;
+    }
+
     // ── Логика самоподъёма ────────────────────────────────────────────────
 
     private void selfRevive(ServerPlayer player, DownedData data) {
@@ -93,6 +122,7 @@ public class IndependencePerk extends Perk {
         data.setState(DownedState.WEAKENED);
         DownedEventHandler.removeDownedEffectsPublic(player);
         data.setDownedTicksElapsed(0);
+        data.resetDownedModifiers();
 
         // Убираем эффекты нокдауна и восстанавливаем позу
         DownedEventHandler.clearHudForNearby(player);

@@ -22,6 +22,10 @@ public class SwitchPerkPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
 
+            if (org.example.maniacrevolution.colorroulette.ColorRouletteManager.isRolling(player)) {
+                return;
+            }
+
             PlayerData data = PlayerDataManager.get(player);
             data.switchActivePerk();
             PlayerDataManager.syncToClient(player);

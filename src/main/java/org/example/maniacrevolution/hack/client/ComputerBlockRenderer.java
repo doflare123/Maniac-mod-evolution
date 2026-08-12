@@ -1,20 +1,27 @@
 package org.example.maniacrevolution.hack.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.example.maniacrevolution.hack.ComputerBlockEntity;
 import org.example.maniacrevolution.hack.ModHackRegistry;
+import org.example.maniacrevolution.client.BudDispatcherClientData;
+import org.example.maniacrevolution.client.BudDispatcherTextures;
+import org.example.maniacrevolution.perk.perks.maniac.BudDispatcherPerk;
 
 /**
  * Рендерер блока компьютера.
@@ -23,6 +30,16 @@ import org.example.maniacrevolution.hack.ModHackRegistry;
  *       ComputerBlockRenderer::new);
  */
 public class ComputerBlockRenderer implements BlockEntityRenderer<ComputerBlockEntity> {
+
+    private static final float DECORATION_PLANE_Z = -0.003F;
+    private static final ResourceLocation VINE_TEXTURE = new ResourceLocation(
+            "maniacrev", "textures/bud_dispatcher/vine.png");
+    private static final ResourceLocation BUD_TEXTURE = new ResourceLocation(
+            "maniacrev", "textures/bud_dispatcher/bud.png");
+    private static final float[] BUD_X = {-0.29F, -0.16F, 0.02F, 0.20F, 0.30F, -0.31F};
+    private static final float[] BUD_Y = {0.26F, 0.31F, 0.30F, 0.29F, 0.18F, -0.13F};
+    private static final float[] BUD_ROTATION = {-24.0F, -10.0F, 6.0F,
+            18.0F, 34.0F, -42.0F};
 
     public ComputerBlockRenderer(BlockEntityRendererProvider.Context ctx) {}
 
@@ -84,8 +101,119 @@ public class ComputerBlockRenderer implements BlockEntityRenderer<ComputerBlockE
 
         poseStack.popPose();
 
+        renderFlowerDecoration(be, poseStack, buffers, facing, packedLight, packedOverlay);
+
         // ── Текст на мониторе ─────────────────────────────────────────────────
         renderMonitorText(be, poseStack, buffers, facing);
+    }
+
+    private void renderFlowerDecoration(ComputerBlockEntity be,
+                                        PoseStack poseStack, MultiBufferSource buffers,
+                                        Direction facing, int packedLight, int packedOverlay) {
+        if (!BudDispatcherClientData.canSeeFlowers()) return;
+
+        int flowerIndex = BudDispatcherClientData.getFlowerIndex(be.getComputerId());
+        if (flowerIndex < 0) return;
+        int stage = BudDispatcherClientData.getStage(be.getComputerId());
+        if (stage < 0) {
+            stage = BudDispatcherPerk.getWiltStage(be.getHackProgress());
+        }
+
+        poseStack.pushPose();
+        poseStack.translate(0.5D, 0.75D, 0.5D);
+        float yRot = switch (facing) {
+            case SOUTH -> 180.0F;
+            case WEST -> 90.0F;
+            case EAST -> 270.0F;
+            default -> 0.0F;
+        };
+        poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
+        poseStack.translate(0.0D, 0.0D, -0.385D);
+
+        int vineColor = darkenColor(0xFF42C63C, stage * 0.10F);
+        VertexConsumer vineConsumer = buffers.getBuffer(
+                RenderType.entityCutoutNoCull(VINE_TEXTURE));
+        renderTintedSprite(poseStack, vineConsumer, -0.315F, 0.04F,
+                0.065F, 0.52F, -4.0F, vineColor, packedLight, packedOverlay);
+        renderTintedSprite(poseStack, vineConsumer, 0.315F, 0.05F,
+                0.065F, 0.50F, 5.0F, vineColor, packedLight, packedOverlay);
+        renderTintedSprite(poseStack, vineConsumer, 0.0F, 0.315F,
+                0.065F, 0.52F, 90.0F, vineColor, packedLight, packedOverlay);
+
+        int budColor = darkenColor(0xFFFFFFFF, stage * 0.09F);
+        int visibleBuds = Math.max(1, BUD_X.length - stage);
+        VertexConsumer budConsumer = buffers.getBuffer(
+                RenderType.entityCutoutNoCull(BUD_TEXTURE));
+        float budMinV = Mth.clamp(flowerIndex, 0,
+                BudDispatcherPerk.FLOWER_VARIANT_COUNT - 1)
+                / (float) BudDispatcherPerk.FLOWER_VARIANT_COUNT;
+        float budMaxV = (Mth.clamp(flowerIndex, 0,
+                BudDispatcherPerk.FLOWER_VARIANT_COUNT - 1) + 1)
+                / (float) BudDispatcherPerk.FLOWER_VARIANT_COUNT;
+        for (int index = 0; index < visibleBuds; index++) {
+            float wiltDrop = stage * (0.004F + (index % 2) * 0.002F);
+            float rotation = BUD_ROTATION[index]
+                    + (index < 3 ? stage * 4.0F : -stage * 4.0F);
+            float width = 0.075F + (index % 3) * 0.008F;
+            renderTintedSprite(poseStack, budConsumer, BUD_X[index],
+                    BUD_Y[index] - wiltDrop, width, width * 1.16F,
+                    rotation, budColor, 0.0F, budMinV, 1.0F, budMaxV,
+                    packedLight, packedOverlay);
+        }
+        poseStack.popPose();
+    }
+
+    private static void renderTintedSprite(PoseStack poseStack, VertexConsumer consumer,
+                                           float centerX, float centerY,
+                                           float width, float height, float rotationDegrees,
+                                           int color, int packedLight, int packedOverlay) {
+        renderTintedSprite(poseStack, consumer, centerX, centerY, width, height,
+                rotationDegrees, color, 0.0F, 0.0F, 1.0F, 1.0F,
+                packedLight, packedOverlay);
+    }
+
+    private static void renderTintedSprite(PoseStack poseStack, VertexConsumer consumer,
+                                           float centerX, float centerY,
+                                           float width, float height, float rotationDegrees,
+                                           int color, float minU, float minV,
+                                           float maxU, float maxV,
+                                           int packedLight, int packedOverlay) {
+        poseStack.pushPose();
+        poseStack.translate(centerX, centerY, DECORATION_PLANE_Z);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(rotationDegrees));
+        PoseStack.Pose pose = poseStack.last();
+        float halfWidth = width * 0.5F;
+        float halfHeight = height * 0.5F;
+        decorationVertex(consumer, pose, -halfWidth, halfHeight,
+                minU, minV, color, packedLight, packedOverlay);
+        decorationVertex(consumer, pose, halfWidth, halfHeight,
+                maxU, minV, color, packedLight, packedOverlay);
+        decorationVertex(consumer, pose, halfWidth, -halfHeight,
+                maxU, maxV, color, packedLight, packedOverlay);
+        decorationVertex(consumer, pose, -halfWidth, -halfHeight,
+                minU, maxV, color, packedLight, packedOverlay);
+        poseStack.popPose();
+    }
+
+    private static void decorationVertex(VertexConsumer consumer, PoseStack.Pose pose,
+                                         float x, float y, float u, float v, int color,
+                                         int packedLight, int packedOverlay) {
+        consumer.vertex(pose.pose(), x, y, 0.0F)
+                .color((color >> 16) & 0xFF, (color >> 8) & 0xFF,
+                        color & 0xFF, (color >>> 24) & 0xFF)
+                .uv(u, v)
+                .overlayCoords(packedOverlay)
+                .uv2(packedLight)
+                .normal(pose.normal(), 0.0F, 0.0F, -1.0F)
+                .endVertex();
+    }
+
+    private static int darkenColor(int color, float amount) {
+        float multiplier = 1.0F - Mth.clamp(amount, 0.0F, 0.85F);
+        int red = Math.round(((color >> 16) & 0xFF) * multiplier);
+        int green = Math.round(((color >> 8) & 0xFF) * multiplier);
+        int blue = Math.round((color & 0xFF) * multiplier);
+        return (color & 0xFF000000) | (red << 16) | (green << 8) | blue;
     }
 
     private void renderMonitorText(ComputerBlockEntity be,

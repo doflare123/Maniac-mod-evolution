@@ -75,6 +75,14 @@ public class ModKeybinds {
             CATEGORY
     );
 
+    public static final KeyMapping PAINT_QTE_KEY = new KeyMapping(
+            "key.maniacrev.paint_qte",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_B,
+            CATEGORY
+    );
+
     // Этот метод теперь пустой, но оставляем для совместимости
     public static void register() {
         Maniacrev.LOGGER.debug("Keybinds initialized");
@@ -90,6 +98,7 @@ public class ModKeybinds {
         event.register(QTE_KEY_3);
         event.register(QTE_KEY_4);
         event.register(ACTIVATE_ARMOR_ABILITY);
+        event.register(PAINT_QTE_KEY);
         Maniacrev.LOGGER.info("Keybinds registered");
     }
 }

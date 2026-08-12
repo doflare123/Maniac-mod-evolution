@@ -427,6 +427,84 @@ public class ModNetworking {
                 .consumerMainThread(ClientParticleEffectPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(ScreamPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ScreamPacket::encode)
+                .decoder(ScreamPacket::decode)
+                .consumerMainThread(ScreamPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(FlowerTrailPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(FlowerTrailPacket::encode)
+                .decoder(FlowerTrailPacket::decode)
+                .consumerMainThread(FlowerTrailPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(BouquetPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(BouquetPacket::encode)
+                .decoder(BouquetPacket::decode)
+                .consumerMainThread(BouquetPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(BudDispatcherPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(BudDispatcherPacket::encode)
+                .decoder(BudDispatcherPacket::decode)
+                .consumerMainThread(BudDispatcherPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(PaintPuddlePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(PaintPuddlePacket::encode)
+                .decoder(PaintPuddlePacket::decode)
+                .consumerMainThread(PaintPuddlePacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(PaintQteStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(PaintQteStatePacket::encode)
+                .decoder(PaintQteStatePacket::decode)
+                .consumerMainThread(PaintQteStatePacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(PaintQtePressPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(PaintQtePressPacket::encode)
+                .decoder(PaintQtePressPacket::decode)
+                .consumerMainThread(PaintQtePressPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(PinkOrchidStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(PinkOrchidStatePacket::encode)
+                .decoder(PinkOrchidStatePacket::decode)
+                .consumerMainThread(PinkOrchidStatePacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(PinkOrchidAppearancePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(PinkOrchidAppearancePacket::encode)
+                .decoder(PinkOrchidAppearancePacket::decode)
+                .consumerMainThread(PinkOrchidAppearancePacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(SberSproutStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SberSproutStatePacket::encode)
+                .decoder(SberSproutStatePacket::decode)
+                .consumerMainThread(SberSproutStatePacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(ColorRouletteStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ColorRouletteStatePacket::encode)
+                .decoder(ColorRouletteStatePacket::decode)
+                .consumerMainThread(ColorRouletteStatePacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(ColorRouletteStopPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ColorRouletteStopPacket::encode)
+                .decoder(ColorRouletteStopPacket::decode)
+                .consumerMainThread(ColorRouletteStopPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(ColorRouletteComputerMarkersPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ColorRouletteComputerMarkersPacket::encode)
+                .decoder(ColorRouletteComputerMarkersPacket::decode)
+                .consumerMainThread(ColorRouletteComputerMarkersPacket::handle)
+                .add();
+
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

@@ -10,6 +10,7 @@ import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.perk.perks.maniac.GrieferPerk;
 import org.example.maniacrevolution.perk.perks.survivor.EmergencyOverclockPerk;
+import org.example.maniacrevolution.sbersprout.SberSproutManager;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -151,6 +152,78 @@ public class HackManager {
         return false;
     }
 
+    /** Adds progress without attributing it to a player's SberSprout contribution. */
+    public boolean addColorCardProgress(ServerPlayer player, BlockPos pos, float addPercent) {
+        if (player.getServer() == null
+                || !(player.serverLevel().getBlockEntity(pos) instanceof ComputerBlockEntity computer)
+                || isHacked(computer.getComputerId()) || isBlocked(computer.getComputerId())) {
+            return false;
+        }
+        int computerId = computer.getComputerId();
+        float current = getLiveProgress(computerId);
+        float updated = Math.min(HackConfig.HACK_POINTS_REQUIRED,
+                current + HackConfig.HACK_POINTS_REQUIRED * addPercent);
+        hackProgress.put(computerId, updated);
+
+        if (updated >= HackConfig.HACK_POINTS_REQUIRED) {
+            stopSessionsForComputer(computerId, false);
+            updateComputerDisplays(player.getServer(), computerId, updated, true);
+            onComputerHacked(player.getServer(), computerId, pos);
+        } else {
+            for (HackSession session : activeSessions.values()) {
+                if (session.computerId == computerId) session.currentPoints = updated;
+            }
+            updateComputerDisplays(player.getServer(), computerId, updated, false);
+        }
+        saveAndSync(player.getServer());
+        return true;
+    }
+
+    /** Stops every active repair session, then removes progress. */
+    public boolean rollbackColorCardProgress(ServerPlayer player, BlockPos pos,
+                                             float rollbackPercent) {
+        if (player.getServer() == null
+                || !(player.serverLevel().getBlockEntity(pos) instanceof ComputerBlockEntity computer)
+                || isHacked(computer.getComputerId())) {
+            return false;
+        }
+        int computerId = computer.getComputerId();
+        float current = getLiveProgress(computerId);
+        if (current <= 0.0F) return false;
+
+        stopSessionsForComputer(computerId, true);
+        float updated = Math.max(0.0F,
+                current - HackConfig.HACK_POINTS_REQUIRED * rollbackPercent);
+        hackProgress.put(computerId, updated);
+        updateComputerDisplays(player.getServer(), computerId, updated, false);
+        saveAndSync(player.getServer());
+        return true;
+    }
+
+    private void stopSessionsForComputer(int computerId, boolean notifyInterrupted) {
+        List<BlockPos> stopped = new ArrayList<>();
+        for (Map.Entry<BlockPos, HackSession> entry : activeSessions.entrySet()) {
+            if (entry.getValue().computerId != computerId) continue;
+            entry.getValue().interruptExternally(notifyInterrupted);
+            stopped.add(entry.getKey());
+        }
+        stopped.forEach(activeSessions::remove);
+    }
+
+    private void updateComputerDisplays(MinecraftServer server, int computerId,
+                                        float points, boolean hacked) {
+        for (ServerLevel level : server.getAllLevels()) {
+            for (BlockPos tracked : ComputerBlockEntity.getTrackedPositionsSnapshot()) {
+                if (level.getBlockEntity(tracked) instanceof ComputerBlockEntity computer
+                        && computer.getComputerId() == computerId) {
+                    computer.setHackProgress(points / HackConfig.HACK_POINTS_REQUIRED);
+                    computer.setHacked(hacked);
+                    computer.setChanged();
+                }
+            }
+        }
+    }
+
     /**
      * Откатывает компьютер по его computerId (не по позиции).
      */
@@ -273,6 +346,7 @@ public class HackManager {
      * Вызывается из HackSession когда компьютер взломан.
      */
     void onComputerHacked(MinecraftServer server, int computerId, BlockPos pos) {
+        if (Boolean.TRUE.equals(hackedComputers.get(computerId))) return;
         hackedComputers.put(computerId, true);
         hackProgress.put(computerId, HackConfig.HACK_POINTS_REQUIRED);
         totalHacked++;
@@ -299,7 +373,10 @@ public class HackManager {
 
     /** Сбросить ВСЕ компьютеры и прогресс */
     public void resetAll(MinecraftServer server) {
-        activeSessions.values().forEach(s -> sendStopQTE(s.hacker));
+        activeSessions.values().forEach(s -> {
+            sendStopQTE(s.hacker);
+            SberSproutManager.onHackSessionEnded(s.getSessionId());
+        });
         activeSessions.clear();
         hackProgress.clear();
         hackedComputers.clear();
@@ -322,6 +399,7 @@ public class HackManager {
         for (Map.Entry<BlockPos, HackSession> e : activeSessions.entrySet()) {
             if (e.getValue().computerId == computerId) {
                 sendStopQTE(e.getValue().hacker);
+                SberSproutManager.onHackSessionEnded(e.getValue().getSessionId());
                 toStop.add(e.getKey());
             }
         }
@@ -339,6 +417,27 @@ public class HackManager {
         return hackProgress.getOrDefault(computerId, 0f);
     }
 
+    /**
+     * Актуальный прогресс с учётом ещё не завершённой сессии взлома.
+     * Сохранённая карта обновляется после завершения/прерывания сессии, поэтому
+     * информационным интерфейсам нужен отдельный живой снимок.
+     */
+    public float getLiveProgress(int computerId) {
+        float activeProgress = 0f;
+        boolean hasActiveSession = false;
+        for (HackSession session : activeSessions.values()) {
+            if (session.computerId == computerId) {
+                activeProgress = hasActiveSession
+                        ? Math.max(activeProgress, session.currentPoints)
+                        : session.currentPoints;
+                hasActiveSession = true;
+            }
+        }
+        return hasActiveSession
+                ? activeProgress
+                : hackProgress.getOrDefault(computerId, 0f);
+    }
+
     public boolean isHacked(int computerId) {
         return Boolean.TRUE.equals(hackedComputers.get(computerId));
     }
@@ -347,6 +446,47 @@ public class HackManager {
 
     public boolean hasActiveSession(BlockPos pos) {
         return activeSessions.containsKey(pos);
+    }
+
+    public HackSession getSessionForParticipant(ServerPlayer player) {
+        if (player == null) return null;
+        for (HackSession session : activeSessions.values()) {
+            if (session.hasParticipant(player)) return session;
+        }
+        return null;
+    }
+
+    public HackSession getSession(UUID sessionId) {
+        if (sessionId == null) return null;
+        for (HackSession session : activeSessions.values()) {
+            if (sessionId.equals(session.getSessionId())) return session;
+        }
+        return null;
+    }
+
+    public HackSession getOrStartSessionForSprout(ServerPlayer player, BlockPos pos,
+                                                   int computerId) {
+        HackSession session = activeSessions.get(pos);
+        if (session == null) {
+            onPlayerActivate(player, pos, computerId);
+            session = activeSessions.get(pos);
+        }
+        if (session != null) session.ensureParticipant(player);
+        return session;
+    }
+
+    public float addSproutProgress(ServerPlayer player, UUID sessionId,
+                                   float requestedPoints) {
+        HackSession session = getSession(sessionId);
+        if (session == null || !(player.level() instanceof ServerLevel level)) return 0.0F;
+        return session.addSproutPoints(level, requestedPoints);
+    }
+
+    public float removeSproutProgress(ServerPlayer player, UUID sessionId,
+                                      float requestedPoints) {
+        HackSession session = getSession(sessionId);
+        if (session == null || !(player.level() instanceof ServerLevel level)) return 0.0F;
+        return session.removeSproutPoints(level, requestedPoints);
     }
 
     /** Проверяет, является ли игрок хакером или текущим помощником в активной сессии. */
@@ -412,9 +552,13 @@ public class HackManager {
                 float bonus = emergencyOverclock
                         ? EmergencyOverclockPerk.getQteBonusPoints(critical)
                         : critical ? HackConfig.QTE_CRIT_BONUS : HackConfig.QTE_SUCCESS_BONUS;
-                session.currentPoints = Math.min(
-                        session.currentPoints + bonus,
+                float before = session.currentPoints;
+                session.currentPoints = Math.min(before + bonus,
                         HackConfig.HACK_POINTS_REQUIRED);
+                float actualBonus = session.currentPoints - before;
+                if (actualBonus > 0.0F) {
+                    SberSproutManager.onContribution(player, session, actualBonus);
+                }
                 Maniacrev.LOGGER.debug("[HackManager] QTE {}{} bonus +{} for {} -> {}",
                         critical ? "CRIT" : "normal",
                         emergencyOverclock ? " emergency-overclock" : "",

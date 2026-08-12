@@ -13,6 +13,7 @@ import org.example.maniacrevolution.perk.perks.survivor.EmergencyOverclockPerk;
 import org.example.maniacrevolution.dodepovich.DodepovichCasinoManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.ClientParticleEffectPacket;
+import org.example.maniacrevolution.sbersprout.SberSproutManager;
 
 import java.util.*;
 
@@ -34,6 +35,7 @@ public class HackSession {
     private int nextQTEIntervalTicks;
 
     private boolean finished = false;
+    private final UUID sessionId = UUID.randomUUID();
 
     private static final Random RANDOM = new Random();
     private static final String SURVIVORS_TEAM = "survivors";
@@ -45,6 +47,7 @@ public class HackSession {
         this.currentPoints = startPoints;
         this.nextQTEIntervalTicks = randomQTEInterval();
         this.currentQTEPlayers.add(hacker); // ← хакер всегда в списке
+        SberSproutManager.onParticipantJoined(hacker, this);
     }
 
     /** Публичный геттер участников сессии (хакер + саппортеры) */
@@ -87,6 +90,7 @@ public class HackSession {
             if (!currentQTEPlayers.contains(sp)) {
                 HackManager.sendStartQTE(sp);
                 currentQTEPlayers.add(sp);
+                SberSproutManager.onParticipantJoined(sp, this);
             }
         }
 
@@ -96,13 +100,30 @@ public class HackSession {
             if (sp == hacker) continue;
             if (!supporters.contains(sp)) {
                 HackManager.sendStopQTE(sp);
+                SberSproutManager.onParticipantLeft(sp, sessionId);
                 leftZone.add(sp);
             }
         }
         currentQTEPlayers.removeAll(leftZone);
 
-        float pointsThisTick = calcPoints(supporters);
-        currentPoints = Math.min(currentPoints + pointsThisTick, HackConfig.HACK_POINTS_REQUIRED);
+        Map<ServerPlayer, Float> contributions = calcPoints(supporters);
+        float requestedPoints = 0.0F;
+        for (float contribution : contributions.values()) {
+            requestedPoints += contribution;
+        }
+        float actualPoints = Math.min(requestedPoints,
+                Math.max(0.0F, HackConfig.HACK_POINTS_REQUIRED - currentPoints));
+        float contributionScale = requestedPoints <= 0.0F
+                ? 0.0F
+                : actualPoints / requestedPoints;
+        currentPoints += actualPoints;
+
+        for (Map.Entry<ServerPlayer, Float> entry : contributions.entrySet()) {
+            float actualContribution = entry.getValue() * contributionScale;
+            if (actualContribution > 0.0F) {
+                SberSproutManager.onContribution(entry.getKey(), this, actualContribution);
+            }
+        }
 
         updateBlockDisplay(level);
 
@@ -126,8 +147,8 @@ public class HackSession {
 
     // ── Подсчёт очков ─────────────────────────────────────────────────────────
 
-    private float calcPoints(List<ServerPlayer> supporters) {
-        float total = 0;
+    private Map<ServerPlayer, Float> calcPoints(List<ServerPlayer> supporters) {
+        Map<ServerPlayer, Float> contributions = new LinkedHashMap<>();
         int count = 0;
 
         // Все участники = хакер + саппортеры
@@ -174,12 +195,11 @@ public class HackSession {
                 points *= 1.3f;
             }
 
-            total += points;
+            contributions.put(sp, points);
             if (sp != hacker) count++;
         }
 
-
-        return total;
+        return contributions;
     }
 
     /** Игроки в радиусе поддержки (team survivors, adventure, кроме самого хакера) */
@@ -262,6 +282,7 @@ public class HackSession {
         updateBlockDisplay(level);
 
         stopAllQTE(); // ← вместо одиночного sendStopQTE(hacker)
+        SberSproutManager.onHackSessionEnded(sessionId);
 
         hacker.displayClientMessage(
                 net.minecraft.network.chat.Component.literal("§a✔ Компьютер взломан!"), true);
@@ -273,6 +294,7 @@ public class HackSession {
         finished = true;
         IdealychPerk.resetStacks(hacker);
         stopAllQTE(); // ← вместо одиночного sendStopQTE(hacker)
+        SberSproutManager.onHackSessionEnded(sessionId);
         hacker.displayClientMessage(
                 net.minecraft.network.chat.Component.literal("§cВзлом прерван."), true);
     }
@@ -283,6 +305,63 @@ public class HackSession {
             be.setHackProgress(currentPoints / HackConfig.HACK_POINTS_REQUIRED);
             be.setHacked(currentPoints >= HackConfig.HACK_POINTS_REQUIRED);
             be.setChanged();
+        }
+    }
+
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
+    public int getComputerId() {
+        return computerId;
+    }
+
+    public float getCurrentPoints() {
+        return currentPoints;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public boolean hasParticipant(ServerPlayer player) {
+        return hasQTEParticipant(player);
+    }
+
+    public void ensureParticipant(ServerPlayer player) {
+        if (hasQTEParticipant(player)) return;
+        currentQTEPlayers.add(player);
+        HackManager.sendStartQTE(player);
+        SberSproutManager.onParticipantJoined(player, this);
+    }
+
+    float addSproutPoints(ServerLevel level, float requestedPoints) {
+        if (finished || requestedPoints <= 0.0F) return 0.0F;
+        float actual = Math.min(requestedPoints,
+                Math.max(0.0F, HackConfig.HACK_POINTS_REQUIRED - currentPoints));
+        currentPoints += actual;
+        updateBlockDisplay(level);
+        return actual;
+    }
+
+    float removeSproutPoints(ServerLevel level, float requestedPoints) {
+        if (finished || requestedPoints <= 0.0F) return 0.0F;
+        float actual = Math.min(requestedPoints, Math.max(0.0F, currentPoints));
+        currentPoints -= actual;
+        updateBlockDisplay(level);
+        return actual;
+    }
+
+    void interruptExternally(boolean notifyHacker) {
+        if (finished) return;
+        finished = true;
+        IdealychPerk.resetStacks(hacker);
+        stopAllQTE();
+        SberSproutManager.onHackSessionEnded(sessionId);
+        if (notifyHacker) {
+            hacker.displayClientMessage(
+                    net.minecraft.network.chat.Component.translatable(
+                            "message.maniacrev.color_roulette.repair_interrupted"), true);
         }
     }
 }

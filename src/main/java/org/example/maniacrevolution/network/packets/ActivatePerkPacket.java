@@ -57,6 +57,13 @@ public class ActivatePerkPacket {
 
             PerkInstance.ActivationResult result = active.tryActivate(player, phase);
 
+            // Рулетка начинает перезарядку только после выдачи результата.
+            if (result == PerkInstance.ActivationResult.SUCCESS
+                    && org.example.maniacrevolution.perk.perks.common.ColorRoulettePerk.ID
+                    .equals(active.getPerk().getId())) {
+                active.resetCooldown();
+            }
+
             switch (result) {
                 case SUCCESS -> player.displayClientMessage(
                         Component.translatable("message.maniacrev.perk.activated", active.getPerk().getName()), true);
@@ -71,7 +78,7 @@ public class ActivatePerkPacket {
                 case NOT_ENOUGH_MANA -> player.displayClientMessage(
                         Component.translatable("message.maniacrev.perk.not_enough_mana"), true);
                 case CONDITION_NOT_MET -> player.displayClientMessage(
-                        Component.translatable("message.maniacrev.perk.condition_not_met"), true);
+                        active.getPerk().getConditionNotMetMessage(player), true);
             }
 
             PlayerDataManager.syncToClient(player);

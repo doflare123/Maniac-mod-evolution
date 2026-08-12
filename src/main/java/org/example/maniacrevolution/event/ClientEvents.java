@@ -14,6 +14,7 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.client.particle.NecromancerParticle;
 import org.example.maniacrevolution.client.renderer.BloodMarkerRenderer;
+import org.example.maniacrevolution.client.renderer.RedColorCardProjectileRenderer;
 import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.ClientKeeperFormData;
 import org.example.maniacrevolution.effect.client.FearClientHandler;
@@ -24,6 +25,8 @@ import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.ActivatePerkPacket;
 import org.example.maniacrevolution.network.packets.SwitchPerkPacket;
+import org.example.maniacrevolution.network.packets.ColorRouletteStopPacket;
+import org.example.maniacrevolution.client.ColorRouletteClientHandler;
 import org.example.maniacrevolution.perk.perks.client.WallhackGlowHandler;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
@@ -40,11 +43,21 @@ public class ClientEvents {
         }
 
         if (ModKeybinds.ACTIVATE_PERK.consumeClick()) {
-            ModNetworking.CHANNEL.sendToServer(new ActivatePerkPacket());
+            if (ColorRouletteClientHandler.isRolling()) {
+                if (ColorRouletteClientHandler.canStop()) {
+                    ModNetworking.CHANNEL.sendToServer(new ColorRouletteStopPacket(
+                            ColorRouletteClientHandler.centeredCard()));
+                    ColorRouletteClientHandler.markStopRequested();
+                }
+            } else {
+                ModNetworking.CHANNEL.sendToServer(new ActivatePerkPacket());
+            }
         }
 
         if (ModKeybinds.SWITCH_PERK.consumeClick()) {
-            ModNetworking.CHANNEL.sendToServer(new SwitchPerkPacket());
+            if (!ColorRouletteClientHandler.isRolling()) {
+                ModNetworking.CHANNEL.sendToServer(new SwitchPerkPacket());
+            }
         }
     }
 
@@ -70,6 +83,8 @@ public class ClientEvents {
         public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
             // Регистрируем рендерер для BloodMarkerEntity
             event.registerEntityRenderer(ModEntities.BLOOD_MARKER.get(), BloodMarkerRenderer::new);
+            event.registerEntityRenderer(ModEntities.RED_COLOR_CARD_PROJECTILE.get(),
+                    RedColorCardProjectileRenderer::new);
         }
 
         @SubscribeEvent
@@ -94,5 +109,6 @@ public class ClientEvents {
         // Очищаем все свечения при выходе
         WallhackGlowHandler.clearAll();
         ClientKeeperFormData.clear();
+        ColorRouletteClientHandler.clear();
     }
 }

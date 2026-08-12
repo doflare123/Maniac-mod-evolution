@@ -12,6 +12,8 @@ import org.example.maniacrevolution.client.renderer.Agent47TabletItemRenderer;
 import org.example.maniacrevolution.client.renderer.NetherSwapProjectileRenderer;
 import org.example.maniacrevolution.client.renderer.NightmareCocoonRenderer;
 import org.example.maniacrevolution.client.renderer.PlagueOrbRenderer;
+import org.example.maniacrevolution.client.renderer.RoseColoredGlassesItemRenderer;
+import org.example.maniacrevolution.client.renderer.PinkOrchidIllusionRenderer;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.hack.ModHackRegistry;
 import org.example.maniacrevolution.hack.client.ComputerBlockRenderer;
@@ -22,6 +24,7 @@ public class ClientSetupEvents {
     @SubscribeEvent
     public static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(Agent47TabletItemRenderer.BASE_MODEL);
+        event.register(RoseColoredGlassesItemRenderer.INVENTORY_MODEL);
     }
 
     @SubscribeEvent
@@ -39,6 +42,9 @@ public class ClientSetupEvents {
 
         event.registerEntityRenderer(ModEntities.FEAR_CHASER.get(),
                 context -> new net.minecraft.client.renderer.entity.NoopRenderer<>(context));
+
+        event.registerEntityRenderer(ModEntities.PINK_ORCHID_ILLUSION.get(),
+                PinkOrchidIllusionRenderer::new);
 
         event.registerBlockEntityRenderer(ModBlockEntities.NIGHTMARE_COCOON.get(),
                 context -> new NightmareCocoonRenderer());

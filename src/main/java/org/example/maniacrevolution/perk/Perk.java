@@ -24,6 +24,11 @@ public abstract class Perk {
         return true;
     }
 
+    /** Сообщение для игрока, если {@link #meetsActivationCondition(ServerPlayer)} вернул false. */
+    public Component getConditionNotMetMessage(ServerPlayer player) {
+        return Component.translatable("message.maniacrev.perk.condition_not_met");
+    }
+
     protected Perk(Builder builder) {
         this.id = builder.id;
         this.nameKey = "perk.maniacrev." + id + ".name";

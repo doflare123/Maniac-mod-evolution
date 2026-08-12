@@ -22,6 +22,8 @@ import org.example.maniacrevolution.config.HudConfig;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.flower.FlowerTrailManager;
+import org.example.maniacrevolution.forgetmenot.ForgetMeNotManager;
 import org.example.maniacrevolution.dodepovich.DodepovichCasinoManager;
 import org.example.maniacrevolution.dodepovich.SlotMachineResult;
 import org.example.maniacrevolution.ghost.GhostLoadoutManager;
@@ -30,6 +32,9 @@ import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.ClosePerkScreenPacket;
 import org.example.maniacrevolution.network.packets.OpenGuiPacket;
 import org.example.maniacrevolution.network.packets.SyncManaPacket;
+import org.example.maniacrevolution.paint.PaintPuddleManager;
+import org.example.maniacrevolution.pinkorchid.PinkOrchidManager;
+import org.example.maniacrevolution.sbersprout.SberSproutManager;
 import org.example.maniacrevolution.perk.perks.common.BigmoneyPerk;
 import org.example.maniacrevolution.perk.perks.common.MegamindPerk;
 import org.example.maniacrevolution.perk.perks.maniac.HighlightPerk;
@@ -127,6 +132,34 @@ public class ModCommands {
                                             Component.literal("§eФаза установлена: " + phase), true);
                                     return 1;
                                 })))
+
+                // /maniacrev paint clear
+                .then(Commands.literal("paint")
+                        .then(Commands.literal("clear")
+                                .executes(ModCommands::clearPaint)))
+
+                // /maniacrev flower spawn
+                .then(Commands.literal("flower")
+                        .then(Commands.literal("spawn")
+                                .executes(ModCommands::spawnTestFlower)))
+
+                // /maniacrev forgetmenot clear
+                .then(Commands.literal("forgetmenot")
+                        .then(Commands.literal("clear")
+                                .executes(ModCommands::clearForgetMeNots))
+                        .then(Commands.literal("give")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(ModCommands::giveForgetMeNot))))
+
+                // /maniacrev pinkorchid clear
+                .then(Commands.literal("pinkorchid")
+                        .then(Commands.literal("clear")
+                                .executes(ModCommands::clearPinkOrchids)))
+
+                // /maniacrev sbersprout clear
+                .then(Commands.literal("sbersprout")
+                        .then(Commands.literal("clear")
+                                .executes(ModCommands::clearSberSprouts)))
 
                 // /maniacrev addexp <targets> <amount>
                 .then(Commands.literal("addexp")
@@ -235,6 +268,58 @@ public class ModCommands {
         context.getSource().sendSuccess(() -> Component.literal(
                 "§aСледующий результат автомата установлен для игроков: " + targets.size()), true);
         return targets.size();
+    }
+
+    private static int clearPaint(CommandContext<CommandSourceStack> context) {
+        int removedCount = PaintPuddleManager.clearAllPuddles(
+                context.getSource().getServer());
+        context.getSource().sendSuccess(() -> Component.literal(
+                "§aУдалено луж краски: " + removedCount), true);
+        return Math.max(1, removedCount);
+    }
+
+    private static int spawnTestFlower(CommandContext<CommandSourceStack> context)
+            throws CommandSyntaxException {
+        ServerPlayer sourcePlayer = context.getSource().getPlayerOrException();
+        int viewers = FlowerTrailManager.spawnTestTrace(sourcePlayer);
+        context.getSource().sendSuccess(() -> Component.literal(
+                "§aТестовый цветок создан. Получателей: " + viewers), true);
+        return Math.max(1, viewers);
+    }
+
+    private static int clearForgetMeNots(CommandContext<CommandSourceStack> context) {
+        int removedCount = ForgetMeNotManager.clearAllPlaced(
+                context.getSource().getServer());
+        context.getSource().sendSuccess(() -> Component.translatable(
+                "command.maniacrev.forget_me_not.cleared", removedCount), true);
+        return Math.max(1, removedCount);
+    }
+
+    private static int giveForgetMeNot(CommandContext<CommandSourceStack> context)
+            throws CommandSyntaxException {
+        ServerPlayer player = EntityArgument.getPlayer(context, "player");
+        if (!ForgetMeNotManager.giveForTesting(player)) {
+            context.getSource().sendFailure(Component.translatable(
+                    "command.maniacrev.forget_me_not.give_full", player.getDisplayName()));
+            return 0;
+        }
+        context.getSource().sendSuccess(() -> Component.translatable(
+                "command.maniacrev.forget_me_not.given", player.getDisplayName()), true);
+        return 1;
+    }
+
+    private static int clearPinkOrchids(CommandContext<CommandSourceStack> context) {
+        int removedCount = PinkOrchidManager.clearAll(context.getSource().getServer());
+        context.getSource().sendSuccess(() -> Component.translatable(
+                "command.maniacrev.pink_orchid.cleared", removedCount), true);
+        return Math.max(1, removedCount);
+    }
+
+    private static int clearSberSprouts(CommandContext<CommandSourceStack> context) {
+        int removedCount = SberSproutManager.clearAll(context.getSource().getServer());
+        context.getSource().sendSuccess(() -> Component.translatable(
+                "command.maniacrev.sber_sprout.cleared", removedCount), true);
+        return Math.max(1, removedCount);
     }
 
     private static int addExp(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

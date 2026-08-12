@@ -26,6 +26,9 @@ import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.perk.Perk;
 import org.example.maniacrevolution.perk.PerkInstance;
 import org.example.maniacrevolution.perk.PerkPhase;
+import org.example.maniacrevolution.perk.perks.maniac.BouquetToTheOtherSidePerk;
+import org.example.maniacrevolution.perk.perks.maniac.GoNextPerk;
+import org.example.maniacrevolution.util.ManiacDamageAttribution;
 
 import java.util.*;
 
@@ -137,7 +140,21 @@ public class DownedEventHandler {
         Team team = player.getTeam();
         if (team == null || !team.getName().equalsIgnoreCase("survivors")) return;
 
+        ServerPlayer responsibleManiac = ManiacDamageAttribution.resolveResponsibleManiac(
+                player,
+                event.getSource()
+        );
+
         event.setCanceled(true);
+
+        data.resetDownedModifiers();
+        if (responsibleManiac != null) {
+            BouquetToTheOtherSidePerk.applyToNextKnockdown(
+                    responsibleManiac,
+                    player,
+                    data
+            );
+        }
 
         data.setState(DownedState.DOWNED);
         data.setDownedTicksElapsed(0);
@@ -149,8 +166,14 @@ public class DownedEventHandler {
         spawnDownedStand(player);
 
         broadcastMessage(player,
-                "§c☠ " + player.getName().getString() + " §cупал! Помогите ему в течение §e60 сек§c!");
+                "§c☠ " + player.getName().getString()
+                        + " §cупал! Помогите ему в течение §e"
+                        + data.getDownedTimeoutTicks() / 20 + " сек§c!");
         Maniacrev.LOGGER.info("[Downed] {} -> DOWNED", player.getName().getString());
+
+        if (responsibleManiac != null) {
+            GoNextPerk.tryTrigger(responsibleManiac, player);
+        }
 
         // НОВОЕ: проверяем — если теперь все лежат, всех убиваем
         checkAllDowned(player.getServer(), team);
@@ -216,7 +239,7 @@ public class DownedEventHandler {
                     data.incrementReviveProgress();
 
                     // Отправляем HUD пакет хелперу каждый тик чтобы прогресс был плавным
-                    int remaining = DownedData.DOWNED_TIMEOUT_TICKS - data.getDownedTicksElapsed();
+                    int remaining = data.getDownedTimeoutTicks() - data.getDownedTicksElapsed();
                     ModNetworking.sendToPlayer(
                             new DownedHudPacket(DownedHudPacket.ROLE_ALLY,
                                     player.getName().getString(),
@@ -239,9 +262,9 @@ public class DownedEventHandler {
         if (!beingRevived) {
             data.incrementDownedTicks();
         }
-        int remaining = DownedData.DOWNED_TIMEOUT_TICKS - data.getDownedTicksElapsed();
+        int remaining = data.getDownedTimeoutTicks() - data.getDownedTicksElapsed();
 
-        if (data.getDownedTicksElapsed() >= DownedData.DOWNED_TIMEOUT_TICKS) {
+        if (data.getDownedTicksElapsed() >= data.getDownedTimeoutTicks()) {
             killDowned(player, data);
         }
     }
@@ -360,6 +383,7 @@ public class DownedEventHandler {
         data.cancelRevive();
         data.setState(DownedState.WEAKENED);
         data.setDownedTicksElapsed(0);
+        data.resetDownedModifiers();
 
         removeDownedEffects(target);
         removeStandForPlayer(target.getUUID());
@@ -406,6 +430,7 @@ public class DownedEventHandler {
         data.cancelRevive();
         data.setState(DownedState.WEAKENED);
         data.setDownedTicksElapsed(0);
+        data.resetDownedModifiers();
 
         removeDownedEffects(target);
         removeStandForPlayer(target.getUUID());
@@ -442,6 +467,7 @@ public class DownedEventHandler {
     public static void killDowned(ServerPlayer player, DownedData data) {
         data.setState(DownedState.ALIVE);
         data.setDownedTicksElapsed(0);
+        data.resetDownedModifiers();
         data.cancelRevive();
         removeDownedEffects(player);
         removeStandForPlayer(player.getUUID());
@@ -485,7 +511,7 @@ public class DownedEventHandler {
     private static void sendHudPackets(ServerPlayer downed, DownedData data) {
         if (downed.getServer() == null) return;
 
-        int remaining = DownedData.DOWNED_TIMEOUT_TICKS - data.getDownedTicksElapsed();
+        int remaining = data.getDownedTimeoutTicks() - data.getDownedTicksElapsed();
         boolean beingRevived = data.getReviverUUID() != null;
         float reviveProgress = beingRevived ? data.getReviveProgress() : 0f;
         String downedName = downed.getName().getString();

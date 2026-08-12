@@ -35,6 +35,13 @@ public class ComputerBlockEntity extends BlockEntity {
         return java.util.Collections.unmodifiableSet(TRACKED_POSITIONS);
     }
 
+    /** Безопасный снимок позиций для перебора вне синхронизированного набора. */
+    public static java.util.Set<BlockPos> getTrackedPositionsSnapshot() {
+        synchronized (TRACKED_POSITIONS) {
+            return java.util.Set.copyOf(TRACKED_POSITIONS);
+        }
+    }
+
     public static void resetTrackedBlockEntities(net.minecraft.server.MinecraftServer server) {
         if (server == null) return;
         java.util.Set<BlockPos> positions;
@@ -123,6 +130,8 @@ public class ComputerBlockEntity extends BlockEntity {
     public float getHackProgress() { return hackProgress; }
     public void setHackProgress(float p) {
         this.hackProgress = Math.min(1f, Math.max(0f, p));
+        org.example.maniacrevolution.bud.BudDispatcherManager.onComputerProgressChanged(
+                this, this.hackProgress);
         syncToClient();
     }
 
@@ -137,6 +146,7 @@ public class ComputerBlockEntity extends BlockEntity {
         hackProgress = 0f;
         isHacked = false;
         blocked = false;
+        org.example.maniacrevolution.bud.BudDispatcherManager.onComputerProgressChanged(this, 0f);
         setChanged();
         syncToClient();
     }

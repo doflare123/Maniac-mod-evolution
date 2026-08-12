@@ -23,6 +23,9 @@ import net.minecraftforge.network.NetworkHooks;
 import org.example.maniacrevolution.capability.PlagueCapabilityProvider;
 import org.example.maniacrevolution.capability.PlagueCapability;
 import org.example.maniacrevolution.effect.ModEffects;
+import org.example.maniacrevolution.util.ManiacDamageAttribution;
+
+import java.util.UUID;
 
 /**
  * Снаряд "Зелёный сгусток чумы".
@@ -133,10 +136,19 @@ public class PlagueOrbEntity extends Projectile {
         PlagueCapability cap = PlagueCapabilityProvider.get(target);
         if (cap == null) return;
 
-        // Сразу наносим урон — не ждём следующего тика
-        target.hurt(
-                target.level().damageSources().magic(),
-                PlagueCapability.PLAGUE_DAMAGE
+        UUID sourceManiacId = getOwner() instanceof ServerPlayer owner
+                ? owner.getUUID()
+                : null;
+        cap.setSourceManiacId(sourceManiacId);
+
+        // Сразу наносим урон и сохраняем ответственного маньяка для перков.
+        ManiacDamageAttribution.hurtWithSource(
+                target,
+                sourceManiacId,
+                () -> target.hurt(
+                        target.level().damageSources().magic(),
+                        PlagueCapability.PLAGUE_DAMAGE
+                )
         );
 
         // Сбрасываем счётчик в 0 после урона

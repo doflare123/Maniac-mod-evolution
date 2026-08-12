@@ -24,6 +24,7 @@ import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.NightmareScreamerPacket;
 import org.example.maniacrevolution.network.packets.SyncNightmarePacket;
 import org.example.maniacrevolution.perk.perks.survivor.RealityAnchorPerk;
+import org.example.maniacrevolution.util.ManiacDamageAttribution;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -102,6 +103,7 @@ public final class NightmareManager {
         }
 
         NightmarePlayerState state = state(target);
+        state.responsibleKeeperId = keeper.getUUID();
         state.sanity = Math.max(0.0F, state.sanity -
                 NightmareConfig.MAX_SANITY * NightmareConfig.CONCENTRATED_NIGHTMARE_SANITY_PERCENT);
         ModNetworking.sendToPlayer(new NightmareScreamerPacket(NightmareConfig.CONCENTRATED_NIGHTMARE_SCREAMER_TICKS), target);
@@ -166,6 +168,11 @@ public final class NightmareManager {
         return data.getManiacClassId() == NightmareConfig.KEEPER_CLASS_ID;
     }
 
+    public UUID getTrialResponsibleKeeperId(ServerPlayer player) {
+        NightmarePlayerState state = states.get(player.getUUID());
+        return state != null && state.isInTrial() ? state.responsibleKeeperId : null;
+    }
+
     private void tickSanity(ServerPlayer player, NightmarePlayerState state,
                             List<ServerPlayer> keepers, long tick) {
         if (tick < state.sanityImmunityUntil) {
@@ -174,16 +181,23 @@ public final class NightmareManager {
             return;
         }
 
-        boolean watched = false;
+        ServerPlayer responsibleWatcher = null;
+        double nearestWatcherDistanceSquared = Double.MAX_VALUE;
         for (ServerPlayer keeper : keepers) {
             if (isLookingAt(keeper, player, NightmareConfig.GAZE_RANGE, NightmareConfig.GAZE_DOT_THRESHOLD)) {
-                watched = true;
-                break;
+                double distanceSquared = keeper.distanceToSqr(player);
+                if (distanceSquared < nearestWatcherDistanceSquared) {
+                    nearestWatcherDistanceSquared = distanceSquared;
+                    responsibleWatcher = keeper;
+                }
             }
         }
 
-        if (watched) {
+        if (responsibleWatcher != null) {
             state.lastGazeTick = tick;
+            if (state.sanity > NightmareConfig.SANITY_BREAKPOINT) {
+                state.responsibleKeeperId = responsibleWatcher.getUUID();
+            }
             state.sanity = Math.max(0.0F, state.sanity - NightmareConfig.SANITY_DRAIN_PER_TICK);
         } else if (tick - state.lastGazeTick >= NightmareConfig.SANITY_REGEN_DELAY_TICKS) {
             state.sanity = Math.min(NightmareConfig.MAX_SANITY,
@@ -395,12 +409,17 @@ public final class NightmareManager {
 
     private void finishFearRaceDeath(ServerPlayer player, NightmarePlayerState state) {
         ServerLevel returnLevel = state.returnLevel != null ? state.returnLevel : (ServerLevel) player.level();
+        UUID responsibleKeeperId = state.responsibleKeeperId;
 
         cleanupTrialArea(state);
         if (state.cocoonPos != null) returnLevel.destroyBlock(state.cocoonPos, false);
         restoreInventory(player, state);
         state.clearTrial();
-        player.hurt(player.damageSources().magic(), Float.MAX_VALUE);
+        ManiacDamageAttribution.hurtWithSource(
+                player,
+                responsibleKeeperId,
+                () -> player.hurt(player.damageSources().magic(), Float.MAX_VALUE)
+        );
         player.setGameMode(GameType.SPECTATOR);
     }
 

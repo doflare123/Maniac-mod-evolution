@@ -12,7 +12,7 @@ public class PerkRegistry {
     private static final Map<String, Perk> PERKS = new LinkedHashMap<>();
 
     public static void init() {
-        // Общие перки (8 штук)
+        // Общие перки (10 штук)
         register(new BigmoneyPerk());
         register(new MegamindPerk());
         register(new GtoMedalPerk());
@@ -21,8 +21,10 @@ public class PerkRegistry {
         register(new ManaBreakPerk());
         register(new HedgehogSkinPerk());
         register(new FootballFanPerk());
+        register(new ColorRoulettePerk());
+        register(new ThePaintThickensPerk());
 
-        // Перки выживших (13 штук)
+        // Перки выживших (19 штук)
         register(new MimicPerk());
         register(new WallhackPerk());
         register(new LastBreathPerk());
@@ -36,10 +38,21 @@ public class PerkRegistry {
         register(new IdealychPerk());
         register(new RealityAnchorPerk());
         register(new EmergencyOverclockPerk());
+        register(new FixedItImOutPerk());
+        register(new MagicKickPerk());
+        register(new ForgetMeNotPerk());
+        register(new RoseColoredGlassesPerk());
+        register(new PinkOrchidPerk());
+        register(new SberSproutPerk());
 
-        // Перки маньяка (10 штук)
+        // Перки маньяка (15 штук)
         register(new BloodflowPerk());
         register(new IAmSpeedPerk());
+        register(new HighVoltagePerk());
+        register(new GoNextPerk());
+        register(new FlowersLeadInvestigationPerk());
+        register(new BouquetToTheOtherSidePerk());
+        register(new BudDispatcherPerk());
         register(new CatchMistakesPerk());
         register(new ComputerBreakerPerk());
         register(new HighlightPerk());

@@ -17,6 +17,7 @@ import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.item.CharacterSelectionItem;
 import org.example.maniacrevolution.item.ReadyItem;
 import org.example.maniacrevolution.item.SettingsItem;
+import org.example.maniacrevolution.colorroulette.ColorCard;
 
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
@@ -285,8 +286,32 @@ public class ModItems {
     public static final RegistryObject<Item> AWAKENING_NEEDLE =
             ITEMS.register("awakening_needle", () -> new Item(new Item.Properties().stacksTo(1)));
 
+    public static final RegistryObject<Item> PAINT_CAN =
+            ITEMS.register("paint_can", PaintCanItem::new);
+
+    public static final RegistryObject<Item> FORGET_ME_NOT =
+            ITEMS.register("forget_me_not", ForgetMeNotItem::new);
+
+    public static final RegistryObject<Item> ROSE_COLORED_GLASSES =
+            ITEMS.register("rose_colored_glasses", RoseColoredGlassesItem::new);
+
+    public static final RegistryObject<Item> PINK_ORCHID =
+            ITEMS.register("pink_orchid", PinkOrchidItem::new);
+
+    public static final RegistryObject<Item> SBER_SPROUT =
+            ITEMS.register("sber_sprout", SberSproutItem::new);
+
     public static final RegistryObject<Item> GUARDIAN_HEAD =
             ITEMS.register("guardian_head", GuardianHeadItem::new);
+
+    public static final RegistryObject<Item> RED_COLOR_CARD =
+            ITEMS.register("red_color_card", () -> new ColorCardItem(ColorCard.RED));
+
+    public static final RegistryObject<Item> BLUE_COLOR_CARD =
+            ITEMS.register("blue_color_card", () -> new ColorCardItem(ColorCard.BLUE));
+
+    public static final RegistryObject<Item> GREEN_COLOR_CARD =
+            ITEMS.register("green_color_card", () -> new ColorCardItem(ColorCard.GREEN));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

@@ -53,6 +53,11 @@ public class PerkInstance {
         this.cooldownRemaining = perk.getCooldownTicks();
     }
 
+    /** Позволяет перку назначить альтернативную длительность кулдауна. */
+    public void setCooldownRemaining(int ticks) {
+        this.cooldownRemaining = Math.max(0, ticks);
+    }
+
     public void resetCooldown() {
         this.cooldownRemaining = 0;
     }

@@ -12,6 +12,7 @@ import org.example.maniacrevolution.capability.PlagueCapability;
 import org.example.maniacrevolution.capability.PlagueCapabilityProvider;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.item.PlagueLanternItem;
+import org.example.maniacrevolution.util.ManiacDamageAttribution;
 
 import java.util.List;
 
@@ -106,6 +107,11 @@ public class PlagueLanternEventHandler {
                     false,       // показывать частицы
                     false        // показывать иконку
             ));
+
+            PlagueCapability capability = PlagueCapabilityProvider.get(target);
+            if (capability != null) {
+                capability.setSourceManiacId(source.getUUID());
+            }
         }
     }
 
@@ -125,9 +131,13 @@ public class PlagueLanternEventHandler {
             if (shouldDamage) {
                 // Наносим урон чумой (игнорирует броню — используем magic)
                 // Можно заменить на DamageSource.MAGIC для игнорирования брони
-                player.hurt(
-                        player.level().damageSources().magic(),
-                        PlagueCapability.PLAGUE_DAMAGE
+                ManiacDamageAttribution.hurtWithSource(
+                        player,
+                        cap.getSourceManiacId(),
+                        () -> player.hurt(
+                                player.level().damageSources().magic(),
+                                PlagueCapability.PLAGUE_DAMAGE
+                        )
                 );
             }
         }
