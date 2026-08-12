@@ -106,15 +106,6 @@ public class PlagueOrbEntity extends Projectile {
         // Двигаемся вперёд
         setPos(nextPos);
 
-        // Спавним зелёные частицы на сервере (видны всем клиентам)
-        if (level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(
-                    ParticleTypes.COMPOSTER, // зеленоватые частицы
-                    getX(), getY() + 0.25, getZ(),
-                    3, 0.15, 0.15, 0.15, 0.02
-            );
-        }
-
         // Удаляемся через 10 секунд если ни во что не попали
         if (tickCount > 200) {
             discard();

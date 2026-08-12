@@ -4,8 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.Scoreboard;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -26,7 +24,6 @@ import org.example.maniacrevolution.data.ClientPlayerData;
 public class FurySwipesOverheadRenderer {
 
     private static final String MANIAC_TEAM    = "maniac";
-    private static final String SCOREBOARD_OBJ = "ManiacClass";
     private static final int    REQUIRED_CLASS = 7;
 
     @SubscribeEvent
@@ -36,30 +33,10 @@ public class FurySwipesOverheadRenderer {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
 
-        // ── ВРЕМЕННЫЙ ДЕБАГ — убери после починки ────────────────────────────
-        Player local = mc.player;
-        net.minecraft.world.scores.Team team = local.getTeam();
-        Scoreboard sb = mc.level.getScoreboard();
-        Objective obj = sb.getObjective(SCOREBOARD_OBJ);
-
-        System.out.println("[FurySwipes] team=" + (team == null ? "NULL" : team.getName()));
-        System.out.println("[FurySwipes] obj=" + (obj == null ? "NULL" : obj.getName()));
-        if (obj != null) {
-            boolean hasScore = sb.hasPlayerScore(local.getScoreboardName(), obj);
-            System.out.println("[FurySwipes] hasScore=" + hasScore);
-            if (hasScore) {
-                int score = sb.getOrCreatePlayerScore(local.getScoreboardName(), obj).getScore();
-                System.out.println("[FurySwipes] score=" + score);
-            }
-        }
-        int stacks = ClientFurySwipesData.getTargetStackCount(target.getUUID());
-        System.out.println("[FurySwipes] stacks for " + target.getName().getString() + " = " + stacks);
-        // ─────────────────────────────────────────────────────────────────────
-
         if (!isLocalPlayerManiac(mc)) return;
 
-        int stackCount = ClientFurySwipesData.getTargetStackCount(target.getUUID());
-        if (stackCount <= 0) return;
+        int stacks = ClientFurySwipesData.getTargetStackCount(target.getUUID());
+        if (stacks <= 0) return;
 
         PoseStack poseStack = event.getPoseStack();
         MultiBufferSource bufferSource = event.getMultiBufferSource();
@@ -90,11 +67,6 @@ public class FurySwipesOverheadRenderer {
                 bgColor,
                 0xF000F0
         );
-
-        // Важно: сбрасываем буфер чтобы текст отрендерился в этом кадре
-        if (bufferSource instanceof MultiBufferSource.BufferSource immediate) {
-            immediate.endBatch();
-        }
 
         poseStack.popPose();
     }

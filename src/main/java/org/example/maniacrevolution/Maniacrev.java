@@ -32,7 +32,6 @@ import org.example.maniacrevolution.cosmetic.CosmeticRegistry;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.downed.DownedData;
-import org.example.maniacrevolution.downed.DownedEventHandler;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.entity.ModEntities;
 import org.example.maniacrevolution.entity.TotemEntity;
@@ -42,7 +41,6 @@ import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.hack.ModHackRegistry;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.map.MapRegistry;
-import org.example.maniacrevolution.maze.MazeTickHandler;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.perk.PerkRegistry;
 import org.example.maniacrevolution.pregame.PreGameReadyManager;
@@ -97,13 +95,10 @@ public class Maniacrev {
         ModHackRegistry.BLOCKS.register(modEventBus);
         ModHackRegistry.BLOCK_ENTITIES.register(modEventBus);
         ModHackRegistry.ITEMS.register(modEventBus);
-        MinecraftForge.EVENT_BUS.register(new MazeTickHandler());
         // =========================================================
 
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(new GameManager());
         MinecraftForge.EVENT_BUS.register(new PlayerDataManager());
-        MinecraftForge.EVENT_BUS.register(new DownedEventHandler());
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

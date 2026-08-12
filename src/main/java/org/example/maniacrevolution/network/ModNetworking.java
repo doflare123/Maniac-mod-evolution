@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "3";
+    private static final String PROTOCOL_VERSION = "4";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -413,6 +413,18 @@ public class ModNetworking {
                 .decoder(Agent47HeldTabletDataPacket::decode)
                 .encoder(Agent47HeldTabletDataPacket::encode)
                 .consumerMainThread(Agent47HeldTabletDataPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(SelectiveGlowPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SelectiveGlowPacket::encode)
+                .decoder(SelectiveGlowPacket::decode)
+                .consumerMainThread(SelectiveGlowPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(ClientParticleEffectPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientParticleEffectPacket::encode)
+                .decoder(ClientParticleEffectPacket::decode)
+                .consumerMainThread(ClientParticleEffectPacket::handle)
                 .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);

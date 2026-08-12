@@ -1,8 +1,6 @@
 package org.example.maniacrevolution.effect;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -10,7 +8,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.entity.BloodMarkerEntity;
-import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,12 +19,6 @@ import java.util.Map;
 public class OpenWoundEffect extends MobEffect {
 
     private static final int PARTICLE_SPAWN_INTERVAL = 30; // Каждые 3 секунды (60 тиков)
-    private static final int BLOOD_TRAIL_DURATION = 100; // След держится 5 секунд (100 тиков)
-
-    // Темно-красный цвет для частиц крови
-    private static final DustParticleOptions BLOOD_PARTICLE =
-            new DustParticleOptions(new Vector3f(0.8f, 0.0f, 0.0f), 1.2f);
-
     // Храним последние позиции следов для каждой сущности
     private static final Map<Integer, BlockPos> lastTrailPositions = new HashMap<>();
 
@@ -85,43 +76,8 @@ public class OpenWoundEffect extends MobEffect {
         // Спавним маркер в мир
         serverLevel.addFreshEntity(marker);
 
-        // Дополнительные частицы для момента создания следа
-        spawnAdditionalParticles(serverLevel, pos.x, groundY, pos.z);
-
         // Сохраняем позицию последнего следа
         lastTrailPositions.put(entity.getId(), blockPos);
-    }
-
-    /**
-     * Спавнит дополнительные частицы для усиления визуального эффекта
-     */
-    private void spawnAdditionalParticles(ServerLevel level, double x, double y, double z) {
-        // Красные споры
-        for (int i = 0; i < 8; i++) {
-            double offsetX = (level.random.nextDouble() - 0.5) * 0.6;
-            double offsetZ = (level.random.nextDouble() - 0.5) * 0.6;
-
-            level.sendParticles(
-                    ParticleTypes.CRIMSON_SPORE,
-                    x + offsetX,
-                    y + 0.02,
-                    z + offsetZ,
-                    3,
-                    0.1, 0.0, 0.1,
-                    0.0
-            );
-        }
-
-        // Эффект капель
-        level.sendParticles(
-                ParticleTypes.LANDING_LAVA,
-                x,
-                y + 0.1,
-                z,
-                5,
-                0.3, 0.0, 0.3,
-                0.0
-        );
     }
 
     /**

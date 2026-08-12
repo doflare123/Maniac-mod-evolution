@@ -1,220 +1,177 @@
 package org.example.maniacrevolution.util;
 
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.SelectiveGlowPacket;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
- * Утилита для выборочной подсветки любых сущностей.
- * Позволяет подсвечивать мобов/игроков только для определенных наблюдателей.
+ * Keeps viewer-specific glowing entirely outside vanilla entity metadata.
+ * Packets are sent only when a viewer starts or stops seeing a target glow.
  */
 @Mod.EventBusSubscriber
-public class SelectiveGlowingEffect {
+public final class SelectiveGlowingEffect {
+    private static final Map<UUID, TargetGlow> TARGETS = new HashMap<>();
 
-    // Структура: целевая сущность -> (наблюдатель -> время окончания подсветки)
-    private static final Map<Integer, Map<UUID, Long>> glowingTargets = new ConcurrentHashMap<>();
-
-    // Счётчик для периодического обновления пакетов (каждые 10 тиков = 0.5 сек)
-    private static int tickCounter = 0;
-    private static final int UPDATE_INTERVAL = 1;
-
-    // Флаг подсветки в битовой маске (6-й бит = 0x40)
-    private static final byte GLOWING_FLAG = 0x40;
-
-    /**
-     * Добавляет подсветку для конкретного наблюдателя
-     *
-     * @param target Кого подсвечивать (любая Entity)
-     * @param viewer Кто видит подсветку
-     * @param durationTicks Длительность в тиках (20 тиков = 1 секунда)
-     */
-    public static void addGlowing(Entity target, ServerPlayer viewer, int durationTicks) {
-        if (target == null || viewer == null) return;
-
-        long endTime = System.currentTimeMillis() + (durationTicks * 50L); // 50ms = 1 tick
-
-        glowingTargets
-                .computeIfAbsent(target.getId(), k -> new ConcurrentHashMap<>())
-                .put(viewer.getUUID(), endTime);
-
-        // Отправляем пакет с флагом подсветки
-        sendGlowingPacket(target, viewer, true);
+    private SelectiveGlowingEffect() {
     }
 
-    /**
-     * Добавляет подсветку для нескольких наблюдателей
-     */
+    public static void addGlowing(Entity target, ServerPlayer viewer, int durationTicks) {
+        if (target == null || viewer == null || target.level().isClientSide() || durationTicks <= 0) {
+            return;
+        }
+
+        TargetGlow state = TARGETS.get(target.getUUID());
+        if (state == null || state.target != target) {
+            if (state != null) {
+                disableForAll(state);
+            }
+            state = new TargetGlow(target);
+            TARGETS.put(target.getUUID(), state);
+        }
+
+        long expiresAt = viewer.server.getTickCount() + (long) durationTicks;
+        Long oldExpiry = state.viewers.put(viewer.getUUID(), expiresAt);
+        if (oldExpiry == null) {
+            send(target, viewer, true);
+        }
+    }
+
     public static void addGlowing(Entity target, List<ServerPlayer> viewers, int durationTicks) {
         for (ServerPlayer viewer : viewers) {
             addGlowing(target, viewer, durationTicks);
         }
     }
 
-    /**
-     * Добавляет подсветку нескольких целей для одного наблюдателя
-     */
     public static void addGlowingMultiple(List<? extends Entity> targets, ServerPlayer viewer, int durationTicks) {
         for (Entity target : targets) {
             addGlowing(target, viewer, durationTicks);
         }
     }
 
-    /**
-     * Убирает подсветку для конкретного наблюдателя
-     */
     public static void removeGlowing(Entity target, ServerPlayer viewer) {
-        if (target == null || viewer == null) return;
-
-        Map<UUID, Long> viewers = glowingTargets.get(target.getId());
-        if (viewers != null) {
-            viewers.remove(viewer.getUUID());
-            if (viewers.isEmpty()) {
-                glowingTargets.remove(target.getId());
-            }
+        if (target == null || viewer == null) {
+            return;
         }
 
-        sendGlowingPacket(target, viewer, false);
+        TargetGlow state = TARGETS.get(target.getUUID());
+        if (state == null || state.viewers.remove(viewer.getUUID()) == null) {
+            return;
+        }
+
+        send(state.target, viewer, false);
+        if (state.viewers.isEmpty()) {
+            TARGETS.remove(target.getUUID());
+        }
     }
 
-    /**
-     * Убирает все подсветки с сущности
-     */
     public static void removeAllGlowing(Entity target) {
-        if (target == null || target.level().isClientSide()) return;
+        if (target == null || target.level().isClientSide()) {
+            return;
+        }
 
-        Map<UUID, Long> viewers = glowingTargets.remove(target.getId());
-        if (viewers != null && !target.level().isClientSide()) {
-            for (UUID viewerUUID : viewers.keySet()) {
-                ServerPlayer viewer = target.getServer().getPlayerList().getPlayer(viewerUUID);
-                if (viewer != null) {
-                    sendGlowingPacket(target, viewer, false);
-                }
-            }
+        TargetGlow state = TARGETS.remove(target.getUUID());
+        if (state != null) {
+            disableForAll(state);
         }
     }
 
-    /**
-     * Проверяет, подсвечена ли сущность для конкретного наблюдателя
-     */
     public static boolean isGlowing(Entity target, ServerPlayer viewer) {
-        Map<UUID, Long> viewers = glowingTargets.get(target.getId());
-        if (viewers == null) return false;
-
-        Long endTime = viewers.get(viewer.getUUID());
-        return endTime != null && System.currentTimeMillis() < endTime;
-    }
-
-    /**
-     * Отправляет пакет с изменением флага подсветки
-     * Использует прямой доступ к EntityData без рефлексии
-     */
-    private static void sendGlowingPacket(Entity target, ServerPlayer viewer, boolean glowing) {
-        try {
-            // Получаем флаги напрямую через публичный метод
-            boolean wasGlowing = target.isCurrentlyGlowing();
-
-            // Временно устанавливаем флаг подсветки
-            target.setGlowingTag(glowing);
-
-            // Получаем данные и отправляем пакет
-            SynchedEntityData entityData = target.getEntityData();
-            viewer.connection.send(new ClientboundSetEntityDataPacket(
-                    target.getId(),
-                    entityData.getNonDefaultValues()
-            ));
-
-            // Восстанавливаем оригинальное состояние
-            target.setGlowingTag(wasGlowing);
-
-        } catch (Exception e) {
-            System.err.println("Error sending glowing packet: " + e.getMessage());
-            e.printStackTrace();
+        if (target == null || viewer == null) {
+            return false;
         }
+
+        TargetGlow state = TARGETS.get(target.getUUID());
+        Long expiresAt = state == null ? null : state.viewers.get(viewer.getUUID());
+        return expiresAt != null && viewer.server.getTickCount() < expiresAt;
     }
 
-    /**
-     * Обработчик тиков для автоматического снятия подсветки и периодического обновления
-     */
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+        if (event.phase != TickEvent.Phase.END || TARGETS.isEmpty()) {
+            return;
+        }
 
-        tickCounter++;
-        long currentTime = System.currentTimeMillis();
-        List<Integer> toRemove = new ArrayList<>();
-
-        // Периодически обновляем пакеты (каждые 10 тиков)
-        boolean shouldUpdate = (tickCounter % UPDATE_INTERVAL == 0);
-
-        for (Map.Entry<Integer, Map<UUID, Long>> entry : glowingTargets.entrySet()) {
-            Integer targetId = entry.getKey();
-            Map<UUID, Long> viewers = entry.getValue();
-
-            // Ищем сущность по ID во всех мирах
-            Entity target = null;
-            for (var level : event.getServer().getAllLevels()) {
-                target = level.getEntity(targetId);
-                if (target != null) break;
-            }
-
-            if (target == null) {
-                // Сущность не найдена - удаляем запись
-                toRemove.add(targetId);
+        long currentTick = event.getServer().getTickCount();
+        Iterator<Map.Entry<UUID, TargetGlow>> targets = TARGETS.entrySet().iterator();
+        while (targets.hasNext()) {
+            TargetGlow state = targets.next().getValue();
+            if (state.target.isRemoved()) {
+                disableForAll(state);
+                targets.remove();
                 continue;
             }
 
-            Entity finalTarget = target;
-
-            // Проверяем каждого наблюдателя
-            viewers.entrySet().removeIf(viewerEntry -> {
+            Iterator<Map.Entry<UUID, Long>> viewers = state.viewers.entrySet().iterator();
+            while (viewers.hasNext()) {
+                Map.Entry<UUID, Long> viewerEntry = viewers.next();
                 ServerPlayer viewer = event.getServer().getPlayerList().getPlayer(viewerEntry.getKey());
-
                 if (viewer == null) {
-                    // Игрок не найден - удаляем запись
-                    return true;
+                    viewers.remove();
+                } else if (currentTick >= viewerEntry.getValue()) {
+                    send(state.target, viewer, false);
+                    viewers.remove();
                 }
+            }
 
-                if (currentTime >= viewerEntry.getValue()) {
-                    // Время истекло - убираем подсветку
-                    sendGlowingPacket(finalTarget, viewer, false);
-                    return true;
-                }
-
-                // Периодически обновляем пакет для поддержания подсветки
-                if (shouldUpdate) {
-                    sendGlowingPacket(finalTarget, viewer, true);
-                }
-
-                return false;
-            });
-
-            // Если у цели не осталось наблюдателей, помечаем её для удаления
-            if (viewers.isEmpty()) {
-                toRemove.add(targetId);
+            if (state.viewers.isEmpty()) {
+                targets.remove();
             }
         }
-
-        // Удаляем пустые записи
-        toRemove.forEach(glowingTargets::remove);
     }
 
-    /**
-     * Очистка при выходе игрока
-     */
     public static void onPlayerLogout(ServerPlayer player) {
-        // Убираем все подсветки с этого игрока (если он сущность)
         removeAllGlowing(player);
 
-        // Убираем этого игрока из всех наблюдателей
-        for (Map<UUID, Long> viewers : glowingTargets.values()) {
-            viewers.remove(player.getUUID());
+        Iterator<Map.Entry<UUID, TargetGlow>> targets = TARGETS.entrySet().iterator();
+        while (targets.hasNext()) {
+            TargetGlow state = targets.next().getValue();
+            state.viewers.remove(player.getUUID());
+            if (state.viewers.isEmpty()) {
+                targets.remove();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        TARGETS.clear();
+    }
+
+    private static void disableForAll(TargetGlow state) {
+        if (state.target.getServer() == null) {
+            return;
+        }
+
+        for (UUID viewerId : new ArrayList<>(state.viewers.keySet())) {
+            ServerPlayer viewer = state.target.getServer().getPlayerList().getPlayer(viewerId);
+            if (viewer != null) {
+                send(state.target, viewer, false);
+            }
+        }
+    }
+
+    private static void send(Entity target, ServerPlayer viewer, boolean enabled) {
+        ModNetworking.sendToPlayer(new SelectiveGlowPacket(target, enabled), viewer);
+    }
+
+    private static final class TargetGlow {
+        private final Entity target;
+        private final Map<UUID, Long> viewers = new HashMap<>();
+
+        private TargetGlow(Entity target) {
+            this.target = target;
         }
     }
 }

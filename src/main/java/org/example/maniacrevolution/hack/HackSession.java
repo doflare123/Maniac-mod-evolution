@@ -1,7 +1,6 @@
 package org.example.maniacrevolution.hack;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,6 +11,8 @@ import org.example.maniacrevolution.perk.perks.survivor.DutchHelmPerk;
 import org.example.maniacrevolution.perk.perks.survivor.IdealychPerk;
 import org.example.maniacrevolution.perk.perks.survivor.EmergencyOverclockPerk;
 import org.example.maniacrevolution.dodepovich.DodepovichCasinoManager;
+import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.ClientParticleEffectPacket;
 
 import java.util.*;
 
@@ -235,27 +236,12 @@ public class HackSession {
 
     private void spawnRadiusParticles(ServerLevel level) {
         Vec3 center = new Vec3(pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5);
-        double r = HackConfig.SUPPORT_RADIUS;
-        int points = 24;
-        for (int i = 0; i < points; i++) {
-            double angle = (2 * Math.PI / points) * i;
-            double px = center.x + Math.cos(angle) * r;
-            double pz = center.z + Math.sin(angle) * r;
-            level.sendParticles(
-                    ParticleTypes.END_ROD,
-                    px, center.y-1, pz,
-                    1, 0, 0.05, 0, 0.01);
-        }
-        // Внутренний круг хакера
-        double rh = HackConfig.HACKER_RADIUS;
-        for (int i = 0; i < 12; i++) {
-            double angle = (2 * Math.PI / 12) * i;
-            double px = center.x + Math.cos(angle) * rh;
-            double pz = center.z + Math.sin(angle) * rh;
-            level.sendParticles(
-                    ParticleTypes.CRIT,
-                    px, center.y, pz,
-                    1, 0, 0.05, 0, 0.01);
+        ClientParticleEffectPacket packet = ClientParticleEffectPacket.hackRadius(
+                center, (float) HackConfig.SUPPORT_RADIUS, (float) HackConfig.HACKER_RADIUS);
+        for (ServerPlayer viewer : level.players()) {
+            if (viewer.distanceToSqr(center) <= 64.0 * 64.0) {
+                ModNetworking.sendToPlayer(packet, viewer);
+            }
         }
     }
 

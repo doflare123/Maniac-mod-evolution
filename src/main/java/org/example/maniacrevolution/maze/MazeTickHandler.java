@@ -7,9 +7,6 @@ import org.example.maniacrevolution.Maniacrev;
 
 /**
  * Подписывается на серверный тик и вызывает MazeManager.tick().
- *
- * Зарегистрировать в главном классе мода:
- *   MinecraftForge.EVENT_BUS.register(new MazeTickHandler());
  */
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class MazeTickHandler {

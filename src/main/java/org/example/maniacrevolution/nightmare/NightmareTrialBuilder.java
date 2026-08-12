@@ -3,7 +3,6 @@ package org.example.maniacrevolution.nightmare;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Husk;
@@ -16,11 +15,14 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import org.example.maniacrevolution.entity.FearChaserEntity;
 import org.example.maniacrevolution.entity.ModEntities;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 final class NightmareTrialBuilder {
-    private NightmareTrialBuilder() {}
+    private NightmareTrialBuilder() {
+    }
 
     static TrialArea buildArena(ServerLevel level, BlockPos origin, long seed) {
         TrialArea area = new TrialArea(level, origin, NightmareConfig.ARENA_SIZE,
@@ -33,11 +35,15 @@ final class NightmareTrialBuilder {
         for (int x = 0; x < area.width; x++) {
             for (int z = 0; z < area.depth; z++) {
                 boolean border = x == 0 || z == 0 || x == area.width - 1 || z == area.depth - 1;
-                level.setBlock(origin.offset(x, 0, z), floor, 3);
-                level.setBlock(origin.offset(x, NightmareConfig.ARENA_WALL_HEIGHT + 1, z), wall, 3);
+                area.setBlock(x, 0, z, floor);
+                area.setBlock(x, NightmareConfig.ARENA_WALL_HEIGHT + 1, z, wall);
                 if (border) {
                     for (int y = 1; y <= NightmareConfig.ARENA_WALL_HEIGHT; y++) {
-                        level.setBlock(origin.offset(x, y, z), wall, 3);
+                        area.setBlock(x, y, z, wall);
+                    }
+                } else {
+                    for (int y = 1; y <= NightmareConfig.ARENA_WALL_HEIGHT; y++) {
+                        area.setBlock(x, y, z, Blocks.AIR.defaultBlockState());
                     }
                 }
             }
@@ -48,16 +54,17 @@ final class NightmareTrialBuilder {
         for (int i = 0; i < coverCount; i++) {
             int x = randomInside(random, area.width);
             int z = randomInside(random, area.depth);
-            int h = 2 + random.nextInt(3);
-            for (int y = 1; y <= h; y++) {
-                level.setBlock(origin.offset(x, y, z), cover, 3);
+            int height = 2 + random.nextInt(3);
+            for (int y = 1; y <= height; y++) {
+                area.setBlock(x, y, z, cover);
             }
         }
 
         for (int i = 0; i < NightmareConfig.ARENA_MOB_COUNT; i++) {
             Mob mob = createArenaMob(level, random);
             mob.moveTo(origin.getX() + randomInside(random, area.width) + 0.5D, origin.getY() + 1,
-                    origin.getZ() + randomInside(random, area.depth) + 0.5D, random.nextFloat() * 360.0F, 0.0F);
+                    origin.getZ() + randomInside(random, area.depth) + 0.5D,
+                    random.nextFloat() * 360.0F, 0.0F);
             mob.setPersistenceRequired();
             level.addFreshEntity(mob);
             area.entities.add(mob);
@@ -74,16 +81,6 @@ final class NightmareTrialBuilder {
         BlockState wall = Blocks.CRYING_OBSIDIAN.defaultBlockState();
         BlockState obstacle = Blocks.BLACKSTONE.defaultBlockState();
 
-        for (int x = 0; x < area.width; x++) {
-            for (int z = 0; z < area.depth; z++) {
-                level.setBlock(origin.offset(x, 0, z), floor, 3);
-                level.setBlock(origin.offset(x, 4, z), wall, 3);
-                for (int y = 1; y <= 3; y++) {
-                    level.setBlock(origin.offset(x, y, z), wall, 3);
-                }
-            }
-        }
-
         int center = area.width / 2;
         int[][] route = {
                 {center, 3},
@@ -96,29 +93,34 @@ final class NightmareTrialBuilder {
                 {12, NightmareConfig.FEAR_RACE_LENGTH - 4}
         };
 
+        Set<BlockPos> walkable = new HashSet<>();
         for (int i = 0; i < route.length - 1; i++) {
-            carveLine(level, origin, route[i][0], route[i][1], route[i + 1][0], route[i + 1][1]);
+            addCorridor(walkable, route[i][0], route[i][1], route[i + 1][0], route[i + 1][1],
+                    area.width, area.depth);
         }
-
         for (int i = 1; i < route.length - 1; i++) {
-            carveRoom(level, origin, route[i][0], route[i][1], 2);
+            addRoom(walkable, route[i][0], route[i][1], 2, area.width, area.depth);
         }
 
-        for (int i = 14; i < NightmareConfig.FEAR_RACE_LENGTH - 10; i += 9) {
-            int[] point = pointOnRoute(route, i);
-            if (point == null) continue;
-            if (!nearRouteTurn(route, point[0], point[1], 7) && (i / 9) % 2 == 0) {
-                placeJumpBarrier(level, origin, point, obstacle);
+        buildRaceShell(area, walkable, floor, wall);
+
+        for (int distance = 14; distance < NightmareConfig.FEAR_RACE_LENGTH - 10; distance += 9) {
+            int[] point = pointOnRoute(route, distance);
+            if (point == null) {
+                continue;
+            }
+            if (!nearRouteTurn(route, point[0], point[1], 7) && (distance / 9) % 2 == 0) {
+                placeJumpBarrier(area, point, obstacle);
                 continue;
             }
             int side = random.nextBoolean() ? -1 : 1;
-            level.setBlock(origin.offset(point[0] + side, 1, point[1]), obstacle, 3);
+            area.setBlock(point[0] + side, 1, point[1], obstacle);
             if (random.nextBoolean()) {
-                level.setBlock(origin.offset(point[0] + side, 2, point[1]), obstacle, 3);
+                area.setBlock(point[0] + side, 2, point[1], obstacle);
             }
         }
 
-        placeFinishDoor(level, raceFinish(origin));
+        placeFinishDoor(area, raceFinish(origin));
 
         FearChaserEntity chaser = new FearChaserEntity(ModEntities.FEAR_CHASER.get(), level);
         chaser.setTargetPlayer(target);
@@ -146,35 +148,59 @@ final class NightmareTrialBuilder {
         return origin.offset(NightmareConfig.FEAR_RACE_AREA_WIDTH / 2, 1, 2);
     }
 
-    private static void carveLine(ServerLevel level, BlockPos origin, int x1, int z1, int x2, int z2) {
+    private static void addCorridor(Set<BlockPos> walkable, int x1, int z1, int x2, int z2,
+                                    int width, int depth) {
         int dx = Integer.compare(x2, x1);
         int dz = Integer.compare(z2, z1);
         int x = x1;
         int z = z1;
-        while (x != x2 || z != z2) {
-            carveCorridor(level, origin, x, z);
-            if (x != x2) x += dx;
-            if (z != z2) z += dz;
+        while (true) {
+            addRoom(walkable, x, z, NightmareConfig.FEAR_RACE_CORRIDOR_WIDTH / 2, width, depth);
+            if (x == x2 && z == z2) {
+                break;
+            }
+            if (x != x2) {
+                x += dx;
+            }
+            if (z != z2) {
+                z += dz;
+            }
         }
-        carveCorridor(level, origin, x2, z2);
     }
 
-    private static void carveCorridor(ServerLevel level, BlockPos origin, int x, int z) {
-        int radius = NightmareConfig.FEAR_RACE_CORRIDOR_WIDTH / 2;
-        for (int ox = -radius; ox <= radius; ox++) {
-            for (int oz = -radius; oz <= radius; oz++) {
-                for (int y = 1; y <= 3; y++) {
-                    level.setBlock(origin.offset(x + ox, y, z + oz), Blocks.AIR.defaultBlockState(), 3);
+    private static void addRoom(Set<BlockPos> walkable, int x, int z, int radius, int width, int depth) {
+        for (int offsetX = -radius; offsetX <= radius; offsetX++) {
+            for (int offsetZ = -radius; offsetZ <= radius; offsetZ++) {
+                int blockX = x + offsetX;
+                int blockZ = z + offsetZ;
+                if (blockX >= 0 && blockX < width && blockZ >= 0 && blockZ < depth) {
+                    walkable.add(new BlockPos(blockX, 0, blockZ));
                 }
             }
         }
     }
 
-    private static void carveRoom(ServerLevel level, BlockPos origin, int x, int z, int radius) {
-        for (int ox = -radius; ox <= radius; ox++) {
-            for (int oz = -radius; oz <= radius; oz++) {
+    private static void buildRaceShell(TrialArea area, Set<BlockPos> walkable,
+                                       BlockState floor, BlockState wall) {
+        for (BlockPos cell : walkable) {
+            int x = cell.getX();
+            int z = cell.getZ();
+            area.setBlock(x, 0, z, floor);
+            area.setBlock(x, 4, z, wall);
+            for (int y = 1; y <= 3; y++) {
+                area.setBlock(x, y, z, Blocks.AIR.defaultBlockState());
+            }
+
+            for (Direction direction : Direction.Plane.HORIZONTAL) {
+                BlockPos neighbor = cell.relative(direction);
+                if (neighbor.getX() < 0 || neighbor.getX() >= area.width
+                        || neighbor.getZ() < 0 || neighbor.getZ() >= area.depth
+                        || walkable.contains(neighbor)) {
+                    continue;
+                }
+                area.setBlock(neighbor.getX(), 0, neighbor.getZ(), floor);
                 for (int y = 1; y <= 3; y++) {
-                    level.setBlock(origin.offset(x + ox, y, z + oz), Blocks.AIR.defaultBlockState(), 3);
+                    area.setBlock(neighbor.getX(), y, neighbor.getZ(), wall);
                 }
             }
         }
@@ -189,7 +215,7 @@ final class NightmareTrialBuilder {
             int z2 = route[i + 1][1];
             int length = Math.abs(x2 - x1) + Math.abs(z2 - z1);
             if (remaining <= length) {
-                return new int[] {
+                return new int[]{
                         x1 + Integer.compare(x2, x1) * remaining,
                         z1 + Integer.compare(z2, z1) * remaining,
                         Integer.compare(x2, x1),
@@ -213,25 +239,26 @@ final class NightmareTrialBuilder {
         return false;
     }
 
-    private static void placeJumpBarrier(ServerLevel level, BlockPos origin, int[] point, BlockState obstacle) {
+    private static void placeJumpBarrier(TrialArea area, int[] point, BlockState obstacle) {
         if (point[2] != 0) {
             for (int dz = -1; dz <= 1; dz++) {
-                level.setBlock(origin.offset(point[0], 1, point[1] + dz), obstacle, 3);
+                area.setBlock(point[0], 1, point[1] + dz, obstacle);
             }
         } else {
             for (int dx = -1; dx <= 1; dx++) {
-                level.setBlock(origin.offset(point[0] + dx, 1, point[1]), obstacle, 3);
+                area.setBlock(point[0] + dx, 1, point[1], obstacle);
             }
         }
     }
 
-    private static void placeFinishDoor(ServerLevel level, BlockPos worldDoorPos) {
+    private static void placeFinishDoor(TrialArea area, BlockPos worldDoorPos) {
         BlockState lower = Blocks.DARK_OAK_DOOR.defaultBlockState()
                 .setValue(DoorBlock.FACING, Direction.SOUTH)
                 .setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER);
         BlockState upper = lower.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
-        level.setBlock(worldDoorPos, lower, 3);
-        level.setBlock(worldDoorPos.above(), upper, 3);
+        BlockPos relative = worldDoorPos.subtract(area.origin);
+        area.setBlock(relative, lower);
+        area.setBlock(relative.above(), upper);
     }
 
     private static Mob createArenaMob(ServerLevel level, Random random) {
