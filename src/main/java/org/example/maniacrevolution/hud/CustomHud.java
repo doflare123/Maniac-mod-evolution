@@ -223,8 +223,9 @@ public class CustomHud implements IGuiOverlay {
         gui.blit(x + 3, y + 3, 0, 16, 16, sprite);
         RenderSystem.disableBlend();
 
-        renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, 1.0f, 0xB05B626C);
+        renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, 1.0f, 0xB05B626C, 3);
         int effectColor = lerpColor(0xFF000000 | effectType.getColor(), 0xFFFFFFFF, 0.25f);
+
         renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, progress, effectColor);
         if (effectType == ModEffects.GREEN_CHARGE.get()) {
             String stacks = Integer.toString(effect.getAmplifier() + 1);
@@ -232,6 +233,7 @@ public class CustomHud implements IGuiOverlay {
             gui.drawString(Minecraft.getInstance().font, stacks, textX,
                     y + TIMED_EFFECT_SIZE - 9, 0xFFFFFFFF, true);
         }
+        renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, progress, effectColor, 3);
     }
 
     private TimedEffectState updateTimedEffectState(MobEffectInstance effect) {
@@ -765,15 +767,23 @@ public class CustomHud implements IGuiOverlay {
 
     private void renderCircularProgress(GuiGraphics gui, int x, int y, int size,
                                         float progress, int color) {
+        renderCircularProgress(gui, x, y, size, progress, color, 1);
+    }
+
+    private void renderCircularProgress(GuiGraphics gui, int x, int y, int size,
+                                        float progress, int color, int thickness) {
         int segments = 64;
         int visibleSegments = Math.round(segments * Mth.clamp(progress, 0.0f, 1.0f));
         double radius = size / 2.0 - 0.75;
         double center = (size - 1) / 2.0;
-        for (int i = 0; i < visibleSegments; i++) {
-            double angle = -Math.PI / 2.0 + Math.PI * 2.0 * i / segments;
-            int pointX = x + (int) Math.round(center + Math.cos(angle) * radius);
-            int pointY = y + (int) Math.round(center + Math.sin(angle) * radius);
-            gui.fill(pointX, pointY, pointX + 1, pointY + 1, color);
+        for (int inset = 0; inset < thickness; inset++) {
+            double ringRadius = radius - inset;
+            for (int i = 0; i < visibleSegments; i++) {
+                double angle = -Math.PI / 2.0 + Math.PI * 2.0 * i / segments;
+                int pointX = x + (int) Math.round(center + Math.cos(angle) * ringRadius);
+                int pointY = y + (int) Math.round(center + Math.sin(angle) * ringRadius);
+                gui.fill(pointX, pointY, pointX + 1, pointY + 1, color);
+            }
         }
     }
 
