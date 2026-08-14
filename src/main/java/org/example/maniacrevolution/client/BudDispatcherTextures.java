@@ -9,11 +9,11 @@ import org.example.maniacrevolution.perk.perks.maniac.BudDispatcherPerk;
 /** Общий доступ к ячейкам цветочного атласа для GUI и мирового рендера. */
 public final class BudDispatcherTextures {
     public static final ResourceLocation FLOWER_ATLAS = new ResourceLocation(
-            Maniacrev.MODID, "textures/bud_dispatcher/flowers.png");
+            Maniacrev.MODID, "textures/bud_dispatcher/flowers_cards.png");
 
-    public static final int ATLAS_WIDTH = 1024;
-    public static final int ATLAS_HEIGHT = 1536;
-    private static final int CELL_EDGE_INSET = 1;
+    public static final int CELL_SIZE = 96;
+    public static final int ATLAS_WIDTH = CELL_SIZE * BudDispatcherPerk.WILT_STAGE_COUNT;
+    public static final int ATLAS_HEIGHT = CELL_SIZE * BudDispatcherPerk.FLOWER_VARIANT_COUNT;
 
     private static final int[] ACCENT_COLORS = {
             0xFFE3312B,
@@ -68,23 +68,19 @@ public final class BudDispatcherTextures {
     }
 
     private static int minUPixels(int stage) {
-        return Math.round(stage * ATLAS_WIDTH
-                / (float) BudDispatcherPerk.WILT_STAGE_COUNT) + CELL_EDGE_INSET;
+        return stage * CELL_SIZE;
     }
 
     private static int maxUPixels(int stage) {
-        return Math.round((stage + 1) * ATLAS_WIDTH
-                / (float) BudDispatcherPerk.WILT_STAGE_COUNT) - CELL_EDGE_INSET;
+        return (stage + 1) * CELL_SIZE;
     }
 
     private static int minVPixels(int flowerIndex) {
-        return Math.round(flowerIndex * ATLAS_HEIGHT
-                / (float) BudDispatcherPerk.FLOWER_VARIANT_COUNT) + CELL_EDGE_INSET;
+        return flowerIndex * CELL_SIZE;
     }
 
     private static int maxVPixels(int flowerIndex) {
-        return Math.round((flowerIndex + 1) * ATLAS_HEIGHT
-                / (float) BudDispatcherPerk.FLOWER_VARIANT_COUNT) - CELL_EDGE_INSET;
+        return (flowerIndex + 1) * CELL_SIZE;
     }
 
     private static int clampFlower(int flowerIndex) {

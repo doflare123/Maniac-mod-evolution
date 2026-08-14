@@ -1,8 +1,14 @@
 import javax.imageio.ImageIO;
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /** One-shot deterministic generator for the small floral UI/world textures. */
 public final class GenerateFloralFixTextures {
@@ -12,6 +18,8 @@ public final class GenerateFloralFixTextures {
         File resources = new File("src/main/resources/assets/maniacrev/textures");
         File flowerAtlas = new File(resources, "bud_dispatcher/flowers.png");
         cleanChromaFringe(flowerAtlas);
+        writeCardAtlas(flowerAtlas,
+                new File(resources, "bud_dispatcher/flowers_cards.png"));
         writeOrchidBase(new File(resources, "gui/pink_orchid_base.png"));
         writeOrchidPetal(new File(resources, "gui/pink_orchid_petal.png"));
         writeVine(new File(resources, "bud_dispatcher/vine.png"));
@@ -185,6 +193,156 @@ public final class GenerateFloralFixTextures {
             }
         }
         ImageIO.write(atlas, "png", output);
+    }
+
+    private static void writeCardAtlas(File flowersFile, File output) throws IOException {
+        BufferedImage flowers = ImageIO.read(flowersFile);
+        int variants = 9;
+        int stages = 6;
+        int targetCellSize = 96;
+        BufferedImage atlas = blank(targetCellSize * stages, targetCellSize * variants);
+
+        for (int flower = 0; flower < variants; flower++) {
+            int sourceMinY = Math.round(flower * flowers.getHeight() / (float) variants);
+            int sourceMaxY = Math.round((flower + 1) * flowers.getHeight()
+                    / (float) variants);
+            for (int stage = 0; stage < stages; stage++) {
+                int sourceMinX = Math.round(stage * flowers.getWidth() / (float) stages);
+                int sourceMaxX = Math.round((stage + 1) * flowers.getWidth()
+                        / (float) stages);
+                BufferedImage sourceCell = flowers.getSubimage(
+                        sourceMinX, sourceMinY,
+                        sourceMaxX - sourceMinX, sourceMaxY - sourceMinY);
+                BufferedImage cleanedCell = keepIntentionalComponents(sourceCell, stage);
+                Bounds bounds = opaqueBounds(cleanedCell);
+                if (bounds == null) continue;
+
+                int sourceWidth = bounds.maxX - bounds.minX + 1;
+                int sourceHeight = bounds.maxY - bounds.minY + 1;
+                float scale = Math.min(76.0F / sourceWidth, 80.0F / sourceHeight);
+                int targetWidth = Math.max(1, Math.round(sourceWidth * scale));
+                int targetHeight = Math.max(1, Math.round(sourceHeight * scale));
+                int targetX = stage * targetCellSize
+                        + (targetCellSize - targetWidth) / 2;
+                int targetY = flower * targetCellSize + 88 - targetHeight;
+
+                Graphics2D graphics = atlas.createGraphics();
+                graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                        RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+                graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_OFF);
+                graphics.drawImage(cleanedCell,
+                        targetX, targetY, targetX + targetWidth, targetY + targetHeight,
+                        bounds.minX, bounds.minY, bounds.maxX + 1, bounds.maxY + 1,
+                        null);
+                graphics.dispose();
+            }
+        }
+        ImageIO.write(atlas, "png", output);
+    }
+
+    private static BufferedImage keepIntentionalComponents(BufferedImage source, int stage) {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        boolean[] visited = new boolean[width * height];
+        List<Component> components = new ArrayList<>();
+        int[] neighborX = {-1, 0, 1, -1, 1, -1, 0, 1};
+        int[] neighborY = {-1, -1, -1, 0, 0, 1, 1, 1};
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int startIndex = y * width + x;
+                if (visited[startIndex] || source.getRGB(x, y) >>> 24 == 0) continue;
+                Component component = new Component();
+                ArrayDeque<Integer> queue = new ArrayDeque<>();
+                queue.add(startIndex);
+                visited[startIndex] = true;
+                while (!queue.isEmpty()) {
+                    int packed = queue.removeFirst();
+                    int pixelX = packed % width;
+                    int pixelY = packed / width;
+                    component.pixels.add(packed);
+                    component.include(pixelX, pixelY);
+                    for (int neighbor = 0; neighbor < neighborX.length; neighbor++) {
+                        int nextX = pixelX + neighborX[neighbor];
+                        int nextY = pixelY + neighborY[neighbor];
+                        if (nextX < 0 || nextY < 0 || nextX >= width || nextY >= height) {
+                            continue;
+                        }
+                        int nextIndex = nextY * width + nextX;
+                        if (!visited[nextIndex]
+                                && source.getRGB(nextX, nextY) >>> 24 != 0) {
+                            visited[nextIndex] = true;
+                            queue.addLast(nextIndex);
+                        }
+                    }
+                }
+                components.add(component);
+            }
+        }
+
+        BufferedImage result = blank(width, height);
+        if (components.isEmpty()) return result;
+        components.sort(Comparator.comparingInt(Component::size).reversed());
+        Component main = components.get(0);
+        int minimumSize = Math.max(18, Math.round(main.size() * 0.018F));
+        for (Component component : components) {
+            boolean closeToPlant = component.distanceSquared(main) <= 18 * 18;
+            boolean fallenPetal = stage >= 4 && component.size() >= 10;
+            if (component != main
+                    && !(component.size() >= minimumSize && closeToPlant)
+                    && !fallenPetal) {
+                continue;
+            }
+            for (int packed : component.pixels) {
+                int x = packed % width;
+                int y = packed / width;
+                result.setRGB(x, y, source.getRGB(x, y));
+            }
+        }
+        return result;
+    }
+
+    private static Bounds opaqueBounds(BufferedImage image) {
+        Bounds bounds = null;
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                if (image.getRGB(x, y) >>> 24 == 0) continue;
+                if (bounds == null) bounds = new Bounds();
+                bounds.include(x, y);
+            }
+        }
+        return bounds;
+    }
+
+    private static class Bounds {
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+
+        void include(int x, int y) {
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+        }
+    }
+
+    private static final class Component extends Bounds {
+        final List<Integer> pixels = new ArrayList<>();
+
+        int size() {
+            return pixels.size();
+        }
+
+        int distanceSquared(Component other) {
+            int dx = maxX < other.minX ? other.minX - maxX
+                    : other.maxX < minX ? minX - other.maxX : 0;
+            int dy = maxY < other.minY ? other.minY - maxY
+                    : other.maxY < minY ? minY - other.maxY : 0;
+            return dx * dx + dy * dy;
+        }
     }
 
     private static boolean isPetalPixel(int argb) {

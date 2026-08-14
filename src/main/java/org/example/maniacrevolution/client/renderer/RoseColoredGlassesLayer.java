@@ -12,8 +12,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
-import org.example.maniacrevolution.effect.ModEffects;
-import org.example.maniacrevolution.item.RoseColoredGlassesItem;
 
 /** A bright textured glasses plane attached directly to the animated player head. */
 public final class RoseColoredGlassesLayer
@@ -37,10 +35,7 @@ public final class RoseColoredGlassesLayer
                        AbstractClientPlayer player, float limbSwing, float limbSwingAmount,
                        float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
         if (player.isInvisible()
-                || !player.hasEffect(ModEffects.ROSE_COLORED_GLASSES.get())
-                || !player.getOffhandItem().is(ModItems.ROSE_COLORED_GLASSES.get())
-                || !RoseColoredGlassesItem.belongsTo(
-                        player.getOffhandItem(), player.getUUID())) {
+                || !player.getOffhandItem().is(ModItems.ROSE_COLORED_GLASSES.get())) {
             return;
         }
 

@@ -67,11 +67,11 @@ public class CustomHud implements IGuiOverlay {
     private static final int RESOURCE_BAR_HEIGHT = 14;
     private static final int ADDICTION_INDICATOR_WIDTH = 68;
     private static final int BOUQUET_FLOWER_ICON_CENTER = 8;
-    private static final int BOUQUET_FLOWER_HORIZONTAL_SPACING = 5;
-    private static final int BOUQUET_FLOWER_CENTER_Y_OFFSET = 2;
-    private static final int BOUQUET_FLOWER_SIDE_Y_OFFSET = 1;
-    private static final float BOUQUET_FLOWER_SCALE = 0.68F;
-    private static final float BOUQUET_FLOWER_SIDE_ROTATION_DEGREES = 22.0F;
+    private static final int BOUQUET_FLOWER_HORIZONTAL_SPACING = 7;
+    private static final int BOUQUET_FLOWER_CENTER_Y_OFFSET = -7;
+    private static final int BOUQUET_FLOWER_SIDE_Y_OFFSET = -6;
+    private static final float BOUQUET_FLOWER_SCALE = 0.90F;
+    private static final float BOUQUET_FLOWER_SIDE_ROTATION_DEGREES = 20.0F;
 
     private static final int PANEL_BG = 0xB5101216;
     private static final int PANEL_BORDER = 0xCC59616C;
@@ -476,7 +476,7 @@ public class CustomHud implements IGuiOverlay {
             gui.pose().translate(
                     perkX + PERK_ICON_SIZE / 2.0F + offsetX,
                     perkY + offsetY,
-                    250.0F
+                    450
             );
             gui.pose().mulPose(Axis.ZP.rotationDegrees(rotation));
             gui.pose().scale(BOUQUET_FLOWER_SCALE, BOUQUET_FLOWER_SCALE, 1.0F);

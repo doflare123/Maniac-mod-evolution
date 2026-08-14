@@ -134,10 +134,10 @@ public class BudDispatcherScreen extends Screen {
                 x + width - CARD_INSET, y + height - CARD_INSET, 0xE0141020);
         graphics.renderOutline(x, y, width, height, darkenedAccent);
 
-        int spriteSize = Math.max(1, Math.min(width - CARD_INSET * 2,
+        int spriteSize = Math.max(1, Math.min(width - CARD_INSET * 4,
                 height - CARD_INSET * 2));
         int spriteX = x + (width - spriteSize) / 2;
-        int spriteY = y + (height - spriteSize) / 2;
+        int spriteY = y + height - CARD_INSET - spriteSize;
         BudDispatcherTextures.blit(graphics, state.flowerIndex(), state.stage(),
                 spriteX, spriteY, spriteSize, spriteSize);
     }
