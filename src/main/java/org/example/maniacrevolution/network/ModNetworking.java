@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "5";
+    private static final String PROTOCOL_VERSION = "6";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -508,6 +508,12 @@ public class ModNetworking {
                 .encoder(DeathTeleportWarningPacket::encode)
                 .decoder(DeathTeleportWarningPacket::decode)
                 .consumerMainThread(DeathTeleportWarningPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(PreGameReadyStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(PreGameReadyStatePacket::encode)
+                .decoder(PreGameReadyStatePacket::decode)
+                .consumerMainThread(PreGameReadyStatePacket::handle)
                 .add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);

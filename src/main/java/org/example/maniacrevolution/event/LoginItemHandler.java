@@ -12,6 +12,7 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SyncSettingsPacket;
+import org.example.maniacrevolution.pregame.PreGameReadyManager;
 import org.example.maniacrevolution.settings.GameSettings;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -24,10 +25,19 @@ public class LoginItemHandler {
         }
 
         givePreGameReadyItem(player);
+        PreGameReadyManager.syncStateToAll(player.getServer());
 
         if (player.hasPermissions(2)) {
             giveSettingsItem(player);
             syncSettingsToPlayer(player);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            player.getServer().execute(() ->
+                    PreGameReadyManager.syncStateToAll(player.getServer()));
         }
     }
 

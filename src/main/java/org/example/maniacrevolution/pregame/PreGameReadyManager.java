@@ -5,6 +5,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
+import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.PreGameReadyStatePacket;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +20,8 @@ public class PreGameReadyManager {
     private static final Map<UUID, Boolean> readyPlayers = new ConcurrentHashMap<>();
     private static PreGameCountdownTask countdownTask = null;
     private static MinecraftServer server = null;
+    private static boolean voteActive = false;
+    private static String voteInitiatorName = "";
 
     public static void setServer(MinecraftServer s) {
         server = s;
@@ -28,9 +32,13 @@ public class PreGameReadyManager {
     // ─────────────────────────────────────────────
 
     public static void setPlayerReady(ServerPlayer player, boolean ready) {
+        if (!voteActive) {
+            voteActive = true;
+            voteInitiatorName = player.getName().getString();
+        }
         readyPlayers.put(player.getUUID(), ready);
         updateItem(player, ready);
-        broadcastStatus(player, ready);
+        syncStateToAll(player.getServer());
         checkAllReady(player.getServer());
     }
 
@@ -53,11 +61,14 @@ public class PreGameReadyManager {
     public static void resetAll(MinecraftServer srv) {
         readyPlayers.clear();
         cancelCountdown();
+        voteActive = false;
+        voteInitiatorName = "";
 
         if (srv == null) return;
         for (ServerPlayer player : srv.getPlayerList().getPlayers()) {
             replaceReadyItem(player, false);
         }
+        syncStateToAll(srv);
         Maniacrev.LOGGER.info("[PreGame] All players readiness reset");
     }
 
@@ -96,6 +107,8 @@ public class PreGameReadyManager {
         boolean allReady = players.stream().allMatch(p -> isPlayerReady(p.getUUID()));
 
         if (allReady) {
+            voteActive = false;
+            syncStateToAll(srv);
             startCountdown(srv);
         } else {
             cancelCountdown();
@@ -156,25 +169,25 @@ public class PreGameReadyManager {
         }
     }
 
-    private static void broadcastStatus(ServerPlayer player, boolean ready) {
-        if (server == null) return;
+    public static void syncStateToAll(MinecraftServer srv) {
+        if (srv == null) return;
+        for (ServerPlayer player : srv.getPlayerList().getPlayers()) {
+            sendState(player, srv);
+        }
+    }
 
-        int total = server.getPlayerList().getPlayerCount();
-        long readyCount = server.getPlayerList().getPlayers().stream()
-                .filter(p -> isPlayerReady(p.getUUID())).count();
-
-        String color = ready ? "§a" : "§c";
-        String action = ready ? "готов" : "отменил готовность";
-        Component msg = Component.literal(
-                color + player.getName().getString() + " " + action
-                + " §7(" + readyCount + "/" + total + ")"
-        );
-
-        server.execute(() -> {
-            for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-                p.sendSystemMessage(msg);
-            }
-        });
+    private static void sendState(ServerPlayer player, MinecraftServer srv) {
+        int total = srv.getPlayerList().getPlayerCount();
+        int ready = (int) srv.getPlayerList().getPlayers().stream()
+                .filter(p -> isPlayerReady(p.getUUID()))
+                .count();
+        ModNetworking.sendToPlayer(new PreGameReadyStatePacket(
+                voteActive,
+                voteInitiatorName,
+                ready,
+                total,
+                isPlayerReady(player)
+        ), player);
     }
 
     public static void broadcast(String message) {

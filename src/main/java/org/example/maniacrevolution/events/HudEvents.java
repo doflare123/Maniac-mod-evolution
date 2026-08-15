@@ -11,6 +11,7 @@ import org.example.maniacrevolution.hud.RoseColoredGlassesOverlay;
 import org.example.maniacrevolution.hud.PinkOrchidRecordingOverlay;
 import org.example.maniacrevolution.hud.SberSproutOverlay;
 import org.example.maniacrevolution.hud.ColorRouletteOverlay;
+import org.example.maniacrevolution.hud.PreGameReadyOverlay;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class HudEvents {
@@ -18,6 +19,7 @@ public class HudEvents {
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiOverlaysEvent event) {
         event.registerAboveAll("custom_hud", CustomHud.INSTANCE);
+        event.registerAboveAll("pregame_ready", PreGameReadyOverlay.INSTANCE);
         event.registerAboveAll("color_roulette", ColorRouletteOverlay.INSTANCE);
         event.registerAboveAll("guide_update_indicator", new GuideUpdateIndicatorHud());
         event.registerAboveAll("pink_orchid_recording", PinkOrchidRecordingOverlay.INSTANCE);

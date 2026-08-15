@@ -223,7 +223,7 @@ public class CustomHud implements IGuiOverlay {
         gui.blit(x + 3, y + 3, 0, 16, 16, sprite);
         RenderSystem.disableBlend();
 
-        renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, 1.0f, 0xB05B626C, 3);
+        renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, 1.0f, 0xB05B626C, 2);
         int effectColor = lerpColor(0xFF000000 | effectType.getColor(), 0xFFFFFFFF, 0.25f);
 
         renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, progress, effectColor);
@@ -233,7 +233,7 @@ public class CustomHud implements IGuiOverlay {
             gui.drawString(Minecraft.getInstance().font, stacks, textX,
                     y + TIMED_EFFECT_SIZE - 9, 0xFFFFFFFF, true);
         }
-        renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, progress, effectColor, 3);
+        renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, progress, effectColor, 2);
     }
 
     private TimedEffectState updateTimedEffectState(MobEffectInstance effect) {
