@@ -11,8 +11,6 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
 import org.example.maniacrevolution.ModItems;
-import org.example.maniacrevolution.network.ModNetworking;
-import org.example.maniacrevolution.network.packets.ReadyStatusPacket;
 import org.example.maniacrevolution.readiness.ReadinessManager;
 
 /**
@@ -52,25 +50,6 @@ public class ReadyItem extends Item {
             boolean newReady = !currentReady;
 
             ReadinessManager.setPlayerReady(serverPlayer, newReady);
-
-            // Подсчёт готовых игроков
-            int totalPlayers = level.getServer().getPlayerList().getPlayerCount();
-            int readyPlayers = 0;
-            for (net.minecraft.server.level.ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
-                if (ReadinessManager.isPlayerReady(p)) {
-                    readyPlayers++;
-                }
-            }
-
-            // Сообщение всем игрокам
-            String statusColor = newReady ? "§a" : "§c";
-            String statusText = newReady ? "готов" : "отменил готовность";
-            Component message = Component.literal(statusColor + player.getName().getString() + " " + statusText +
-                    " §7(" + readyPlayers + "/" + totalPlayers + ")");
-
-            for (net.minecraft.server.level.ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
-                p.sendSystemMessage(message);
-            }
 
             // Меняем предмет на другой в зависимости от состояния
             ItemStack newStack = new ItemStack(newReady ? ModItems.READY_ITEM_ACTIVE.get() : ModItems.READY_ITEM.get());

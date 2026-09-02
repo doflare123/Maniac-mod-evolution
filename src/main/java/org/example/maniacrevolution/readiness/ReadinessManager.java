@@ -7,6 +7,8 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.PreGameReadyStatePacket;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +21,10 @@ public class ReadinessManager {
     private static CountdownTask countdownTask = null;
     private static MinecraftServer server = null;
     private static boolean waitingForMap = false; // Флаг: ждём выбора карты
+    // The same HUD is used for pre-lobby readiness and class/perk selection.
+    // Keep ownership through the countdown so pre-lobby sync cannot overwrite it.
+    private static boolean readinessCheckActive = false;
+    private static String voteInitiatorName = "";
 
     /**
      * Установить сервер для выполнения команд
@@ -31,6 +37,10 @@ public class ReadinessManager {
      * Установить статус готовности игрока
      */
     public static void setPlayerReady(ServerPlayer player, boolean ready) {
+        if (!readinessCheckActive) {
+            readinessCheckActive = true;
+            voteInitiatorName = player.getName().getString();
+        }
         UUID playerId = player.getUUID();
 
         if (ready) {
@@ -40,6 +50,7 @@ public class ReadinessManager {
         }
 
         checkAllPlayersReady(player.getServer());
+        syncStateToAll(player.getServer());
     }
 
     /**
@@ -61,15 +72,20 @@ public class ReadinessManager {
      */
     public static void resetReadiness(ServerPlayer player) {
         if (player == null) {
+            boolean wasActive = readinessCheckActive;
             // Сбросить всех
             readyPlayers.clear();
             cancelCountdown();
             waitingForMap = false;
+            readinessCheckActive = false;
+            if (wasActive) syncStateToAll(server);
+            voteInitiatorName = "";
             Maniacrev.LOGGER.info("All players readiness reset");
         } else {
             // Сбросить конкретного игрока
             readyPlayers.put(player.getUUID(), false);
             checkAllPlayersReady(player.getServer());
+            if (readinessCheckActive) syncStateToAll(player.getServer());
             Maniacrev.LOGGER.info("Player {} readiness reset", player.getName().getString());
         }
     }
@@ -85,6 +101,7 @@ public class ReadinessManager {
             waitingForMap = false;
             Maniacrev.LOGGER.info("Map selected! Starting countdown...");
             startCountdown(minecraftServer);
+            syncStateToAll(minecraftServer);
         }
     }
 
@@ -191,6 +208,26 @@ public class ReadinessManager {
         readyPlayers.clear();
         cancelCountdown();
         waitingForMap = false;
+        readinessCheckActive = false;
+        voteInitiatorName = "";
+    }
+
+    public static boolean isReadinessCheckActive() {
+        return readinessCheckActive;
+    }
+
+    /** Reuse the existing animated readiness panel without changing its packet format. */
+    public static void syncStateToAll(MinecraftServer srv) {
+        if (srv == null) return;
+
+        List<ServerPlayer> players = srv.getPlayerList().getPlayers();
+        int readyCount = (int) players.stream().filter(ReadinessManager::isPlayerReady).count();
+        boolean visible = readinessCheckActive && getRemainingSeconds() < 0;
+        for (ServerPlayer player : players) {
+            ModNetworking.sendToPlayer(new PreGameReadyStatePacket(
+                    visible, voteInitiatorName, readyCount, players.size(), isPlayerReady(player)
+            ), player);
+        }
     }
 
     /**

@@ -26,23 +26,6 @@ public class ReadyItemActive extends Item {
         if (!level.isClientSide) {
             ReadinessManager.setPlayerReady((net.minecraft.server.level.ServerPlayer) player, false);
 
-            // Подсчёт готовых игроков
-            int totalPlayers = level.getServer().getPlayerList().getPlayerCount();
-            int readyPlayers = 0;
-            for (net.minecraft.server.level.ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
-                if (ReadinessManager.isPlayerReady(p)) {
-                    readyPlayers++;
-                }
-            }
-
-            // Сообщение всем игрокам
-            Component message = Component.literal("§c" + player.getName().getString() + " отменил готовность" +
-                    " §7(" + readyPlayers + "/" + totalPlayers + ")");
-
-            for (net.minecraft.server.level.ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
-                p.sendSystemMessage(message);
-            }
-
             // Меняем обратно на красную кнопку
             ItemStack newStack = new ItemStack(ModItems.READY_ITEM.get());
             player.setItemInHand(hand, newStack);

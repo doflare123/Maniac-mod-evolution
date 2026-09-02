@@ -7,6 +7,7 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.PreGameReadyStatePacket;
+import org.example.maniacrevolution.readiness.ReadinessManager;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -171,6 +172,11 @@ public class PreGameReadyManager {
 
     public static void syncStateToAll(MinecraftServer srv) {
         if (srv == null) return;
+        // Login/logout and pre-lobby resets must preserve the current lobby vote.
+        if (ReadinessManager.isReadinessCheckActive()) {
+            ReadinessManager.syncStateToAll(srv);
+            return;
+        }
         for (ServerPlayer player : srv.getPlayerList().getPlayers()) {
             sendState(player, srv);
         }
