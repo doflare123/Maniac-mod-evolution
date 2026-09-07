@@ -20,7 +20,7 @@ public final class ColorRoulettePerk extends Perk {
     public static final int SURVIVOR_HEAL_HP = 4;
     public static final int TOP_COMPUTERS_REVEALED = 3;
     public static final int RED_GUIDANCE_SECONDS = 15;
-    public static final int GREEN_DAMAGE_PER_STACK = 2;
+    public static final float GREEN_DAMAGE_PER_STACK = 1.5F;
     public static final int RED_CARD_KNOCKBACK_LEVEL = 2;
 
     public ColorRoulettePerk() {

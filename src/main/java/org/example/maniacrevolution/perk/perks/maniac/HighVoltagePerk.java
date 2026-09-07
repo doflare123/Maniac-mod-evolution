@@ -30,6 +30,7 @@ public class HighVoltagePerk extends Perk {
     private static final int DISPLAYED_LEVEL_OFFSET = 1;
     private static final int SPEED_EFFECT_AMPLIFIER = SPEED_BONUS_PERCENT - DISPLAYED_LEVEL_OFFSET;
     private static final int SPEED_EFFECT_REFRESH_DURATION_TICKS = 5;
+    private static final int SPEED_EFFECT_REFRESH_THRESHOLD_TICKS = 2;
     private static final double HORIZONTAL_RADIUS_SQUARED =
             HORIZONTAL_RADIUS_BLOCKS * HORIZONTAL_RADIUS_BLOCKS;
     private static final float MIN_PROGRESS_DENOMINATOR = 0.0001F;
@@ -79,14 +80,20 @@ public class HighVoltagePerk extends Perk {
     private boolean updateSpeedState(ServerPlayer player) {
         boolean shouldBeActive = isNearChargedComputer(player);
         if (shouldBeActive) {
-            player.addEffect(new MobEffectInstance(
-                    ModEffects.ACCELERATION.get(),
-                    SPEED_EFFECT_REFRESH_DURATION_TICKS,
-                    SPEED_EFFECT_AMPLIFIER,
-                    false,
-                    false,
-                    true
-            ));
+            MobEffectInstance current = player.getEffect(ModEffects.ACCELERATION.get());
+            if (current == null
+                    || current.getAmplifier() < SPEED_EFFECT_AMPLIFIER
+                    || (current.getAmplifier() == SPEED_EFFECT_AMPLIFIER
+                    && current.getDuration() <= SPEED_EFFECT_REFRESH_THRESHOLD_TICKS)) {
+                player.addEffect(new MobEffectInstance(
+                        ModEffects.ACCELERATION.get(),
+                        SPEED_EFFECT_REFRESH_DURATION_TICKS,
+                        SPEED_EFFECT_AMPLIFIER,
+                        false,
+                        false,
+                        true
+                ));
+            }
         }
         return shouldBeActive;
     }

@@ -18,6 +18,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -40,6 +42,7 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -211,18 +214,16 @@ public final class PaintPuddleManager {
             ServerLevel level = server.getLevel(puddle.dimension);
             if (level == null) continue;
 
-            Set<UUID> currentlyInside = new HashSet<>();
+            puddle.playersInside.removeIf(playerId -> {
+                ServerPlayer player = server.getPlayerList().getPlayer(playerId);
+                return player == null || player.serverLevel() != level || !isInside(player, puddle);
+            });
             for (ServerPlayer player : level.players()) {
                 if (!isInside(player, puddle)) continue;
-                currentlyInside.add(player.getUUID());
-                if (puddle.playersInside.contains(player.getUUID())) continue;
-
-                puddle.playersInside.add(player.getUUID());
-                if (canTrigger(player)) {
+                if (puddle.playersInside.add(player.getUUID()) && canTrigger(player)) {
                     startQte(player, puddle);
                 }
             }
-            puddle.playersInside.retainAll(currentlyInside);
         }
     }
 
@@ -269,31 +270,32 @@ public final class PaintPuddleManager {
 
     private static void tickQtes(MinecraftServer server) {
         long now = server.overworld().getGameTime();
-        for (PaintQteSession session : new ArrayList<>(QTE_SESSIONS.values())) {
-            ServerPlayer player = findSessionPlayer(server, session);
-            if (player == null) continue;
-
+        Iterator<Map.Entry<UUID, PaintQteSession>> iterator = QTE_SESSIONS.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, PaintQteSession> entry = iterator.next();
+            ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+            PaintQteSession session = entry.getValue();
+            if (player == null) {
+                iterator.remove();
+                continue;
+            }
             if (now > session.startedTick
                     + session.totalDurationTicks
                     + SERVER_QTE_GRACE_TICKS) {
-                finishQte(player, session);
+                iterator.remove();
+                applyQteResult(player, session);
             }
         }
-    }
-
-    private static ServerPlayer findSessionPlayer(MinecraftServer server, PaintQteSession target) {
-        for (Map.Entry<UUID, PaintQteSession> entry : QTE_SESSIONS.entrySet()) {
-            if (entry.getValue() == target) {
-                return server.getPlayerList().getPlayer(entry.getKey());
-            }
-        }
-        return null;
     }
 
     private static void finishQte(ServerPlayer player, PaintQteSession session) {
         if (QTE_SESSIONS.get(player.getUUID()) != session) return;
         QTE_SESSIONS.remove(player.getUUID());
 
+        applyQteResult(player, session);
+    }
+
+    private static void applyQteResult(ServerPlayer player, PaintQteSession session) {
         player.addEffect(new MobEffectInstance(
                 ModEffects.PAINT_PROTECTION.get(),
                 ThePaintThickensPerk.PROTECTION_DURATION_TICKS,
@@ -317,10 +319,7 @@ public final class PaintPuddleManager {
     }
 
     private static void synchronizePlayers(MinecraftServer server) {
-        Set<UUID> online = new HashSet<>();
-        long gameTick = server.overworld().getGameTime();
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            online.add(player.getUUID());
             ResourceKey<Level> synced = SYNCED_DIMENSIONS.get(player.getUUID());
             if (!player.level().dimension().equals(synced)) {
                 ModNetworking.sendToPlayer(PaintPuddlePacket.clear(), player);
@@ -332,7 +331,24 @@ public final class PaintPuddleManager {
                 SYNCED_DIMENSIONS.put(player.getUUID(), player.level().dimension());
             }
         }
-        SYNCED_DIMENSIONS.keySet().removeIf(id -> !online.contains(id));
+        SYNCED_DIMENSIONS.keySet().removeIf(
+                id -> server.getPlayerList().getPlayer(id) == null);
+    }
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        UUID playerId = player.getUUID();
+        QTE_SESSIONS.remove(playerId);
+        SYNCED_DIMENSIONS.remove(playerId);
+        for (PaintPuddle puddle : PUDDLES) {
+            puddle.playersInside.remove(playerId);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event) {
+        clearMatch(event.getServer());
     }
 
     private static void enforceBoundItems(MinecraftServer server) {

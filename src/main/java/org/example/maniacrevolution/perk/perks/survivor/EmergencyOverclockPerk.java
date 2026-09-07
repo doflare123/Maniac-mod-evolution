@@ -4,6 +4,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.hack.HackConfig;
 import org.example.maniacrevolution.hack.HackManager;
@@ -21,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Пока разгон активен, владелец не даёт обычных пассивных очков, а результат его QTE
  * напрямую и значительно меняет прогресс текущего компьютера.
  */
+@Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class EmergencyOverclockPerk extends Perk {
     public static final String ID = "emergency_overclock";
     public static final int DURATION_SECONDS = 8;
@@ -123,5 +129,17 @@ public class EmergencyOverclockPerk extends Perk {
                         .withStyle(ChatFormatting.RED),
                 true);
         return true;
+    }
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            ACTIVE_UNTIL_TICK.remove(player.getUUID());
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event) {
+        ACTIVE_UNTIL_TICK.clear();
     }
 }

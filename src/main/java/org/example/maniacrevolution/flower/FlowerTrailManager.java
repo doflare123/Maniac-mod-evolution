@@ -12,6 +12,10 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.downed.DownedData;
@@ -33,6 +37,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /** Серверное состояние цветочных следов, общее для всех владельцев перка. */
+@Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public final class FlowerTrailManager {
     private static final double SURFACE_RENDER_OFFSET = 0.015D;
     private static final double SURFACE_RAY_START_OFFSET = 0.05D;
@@ -226,6 +231,21 @@ public final class FlowerTrailManager {
                 );
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event) {
+        PLAYER_FLOWERS.clear();
+        NEXT_SPAWN_TICKS.clear();
+        SYNCED_VIEWER_DIMENSIONS.clear();
+        ACTIVE_TRACES.clear();
+        ASSIGNMENT_ORDER.clear();
+        nextAssignmentIndex = 0;
+        nextTraceId = 1L;
+        nextTestTraceId = Long.MAX_VALUE;
+        lastProcessedGameTick = Long.MIN_VALUE;
+        lastStartSignalGameTick = Long.MIN_VALUE;
+        initialized = false;
     }
 
     private static void buildAssignmentOrder(long seed) {

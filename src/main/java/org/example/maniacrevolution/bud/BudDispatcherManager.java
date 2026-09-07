@@ -4,6 +4,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
@@ -19,18 +23,22 @@ import org.example.maniacrevolution.perk.perks.maniac.BudDispatcherPerk;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
 /** Серверное состояние соответствия «логический компьютер → цветок». */
+@Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public final class BudDispatcherManager {
     private static final Map<Integer, Integer> FLOWER_BY_COMPUTER = new LinkedHashMap<>();
     private static final Map<Integer, Integer> STAGE_BY_COMPUTER = new HashMap<>();
     private static final List<Integer> SHUFFLED_FLOWERS = new ArrayList<>();
-    private static final Map<UUID, ServerPlayer> SYNCHRONIZED_PLAYERS = new HashMap<>();
+    /** UUID достаточно: хранить ServerPlayer здесь нельзя, иначе старый объект переживает выход. */
+    private static final Set<UUID> SYNCHRONIZED_PLAYERS = new HashSet<>();
 
     private static boolean initialized;
     private static int nextFlowerIndex;
@@ -82,13 +90,13 @@ public final class BudDispatcherManager {
         ensureInitialized(player.server);
         refreshKnownStages();
         ModNetworking.sendToPlayer(BudDispatcherPacket.full(snapshotEntries(), openScreen), player);
-        SYNCHRONIZED_PLAYERS.put(player.getUUID(), player);
+        SYNCHRONIZED_PLAYERS.add(player.getUUID());
     }
 
     /** Один лёгкий lookup за тик; сеть используется лишь для нового объекта игрока после входа. */
     public static synchronized void ensurePlayerSynchronized(ServerPlayer player) {
         if (player == null || !canReceiveState(player)) return;
-        if (SYNCHRONIZED_PLAYERS.get(player.getUUID()) != player) {
+        if (!SYNCHRONIZED_PLAYERS.contains(player.getUUID())) {
             syncFullState(player, false);
         }
     }
@@ -185,9 +193,27 @@ public final class BudDispatcherManager {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if (canReceiveState(player)) {
                 ModNetworking.sendToPlayer(packet, player);
-                SYNCHRONIZED_PLAYERS.put(player.getUUID(), player);
+                SYNCHRONIZED_PLAYERS.add(player.getUUID());
             }
         }
+    }
+
+    @SubscribeEvent
+    public static synchronized void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            SYNCHRONIZED_PLAYERS.remove(player.getUUID());
+        }
+    }
+
+    @SubscribeEvent
+    public static synchronized void onServerStopping(ServerStoppingEvent event) {
+        FLOWER_BY_COMPUTER.clear();
+        STAGE_BY_COMPUTER.clear();
+        SHUFFLED_FLOWERS.clear();
+        SYNCHRONIZED_PLAYERS.clear();
+        initialized = false;
+        nextFlowerIndex = 0;
+        lastMatchStartTick = Integer.MIN_VALUE;
     }
 
     private static boolean canReceiveState(ServerPlayer player) {

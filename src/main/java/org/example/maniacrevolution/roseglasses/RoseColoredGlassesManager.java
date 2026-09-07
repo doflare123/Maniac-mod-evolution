@@ -13,6 +13,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -163,6 +165,20 @@ public final class RoseColoredGlassesManager {
             recoverGlassesFromOpenMenu(player);
             recoverCarriedGlasses(player);
         }
+    }
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            ACTIVE_PLAYERS.remove(player.getUUID());
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event) {
+        ACTIVE_PLAYERS.clear();
+        matchInitialized = false;
+        lastBeginTick = Long.MIN_VALUE;
     }
 
     private static void tickPlayer(ServerPlayer player, int phase) {

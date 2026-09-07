@@ -22,6 +22,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -316,6 +317,13 @@ public final class ForgetMeNotManager {
         flower.discardWithoutStateChange();
         ForgetMeNotSavedData.get(player.server).setDestroyed(player.getUUID());
         playBreakEffects(level, position, true);
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event) {
+        CHANNELS.clear();
+        matchInitialized = false;
+        lastBeginTick = Long.MIN_VALUE;
     }
 
     @SubscribeEvent

@@ -2,6 +2,7 @@ import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -9,17 +10,65 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /** One-shot deterministic generator for the small floral UI/world textures. */
 public final class GenerateFloralFixTextures {
     private static final int TRANSPARENT = 0x00000000;
+    private static final int CARD_CELL_SIZE = 96;
+    private static final int POSE_GRID_SIZE = 24;
+    private static final int FLOWER_SOURCE_SIZE = 16;
+    private static final int FLOWER_BASE_X = 8;
+    private static final int FLOWER_BASE_Y = 15;
+    private static final int POSE_BASE_X = 12;
+    private static final int POSE_BASE_Y = 21;
+    private static final int POSE_SCALE = CARD_CELL_SIZE / POSE_GRID_SIZE;
+
+    private static final String[] VANILLA_FLOWER_TEXTURES = {
+            "poppy",
+            "dandelion",
+            "blue_orchid",
+            "allium",
+            "orange_tulip",
+            "pink_tulip",
+            "cornflower",
+            "oxeye_daisy",
+            "lily_of_the_valley"
+    };
+    private static final int[] FLOWER_ACCENTS = {
+            0xFFE3312B,
+            0xFFFFD52A,
+            0xFF20D7EE,
+            0xFFC450EA,
+            0xFFFF8A16,
+            0xFFFF74C8,
+            0xFF3974FF,
+            0xFFFFF4C7,
+            0xFFECE8FF
+    };
+    private static final double[] WILT_TILT_DEGREES = {
+            0.0D, 3.0D, 7.0D, 12.0D, 18.0D, 25.0D
+    };
+    private static final double[] WILT_HEIGHT_SCALE = {
+            1.0D, 0.98D, 0.94D, 0.89D, 0.83D, 0.76D
+    };
+    private static final float[] WILT_SATURATION = {
+            1.0F, 0.98F, 0.93F, 0.85F, 0.74F, 0.60F
+    };
+    private static final float[] WILT_BRIGHTNESS = {
+            1.0F, 0.97F, 0.91F, 0.82F, 0.70F, 0.56F
+    };
 
     public static void main(String[] args) throws IOException {
         File resources = new File("src/main/resources/assets/maniacrev/textures");
         File flowerAtlas = new File(resources, "bud_dispatcher/flowers.png");
-        cleanChromaFringe(flowerAtlas);
-        writeCardAtlas(flowerAtlas,
+        writeVanillaCardAtlas(findVanillaClientJar(),
                 new File(resources, "bud_dispatcher/flowers_cards.png"));
+        if (args.length > 0 && "cards".equalsIgnoreCase(args[0])) {
+            return;
+        }
+        cleanChromaFringe(flowerAtlas);
         writeOrchidBase(new File(resources, "gui/pink_orchid_base.png"));
         writeOrchidPetal(new File(resources, "gui/pink_orchid_petal.png"));
         writeVine(new File(resources, "bud_dispatcher/vine.png"));
@@ -193,6 +242,174 @@ public final class GenerateFloralFixTextures {
             }
         }
         ImageIO.write(atlas, "png", output);
+    }
+
+    private static File findVanillaClientJar() throws IOException {
+        String override = System.getProperty("minecraft.client.jar");
+        if (override != null && !override.isBlank()) {
+            File overriddenJar = new File(override);
+            if (overriddenJar.isFile()) {
+                return overriddenJar;
+            }
+            throw new IOException("Minecraft client jar does not exist: " + overriddenJar);
+        }
+
+        String gradleHomePath = System.getenv("GRADLE_USER_HOME");
+        if (gradleHomePath == null || gradleHomePath.isBlank()) {
+            String userProfile = System.getenv("USERPROFILE");
+            String homePath = userProfile == null || userProfile.isBlank()
+                    ? System.getProperty("user.home")
+                    : userProfile;
+            gradleHomePath = new File(homePath, ".gradle").getPath();
+        }
+        File clientJar = new File(gradleHomePath,
+                "caches/forge_gradle/minecraft_repo/versions/1.20.1/client.jar");
+        if (!clientJar.isFile()) {
+            throw new IOException("Minecraft 1.20.1 client jar was not found. "
+                    + "Run a Forge Gradle task first or pass -Dminecraft.client.jar=<path>.");
+        }
+        return clientJar;
+    }
+
+    /**
+     * Creates the menu atlas directly from the original 16x16 Minecraft flower
+     * textures. Each stage transforms the whole plant around its base, so stems
+     * and blossoms cannot be split into accidental islands by the generator.
+     */
+    private static void writeVanillaCardAtlas(File clientJar, File output)
+            throws IOException {
+        int stages = WILT_TILT_DEGREES.length;
+        BufferedImage atlas = blank(CARD_CELL_SIZE * stages,
+                CARD_CELL_SIZE * VANILLA_FLOWER_TEXTURES.length);
+
+        try (JarFile jar = new JarFile(clientJar)) {
+            for (int flower = 0; flower < VANILLA_FLOWER_TEXTURES.length; flower++) {
+                BufferedImage source = readVanillaFlower(jar,
+                        VANILLA_FLOWER_TEXTURES[flower]);
+                for (int stage = 0; stage < stages; stage++) {
+                    BufferedImage colored = applyWiltColor(source, stage);
+                    BufferedImage posed = poseFlower(colored, stage);
+                    addFallenPetals(posed, flower, stage);
+                    drawCrispCell(atlas, posed,
+                            stage * CARD_CELL_SIZE,
+                            flower * CARD_CELL_SIZE);
+                }
+            }
+        }
+        ImageIO.write(atlas, "png", output);
+    }
+
+    private static BufferedImage readVanillaFlower(JarFile jar, String flowerName)
+            throws IOException {
+        String resourcePath = "assets/minecraft/textures/block/" + flowerName + ".png";
+        JarEntry entry = jar.getJarEntry(resourcePath);
+        if (entry == null) {
+            throw new IOException("Missing vanilla flower texture: " + resourcePath);
+        }
+        BufferedImage image = ImageIO.read(jar.getInputStream(entry));
+        if (image == null
+                || image.getWidth() != FLOWER_SOURCE_SIZE
+                || image.getHeight() != FLOWER_SOURCE_SIZE) {
+            throw new IOException("Unexpected vanilla flower size for " + resourcePath);
+        }
+        return image;
+    }
+
+    private static BufferedImage applyWiltColor(BufferedImage source, int stage) {
+        BufferedImage result = blank(source.getWidth(), source.getHeight());
+        for (int y = 0; y < source.getHeight(); y++) {
+            for (int x = 0; x < source.getWidth(); x++) {
+                int argb = source.getRGB(x, y);
+                int alpha = argb >>> 24;
+                if (alpha == 0) continue;
+
+                int red = (argb >> 16) & 0xFF;
+                int green = (argb >> 8) & 0xFF;
+                int blue = argb & 0xFF;
+                float[] hsb = Color.RGBtoHSB(red, green, blue, null);
+                int wiltedRgb = Color.HSBtoRGB(
+                        hsb[0],
+                        Math.min(1.0F, hsb[1] * WILT_SATURATION[stage]),
+                        Math.min(1.0F, hsb[2] * WILT_BRIGHTNESS[stage]));
+                result.setRGB(x, y, (alpha << 24) | (wiltedRgb & 0x00FFFFFF));
+            }
+        }
+        return result;
+    }
+
+    private static BufferedImage poseFlower(BufferedImage source, int stage) {
+        BufferedImage pose = blank(POSE_GRID_SIZE, POSE_GRID_SIZE);
+        Graphics2D graphics = pose.createGraphics();
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_OFF);
+
+        AffineTransform transform = new AffineTransform();
+        transform.translate(POSE_BASE_X, POSE_BASE_Y);
+        transform.rotate(Math.toRadians(WILT_TILT_DEGREES[stage]));
+        transform.scale(1.0D, WILT_HEIGHT_SCALE[stage]);
+        transform.translate(-FLOWER_BASE_X, -FLOWER_BASE_Y);
+        graphics.drawImage(source, transform, null);
+        graphics.dispose();
+        return pose;
+    }
+
+    private static void addFallenPetals(BufferedImage pose, int flower, int stage) {
+        if (stage < 4) return;
+        int accent = wiltAccent(FLOWER_ACCENTS[flower], stage);
+        drawPetal(pose, 4, 21, accent, false);
+        if (stage >= 5) {
+            drawPetal(pose, 18, 20, accent, true);
+        }
+    }
+
+    private static int wiltAccent(int argb, int stage) {
+        int red = (argb >> 16) & 0xFF;
+        int green = (argb >> 8) & 0xFF;
+        int blue = argb & 0xFF;
+        float[] hsb = Color.RGBtoHSB(red, green, blue, null);
+        return 0xFF000000 | (Color.HSBtoRGB(
+                hsb[0],
+                Math.min(1.0F, hsb[1] * WILT_SATURATION[stage]),
+                Math.min(1.0F, hsb[2] * WILT_BRIGHTNESS[stage])) & 0x00FFFFFF);
+    }
+
+    private static void drawPetal(BufferedImage image, int x, int y,
+                                  int color, boolean mirrored) {
+        int highlight = mix(color, 0xFFFFFFFF, 0.28F);
+        int shadow = mix(color, 0xFF241425, 0.24F);
+        image.setRGB(x, y, color);
+        image.setRGB(x + 1, y, highlight);
+        image.setRGB(x + (mirrored ? 0 : 1), y + 1, shadow);
+    }
+
+    private static int mix(int first, int second, float secondWeight) {
+        float firstWeight = 1.0F - secondWeight;
+        int red = Math.round(((first >> 16) & 0xFF) * firstWeight
+                + ((second >> 16) & 0xFF) * secondWeight);
+        int green = Math.round(((first >> 8) & 0xFF) * firstWeight
+                + ((second >> 8) & 0xFF) * secondWeight);
+        int blue = Math.round((first & 0xFF) * firstWeight
+                + (second & 0xFF) * secondWeight);
+        return 0xFF000000 | (red << 16) | (green << 8) | blue;
+    }
+
+    private static void drawCrispCell(BufferedImage atlas, BufferedImage pose,
+                                      int targetX, int targetY) {
+        for (int y = 0; y < POSE_GRID_SIZE; y++) {
+            for (int x = 0; x < POSE_GRID_SIZE; x++) {
+                int color = pose.getRGB(x, y);
+                if (color >>> 24 == 0) continue;
+                int pixelX = targetX + x * POSE_SCALE;
+                int pixelY = targetY + y * POSE_SCALE;
+                for (int scaleY = 0; scaleY < POSE_SCALE; scaleY++) {
+                    for (int scaleX = 0; scaleX < POSE_SCALE; scaleX++) {
+                        atlas.setRGB(pixelX + scaleX, pixelY + scaleY, color);
+                    }
+                }
+            }
+        }
     }
 
     private static void writeCardAtlas(File flowersFile, File output) throws IOException {

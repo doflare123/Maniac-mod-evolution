@@ -151,7 +151,7 @@ public final class ColorRouletteManager {
                 player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP,
                         SoundSource.PLAYERS, 0.8F, 1.5F);
             }
-            consume(stack);
+            consume(player, stack);
             return true;
         }
 
@@ -166,7 +166,7 @@ public final class ColorRouletteManager {
         } else {
             activateGuidance(player);
         }
-        consume(stack);
+        consume(player, stack);
         return true;
     }
 
@@ -185,7 +185,7 @@ public final class ColorRouletteManager {
                     "message.maniacrev.color_roulette.computer_unavailable"), true);
             return false;
         }
-        consume(stack);
+        consume(player, stack);
         ServerLevel level = player.serverLevel();
         Vector3f rgb = team == PerkTeam.SURVIVOR
                 ? new Vector3f(0.12F, 0.64F, 1.0F)
@@ -219,7 +219,7 @@ public final class ColorRouletteManager {
                 new ColorRouletteComputerMarkersPacket(positions, GUIDANCE_TICKS);
         for (ServerPlayer player : source.server.getPlayerList().getPlayers()) {
             if (player.level() == level && PerkTeam.fromPlayer(player) == PerkTeam.MANIAC
-                    && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
+                    && isActiveGameMode(player)) {
                 player.addEffect(new MobEffectInstance(ModEffects.RED_GUIDANCE.get(),
                         GUIDANCE_TICKS, 0, false, true, true));
                 ModNetworking.sendToPlayer(packet, player);
@@ -231,7 +231,7 @@ public final class ColorRouletteManager {
     }
 
     private static boolean validateCard(ServerPlayer player, ItemStack stack) {
-        if (player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE
+        if (!isActiveGameMode(player)
                 || GameManager.getPhaseValue() < 1 || GameManager.getPhaseValue() > 3) {
             player.displayClientMessage(Component.translatable(
                     "message.maniacrev.color_roulette.inactive_phase"), true);
@@ -245,8 +245,15 @@ public final class ColorRouletteManager {
         return ColorCardItem.getRemainingTicks(stack) > 0;
     }
 
-    private static void consume(ItemStack stack) {
+    private static boolean isActiveGameMode(ServerPlayer player) {
+        GameType mode = player.gameMode.getGameModeForPlayer();
+        return mode == GameType.ADVENTURE || mode == GameType.SURVIVAL;
+    }
+
+    private static void consume(ServerPlayer player, ItemStack stack) {
         stack.shrink(1);
+        player.getInventory().setChanged();
+        player.inventoryMenu.broadcastChanges();
     }
 
     private static boolean hasAnyCard(ServerPlayer player) {
@@ -270,12 +277,13 @@ public final class ColorRouletteManager {
             clearAll(server);
             return;
         }
-        for (UUID id : new ArrayList<>(SPINS.keySet())) {
+        for (Map.Entry<UUID, Spin> entry : SPINS.entrySet()) {
+            UUID id = entry.getKey();
             ServerPlayer player = server.getPlayerList().getPlayer(id);
-            Spin spin = SPINS.get(id);
+            Spin spin = entry.getValue();
             if (player == null || spin == null || !player.isAlive()
                     || player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE) {
-                SPINS.remove(id);
+                SPINS.remove(id, spin);
                 if (player != null) {
                     ModNetworking.sendToPlayer(ColorRouletteStatePacket.clear(), player);
                 }

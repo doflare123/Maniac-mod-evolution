@@ -3,8 +3,10 @@ package org.example.maniacrevolution.entity;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
@@ -40,7 +42,17 @@ public final class RedColorCardProjectile extends ThrowableItemProjectile {
             double dz = getOwner() == null ? getDeltaMovement().z
                     : getOwner().getZ() - target.getZ();
             target.knockback(ColorRoulettePerk.RED_CARD_KNOCKBACK_LEVEL * 0.5D, dx, dz);
+            target.hurtMarked = true;
         }
+    }
+
+    @Override
+    protected boolean canHitEntity(Entity entity) {
+        if (!super.canHitEntity(entity) || !(entity instanceof Player player)) {
+            return false;
+        }
+        return player.getTeam() != null
+                && PerkTeam.MANIAC.getTeamName().equalsIgnoreCase(player.getTeam().getName());
     }
 
     @Override

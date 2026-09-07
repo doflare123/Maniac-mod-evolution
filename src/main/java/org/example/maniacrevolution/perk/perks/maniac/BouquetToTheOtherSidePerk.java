@@ -6,6 +6,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -44,6 +46,7 @@ public class BouquetToTheOtherSidePerk extends Perk {
 
     private static final int DISPLAYED_LEVEL_OFFSET = 1;
     private static final int EFFECT_REFRESH_DURATION_TICKS = 10;
+    private static final int EFFECT_REFRESH_THRESHOLD_TICKS = 5;
     private static final int HUD_SYNC_INTERVAL_TICKS = 20;
     private static final float PERCENT_DENOMINATOR = 100.0F;
     private static final float MINIMUM_REAL_DAMAGE = 0.0F;
@@ -222,22 +225,39 @@ public class BouquetToTheOtherSidePerk extends Perk {
     }
 
     private static void refreshEffect(ServerPlayer player) {
-        int storedCount = COLLECTED_FLOWERS.getOrDefault(
-                player.getUUID(),
-                new LinkedHashMap<>()
-        ).size();
+        Map<UUID, FlowerVariant> storedFlowers = COLLECTED_FLOWERS.get(player.getUUID());
+        int storedCount = storedFlowers == null ? 0 : storedFlowers.size();
         int count = Math.max(storedCount, getEffectFlowerCount(player));
         if (count > 0) {
             applyEffect(player, count);
         }
     }
 
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            COLLECTED_FLOWERS.remove(player.getUUID());
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event) {
+        COLLECTED_FLOWERS.clear();
+    }
+
     private static void applyEffect(ServerPlayer player, int flowerCount) {
         int clampedCount = Math.max(1, Math.min(MAX_FLOWERS, flowerCount));
+        int amplifier = clampedCount - DISPLAYED_LEVEL_OFFSET;
+        MobEffectInstance current = player.getEffect(ModEffects.BOUQUET.get());
+        if (current != null
+                && current.getAmplifier() == amplifier
+                && current.getDuration() > EFFECT_REFRESH_THRESHOLD_TICKS) {
+            return;
+        }
         player.addEffect(new MobEffectInstance(
                 ModEffects.BOUQUET.get(),
                 EFFECT_REFRESH_DURATION_TICKS,
-                clampedCount - DISPLAYED_LEVEL_OFFSET,
+                amplifier,
                 false,
                 false,
                 true
