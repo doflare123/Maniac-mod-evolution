@@ -109,6 +109,7 @@ public class ClientEvents {
         // Очищаем все свечения при выходе
         WallhackGlowHandler.clearAll();
         ClientKeeperFormData.clear();
+        org.example.maniacrevolution.nightmare.ClientNightmareData.clear();
         ColorRouletteClientHandler.clear();
     }
 }

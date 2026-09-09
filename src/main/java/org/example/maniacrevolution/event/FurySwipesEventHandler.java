@@ -6,6 +6,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraft.server.level.ServerPlayer;
@@ -68,6 +69,18 @@ public class FurySwipesEventHandler {
     }
 
     private static final Map<UUID, Long> lastHitTick = new HashMap<>();
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            lastHitTick.remove(player.getUUID());
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        lastHitTick.clear();
+    }
 
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {

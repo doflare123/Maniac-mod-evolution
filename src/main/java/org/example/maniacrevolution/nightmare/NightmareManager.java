@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.nightmare;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -33,6 +34,9 @@ public final class NightmareManager {
     private static final int COCOON_SEARCH_RADIUS = 8;
     private static final int COCOON_SEARCH_DOWN = 2;
     private static final int COCOON_SEARCH_UP = 3;
+    private static final String RECONNECT_STATE_TAG = "maniacrevNightmareReconnect";
+    private static final NightmareSyncState DISABLED_STATE = new NightmareSyncState(
+            false, NightmareConfig.MAX_SANITY, NightmareTrialType.NONE, 0, 0);
 
     private static final NightmareManager INSTANCE = new NightmareManager();
 
@@ -41,6 +45,9 @@ public final class NightmareManager {
     }
 
     private final Map<UUID, NightmarePlayerState> states = new ConcurrentHashMap<>();
+    private final Map<UUID, NightmareSyncState> lastSentStates = new HashMap<>();
+    private final Map<UUID, Integer> lastSentTicks = new HashMap<>();
+    private UUID sessionId = UUID.randomUUID();
     private int nextTrialIndex;
 
     private NightmareManager() {}
@@ -60,8 +67,8 @@ public final class NightmareManager {
         for (ServerPlayer player : players) {
             NightmarePlayerState state = state(player);
             if (isKeeper(player) || player.isSpectator() || player.isCreative()) {
-                ModNetworking.sendToPlayer(new SyncNightmarePacket(false, state.sanity,
-                        NightmareConfig.MAX_SANITY, NightmareTrialType.NONE, 0, 0), player);
+                sendState(player, new NightmareSyncState(false, state.sanity,
+                        NightmareTrialType.NONE, 0, 0));
                 continue;
             }
 
@@ -154,6 +161,8 @@ public final class NightmareManager {
     }
 
     public int clearAll(MinecraftServer server) {
+        // A global reset also invalidates detached snapshots of offline players.
+        sessionId = UUID.randomUUID();
         int count = 0;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             clear(player);
@@ -161,6 +170,70 @@ public final class NightmareManager {
         }
         states.keySet().removeIf(uuid -> server.getPlayerList().getPlayer(uuid) == null);
         return count;
+    }
+
+    /** Called before vanilla saves the disconnecting player's position and inventory. */
+    public void onPlayerLogout(ServerPlayer player) {
+        NightmarePlayerState state = states.remove(player.getUUID());
+        if (state != null) {
+            abortTrial(player, state);
+            // Preserve scalar gameplay state without retaining offline player/level
+            // objects. A reconnect must not reset sanity or the forced-maze counter.
+            CompoundTag tag = new CompoundTag();
+            tag.putUUID("Session", sessionId);
+            tag.putFloat("Sanity", state.sanity);
+            tag.putLong("LastGazeTick", state.lastGazeTick);
+            tag.putLong("AbductionCooldown", state.abductionCooldownUntil);
+            tag.putLong("SanityImmunity", state.sanityImmunityUntil);
+            tag.putInt("MazeTrialsStarted", state.mazeTrialsStarted);
+            player.getPersistentData().put(RECONNECT_STATE_TAG, tag);
+        }
+        invalidateSync(player);
+    }
+
+    public void invalidateSync(ServerPlayer player) {
+        lastSentStates.remove(player.getUUID());
+        lastSentTicks.remove(player.getUUID());
+    }
+
+    public void shutdown(MinecraftServer server) {
+        for (ServerPlayer player : new ArrayList<>(server.getPlayerList().getPlayers())) {
+            onPlayerLogout(player);
+        }
+        for (NightmarePlayerState state : states.values()) {
+            removeTrialBlocks(state);
+        }
+        states.clear();
+        lastSentStates.clear();
+        lastSentTicks.clear();
+        nextTrialIndex = 0;
+        sessionId = UUID.randomUUID();
+        MazeManager.getInstance().clearAll();
+    }
+
+    private void abortTrial(ServerPlayer player, NightmarePlayerState state) {
+        // Return before removing the floor under the player. An interrupted trial
+        // grants neither success rewards nor failure damage.
+        if (state.isInTrial() && state.returnLevel != null && state.returnPos != null) {
+            BlockPos pos = state.returnPos;
+            player.teleportTo(state.returnLevel, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D,
+                    player.getYRot(), player.getXRot());
+        }
+        if (state.savedMainInventory != null) {
+            restoreInventory(player, state);
+        }
+        removeTrialBlocks(state);
+        state.clearTrial();
+    }
+
+    private void removeTrialBlocks(NightmarePlayerState state) {
+        if (state.mazeId != null) {
+            MazeManager.getInstance().destroyMaze(state.mazeId);
+        }
+        cleanupTrialArea(state);
+        if (state.cocoonPos != null && state.returnLevel != null) {
+            state.returnLevel.destroyBlock(state.cocoonPos, false);
+        }
     }
 
     public boolean isKeeper(ServerPlayer player) {
@@ -506,7 +579,19 @@ public final class NightmareManager {
     }
 
     private NightmarePlayerState state(ServerPlayer player) {
-        return states.computeIfAbsent(player.getUUID(), id -> new NightmarePlayerState());
+        return states.computeIfAbsent(player.getUUID(), id -> {
+            NightmarePlayerState state = new NightmarePlayerState();
+            CompoundTag tag = player.getPersistentData().getCompound(RECONNECT_STATE_TAG);
+            if (tag.hasUUID("Session") && sessionId.equals(tag.getUUID("Session"))) {
+                state.sanity = tag.getFloat("Sanity");
+                state.lastGazeTick = tag.getLong("LastGazeTick");
+                state.abductionCooldownUntil = tag.getLong("AbductionCooldown");
+                state.sanityImmunityUntil = tag.getLong("SanityImmunity");
+                state.mazeTrialsStarted = tag.getInt("MazeTrialsStarted");
+            }
+            player.getPersistentData().remove(RECONNECT_STATE_TAG);
+            return state;
+        });
     }
 
     private boolean hasKeeper(MinecraftServer server) {
@@ -519,20 +604,25 @@ public final class NightmareManager {
                 : 0;
         long immunityTicksLeft = Math.max(0L, state.sanityImmunityUntil - player.level().getGameTime());
         int immunitySecondsLeft = (int) ((immunityTicksLeft + 19L) / 20L);
-        ModNetworking.sendToPlayer(new SyncNightmarePacket(
-                keeperPresent,
-                state.sanity,
-                NightmareConfig.MAX_SANITY,
-                state.trialType,
-                secondsLeft,
-                immunitySecondsLeft
-        ), player);
+        sendState(player, new NightmareSyncState(keeperPresent, state.sanity,
+                state.trialType, secondsLeft, immunitySecondsLeft));
     }
 
     private void syncDisabled(List<ServerPlayer> players) {
         for (ServerPlayer player : players) {
-            ModNetworking.sendToPlayer(new SyncNightmarePacket(false, NightmareConfig.MAX_SANITY,
-                    NightmareConfig.MAX_SANITY, NightmareTrialType.NONE, 0, 0), player);
+            sendState(player, DISABLED_STATE);
         }
+    }
+
+    private void sendState(ServerPlayer player, NightmareSyncState next) {
+        UUID id = player.getUUID();
+        int tick = player.server.getTickCount();
+        NightmareSyncState previous = lastSentStates.get(id);
+        if (!next.shouldSend(previous, tick - lastSentTicks.getOrDefault(id, tick))) return;
+        ModNetworking.sendToPlayer(new SyncNightmarePacket(next.visible(), next.sanity(),
+                NightmareConfig.MAX_SANITY, next.trialType(), next.trialSecondsLeft(),
+                next.immunitySecondsLeft()), player);
+        lastSentStates.put(id, next);
+        lastSentTicks.put(id, tick);
     }
 }

@@ -35,6 +35,17 @@ public class MapVotingManager {
         return instance;
     }
 
+    public void clear() {
+        server = null;
+        votingActive = false;
+        timeRemaining = 0;
+        votes.clear();
+        timerLocked = false;
+        tickCounter = 0;
+        cachedWinnerMapId = null;
+        resultDelayTicks = 0;
+    }
+
     public void startVoting(MinecraftServer server, int duration) {
         this.server = server;
         this.votingActive = true;

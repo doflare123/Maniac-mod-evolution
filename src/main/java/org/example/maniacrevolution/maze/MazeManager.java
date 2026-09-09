@@ -62,6 +62,13 @@ public class MazeManager {
         }
     }
 
+    /** Restore temporary blocks while the server's levels are still available. */
+    public void clearAll() {
+        for (UUID id : new ArrayList<>(activeMazes.keySet())) {
+            destroyMaze(id);
+        }
+    }
+
     public void tick(long currentTick) {
         Iterator<Map.Entry<UUID, ActiveMaze>> iterator = activeMazes.entrySet().iterator();
         while (iterator.hasNext()) {

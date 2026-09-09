@@ -11,6 +11,12 @@ public final class ClientNightmareData {
 
     private ClientNightmareData() {}
 
+    public static void clear() {
+        update(false, NightmareConfig.MAX_SANITY, NightmareConfig.MAX_SANITY,
+                NightmareTrialType.NONE, 0, 0);
+        screamerUntilMillis = 0L;
+    }
+
     public static void update(boolean hudVisible, float sanityValue, float maxValue,
                               NightmareTrialType activeTrial, int secondsLeft, int immunitySecondsLeft) {
         visible = hudVisible;

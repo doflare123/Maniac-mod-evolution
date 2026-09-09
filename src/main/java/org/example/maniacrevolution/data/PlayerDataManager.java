@@ -193,6 +193,7 @@ public class PlayerDataManager {
     public static void load(MinecraftServer srv) {
         server = srv;
         PLAYER_DATA.clear();
+        syncTickCounter = 0;
 
         File file = getDataFile(srv);
         if (file.exists()) {
@@ -230,6 +231,13 @@ public class PlayerDataManager {
         } catch (Exception e) {
             Maniacrev.LOGGER.error("Failed to save player data", e);
         }
+    }
+
+    /** Release only after the final save and player logout handlers have completed. */
+    public static void shutdown() {
+        server = null;
+        PLAYER_DATA.clear();
+        syncTickCounter = 0;
     }
 
     private static File getDataFile(MinecraftServer srv) {

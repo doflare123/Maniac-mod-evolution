@@ -7,9 +7,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.example.maniacrevolution.Maniacrev;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 /**
  * 5-секундный отсчёт перед стартом игры.
  * После завершения выполняет все команды из функции maniac:game/start_game
@@ -18,7 +15,7 @@ import java.util.TimerTask;
 public class PreGameCountdownTask {
 
     private final MinecraftServer server;
-    private Timer timer;
+    private int elapsedTicks;
     private int remainingSeconds;
     private boolean running;
 
@@ -31,30 +28,24 @@ public class PreGameCountdownTask {
     public void start() {
         if (running) return;
         running = true;
-        timer = new Timer("PreGameCountdown");
+        elapsedTicks = 0;
 
         PreGameReadyManager.broadcast("§aИгра начнётся через 5 секунд...");
+    }
 
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                if (remainingSeconds > 0) {
-                    showTitle(remainingSeconds);
-                    remainingSeconds--;
-                } else {
-                    finish();
-                }
-            }
-        }, 1000, 1000);
+    public void tick() {
+        if (!running || ++elapsedTicks < 20) return;
+        elapsedTicks = 0;
+        if (remainingSeconds > 0) {
+            showTitle(remainingSeconds--);
+        } else {
+            finish();
+        }
     }
 
     public void cancel() {
         if (!running) return;
         running = false;
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
         PreGameReadyManager.broadcast("§cОтсчёт отменён — не все игроки готовы");
     }
 
@@ -72,10 +63,6 @@ public class PreGameCountdownTask {
 
     private void finish() {
         running = false;
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
 
         server.execute(() -> {
             try {

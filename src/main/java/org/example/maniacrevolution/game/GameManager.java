@@ -59,6 +59,15 @@ public class GameManager {
         ensureObjectiveExists();
     }
 
+    public static void shutdown() {
+        server = null;
+        timerRunning = false;
+        currentTime = 0;
+        maxGameTime = 10 * 60 * 20;
+        maniacGlowing = false;
+        maniacPhaseGlowTargets.clear();
+    }
+
     private static void ensureObjectiveExists() {
         if (server == null) return;
         Scoreboard scoreboard = server.getScoreboard();

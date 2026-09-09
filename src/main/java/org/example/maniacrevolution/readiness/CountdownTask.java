@@ -8,16 +8,13 @@ import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
 import org.example.maniacrevolution.Maniacrev;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 /**
  * Задача для 5-секундного отсчёта
  * Перед началом проверяет, что карта выбрана
  */
 public class CountdownTask {
     private final MinecraftServer server;
-    private Timer timer;
+    private int elapsedTicks;
     private int remainingSeconds;
     private boolean running;
 
@@ -31,22 +28,20 @@ public class CountdownTask {
         if (running) return;
 
         running = true;
-        timer = new Timer();
+        elapsedTicks = 0;
 
         broadcastMessage("§aИгра начнётся через 5 секунд...");
+    }
 
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                if (remainingSeconds > 0) {
-                    // Показываем title с отсчётом
-                    showCountdownTitle(remainingSeconds);
-                    remainingSeconds--;
-                } else {
-                    finish();
-                }
-            }
-        }, 1000, 1000);
+    /** Run on the server thread, so cancellation cannot race a queued start command. */
+    public void tick() {
+        if (!running || ++elapsedTicks < 20) return;
+        elapsedTicks = 0;
+        if (remainingSeconds > 0) {
+            showCountdownTitle(remainingSeconds--);
+        } else {
+            finish();
+        }
     }
 
     private void showCountdownTitle(int seconds) {
@@ -67,20 +62,12 @@ public class CountdownTask {
         if (!running) return;
 
         running = false;
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
 
         broadcastMessage("§cОтсчёт отменён - не все игроки готовы");
     }
 
     private void finish() {
         running = false;
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
 
         // Финальная проверка: карта должна быть выбрана при завершении отсчёта
         if (!isMapSelected()) {

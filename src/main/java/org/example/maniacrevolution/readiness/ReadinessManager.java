@@ -94,6 +94,8 @@ public class ReadinessManager {
      * Вызывается каждый тик для проверки карты (только когда ждём карту)
      */
     public static void tick(MinecraftServer minecraftServer) {
+        if (minecraftServer != server) return;
+        if (countdownTask != null) countdownTask.tick();
         if (minecraftServer == null || !waitingForMap) return;
 
         // Если ждём карту и карта появилась
@@ -210,6 +212,7 @@ public class ReadinessManager {
         waitingForMap = false;
         readinessCheckActive = false;
         voteInitiatorName = "";
+        server = null;
     }
 
     public static boolean isReadinessCheckActive() {

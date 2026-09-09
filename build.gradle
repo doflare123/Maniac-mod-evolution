@@ -137,6 +137,18 @@ public final class BuildConfig {
 tasks.named("compileJava") {
     dependsOn("generateBuildConfig")
 }
+
+tasks.register('verifyNightmareSync', JavaExec) {
+    group = 'verification'
+    description = 'Checks nightmare HUD synchronization without launching Minecraft.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.nightmare.NightmareSyncStateTest'
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyNightmareSync')
+}
 // ──────────────────────────────────────────────────────────────────
 
 tasks.named('jar', Jar).configure {

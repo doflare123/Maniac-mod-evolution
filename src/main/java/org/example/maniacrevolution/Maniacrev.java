@@ -12,6 +12,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -139,13 +140,24 @@ public class Maniacrev {
         StatsManager.onServerStopping();
         PlayerDataManager.save(event.getServer());
         ReadinessManager.clear();
+        PreGameReadyManager.clear();
+        MapVotingManager.getInstance().clear();
         LOGGER.info("ManiacRev server data saved");
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        // Keep these available through logout, then release the stopped server.
+        PlayerDataManager.shutdown();
+        GameManager.shutdown();
+        HackManager.reset();
     }
 
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             ReadinessManager.tick(event.getServer());
+            PreGameReadyManager.tick(event.getServer());
             MapVotingManager.getInstance().tick();
         }
     }

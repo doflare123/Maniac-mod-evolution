@@ -28,6 +28,15 @@ public class PreGameReadyManager {
         server = s;
     }
 
+    public static void tick(MinecraftServer srv) {
+        if (srv == server && countdownTask != null) countdownTask.tick();
+    }
+
+    public static void clear() {
+        resetAll(null);
+        server = null;
+    }
+
     // ─────────────────────────────────────────────
     //  Установка/снятие готовности
     // ─────────────────────────────────────────────
