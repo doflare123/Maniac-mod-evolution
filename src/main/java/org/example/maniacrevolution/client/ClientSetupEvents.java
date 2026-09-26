@@ -29,6 +29,7 @@ public class ClientSetupEvents {
 
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntities.DOCTOR_STRANGE_CLOAK.get(), org.example.maniacrevolution.cloak.client.CloakRenderer::new);
         event.registerEntityRenderer(ModEntities.MIMIC_BLOCK.get(), MimicBlockRenderer::new);
         event.registerEntityRenderer(ModEntities.PLAGUE_ORB.get(), PlagueOrbRenderer::new);
         event.registerEntityRenderer(ModEntities.RAGE_BEE.get(),

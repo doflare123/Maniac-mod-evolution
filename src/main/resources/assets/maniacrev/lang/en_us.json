@@ -1,4 +1,13 @@
 {
+  "item.maniacrev.doctor_strange_cloak": "Doctor Strange's Cloak",
+  "entity.maniacrev.doctor_strange_cloak": "Cloak of Levitation",
+  "ability.maniacrev.cloak.name": "Cloak of Levitation",
+  "ability.maniacrev.cloak.desc": "Hold sneak to hover. Throw at a maniac: stun up to 7 seconds, escape at 5 points.",
+  "tooltip.maniacrev.cloak.hover": "Equip in the chest slot. Hold sneak to hover up to 0.5 blocks above your starting height.",
+  "tooltip.maniacrev.cloak.throw": "Armor ability key (V): throw at a maniac within 16 blocks.",
+  "message.maniacrev.cloak.no_target": "Aim at a maniac within 16 blocks.",
+  "hud.maniacrev.cloak.title": "Escape: %s/5  •  %s s",
+  "hud.maniacrev.cloak.hint": "%s — flap. Collisions reset your score.",
   "key.categories.maniacrev": "Maniac Revolution",
   "key.maniacrev.open_guide": "Open Guide",
   "key.maniacrev.activate_perk": "Activate Perk",

@@ -26,6 +26,7 @@ public class ActivatePerkPacket {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
+            if (org.example.maniacrevolution.cloak.CloakManager.restrained(player)) return;
 
             if (GhostPossessionManager.isPossessed(player)) {
                 player.displayClientMessage(Component.translatable("message.maniacrev.perk.possessed"), true);

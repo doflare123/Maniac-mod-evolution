@@ -15,6 +15,12 @@ public class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES =
             DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Maniacrev.MODID);
 
+    public static final RegistryObject<EntityType<org.example.maniacrevolution.cloak.CloakEntity>> DOCTOR_STRANGE_CLOAK =
+            ENTITIES.register("doctor_strange_cloak", () -> EntityType.Builder
+                    .<org.example.maniacrevolution.cloak.CloakEntity>of(org.example.maniacrevolution.cloak.CloakEntity::new, MobCategory.MISC)
+                    .sized(0.6f, 1.8f).clientTrackingRange(64).updateInterval(1)
+                    .noSave().noSummon().fireImmune().build("doctor_strange_cloak"));
+
     public static final RegistryObject<EntityType<MimicBlockEntity>> MIMIC_BLOCK =
             ENTITIES.register("mimic_block", () ->
                     EntityType.Builder.<MimicBlockEntity>of(MimicBlockEntity::new, MobCategory.MISC)

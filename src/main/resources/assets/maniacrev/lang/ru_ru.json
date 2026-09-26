@@ -1,4 +1,13 @@
 {
+  "item.maniacrev.doctor_strange_cloak": "Плащ Доктора Стрэнджа",
+  "entity.maniacrev.doctor_strange_cloak": "Плащ левитации",
+  "ability.maniacrev.cloak.name": "Плащ левитации",
+  "ability.maniacrev.cloak.desc": "Парение на Shift. Бросок в маньяка: стан до 7 секунд, мини-игра до 5 очков.",
+  "tooltip.maniacrev.cloak.hover": "Наденьте в слот нагрудника. Удерживайте Shift: парение до +0,5 блока.",
+  "tooltip.maniacrev.cloak.throw": "Кнопка способности брони (V): бросок в маньяка в пределах 16 блоков.",
+  "message.maniacrev.cloak.no_target": "Наведитесь на маньяка в пределах 16 блоков.",
+  "hud.maniacrev.cloak.title": "Освобождение: %s/5  •  %s с",
+  "hud.maniacrev.cloak.hint": "%s — взмах. Столкновение сбрасывает очки.",
   "key.categories.maniacrev": "Maniac Revolution",
   "key.maniacrev.open_guide": "Открыть гайд",
   "key.maniacrev.activate_perk": "Активировать перк",

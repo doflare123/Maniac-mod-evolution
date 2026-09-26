@@ -52,6 +52,7 @@ public class ActivateArmorAbilityPacket {
         }
 
         context.enqueueWork(() -> {
+            if (org.example.maniacrevolution.cloak.CloakManager.restrained(player)) return;
             if (NightmareManager.getInstance().isKeeper(player)) {
                 if (ModItems.GUARDIAN_HEAD.get() instanceof IActivatableArmor formAbility) {
                     formAbility.activateAbility(player);

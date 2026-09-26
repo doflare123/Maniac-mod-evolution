@@ -46,6 +46,8 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             mods {
                 "${mod_id}" {
@@ -77,6 +79,7 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    maven { url = 'https://maven.kosmx.dev/' }
     maven {
         url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
     }
@@ -85,6 +88,10 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.4.7')
+    implementation fg.deobf('dev.kosmx.player-anim:player-animation-lib-forge:1.0.2-rc1+1.20')
+    jarJar('dev.kosmx.player-anim:player-animation-lib-forge:1.0.2-rc1+1.20') {
+        jarJar.ranged(it, '[1.0.2-rc1,1.0.3)')
+    }
     jarJar(implementation("mysql:mysql-connector-java:8.0.33")) {
         jarJar.ranged(it, "[8.0.33,9.0)")
     }
@@ -148,6 +155,24 @@ tasks.register('verifyNightmareSync', JavaExec) {
 
 tasks.named('check') {
     dependsOn tasks.named('verifyNightmareSync')
+    dependsOn 'verifyCloak'
+}
+
+tasks.register('verifyCloak', JavaExec) {
+    group = 'verification'
+    description = 'Checks cloak escape timing, attainability, and input rate limiting.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.cloak.CloakFlappyGameTest'
+    dependsOn 'verifyCloakAnimations'
+}
+
+tasks.register('verifyCloakAnimations', JavaExec) {
+    group = 'verification'
+    description = 'Loads the exported cloak player animations through PlayerAnimator.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.cloak.CloakAnimationAssetsTest'
 }
 // ──────────────────────────────────────────────────────────────────
 
