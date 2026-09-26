@@ -52,6 +52,10 @@ public final class ClientOnlyExecutor {
         runNoArgs("openSettingsScreen");
     }
 
+    public static void openCocoonNeedleMinigameScreen(BlockPos pos) {
+        run("openCocoonNeedleMinigameScreen", new Class<?>[]{BlockPos.class}, new Object[]{pos});
+    }
+
     public static void openGuidePage(int pageTypeId) {
         run("openGuidePage", new Class<?>[]{int.class}, new Object[]{pageTypeId});
     }

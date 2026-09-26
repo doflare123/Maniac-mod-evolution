@@ -1,10 +1,9 @@
 package org.example.maniacrevolution.network.packets;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import org.example.maniacrevolution.client.screen.CocoonNeedleMinigameScreen;
+import org.example.maniacrevolution.util.ClientOnlyExecutor;
 
 import java.util.function.Supplier;
 
@@ -25,7 +24,7 @@ public class OpenCocoonNeedleMinigamePacket {
 
     public static void handle(OpenCocoonNeedleMinigamePacket packet, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() ->
-                Minecraft.getInstance().setScreen(new CocoonNeedleMinigameScreen(packet.pos)));
+                ClientOnlyExecutor.openCocoonNeedleMinigameScreen(packet.pos));
         ctx.get().setPacketHandled(true);
     }
 }

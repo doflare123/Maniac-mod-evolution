@@ -58,6 +58,10 @@ public class ClientScreenHelper {
         org.example.maniacrevolution.client.screen.SettingsScreen.open();
     }
 
+    public static void openCocoonNeedleMinigameScreen(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new org.example.maniacrevolution.client.screen.CocoonNeedleMinigameScreen(pos));
+    }
+
     public static void openGuidePage(int pageTypeId) {
         org.example.maniacrevolution.gui.pages.GuidePage.PageType[] values =
                 org.example.maniacrevolution.gui.pages.GuidePage.PageType.values();
