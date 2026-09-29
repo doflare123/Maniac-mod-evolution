@@ -36,6 +36,7 @@ import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public class GameManager {
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     private static MinecraftServer server;
 
     // Таймер
@@ -143,7 +144,7 @@ public class GameManager {
         maniacGlowing = false;
         clearManiacPhaseGlowing();
         syncGameState();
-        Maniacrev.LOGGER.info("Timer started: {} seconds", currentTime / 20);
+        LOGGER.info("Timer started: {} seconds", currentTime / 20);
     }
 
     public static void stopTimer() {
@@ -153,7 +154,20 @@ public class GameManager {
 
     public static void setMaxTime(int seconds) {
         maxGameTime = seconds * 20;
-        Maniacrev.LOGGER.info("Max game time set to {} seconds", seconds);
+        LOGGER.info("Max game time set to {} seconds", seconds);
+    }
+
+    public static void applyConfiguredDuration(int seconds) {
+        boolean durationChanged = getMaxTimeSeconds() != seconds;
+        setMaxTime(seconds);
+        if (durationChanged || !timerRunning) setTime(seconds);
+        else syncGameState();
+    }
+
+    public static void startNewRoundTimer(int seconds) {
+        setMaxTime(seconds);
+        setTime(seconds);
+        startTimer();
     }
 
     public static void addTime(int seconds) {
@@ -184,14 +198,18 @@ public class GameManager {
     public static void startGame(CommandSourceStack source) {
         if (server == null) return;
 
+        // A new match always starts from the saved menu settings, even if a
+        // datapack or a previous round left a paused countdown behind.
+        org.example.maniacrevolution.command.ApplySettingsCommand.applySettings(server, true, false);
         setPhase(1);
-        startTimer();
+        startNewRoundTimer(org.example.maniacrevolution.settings.GameSettings.get(server).getGameTime() * 60);
         StatsManager.onGameStarted(server);
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             PlayerData data = PlayerDataManager.get(player);
             data.onGameStart(player);
         }
+        org.example.maniacrevolution.command.HpBoostCommand.applyHpBoost(server);
         giveAwakeningNeedles();
 
         source.sendSuccess(() -> Component.literal("§aИгра началась!"), true);

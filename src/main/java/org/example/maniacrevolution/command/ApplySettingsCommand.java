@@ -10,6 +10,7 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.example.maniacrevolution.hack.HackConfig;
+import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.settings.GameSettings;
 
 public class ApplySettingsCommand {
@@ -32,6 +33,10 @@ public class ApplySettingsCommand {
     }
 
     public static void applySettings(MinecraftServer server, boolean suppressOutput) {
+        applySettings(server, suppressOutput, true);
+    }
+
+    public static void applySettings(MinecraftServer server, boolean suppressOutput, boolean applyMap) {
         GameSettings settings = GameSettings.get(server);
 
         HackConfig.HACK_POINTS_REQUIRED = settings.getHackPointsRequired();
@@ -46,42 +51,27 @@ public class ApplySettingsCommand {
         HackConfig.QTE_INTERVAL_MAX_SECONDS = settings.getQteIntervalMax();
         HackConfig.MAX_BONUS_PLAYERS = settings.getMaxBonusPlayers();
 
-        CommandSourceStack source = suppressOutput
-                ? server.createCommandSourceStack().withSuppressedOutput().withMaximumPermission(4)
-                : server.createCommandSourceStack();
-
-        // Применяем все настройки через команды
-
-        // 3. Количество маньяков
-        server.getCommands().performPrefixedCommand(
-            source,
-            "scoreboard players set maniacCount game " + settings.getManiacCount()
-        );
-
-        // 4. Время игры (конвертируем минуты в секунды)
-        int timeInSeconds = settings.getGameTime() * 60;
-        server.getCommands().performPrefixedCommand(
-            source,
-            "maniacrev timer maxtime " + timeInSeconds
-        );
-
-        // 5. HP Boost (применяем через нашу команду)
-        server.getCommands().performPrefixedCommand(
-            source,
-            "maniacrev hp_boost"
-        );
-
-        // 6. Карта (устанавливаем туда же, откуда её читает игровая логика)
-        Scoreboard scoreboard = server.getScoreboard();
-        Objective mapObjective = scoreboard.getObjective("map");
-        if (mapObjective == null) {
-            mapObjective = scoreboard.addObjective(
-                    "map",
-                    ObjectiveCriteria.DUMMY,
-                    Component.literal("Map"),
-                    ObjectiveCriteria.RenderType.INTEGER
-            );
+        // The datapack reads these scores before assigning teams and starting the timer.
+        setScore(server, "game", "maniacCount", settings.getManiacCount());
+        setScore(server, "timerMax", "Game", settings.getGameTime() * 60);
+        // Extra health is an exact HP attribute modifier; leave only class health
+        // effects to the legacy datapack, avoiding a second bonus from hp_boost.
+        setScore(server, "game", "hpBoost", 0);
+        if (applyMap && (settings.getSelectedMap() != 0 || GameManager.getPhaseValue() == 0)) {
+            setScore(server, "map", "Game", settings.getSelectedMap());
         }
-        scoreboard.getOrCreatePlayerScore("Game", mapObjective).setScore(settings.getSelectedMap());
+
+        GameManager.applyConfiguredDuration(settings.getGameTime() * 60);
+        HpBoostCommand.applyHpBoost(server);
+    }
+
+    private static void setScore(MinecraftServer server, String objectiveName, String holder, int value) {
+        Scoreboard scoreboard = server.getScoreboard();
+        Objective objective = scoreboard.getObjective(objectiveName);
+        if (objective == null) {
+            objective = scoreboard.addObjective(objectiveName, ObjectiveCriteria.DUMMY,
+                    Component.literal(objectiveName), ObjectiveCriteria.RenderType.INTEGER);
+        }
+        scoreboard.getOrCreatePlayerScore(holder, objective).setScore(value);
     }
 }

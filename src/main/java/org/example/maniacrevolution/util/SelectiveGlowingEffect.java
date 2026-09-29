@@ -3,6 +3,7 @@ package org.example.maniacrevolution.util;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -20,7 +21,7 @@ import java.util.UUID;
  * Keeps viewer-specific glowing entirely outside vanilla entity metadata.
  * Packets are sent only when a viewer starts or stops seeing a target glow.
  */
-@Mod.EventBusSubscriber
+@Mod.EventBusSubscriber(modid = org.example.maniacrevolution.Maniacrev.MODID)
 public final class SelectiveGlowingEffect {
     private static final Map<UUID, TargetGlow> TARGETS = new HashMap<>();
 
@@ -147,6 +148,15 @@ public final class SelectiveGlowingEffect {
     @SubscribeEvent
     public static void onServerStopped(ServerStoppedEvent event) {
         TARGETS.clear();
+    }
+
+    @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking event) {
+        if (!(event.getEntity() instanceof ServerPlayer viewer)) return;
+        TargetGlow state = TARGETS.get(event.getTarget().getUUID());
+        if (state != null && isGlowing(state.target, viewer)) {
+            send(state.target, viewer, true);
+        }
     }
 
     private static void disableForAll(TargetGlow state) {

@@ -128,6 +128,8 @@ public class HackSession {
         updateBlockDisplay(level);
 
         ticksSinceLastQTE += 20;
+        nextQTEIntervalTicks = Math.max(HackConfig.QTE_INTERVAL_MIN_SECONDS * 20,
+                Math.min(HackConfig.QTE_INTERVAL_MAX_SECONDS * 20, nextQTEIntervalTicks));
         spawnRadiusParticles(level);
 
         // Периодический триггер QTE — переотправляем всем кто уже в списке
@@ -209,6 +211,7 @@ public class HackSession {
         double r2 = HackConfig.SUPPORT_RADIUS * HackConfig.SUPPORT_RADIUS;
         for (ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
             if (p == hacker) continue;
+            if (p.level() != level) continue;
             if (!isSurvivorAdventure(p)) continue;
             if (p.position().distanceToSqr(center) <= r2) result.add(p);
         }

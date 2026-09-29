@@ -26,10 +26,11 @@ public class LoginItemHandler {
 
         givePreGameReadyItem(player);
         PreGameReadyManager.syncStateToAll(player.getServer());
+        syncSettingsToPlayer(player);
+        org.example.maniacrevolution.command.HpBoostCommand.applyHpBoost(player);
 
         if (player.hasPermissions(2)) {
             giveSettingsItem(player);
-            syncSettingsToPlayer(player);
         }
     }
 

@@ -6,7 +6,7 @@ import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.command.ApplySettingsCommand;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
-import org.example.maniacrevolution.hack.HackConfig;
+import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.settings.GameSettings;
 
@@ -95,7 +95,13 @@ public class UpdateSettingsPacket {
     public static void handle(UpdateSettingsPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
-            if (player == null || !player.hasPermissions(2)) return;
+            if (player == null) return;
+            if (!player.hasPermissions(2)) {
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                        "§cДля изменения настроек нужны права оператора."));
+                ModNetworking.sendToPlayer(SyncSettingsPacket.from(GameSettings.get(player.server)), player);
+                return;
+            }
 
             GameSettings s = GameSettings.get(player.server);
             boolean wasThreePerksEnabled = s.isThreePerksEnabled();
@@ -128,21 +134,9 @@ public class UpdateSettingsPacket {
                 }
             }
 
-            // Применяем в HackConfig сразу
-            HackConfig.HACK_POINTS_REQUIRED          = msg.hackPointsRequired;
-            HackConfig.POINTS_PER_PLAYER_PER_SECOND  = msg.pointsPerPlayer;
-            HackConfig.POINTS_PER_SPECIALIST_PER_SECOND = msg.pointsPerSpecialist;
-            HackConfig.MAX_BONUS_PLAYERS             = msg.maxBonusPlayers;
-            HackConfig.HACKER_RADIUS                 = msg.hackerRadius;
-            HackConfig.SUPPORT_RADIUS                = msg.supportRadius;
-            HackConfig.QTE_INTERVAL_MIN_SECONDS      = msg.qteIntervalMin;
-            HackConfig.QTE_INTERVAL_MAX_SECONDS      = msg.qteIntervalMax;
-            HackConfig.QTE_SUCCESS_BONUS             = msg.qteSuccessBonus;
-            HackConfig.QTE_CRIT_BONUS                = msg.qteCritBonus;
-            HackConfig.COMPUTERS_NEEDED_FOR_WIN      = msg.computersNeededForWin;
-
             // Применяем и основные настройки сразу, чтобы кнопка "Применить" работала полностью.
             ApplySettingsCommand.applySettings(player.server, true);
+            HackManager.get().onSettingsChanged(player.server);
 
             // Лимит перков влияет на клиентские экраны и HUD всех игроков.
             for (ServerPlayer onlinePlayer : player.server.getPlayerList().getPlayers()) {

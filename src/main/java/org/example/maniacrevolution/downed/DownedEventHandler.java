@@ -147,6 +147,9 @@ public class DownedEventHandler {
 
         event.setCanceled(true);
 
+        // Return the body before downed effects and the all-survivors check.
+        org.example.maniacrevolution.nightmare.NightmareManager.getInstance().onPlayerDeath(player);
+
         data.resetDownedModifiers();
         if (responsibleManiac != null) {
             BouquetToTheOtherSidePerk.applyToNextKnockdown(

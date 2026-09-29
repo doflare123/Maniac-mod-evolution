@@ -66,6 +66,7 @@ public class PreGameCountdownTask {
 
         server.execute(() -> {
             try {
+                org.example.maniacrevolution.command.ApplySettingsCommand.applySettings(server, true);
                 server.getCommands().performPrefixedCommand(
                         server.createCommandSourceStack().withMaximumPermission(4),
                         "function maniac:game/start_game"

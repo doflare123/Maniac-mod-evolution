@@ -645,13 +645,8 @@ public class HackManager {
                 hackedComputers.put(id, hacked.getBoolean(key));
             }
             totalHacked = root.getInt("totalHacked");
-            // Восстанавливаем настройки конфига
-            if (root.contains("goal")) {
-                HackConfig.COMPUTERS_NEEDED_FOR_WIN = root.getInt("goal");
-            }
-            if (root.contains("pointsRequired")) {
-                HackConfig.HACK_POINTS_REQUIRED = root.getFloat("pointsRequired");
-            }
+            // GameSettings is the authority for configuration. This file owns
+            // progress only; old goal/pointsRequired values must not override it.
 
             Maniacrev.LOGGER.info("[HackManager] Loaded: totalHacked={}, computers={}, goal={}",
                     totalHacked, hackProgress.size(), HackConfig.COMPUTERS_NEEDED_FOR_WIN);
@@ -703,5 +698,14 @@ public class HackManager {
     public void saveAndSync(net.minecraft.server.MinecraftServer server) {
         save(server);
         sendSyncPacket(server);
+    }
+
+    public void onSettingsChanged(MinecraftServer server) {
+        ComputerBlockEntity.syncTrackedBlockEntities(server);
+        int phase = org.example.maniacrevolution.game.GameManager.getPhaseValue();
+        if ((phase == 1 || phase == 2) && totalHacked >= HackConfig.COMPUTERS_NEEDED_FOR_WIN) {
+            for (String command : HackConfig.WIN_COMMANDS) executeCommand(server, command);
+        }
+        saveAndSync(server);
     }
 }

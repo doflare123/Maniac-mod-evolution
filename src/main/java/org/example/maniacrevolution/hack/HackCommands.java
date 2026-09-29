@@ -67,7 +67,7 @@ public class HackCommands {
 
                                 // setpoints <pts>
                                 .then(Commands.literal("setpoints")
-                                        .then(Commands.argument("points", FloatArgumentType.floatArg(0.1f))
+                                                .then(Commands.argument("points", FloatArgumentType.floatArg(1.0f))
                                                 .executes(ctx -> setPoints(ctx.getSource(),
                                                         FloatArgumentType.getFloat(ctx, "points")))))
                         )
@@ -148,6 +148,7 @@ public class HackCommands {
     }
 
     private static int setGoal(CommandSourceStack src, int count) {
+        org.example.maniacrevolution.settings.GameSettings.get(src.getServer()).setComputersNeededForWin(count);
         HackConfig.COMPUTERS_NEEDED_FOR_WIN = count;
         // Сохраняем и синхронизируем клиентам немедленно
         HackManager.get().saveAndSync(src.getServer());
@@ -157,7 +158,9 @@ public class HackCommands {
     }
 
     private static int setPoints(CommandSourceStack src, float points) {
-        HackConfig.HACK_POINTS_REQUIRED = points;
+        org.example.maniacrevolution.settings.GameSettings.get(src.getServer()).setHackPointsRequired(points);
+        HackConfig.HACK_POINTS_REQUIRED = org.example.maniacrevolution.settings.GameSettings
+                .get(src.getServer()).getHackPointsRequired();
         HackManager.get().saveAndSync(src.getServer());
         src.sendSuccess(() -> Component.literal(
                 "§aОчков для взлома изменено: §e" + points), true);
