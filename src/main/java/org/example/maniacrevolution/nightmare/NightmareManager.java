@@ -344,7 +344,7 @@ public final class NightmareManager {
                 player.getYRot(), player.getXRot());
         giveTrialLighter(player);
         player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS,
-                NightmareConfig.ARENA_DURATION_TICKS + 40, 0, false, true));
+                NightmareConfig.ARENA_DURATION_TICKS + 40, 0, false, false, true));
         player.displayClientMessage(Component.literal("Выживи на арене"), true);
     }
 
@@ -429,7 +429,7 @@ public final class NightmareManager {
                 finishTrial(player, state, true, NightmareConfig.MAZE_FAIL_DAMAGE);
             }
         } else if (state.trialType == NightmareTrialType.ARENA) {
-            player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, true));
+            player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false, true));
             if (!player.isAlive()) {
                 onPlayerDeath(player);
                 return;

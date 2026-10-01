@@ -12,6 +12,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -19,6 +20,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -202,6 +204,19 @@ public final class PaintPuddleManager {
     }
 
     @SubscribeEvent
+    public static void onAdventurePaintCanUse(PlayerInteractEvent.RightClickBlock event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)
+                || player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE
+                || !event.getItemStack().is(ModItems.PAINT_CAN.get())) {
+            return;
+        }
+        InteractionResult result = PaintCanItem.place(player, event.getItemStack(),
+                event.getHand(), event.getFace(), event.getHitVec().getLocation());
+        event.setCancellationResult(result);
+        event.setCanceled(true);
+    }
+
+    @SubscribeEvent
     public static void onContainerClosed(PlayerContainerEvent.Close event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             recoverPaintFromOpenMenu(player);
@@ -220,7 +235,9 @@ public final class PaintPuddleManager {
             });
             for (ServerPlayer player : level.players()) {
                 if (!isInside(player, puddle)) continue;
-                if (puddle.playersInside.add(player.getUUID()) && canTrigger(player)) {
+                if (!puddle.playersInside.contains(player.getUUID())
+                        && canTrigger(player)) {
+                    puddle.playersInside.add(player.getUUID());
                     startQte(player, puddle);
                 }
             }

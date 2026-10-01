@@ -40,7 +40,7 @@ public class IAmSpeedPerk extends Perk {
                 SPEED_DURATION_TICKS,
                 SPEED_AMPLIFIER,
                 false, // ambient
-                true,  // visible
+                false,  // visible
                 true   // showIcon
         );
         killer.addEffect(speedEffect);

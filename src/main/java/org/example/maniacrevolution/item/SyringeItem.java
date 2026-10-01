@@ -101,11 +101,11 @@ public class SyringeItem extends Item {
             sp.removeEffect(MobEffects.MOVEMENT_SPEED);
             sp.addEffect(new MobEffectInstance(
                     MobEffects.MOVEMENT_SPEED, combinedTicks, combinedAmplifier,
-                    false, true, true));
+                    false, false, true));
         } else {
             sp.addEffect(new MobEffectInstance(
                     MobEffects.MOVEMENT_SPEED, newTicks, amplifier,
-                    false, true, true));
+                    false, false, true));
         }
 
         sp.displayClientMessage(Component.translatable("message.maniacrev.syringe.used",

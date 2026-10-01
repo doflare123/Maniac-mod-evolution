@@ -193,6 +193,10 @@ public class DownedEventHandler {
 
         DownedData data = DownedCapability.get(player);
         if (data == null) return;
+        if (GameManager.getPhaseValue() == 0 && data.getState() != DownedState.ALIVE) {
+            resetForMatch(player);
+            return;
+        }
 
         if (data.getState() == DownedState.DOWNED) {
             tickDowned(player, data);
@@ -405,24 +409,29 @@ public class DownedEventHandler {
     }
 
     public static void resetPlayer(ServerPlayer player) {
-        DownedData data = DownedCapability.get(player);
-        if (data == null) return;
-
-        if (data.getState() == DownedState.DOWNED) {
-            removeDownedEffects(player);
-            removeStandForPlayer(player.getUUID());
-        } else if (data.getState() == DownedState.WEAKENED) {
-            restoreMaxHp(player);
-            removeWeakenedEffects(player);
-        }
-
-        data.fullReset();
-
+        resetForMatch(player);
         player.displayClientMessage(
                 Component.literal("§aВаш статус «лежания» был сброшен. Вы снова можете упасть."),
                 false
         );
         Maniacrev.LOGGER.info("[Downed] {} сброшен -> ALIVE", player.getName().getString());
+    }
+
+    public static void resetForMatch(ServerPlayer player) {
+        DownedData data = DownedCapability.get(player);
+        if (data != null) {
+            if (data.getState() == DownedState.DOWNED) {
+                removeDownedEffects(player);
+                removeStandForPlayer(player.getUUID());
+            } else if (data.getState() == DownedState.WEAKENED) {
+                restoreMaxHp(player);
+                removeWeakenedEffects(player);
+            }
+            data.fullReset();
+        }
+        player.setForcedPose(null);
+        player.setPose(Pose.STANDING);
+        ModNetworking.sendToPlayer(DownedHudPacket.clear(), player);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -643,7 +652,7 @@ public class DownedEventHandler {
                 data.cancelRevive();
             }
 
-            removeDownedEffects(player);
+            resetForMatch(player);
             clearHudForNearby(player);
             player.setGameMode(GameType.SPECTATOR);
         }

@@ -140,7 +140,7 @@ public final class GhostStealthManager {
     private static void beginRecovery(ServerPlayer player, long now) {
         ACTIVE_UNTIL.remove(player.getUUID());
         RECOVERY_UNTIL.put(player.getUUID(), now + RECOVERY_TICKS);
-        player.addEffect(new MobEffectInstance(ModEffects.STUN.get(), RECOVERY_TICKS, 0, false, true, true));
+        player.addEffect(new MobEffectInstance(ModEffects.STUN.get(), RECOVERY_TICKS, 0, false, false, true));
         syncKnifeState(player);
 
         player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.PLAYERS, 1.1f, 0.7f);

@@ -116,7 +116,7 @@ public class AltruistExePerk extends Perk {
                 ModEffects.ALTRUIST_BOOST.get(),
                 DURATION_SEC * 20,
                 0,
-                false, true, true
+                false, false, true
         ));
 
         player.displayClientMessage(

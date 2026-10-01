@@ -128,7 +128,7 @@ public class RealityAnchorPerk extends ChargedPerk {
                 reducedDuration,
                 original.getAmplifier(),
                 original.isAmbient(),
-                original.isVisible(),
+                false,
                 original.showIcon()
         );
 

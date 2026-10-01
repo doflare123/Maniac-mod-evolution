@@ -65,7 +65,7 @@ public class FootballFanPerk extends Perk {
                 ModEffects.FROZEN.get(),
                 durationTicks,
                 0,
-                false, true, true
+                false, false, true
         ));
 
         // Запоминаем команду на момент активации

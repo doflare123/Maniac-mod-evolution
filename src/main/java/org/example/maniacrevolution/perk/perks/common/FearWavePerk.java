@@ -80,7 +80,7 @@ public class FearWavePerk extends Perk {
             }
 
             entity.addEffect(new MobEffectInstance(ModEffects.FEAR.get(), FEAR_DURATION, 0,
-                    false, true, true));
+                    false, false, true));
             level.sendParticles(PARTICLE_COLOR,
                     entity.getX(), entity.getY() + entity.getBbHeight() / 2.0, entity.getZ(),
                     20, 0.3, 0.5, 0.3, 0.1);

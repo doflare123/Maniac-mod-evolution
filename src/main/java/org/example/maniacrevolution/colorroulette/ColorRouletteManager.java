@@ -147,7 +147,7 @@ public final class ColorRouletteManager {
                 MobEffectInstance current = player.getEffect(ModEffects.GREEN_CHARGE.get());
                 int stacks = current == null ? 1 : current.getAmplifier() + 2;
                 player.addEffect(new MobEffectInstance(ModEffects.GREEN_CHARGE.get(), -1,
-                        stacks - 1, false, true, true));
+                        stacks - 1, false, false, true));
                 player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP,
                         SoundSource.PLAYERS, 0.8F, 1.5F);
             }
@@ -221,7 +221,7 @@ public final class ColorRouletteManager {
             if (player.level() == level && PerkTeam.fromPlayer(player) == PerkTeam.MANIAC
                     && isActiveGameMode(player)) {
                 player.addEffect(new MobEffectInstance(ModEffects.RED_GUIDANCE.get(),
-                        GUIDANCE_TICKS, 0, false, true, true));
+                        GUIDANCE_TICKS, 0, false, false, true));
                 ModNetworking.sendToPlayer(packet, player);
             }
         }

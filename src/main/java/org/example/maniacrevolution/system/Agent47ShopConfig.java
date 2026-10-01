@@ -250,7 +250,7 @@ public class Agent47ShopConfig {
                         item.duration * 20,
                         item.amplifier,
                         false,
-                        true,
+                        false,
                         true
                 ));
                 buyer.displayClientMessage(
@@ -276,7 +276,7 @@ public class Agent47ShopConfig {
                         item.duration * 20,
                         item.amplifier,
                         false,
-                        true,
+                        false,
                         true
                 ));
                 buyer.displayClientMessage(

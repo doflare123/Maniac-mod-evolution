@@ -586,7 +586,7 @@ public class GhostPossessionManager {
 
         syncClientState(possessor, false, false, -1);
         clearPossessorEffects(possessor);
-        possessor.addEffect(new MobEffectInstance(ModEffects.STUN.get(), 2 * 20, 0, false, true, true));
+        possessor.addEffect(new MobEffectInstance(ModEffects.STUN.get(), 2 * 20, 0, false, false, true));
         GhostLoadoutManager.restoreCosmetics(possessor);
         possessor.displayClientMessage(Component.literal("§7Вселение завершено" + (reason == null || reason.isBlank() ? "" : ": " + reason)), true);
 
@@ -601,7 +601,7 @@ public class GhostPossessionManager {
     }
 
     private static void applyPossessionTimer(ServerPlayer player, int durationTicks) {
-        player.addEffect(new MobEffectInstance(ModEffects.POSSESSION_TIMER.get(), durationTicks, 0, false, true, true));
+        player.addEffect(new MobEffectInstance(ModEffects.POSSESSION_TIMER.get(), durationTicks, 0, false, false, true));
     }
 
     private static void tryManualRelease(ServerPlayer possessor) {

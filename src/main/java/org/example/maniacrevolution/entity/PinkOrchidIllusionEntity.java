@@ -8,6 +8,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
@@ -116,6 +117,7 @@ public final class PinkOrchidIllusionEntity extends LivingEntity {
         setItemSlot(EquipmentSlot.CHEST, armorSnapshot.get(2));
         setItemSlot(EquipmentSlot.HEAD, armorSnapshot.get(3));
         if (!route.isEmpty()) applyFrame(route.get(0), false);
+        syncOwnerEffects(owner);
     }
 
     @Override
@@ -126,6 +128,11 @@ public final class PinkOrchidIllusionEntity extends LivingEntity {
             spawnClientMaterializeParticles();
             return;
         }
+
+        UUID ownerId = getOwnerUUID();
+        ServerPlayer owner = ownerId == null ? null
+                : level().getServer().getPlayerList().getPlayer(ownerId);
+        if (owner != null) syncOwnerEffects(owner);
 
         int materialize = entityData.get(MATERIALIZE_TICKS);
         if (materialize > 0) entityData.set(MATERIALIZE_TICKS, materialize - 1);
@@ -141,6 +148,26 @@ public final class PinkOrchidIllusionEntity extends LivingEntity {
         }
         applyFrame(frame, true);
         routeIndex++;
+    }
+
+    private void syncOwnerEffects(ServerPlayer owner) {
+        for (MobEffectInstance effect : new ArrayList<>(getActiveEffects())) {
+            if (!owner.hasEffect(effect.getEffect())) {
+                removeEffect(effect.getEffect());
+            }
+        }
+        for (MobEffectInstance effect : owner.getActiveEffects()) {
+            MobEffectInstance current = getEffect(effect.getEffect());
+            if (current != null
+                    && current.getAmplifier() == effect.getAmplifier()
+                    && current.isAmbient() == effect.isAmbient()
+                    && Math.abs(current.getDuration() - effect.getDuration()) <= 2) {
+                continue;
+            }
+            if (current != null) removeEffect(effect.getEffect());
+            addEffect(new MobEffectInstance(effect.getEffect(), effect.getDuration(),
+                    effect.getAmplifier(), effect.isAmbient(), false, effect.showIcon()));
+        }
     }
 
     private void spawnClientMaterializeParticles() {

@@ -200,6 +200,9 @@ public class GameManager {
 
         // A new match always starts from the saved menu settings, even if a
         // datapack or a previous round left a paused countdown behind.
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            org.example.maniacrevolution.downed.DownedEventHandler.resetForMatch(player);
+        }
         org.example.maniacrevolution.command.ApplySettingsCommand.applySettings(server, true, false);
         setPhase(1);
         startNewRoundTimer(org.example.maniacrevolution.settings.GameSettings.get(server).getGameTime() * 60);
@@ -292,6 +295,11 @@ public class GameManager {
     }
 
     public static void stopGame(CommandSourceStack source) {
+        if (server != null) {
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                org.example.maniacrevolution.downed.DownedEventHandler.resetForMatch(player);
+            }
+        }
         setPhase(0);
         stopTimer();
         currentTime = 0;

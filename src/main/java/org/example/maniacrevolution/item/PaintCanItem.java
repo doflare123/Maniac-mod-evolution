@@ -13,6 +13,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.paint.PaintPuddleManager;
 import org.example.maniacrevolution.perk.perks.maniac.ThePaintThickensPerk;
@@ -56,8 +58,13 @@ public class PaintCanItem extends Item {
             return player == null ? InteractionResult.PASS : InteractionResult.SUCCESS;
         }
 
-        ItemStack stack = context.getItemInHand();
-        if (context.getClickedFace() != Direction.UP
+        return place(serverPlayer, context.getItemInHand(), context.getHand(),
+                context.getClickedFace(), context.getClickLocation());
+    }
+
+    public static InteractionResult place(ServerPlayer serverPlayer, ItemStack stack,
+                                          InteractionHand hand, Direction face, Vec3 hitLocation) {
+        if (face != Direction.UP
                 || GameManager.getPhaseValue() < 1
                 || GameManager.getPhaseValue() > 3
                 || !belongsTo(stack, serverPlayer.getUUID())
@@ -65,12 +72,12 @@ public class PaintCanItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        if (!PaintPuddleManager.placePuddle(serverPlayer, context.getClickLocation())) {
+        if (!PaintPuddleManager.placePuddle(serverPlayer, hitLocation)) {
             return InteractionResult.FAIL;
         }
 
         stack.hurtAndBreak(1, serverPlayer,
-                brokenPlayer -> brokenPlayer.broadcastBreakEvent(context.getHand()));
+                brokenPlayer -> brokenPlayer.broadcastBreakEvent(hand));
         return InteractionResult.CONSUME;
     }
 
