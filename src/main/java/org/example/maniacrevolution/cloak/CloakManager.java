@@ -39,6 +39,9 @@ public final class CloakManager {
         Vec3 anchor;
         float facing;
         boolean previousShift, hovering, originalGravity;
+        boolean hoverHeld;
+        float originalStepHeight;
+        long lastHoverInput = Long.MIN_VALUE;
         Session(ServerPlayer owner, CloakEntity cloak) { this.owner = owner; this.cloak = cloak; }
     }
 
@@ -46,6 +49,12 @@ public final class CloakManager {
         return player.getItemBySlot(EquipmentSlot.CHEST).is(ModItems.DOCTOR_STRANGE_CLOAK.get());
     }
     public static boolean restrained(Player player) { return CAPTIVES.containsKey(player.getUUID()); }
+    public static void hoverInput(ServerPlayer player, boolean held) {
+        Session session = OWNERS.get(player.getUUID());
+        if (session == null || !equipped(player)) return;
+        session.hoverHeld = held;
+        session.lastHoverInput = player.level().getGameTime();
+    }
     public static boolean isManaged(CloakEntity cloak) {
         return OWNERS.values().stream().anyMatch(s -> s.cloak == cloak);
     }
@@ -109,7 +118,7 @@ public final class CloakManager {
 
     private static void update(Session s) {
         CloakEntity cloak = s.cloak;
-        boolean shift = s.owner.isShiftKeyDown();
+        boolean shift = s.hoverHeld && s.owner.level().getGameTime() - s.lastHoverInput <= 15;
         boolean pressed = shift && !s.previousShift;
         s.previousShift = shift;
         if (cloak.stage().hovering() && (!shift || !usable(s.owner) || s.owner.isInWaterOrBubble() || s.owner.isInLava())) {
@@ -120,14 +129,18 @@ public final class CloakManager {
                 && !s.owner.isInWaterOrBubble() && !s.owner.isInLava()) {
             s.hovering = true;
             s.originalGravity = s.owner.isNoGravity();
+            s.originalStepHeight = s.owner.maxUpStep();
             s.owner.setNoGravity(true);
+            s.owner.setMaxUpStep(0);
             s.owner.stopFallFlying();
             cloak.hoverHeight(s.owner.getY() + 0.5);
             cloak.stage(CloakStage.DEPLOY);
         }
         if (s.hovering) {
-            hover(s.owner, cloak.hoverHeight());
-            if (s.owner.getY() > cloak.hoverHeight()) {
+            // Player movement is client-predicted. Sending server velocity every tick
+            // overwrites that prediction with near-zero X/Z and causes rubber-banding.
+            s.owner.fallDistance = 0;
+            if (s.owner.getY() > cloak.hoverHeight() + 0.05) {
                 s.owner.connection.teleport(s.owner.getX(), cloak.hoverHeight(), s.owner.getZ(), s.owner.getYRot(), s.owner.getXRot());
             }
         }
@@ -184,16 +197,11 @@ public final class CloakManager {
         }
     }
 
-    public static void hover(Player player, double height) {
-        Vec3 velocity = player.getDeltaMovement();
-        player.setDeltaMovement(velocity.x, Math.max(-0.15, Math.min(0.1, height - player.getY())), velocity.z);
-        player.fallDistance = 0;
-        player.hurtMarked = true;
-    }
     private static void stopHover(Session s) {
         if (!s.hovering) return;
         s.hovering = false;
         s.owner.setNoGravity(s.originalGravity);
+        s.owner.setMaxUpStep(s.originalStepHeight);
         s.owner.setDeltaMovement(s.owner.getDeltaMovement().multiply(1, 0, 1));
         s.owner.fallDistance = 0;
         s.owner.hurtMarked = true;

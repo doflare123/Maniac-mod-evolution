@@ -1,0 +1,16 @@
+{
+  "vertex": "maniacrev:visual_effects",
+  "fragment": "maniacrev:visual_effects",
+  "attributes": ["Position"],
+  "samplers": [{"name": "DiffuseSampler"}],
+  "uniforms": [
+    {"name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]},
+    {"name": "OutSize", "type": "float", "count": 2, "values": [1, 1]},
+    {"name": "InSize", "type": "float", "count": 2, "values": [1, 1]},
+    {"name": "EffectTime", "type": "float", "count": 1, "values": [0]},
+    {"name": "InjuryStrength", "type": "float", "count": 1, "values": [0]},
+    {"name": "DamageStrength", "type": "float", "count": 1, "values": [0]},
+    {"name": "ManiacStrength", "type": "float", "count": 1, "values": [0]},
+    {"name": "DistortionStrength", "type": "float", "count": 1, "values": [0]}
+  ]
+}

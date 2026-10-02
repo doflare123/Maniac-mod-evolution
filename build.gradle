@@ -165,6 +165,15 @@ tasks.named('check') {
     dependsOn tasks.named('verifyNightmareSync')
     dependsOn tasks.named('verifyGameSettings')
     dependsOn 'verifyCloak'
+    dependsOn 'verifyVisualEffects'
+}
+
+tasks.register('verifyVisualEffects', JavaExec) {
+    group = 'verification'
+    description = 'Checks injury, damage and camera envelopes without an OpenGL context.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.client.visual.VisualEffectStateTest'
 }
 
 tasks.register('verifyCloak', JavaExec) {

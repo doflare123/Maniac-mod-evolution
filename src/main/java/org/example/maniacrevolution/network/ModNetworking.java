@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "7";
+    private static final String PROTOCOL_VERSION = "8";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -31,6 +31,10 @@ public class ModNetworking {
     private static int packetId = 0;
 
     public static void register() {
+        CHANNEL.messageBuilder(org.example.maniacrevolution.cloak.CloakHoverInputPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(org.example.maniacrevolution.cloak.CloakHoverInputPacket::encode)
+                .decoder(org.example.maniacrevolution.cloak.CloakHoverInputPacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.cloak.CloakHoverInputPacket::handle).add();
         CHANNEL.messageBuilder(org.example.maniacrevolution.cloak.CloakFlapPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(org.example.maniacrevolution.cloak.CloakFlapPacket::encode)
                 .decoder(org.example.maniacrevolution.cloak.CloakFlapPacket::decode)

@@ -64,6 +64,11 @@ public class Config
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)
     {
+        // Config events are shared by all specs registered for this mod.
+        if (event.getConfig().getSpec() != SPEC || event instanceof ModConfigEvent.Unloading) {
+            return;
+        }
+
         logDirtBlock = LOG_DIRT_BLOCK.get();
         magicNumber = MAGIC_NUMBER.get();
         magicNumberIntroduction = MAGIC_NUMBER_INTRODUCTION.get();

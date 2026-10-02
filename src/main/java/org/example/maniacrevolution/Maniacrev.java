@@ -81,6 +81,11 @@ public class Maniacrev {
     public Maniacrev() {
         GeckoLib.initialize();
 
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                net.minecraftforge.fml.config.ModConfig.Type.CLIENT,
+                org.example.maniacrevolution.config.VisualEffectsConfig.SPEC,
+                "maniacrev-visuals-client.toml");
+
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         modEventBus.addListener(this::commonSetup);

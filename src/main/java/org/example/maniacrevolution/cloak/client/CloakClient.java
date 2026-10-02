@@ -8,9 +8,12 @@ import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
@@ -23,6 +26,9 @@ public final class CloakClient {
     private static CloakGamePacket game;
     private static long lastGameTick;
     private static boolean jumpDown;
+    private static boolean hoverHeld;
+    private static net.minecraft.client.player.LocalPlayer ridingPlayer;
+    private static float originalStepHeight;
     private static final Map<AbstractClientPlayer, Pose> POSES = new IdentityHashMap<>();
     private static final class Pose {
         final ModifierLayer<IAnimation> layer = new ModifierLayer<>();
@@ -41,13 +47,69 @@ public final class CloakClient {
     }
 
     @SubscribeEvent public static void input(MovementInputUpdateEvent event) {
-        if (game == null) return;
         var input = event.getInput();
+        var mc = Minecraft.getInstance();
+        boolean held = input.shiftKeyDown && mc.screen == null && game == null
+                && CloakManager.equipped(event.getEntity()) && event.getEntity().isAlive()
+                && !event.getEntity().isCreative() && !event.getEntity().isSpectator();
+        if (held != hoverHeld || held && event.getEntity().tickCount % 5 == 0) {
+            ModNetworking.sendToServer(new CloakHoverInputPacket(held));
+        }
+        hoverHeld = held;
+        CloakEntity cloak = held ? localHover() : null;
+        if (cloak != null) {
+            var player = event.getEntity();
+            if (ridingPlayer == null) {
+                ridingPlayer = mc.player;
+                originalStepHeight = player.maxUpStep();
+            }
+            player.setMaxUpStep(0);
+            player.setSprinting(false);
+            float left = (input.left ? 1 : 0) - (input.right ? 1 : 0);
+            float forward = (input.up ? 1 : 0) - (input.down ? 1 : 0);
+            var motion = CloakHoverMotion.calculate(left, forward, player.getYRot(),
+                    player.getAttributeValue(Attributes.MOVEMENT_SPEED), player.getY(), cloak.hoverHeight());
+            player.setDeltaMovement(motion.x(), motion.y(), motion.z());
+            player.fallDistance = 0;
+            // Run before vanilla travel: no crouch slowdown, edge clamping or jump impulses.
+            // Zero acceleration because the motion above already includes WASD input.
+            input.forwardImpulse = input.leftImpulse = 0;
+            input.jumping = false;
+            input.shiftKeyDown = false;
+        } else stopRiding();
+        if (game == null) return;
         input.forwardImpulse = 0;
         input.leftImpulse = 0;
         input.up = input.down = input.left = input.right = false;
         input.jumping = false;
         input.shiftKeyDown = false;
+    }
+
+    private static CloakEntity localHover() {
+        var mc = Minecraft.getInstance();
+        if (mc.level == null || mc.player == null || !hoverHeld) return null;
+        for (var entity : mc.level.entitiesForRendering()) {
+            if (entity instanceof CloakEntity cloak && cloak.ownerId() == mc.player.getId()
+                    && cloak.stage().hovering()) return cloak;
+        }
+        return null;
+    }
+
+    private static void stopRiding() {
+        if (ridingPlayer == null) return;
+        ridingPlayer.setMaxUpStep(originalStepHeight);
+        ridingPlayer.setDeltaMovement(ridingPlayer.getDeltaMovement().multiply(1, 0, 1));
+        ridingPlayer = null;
+    }
+
+    @SubscribeEvent public static void jump(LivingEvent.LivingJumpEvent event) {
+        if (event.getEntity() != Minecraft.getInstance().player) return;
+        var cloak = localHover();
+        if (cloak == null) return;
+        // An auto-jump queued before take-off can otherwise bypass input.jumping=false.
+        Vec3 velocity = event.getEntity().getDeltaMovement();
+        double y = CloakHoverMotion.calculate(0, 0, 0, 0, event.getEntity().getY(), cloak.hoverHeight()).y();
+        event.getEntity().setDeltaMovement(velocity.x, y, velocity.z);
     }
     @SubscribeEvent public static void interaction(InputEvent.InteractionKeyMappingTriggered event) {
         if (game != null) { event.setCanceled(true); event.setSwingHand(false); }
@@ -65,10 +127,6 @@ public final class CloakClient {
         Set<AbstractClientPlayer> animated = Collections.newSetFromMap(new IdentityHashMap<>());
         for (var entity : mc.level.entitiesForRendering()) {
             if (!(entity instanceof CloakEntity cloak)) continue;
-            if (cloak.ownerId() == mc.player.getId() && cloak.stage().hovering() && mc.options.keyShift.isDown()
-                    && CloakManager.equipped(mc.player) && !mc.player.isCreative() && !mc.player.isSpectator()) {
-                CloakManager.hover(mc.player, cloak.hoverHeight());
-            }
             if (cloak.stage().hovering() || cloak.stage() == CloakStage.LAND) {
                 if (mc.level.getEntity(cloak.ownerId()) instanceof AbstractClientPlayer player) {
                     animate(player, cloak.stage().clip, (int)cloak.ageInStage(), false);
@@ -114,7 +172,8 @@ public final class CloakClient {
         if (animation != null) {
             pose.layer.setAnimation(clip.equals("release_hold") ? new KeyframeAnimationPlayer(animation, 0) {
                 @Override public void tick() { /* Hold the prone pose until the cloak has departed. */ }
-            } : new KeyframeAnimationPlayer(animation, tick));
+            } : clip.startsWith("carpet_") ? new CloakRidingAnimation(animation, tick)
+                    : new KeyframeAnimationPlayer(animation, tick));
         }
         else Maniacrev.LOGGER.warn("Missing cloak player animation: {}", clip);
     }
@@ -143,9 +202,11 @@ public final class CloakClient {
     }
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut event) { clear(); }
     private static void clear() {
+        stopRiding();
         POSES.values().forEach(p -> p.layer.setAnimation(null));
         POSES.clear();
         game = null;
         jumpDown = false;
+        hoverHeld = false;
     }
 }
