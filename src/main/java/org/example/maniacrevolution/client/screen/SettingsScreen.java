@@ -1072,7 +1072,7 @@ public class SettingsScreen extends Screen {
                 new SettingEntry("maniacs", "Количество маньяков", "Число противников в раунде",
                         "Шаг: 1 игрок", () -> Integer.toString(tempManiacCount),
                         n -> tempManiacCount = Math.max(1, tempManiacCount - n),
-                        n -> tempManiacCount += n,
+                        n -> tempManiacCount = Math.min(GameSettings.MAX_MANIAC_COUNT, tempManiacCount + n),
                         () -> tempManiacCount = GameSettings.DEFAULT_MANIAC_COUNT,
                         () -> tempManiacCount == GameSettings.DEFAULT_MANIAC_COUNT,
                         "Определяет, сколько игроков окажутся в команде маньяков."),
@@ -1284,13 +1284,7 @@ public class SettingsScreen extends Screen {
                 tempQteCritBonus, tempComputersNeededForWin,
                 tempThreePerksEnabled));
 
-        ClientGameSettings.setSettings(tempHpBoost, tempManiacCount, tempGameTime, tempSelectedMap);
-        ClientGameSettings.setComputerSettings(
-                tempHackPointsRequired, tempPointsPerPlayer, tempPointsPerSpecialist,
-                tempMaxBonusPlayers, tempHackerRadius, tempSupportRadius,
-                tempQteIntervalMin, tempQteIntervalMax, tempQteSuccessBonus,
-                tempQteCritBonus, tempComputersNeededForWin);
-        ClientGameSettings.setExperimentSettings(tempThreePerksEnabled);
+        // The server returns the accepted, validated values in SyncSettingsPacket.
 
         if (giveToAll) {
             ModNetworking.sendToServer(new GiveSettingsToAllPacket());

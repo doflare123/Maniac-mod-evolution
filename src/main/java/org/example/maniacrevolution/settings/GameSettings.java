@@ -34,6 +34,7 @@ public class GameSettings extends SavedData {
     // ── Дефолты — Игра ────────────────────────────────────────────────────
     public static final int   DEFAULT_HP_BOOST               = 0;
     public static final int   DEFAULT_MANIAC_COUNT           = 1;
+    public static final int   MAX_MANIAC_COUNT               = 3;
     public static final int   DEFAULT_GAME_TIME              = 10;
     public static final int   DEFAULT_SELECTED_MAP           = 0;
     public static final boolean DEFAULT_THREE_PERKS_ENABLED  = false;
@@ -79,23 +80,23 @@ public class GameSettings extends SavedData {
     public int   getComputersNeededForWin() { return computersNeededForWin; }
 
     // ── Сеттеры — Игра ────────────────────────────────────────────────────
-    public void setHpBoost(int v)         { hpBoost       = Math.max(0, v);               setDirty(); }
-    public void setManiacCount(int v)     { maniacCount   = Math.max(1, v);               setDirty(); }
-    public void setGameTime(int v)        { gameTime      = Math.max(1, v);               setDirty(); }
-    public void setSelectedMap(int v)     { selectedMap   = v;                            setDirty(); }
+    public void setHpBoost(int v)         { hpBoost       = Math.min(1024, Math.max(0, v));               setDirty(); }
+    public void setManiacCount(int v)     { maniacCount   = Math.min(MAX_MANIAC_COUNT, Math.max(1, v)); setDirty(); }
+    public void setGameTime(int v)        { gameTime      = Math.min(Integer.MAX_VALUE / 1200, Math.max(1, v));               setDirty(); }
+    public void setSelectedMap(int v)     { selectedMap   = Math.max(0, v);                            setDirty(); }
     public void setThreePerksEnabled(boolean enabled) { threePerksEnabled = enabled; setDirty(); }
 
     // ── Сеттеры — Компьютеры ──────────────────────────────────────────────
-    public void setHackPointsRequired(float v)   { hackPointsRequired  = Math.max(1f, v);         setDirty(); }
-    public void setPointsPerPlayer(float v)      { pointsPerPlayer     = Math.max(0.01f, v);      setDirty(); }
-    public void setPointsPerSpecialist(float v)  { pointsPerSpecialist = Math.max(0.01f, v);      setDirty(); }
+    public void setHackPointsRequired(float v)   { hackPointsRequired  = Math.max(1f, Float.isFinite(v) ? v : DEFAULT_HACK_POINTS_REQUIRED);         setDirty(); }
+    public void setPointsPerPlayer(float v)      { pointsPerPlayer     = Math.max(0.01f, Float.isFinite(v) ? v : DEFAULT_POINTS_PER_PLAYER);      setDirty(); }
+    public void setPointsPerSpecialist(float v)  { pointsPerSpecialist = Math.max(0.01f, Float.isFinite(v) ? v : DEFAULT_POINTS_PER_SPECIALIST);      setDirty(); }
     public void setMaxBonusPlayers(int v)        { maxBonusPlayers     = Math.max(1, v);           setDirty(); }
-    public void setHackerRadius(float v)         { hackerRadius        = Math.max(0.5f, v);        setDirty(); }
-    public void setSupportRadius(float v)        { supportRadius       = Math.max(0.5f, v);        setDirty(); }
-    public void setQteIntervalMin(int v)         { qteIntervalMin      = Math.max(1, v);           setDirty(); }
-    public void setQteIntervalMax(int v)         { qteIntervalMax      = Math.max(qteIntervalMin, v); setDirty(); }
-    public void setQteSuccessBonus(float v)      { qteSuccessBonus     = Math.max(0f, v);          setDirty(); }
-    public void setQteCritBonus(float v)         { qteCritBonus        = Math.max(0f, v);          setDirty(); }
+    public void setHackerRadius(float v)         { hackerRadius        = Math.max(0.5f, Float.isFinite(v) ? v : DEFAULT_HACKER_RADIUS);        setDirty(); }
+    public void setSupportRadius(float v)        { supportRadius       = Math.max(0.5f, Float.isFinite(v) ? v : DEFAULT_SUPPORT_RADIUS);        setDirty(); }
+    public void setQteIntervalMin(int v)         { qteIntervalMin      = Math.min(Integer.MAX_VALUE / 20, Math.max(1, v)); qteIntervalMax = Math.max(qteIntervalMax, qteIntervalMin);           setDirty(); }
+    public void setQteIntervalMax(int v)         { qteIntervalMax      = Math.min(Integer.MAX_VALUE / 20, Math.max(qteIntervalMin, v)); setDirty(); }
+    public void setQteSuccessBonus(float v)      { qteSuccessBonus     = Math.max(0f, Float.isFinite(v) ? v : DEFAULT_QTE_SUCCESS_BONUS);          setDirty(); }
+    public void setQteCritBonus(float v)         { qteCritBonus        = Math.max(0f, Float.isFinite(v) ? v : DEFAULT_QTE_CRIT_BONUS);          setDirty(); }
     public void setComputersNeededForWin(int v)  { computersNeededForWin = Math.max(1, v);         setDirty(); }
 
     // ── Сброс ─────────────────────────────────────────────────────────────
@@ -143,24 +144,25 @@ public class GameSettings extends SavedData {
 
     public static GameSettings load(CompoundTag tag) {
         GameSettings s = new GameSettings();
-        s.hpBoost              = tag.getInt("hpBoost");
-        s.maniacCount          = tag.getInt("maniacCount");
-        s.gameTime             = tag.getInt("gameTime");
-        s.selectedMap          = tag.getInt("selectedMap");
-        s.threePerksEnabled    = tag.contains("threePerksEnabled")
+        s.setHpBoost(tag.contains("hpBoost") ? tag.getInt("hpBoost") : DEFAULT_HP_BOOST);
+        s.setManiacCount(tag.contains("maniacCount") ? tag.getInt("maniacCount") : DEFAULT_MANIAC_COUNT);
+        s.setGameTime(tag.contains("gameTime") ? tag.getInt("gameTime") : DEFAULT_GAME_TIME);
+        s.setSelectedMap(tag.contains("selectedMap") ? tag.getInt("selectedMap") : DEFAULT_SELECTED_MAP);
+        s.setThreePerksEnabled(tag.contains("threePerksEnabled")
                 ? tag.getBoolean("threePerksEnabled")
-                : DEFAULT_THREE_PERKS_ENABLED;
-        s.hackPointsRequired   = tag.contains("hackPointsRequired")  ? tag.getFloat("hackPointsRequired")  : DEFAULT_HACK_POINTS_REQUIRED;
-        s.pointsPerPlayer      = tag.contains("pointsPerPlayer")     ? tag.getFloat("pointsPerPlayer")     : DEFAULT_POINTS_PER_PLAYER;
-        s.pointsPerSpecialist  = tag.contains("pointsPerSpecialist") ? tag.getFloat("pointsPerSpecialist") : DEFAULT_POINTS_PER_SPECIALIST;
-        s.maxBonusPlayers      = tag.contains("maxBonusPlayers")     ? tag.getInt("maxBonusPlayers")       : DEFAULT_MAX_BONUS_PLAYERS;
-        s.hackerRadius         = tag.contains("hackerRadius")        ? tag.getFloat("hackerRadius")        : DEFAULT_HACKER_RADIUS;
-        s.supportRadius        = tag.contains("supportRadius")       ? tag.getFloat("supportRadius")       : DEFAULT_SUPPORT_RADIUS;
-        s.qteIntervalMin       = tag.contains("qteIntervalMin")      ? tag.getInt("qteIntervalMin")        : DEFAULT_QTE_INTERVAL_MIN;
-        s.qteIntervalMax       = tag.contains("qteIntervalMax")      ? tag.getInt("qteIntervalMax")        : DEFAULT_QTE_INTERVAL_MAX;
-        s.qteSuccessBonus      = tag.contains("qteSuccessBonus")     ? tag.getFloat("qteSuccessBonus")     : DEFAULT_QTE_SUCCESS_BONUS;
-        s.qteCritBonus         = tag.contains("qteCritBonus")        ? tag.getFloat("qteCritBonus")        : DEFAULT_QTE_CRIT_BONUS;
-        s.computersNeededForWin = tag.contains("computersNeededForWin") ? tag.getInt("computersNeededForWin") : DEFAULT_COMPUTERS_NEEDED;
+                : DEFAULT_THREE_PERKS_ENABLED);
+        s.setHackPointsRequired(tag.contains("hackPointsRequired")  ? tag.getFloat("hackPointsRequired")  : DEFAULT_HACK_POINTS_REQUIRED);
+        s.setPointsPerPlayer(tag.contains("pointsPerPlayer")     ? tag.getFloat("pointsPerPlayer")     : DEFAULT_POINTS_PER_PLAYER);
+        s.setPointsPerSpecialist(tag.contains("pointsPerSpecialist") ? tag.getFloat("pointsPerSpecialist") : DEFAULT_POINTS_PER_SPECIALIST);
+        s.setMaxBonusPlayers(tag.contains("maxBonusPlayers")     ? tag.getInt("maxBonusPlayers")       : DEFAULT_MAX_BONUS_PLAYERS);
+        s.setHackerRadius(tag.contains("hackerRadius")        ? tag.getFloat("hackerRadius")        : DEFAULT_HACKER_RADIUS);
+        s.setSupportRadius(tag.contains("supportRadius")       ? tag.getFloat("supportRadius")       : DEFAULT_SUPPORT_RADIUS);
+        s.setQteIntervalMin(tag.contains("qteIntervalMin")      ? tag.getInt("qteIntervalMin")        : DEFAULT_QTE_INTERVAL_MIN);
+        s.setQteIntervalMax(tag.contains("qteIntervalMax")      ? tag.getInt("qteIntervalMax")        : DEFAULT_QTE_INTERVAL_MAX);
+        s.setQteSuccessBonus(tag.contains("qteSuccessBonus")     ? tag.getFloat("qteSuccessBonus")     : DEFAULT_QTE_SUCCESS_BONUS);
+        s.setQteCritBonus(tag.contains("qteCritBonus")        ? tag.getFloat("qteCritBonus")        : DEFAULT_QTE_CRIT_BONUS);
+        s.setComputersNeededForWin(tag.contains("computersNeededForWin") ? tag.getInt("computersNeededForWin") : DEFAULT_COMPUTERS_NEEDED);
+        s.setDirty(false);
         return s;
     }
 

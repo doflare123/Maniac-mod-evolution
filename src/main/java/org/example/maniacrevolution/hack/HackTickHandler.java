@@ -17,6 +17,7 @@ public class HackTickHandler {
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
         HackManager.reset();
+        org.example.maniacrevolution.command.ApplySettingsCommand.applySettings(event.getServer(), true);
         HackManager.get().load(event.getServer());
     }
 

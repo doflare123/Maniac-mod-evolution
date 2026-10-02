@@ -139,7 +139,7 @@ public class SlotMachineBlock extends Block {
             stack.shrink(1);
         }
 
-        serverPlayer.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_SLOT_COOLDOWN.get(), 30 * 20, 0, false, true, true));
+        serverPlayer.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_SLOT_COOLDOWN.get(), 30 * 20, 0, false, false, true));
         serverPlayer.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 70, 0, false, false, true));
         level.playSound(null, pos, ModSounds.SLOT_INSERT.get(), SoundSource.BLOCKS, 0.9f, 1.0f);
         BlockPos machinePos = state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();

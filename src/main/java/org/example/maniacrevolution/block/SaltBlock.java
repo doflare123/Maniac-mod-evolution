@@ -39,8 +39,8 @@ public class SaltBlock extends Block {
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!level.isClientSide && entity instanceof LivingEntity livingEntity) {
             // Накладываем эффекты на игрока
-            livingEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 255)); // Максимальное замедление на 2 секунды
-            livingEntity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 120, 0)); // Слепота на 6 секунд
+            livingEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 255, false, false, true)); // Максимальное замедление на 2 секунды
+            livingEntity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 120, 0, false, false, true)); // Слепота на 6 секунд
 
             // Звук тушения лавы
             level.playSound(null, pos, net.minecraft.sounds.SoundEvents.FIRE_EXTINGUISH,

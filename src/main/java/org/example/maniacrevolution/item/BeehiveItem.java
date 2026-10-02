@@ -53,9 +53,9 @@ public class BeehiveItem extends Item {
     private void applyRage(ServerPlayer player, ServerLevel level) {
         // Resistance 4 = полная защита от урона
         player.addEffect(new MobEffectInstance(
-                MobEffects.DAMAGE_RESISTANCE, RAGE_TICKS, 4, false, true, true));
+                MobEffects.DAMAGE_RESISTANCE, RAGE_TICKS, 4, false, false, true));
         player.addEffect(new MobEffectInstance(
-                MobEffects.MOVEMENT_SPEED, RAGE_TICKS, 1, false, true, true));
+                MobEffects.MOVEMENT_SPEED, RAGE_TICKS, 1, false, false, true));
 
         for (int i = 0; i < BEE_COUNT; i++) {
             double angle = (2 * Math.PI / BEE_COUNT) * i;

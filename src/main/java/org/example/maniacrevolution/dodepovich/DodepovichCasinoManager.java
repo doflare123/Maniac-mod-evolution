@@ -184,8 +184,8 @@ public final class DodepovichCasinoManager {
             case COIN_GOOD -> applyCoinEffect(player, coin, true, false);
             case COIN_BAD -> applyCoinEffect(player, coin, false, false);
             case DIAMONDS -> {
-                player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, SLOT_DIAMOND_SECONDS * 20, 1));
-                player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, SLOT_DIAMOND_SECONDS * 20, 0));
+                player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, SLOT_DIAMOND_SECONDS * 20, 1, false, false, true));
+                player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, SLOT_DIAMOND_SECONDS * 20, 0, false, false, true));
                 player.displayClientMessage(Component.literal("§bАлмазики! Скорость II и сопротивление на 20 сек."), true);
             }
             case EMERALDS -> {
@@ -199,11 +199,11 @@ public final class DodepovichCasinoManager {
             }
             case COAL -> {
                 player.hurt(player.damageSources().magic(), SLOT_COAL_DAMAGE);
-                player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, SLOT_COAL_SLOW_SECONDS * 20, 0));
+                player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, SLOT_COAL_SLOW_SECONDS * 20, 0, false, false, true));
                 player.displayClientMessage(Component.literal("§8Уголь. -1 HP и замедление."), true);
             }
             case SPIDER_EYE -> {
-                player.addEffect(new MobEffectInstance(MobEffects.POISON, SLOT_POISON_SECONDS * 20, 0));
+                player.addEffect(new MobEffectInstance(MobEffects.POISON, SLOT_POISON_SECONDS * 20, 0, false, false, true));
                 player.displayClientMessage(Component.literal("§5Неудача. Отравление на 7 сек."), true);
             }
             case ROTTEN_FLESH -> {
@@ -211,11 +211,11 @@ public final class DodepovichCasinoManager {
                 player.displayClientMessage(Component.literal("§6Гниение. -3 HP."), true);
             }
             case INSURANCE -> {
-                player.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_INSURANCE.get(), INSURANCE_SECONDS * 20, 0, false, true, true));
+                player.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_INSURANCE.get(), INSURANCE_SECONDS * 20, 0, false, false, true));
                 player.displayClientMessage(Component.literal("§aСтраховка активна: следующий плохой эффект монетки будет отменён."), true);
             }
             case CREDIT -> {
-                player.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_CREDIT.get(), 20 * CREDIT_TOTAL_SECONDS, 0, false, true, true));
+                player.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_CREDIT.get(), 20 * CREDIT_TOTAL_SECONDS, 0, false, false, true));
                 player.displayClientMessage(Component.literal("§aКредит: 30 сек восстановления, затем 30 сек выплаты с процентами."), true);
             }
             case DEATH -> {
@@ -278,8 +278,8 @@ public final class DodepovichCasinoManager {
 
     private static void applyElusiveness(ServerPlayer player, boolean good) {
         if (good) {
-            player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, ELUSIVENESS_GOOD_SECONDS * 20, 0));
-            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, ELUSIVENESS_GOOD_SECONDS * 20, 0));
+            player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, ELUSIVENESS_GOOD_SECONDS * 20, 0, false, false, true));
+            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, ELUSIVENESS_GOOD_SECONDS * 20, 0, false, false, true));
             player.displayClientMessage(Component.literal("§aМонетка Неуловимости: невидимость и скорость."), true);
             return;
         }
@@ -288,7 +288,7 @@ public final class DodepovichCasinoManager {
         if (maniac != null) {
             player.teleportTo((ServerLevel) maniac.level(), maniac.getX(), maniac.getY(), maniac.getZ(), player.getYRot(), player.getXRot());
         }
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ELUSIVENESS_BAD_SLOW_SECONDS * 20, 0));
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ELUSIVENESS_BAD_SLOW_SECONDS * 20, 0, false, false, true));
         player.displayClientMessage(Component.literal("§cМонетка Неуловимости подвела: телепорт к маньяку и замедление."), true);
     }
 
@@ -304,7 +304,7 @@ public final class DodepovichCasinoManager {
             return;
         }
 
-        player.addEffect(new MobEffectInstance(MobEffects.GLOWING, INSIGHT_BAD_SECONDS * 20, 0));
+        player.addEffect(new MobEffectInstance(MobEffects.GLOWING, INSIGHT_BAD_SECONDS * 20, 0, false, false, true));
         player.displayClientMessage(Component.literal("§cМонетка Прозрения подвела: ты подсвечен для всех."), true);
     }
 
@@ -314,8 +314,8 @@ public final class DodepovichCasinoManager {
             player.displayClientMessage(Component.literal("§7Монетка Оков не нашла цель."), true);
             return;
         }
-        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, SHACKLES_SECONDS * 20, 255));
-        target.addEffect(new MobEffectInstance(MobEffects.JUMP, SHACKLES_SECONDS * 20, 128));
+        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, SHACKLES_SECONDS * 20, 255, false, false, true));
+        target.addEffect(new MobEffectInstance(MobEffects.JUMP, SHACKLES_SECONDS * 20, 128, false, false, true));
         String msg = good ? "§aМонетка Оков: ближайший маньяк обездвижен." : "§cМонетка Оков подвела: ты обездвижен.";
         player.displayClientMessage(Component.literal(msg), true);
     }
@@ -336,17 +336,17 @@ public final class DodepovichCasinoManager {
             player.displayClientMessage(Component.literal("§7Монетка Орла не нашла цель."), true);
             return;
         }
-        target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, EAGLE_BLINDNESS_SECONDS * 20, 0));
+        target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, EAGLE_BLINDNESS_SECONDS * 20, 0, false, false, true));
         String msg = good ? "§aМонетка Орла: ближайший маньяк ослеплён." : "§cМонетка Орла подвела: ты ослеплён.";
         player.displayClientMessage(Component.literal(msg), true);
     }
 
     private static void applyDebt(ServerPlayer player, boolean good) {
         if (good) {
-            player.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_DAMAGE_BLOCK.get(), DEBT_EFFECT_SECONDS * 20, 0, false, true, true));
+            player.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_DAMAGE_BLOCK.get(), DEBT_EFFECT_SECONDS * 20, 0, false, false, true));
             player.displayClientMessage(Component.literal("§aМонетка Долга: следующий урон будет полностью заблокирован."), true);
         } else {
-            player.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_DOUBLE_DAMAGE.get(), DEBT_EFFECT_SECONDS * 20, 0, false, true, true));
+            player.addEffect(new MobEffectInstance(ModEffects.DODEPOVICH_DOUBLE_DAMAGE.get(), DEBT_EFFECT_SECONDS * 20, 0, false, false, true));
             player.displayClientMessage(Component.literal("§cМонетка Долга подвела: следующий урон будет x2."), true);
         }
     }
@@ -388,7 +388,7 @@ public final class DodepovichCasinoManager {
     }
 
     private static void applyJackpot(ServerPlayer player, BlockPos machinePos) {
-        player.addEffect(new MobEffectInstance(ModEffects.JACKPOT.get(), JACKPOT_SECONDS * 20, 0, false, true, true));
+        player.addEffect(new MobEffectInstance(ModEffects.JACKPOT.get(), JACKPOT_SECONDS * 20, 0, false, false, true));
         ModNetworking.sendToAllPlayers(new SyncJackpotMusicPacket(player.getUUID(), true));
         launchJackpotFireworks((ServerLevel) player.level(), machinePos);
         player.getServer().getPlayerList().broadcastSystemMessage(

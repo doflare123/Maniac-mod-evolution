@@ -11,7 +11,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -128,14 +127,13 @@ public final class NightmareManager {
 
     public void onPlayerDeath(ServerPlayer player) {
         NightmarePlayerState state = states.get(player.getUUID());
-        if (state != null && state.trialType == NightmareTrialType.ARENA) {
-            player.setGameMode(GameType.SPECTATOR);
-            cleanupTrialArea(state);
-            if (state.cocoonPos != null && state.returnLevel != null) {
-                state.returnLevel.destroyBlock(state.cocoonPos, false);
-            }
-            restoreInventory(player, state);
-            state.clearTrial();
+        if (state != null && state.isInTrial()) {
+            // LivingDeathEvent may have been cancelled by downed. Return the
+            // body either way, without overriding the resulting game mode.
+            abortTrial(player, state);
+            state.abductionCooldownUntil = player.level().getGameTime() + NightmareConfig.ABDUCTION_COOLDOWN_TICKS;
+            state.sanityImmunityUntil = player.level().getGameTime() + NightmareConfig.SANITY_IMMUNITY_AFTER_TRIAL_TICKS;
+            sync(player, state, hasKeeper(player.server));
         }
     }
 
@@ -218,6 +216,8 @@ public final class NightmareManager {
             BlockPos pos = state.returnPos;
             player.teleportTo(state.returnLevel, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D,
                     player.getYRot(), player.getXRot());
+            player.fallDistance = 0.0F;
+            player.setDeltaMovement(Vec3.ZERO);
         }
         if (state.savedMainInventory != null) {
             restoreInventory(player, state);
@@ -248,6 +248,9 @@ public final class NightmareManager {
 
     private void tickSanity(ServerPlayer player, NightmarePlayerState state,
                             List<ServerPlayer> keepers, long tick) {
+        var downed = org.example.maniacrevolution.downed.DownedCapability.get(player);
+        if (!player.isAlive() || (downed != null
+                && downed.getState() == org.example.maniacrevolution.downed.DownedState.DOWNED)) return;
         if (tick < state.sanityImmunityUntil) {
             state.sanity = Math.min(NightmareConfig.MAX_SANITY,
                     state.sanity + NightmareConfig.SANITY_REGEN_PER_TICK);
@@ -341,7 +344,7 @@ public final class NightmareManager {
                 player.getYRot(), player.getXRot());
         giveTrialLighter(player);
         player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS,
-                NightmareConfig.ARENA_DURATION_TICKS + 40, 0, false, true));
+                NightmareConfig.ARENA_DURATION_TICKS + 40, 0, false, false, true));
         player.displayClientMessage(Component.literal("Выживи на арене"), true);
     }
 
@@ -426,11 +429,9 @@ public final class NightmareManager {
                 finishTrial(player, state, true, NightmareConfig.MAZE_FAIL_DAMAGE);
             }
         } else if (state.trialType == NightmareTrialType.ARENA) {
-            player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, true));
+            player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false, true));
             if (!player.isAlive()) {
-                player.setGameMode(GameType.SPECTATOR);
-                cleanupTrialArea(state);
-                state.clearTrial();
+                onPlayerDeath(player);
                 return;
             }
             if (tick >= state.trialEndsAt) {
@@ -454,19 +455,11 @@ public final class NightmareManager {
 
     private void finishTrial(ServerPlayer player, NightmarePlayerState state, boolean failed, float damage) {
         ServerLevel returnLevel = state.returnLevel != null ? state.returnLevel : (ServerLevel) player.level();
-        BlockPos returnPos = state.returnPos != null ? state.returnPos : returnLevel.getSharedSpawnPos();
-
-        if (state.mazeId != null) {
-            MazeManager.getInstance().destroyMaze(state.mazeId);
-        }
-        cleanupTrialArea(state);
-        if (state.cocoonPos != null) returnLevel.destroyBlock(state.cocoonPos, false);
-
-        player.teleportTo(returnLevel, returnPos.getX() + 0.5D, returnPos.getY(), returnPos.getZ() + 0.5D,
-                player.getYRot(), player.getXRot());
-        restoreInventory(player, state);
+        UUID responsibleKeeperId = state.responsibleKeeperId;
+        abortTrial(player, state);
         if (damage > 0.0F) {
-            player.hurt(player.damageSources().magic(), damage);
+            ManiacDamageAttribution.hurtWithSource(player, responsibleKeeperId,
+                    () -> player.hurt(player.damageSources().magic(), damage));
         }
         state.abductionCooldownUntil = returnLevel.getGameTime() + NightmareConfig.ABDUCTION_COOLDOWN_TICKS;
         state.sanityImmunityUntil = returnLevel.getGameTime() + NightmareConfig.SANITY_IMMUNITY_AFTER_TRIAL_TICKS;
@@ -481,19 +474,17 @@ public final class NightmareManager {
     }
 
     private void finishFearRaceDeath(ServerPlayer player, NightmarePlayerState state) {
-        ServerLevel returnLevel = state.returnLevel != null ? state.returnLevel : (ServerLevel) player.level();
         UUID responsibleKeeperId = state.responsibleKeeperId;
 
-        cleanupTrialArea(state);
-        if (state.cocoonPos != null) returnLevel.destroyBlock(state.cocoonPos, false);
-        restoreInventory(player, state);
-        state.clearTrial();
+        abortTrial(player, state);
+        state.abductionCooldownUntil = player.level().getGameTime() + NightmareConfig.ABDUCTION_COOLDOWN_TICKS;
+        state.sanityImmunityUntil = player.level().getGameTime() + NightmareConfig.SANITY_IMMUNITY_AFTER_TRIAL_TICKS;
         ManiacDamageAttribution.hurtWithSource(
                 player,
                 responsibleKeeperId,
                 () -> player.hurt(player.damageSources().magic(), Float.MAX_VALUE)
         );
-        player.setGameMode(GameType.SPECTATOR);
+        sync(player, state, hasKeeper(player.server));
     }
 
     private void captureTrialInventory(ServerPlayer player, NightmarePlayerState state) {

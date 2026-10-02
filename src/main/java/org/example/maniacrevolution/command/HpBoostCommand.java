@@ -1,65 +1,50 @@
 package org.example.maniacrevolution.command;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import org.example.maniacrevolution.settings.GameSettings;
 
+import java.util.UUID;
+
 public class HpBoostCommand {
+    private static final UUID SETTINGS_HEALTH_ID = UUID.fromString("35bddcdb-54a1-49d1-b91c-aaaf560324b6");
+
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("maniacrev")
-            .then(Commands.literal("hp_boost")
-                .requires(source -> source.hasPermission(2))
-                .executes(HpBoostCommand::applyHpBoost)
-            )
-        );
+                .then(Commands.literal("hp_boost")
+                        .requires(source -> source.hasPermission(2))
+                        .executes(context -> {
+                            applyHpBoost(context.getSource().getServer());
+                            context.getSource().sendSuccess(
+                                    () -> Component.literal("§aДополнительное здоровье применено"), true);
+                            return 1;
+                        })));
     }
 
-    private static int applyHpBoost(CommandContext<CommandSourceStack> context) {
-        GameSettings settings = GameSettings.get(context.getSource().getServer());
-        int hpBoost = settings.getHpBoost();
-        
-        if (hpBoost <= 0) {
-            context.getSource().sendSuccess(() -> 
-                Component.literal("§eДоп. ХП отключено (значение: " + hpBoost + ")"), true);
-            return 0;
+    public static void applyHpBoost(MinecraftServer server) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            applyHpBoost(player);
         }
-        
-        // Вычисляем уровень эффекта: hpBoost / 2 - 1
-        int effectLevel = (hpBoost / 2) - 1;
-        
-        if (effectLevel < 0) {
-            context.getSource().sendSuccess(() -> 
-                Component.literal("§eУровень эффекта слишком низкий"), true);
-            return 0;
+    }
+
+    public static void applyHpBoost(ServerPlayer player) {
+        AttributeInstance health = player.getAttribute(Attributes.MAX_HEALTH);
+        if (health == null) return;
+        health.removeModifier(SETTINGS_HEALTH_ID);
+        int bonus = GameSettings.get(player.server).getHpBoost();
+        if (bonus > 0 && player.getTeam() != null
+                && player.getTeam().getName().equalsIgnoreCase("survivors")) {
+            // One menu HP means one health point, independent of class effects.
+            health.addTransientModifier(new AttributeModifier(SETTINGS_HEALTH_ID,
+                    "Game settings health", bonus, AttributeModifier.Operation.ADDITION));
         }
-        
-        int playersAffected = 0;
-        
-        // Применяем эффект ко всем игрокам в команде survivors
-        for (ServerPlayer player : context.getSource().getServer().getPlayerList().getPlayers()) {
-            // Проверяем, находится ли игрок в команде survivors
-            if (player.getTeam() != null && player.getTeam().getName().equals("survivors")) {
-                player.addEffect(new MobEffectInstance(
-                    MobEffects.HEALTH_BOOST,
-                    -1, // Бесконечная длительность
-                    effectLevel,
-                    false,
-                    false
-                ));
-                playersAffected++;
-            }
-        }
-        
-        final int finalPlayersAffected = playersAffected;
-        context.getSource().sendSuccess(() -> 
-            Component.literal("§aПрименён Health Boost уровня " + effectLevel + 
-                            " к " + finalPlayersAffected + " игрокам команды survivors"), true);
-        return 1;
+        if (player.getHealth() > player.getMaxHealth()) player.setHealth(player.getMaxHealth());
     }
 }

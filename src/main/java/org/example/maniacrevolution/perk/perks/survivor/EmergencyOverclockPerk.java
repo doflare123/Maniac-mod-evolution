@@ -119,7 +119,7 @@ public class EmergencyOverclockPerk extends Perk {
                 SILENCE_DURATION_SECONDS * 20,
                 0,
                 false,
-                true,
+                false,
                 true));
         player.displayClientMessage(
                 Component.translatable(

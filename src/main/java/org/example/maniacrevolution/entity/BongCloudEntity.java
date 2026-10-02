@@ -99,7 +99,7 @@ public class BongCloudEntity extends Entity {
                     MobEffects.SLOW_FALLING,
                     EFFECT_TICKS, 0,
                     false,  // ambient
-                    true,   // показывать частицы
+                    false,   // частицы статусного эффекта отключены
                     true)); // показывать иконку
         }
     }

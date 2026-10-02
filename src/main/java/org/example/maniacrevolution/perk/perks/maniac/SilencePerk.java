@@ -53,7 +53,7 @@ public class SilencePerk extends Perk {
                     ModEffects.SILENCE.get(),
                     DURATION_SEC * 20,
                     0,
-                    false, true, true
+                    false, false, true
             ));
             silenced++;
 

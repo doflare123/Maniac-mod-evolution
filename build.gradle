@@ -153,8 +153,17 @@ tasks.register('verifyNightmareSync', JavaExec) {
     mainClass = 'org.example.maniacrevolution.nightmare.NightmareSyncStateTest'
 }
 
+tasks.register('verifyGameSettings', JavaExec) {
+    group = 'verification'
+    description = 'Checks settings persistence, validation and timer reconfiguration.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.settings.GameSettingsTest'
+}
+
 tasks.named('check') {
     dependsOn tasks.named('verifyNightmareSync')
+    dependsOn tasks.named('verifyGameSettings')
     dependsOn 'verifyCloak'
 }
 
@@ -173,6 +182,8 @@ tasks.register('verifyCloakAnimations', JavaExec) {
     dependsOn tasks.named('testClasses')
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'org.example.maniacrevolution.cloak.CloakAnimationAssetsTest'
+}
+
 }
 // ──────────────────────────────────────────────────────────────────
 

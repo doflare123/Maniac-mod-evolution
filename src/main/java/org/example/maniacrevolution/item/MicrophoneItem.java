@@ -93,7 +93,7 @@ public class MicrophoneItem extends SwordItem implements IItemWithAbility {
             // Максимальное замедление на 3 секунды
             target.addEffect(new MobEffectInstance(
                     MobEffects.MOVEMENT_SLOWDOWN, STUN_TICKS, SLOWNESS_AMP,
-                    false, true, true));
+                    false, false, true));
             hit++;
         }
 

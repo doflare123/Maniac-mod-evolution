@@ -7,6 +7,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Pose;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -35,8 +36,18 @@ public class DownedHudClient {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player != null) {
                 mc.player.setForcedPose(null);
+                mc.player.setPose(Pose.STANDING);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
+        role = DownedHudPacket.ROLE_CLEAR;
+        downedName = "";
+        remainingTicks = 0;
+        reviveProgress = 0f;
+        isPaused = false;
     }
 
     // ── Клиентский тик — форсируем позу локально ─────────────────────────
