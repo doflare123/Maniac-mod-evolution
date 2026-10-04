@@ -92,6 +92,7 @@ public class PerkInstance {
 
         chargeDurationsRemaining.add(charged.getChargeDurationTicks());
         chargesGrantedThisGame++;
+        org.example.maniacrevolution.stats.StatsManager.perk(player, perk.getId(), "charges_gained");
         charged.onChargeGained(player, chargeDurationsRemaining.size());
         PlayerDataManager.syncToClient(player);
         return true;
@@ -109,6 +110,7 @@ public class PerkInstance {
             }
         }
         chargeDurationsRemaining.remove(oldestIndex);
+        org.example.maniacrevolution.stats.StatsManager.perk(player, perk.getId(), "charges_consumed");
         charged.onChargeConsumed(player, chargeDurationsRemaining.size());
         PlayerDataManager.syncToClient(player);
         return true;
@@ -142,6 +144,7 @@ public class PerkInstance {
             }
         }
         for (int i = 0; i < expired; i++) {
+            org.example.maniacrevolution.stats.StatsManager.perk(player, perk.getId(), "charges_expired");
             charged.onChargeExpired(player, chargeDurationsRemaining.size());
         }
     }
@@ -211,6 +214,7 @@ public class PerkInstance {
         if (perk.shouldTrigger(player)) {
             // Срабатываем и запускаем кулдаун
             perk.onTrigger(player);
+            org.example.maniacrevolution.stats.StatsManager.perk(player, perk.getId(), "passive_cooldown_triggers");
             perk.removePassiveEffect(player);
             passiveApplied = false;
             startCooldown();
@@ -220,6 +224,15 @@ public class PerkInstance {
     // === Активация ===
 
     public ActivationResult tryActivate(ServerPlayer player, PerkPhase currentPhase) {
+        ActivationResult result = tryActivateInternal(player, currentPhase);
+        org.example.maniacrevolution.stats.StatsManager.perk(player, perk.getId(), "attempt_" + result.name().toLowerCase(java.util.Locale.ROOT));
+        if (result == ActivationResult.SUCCESS) {
+            org.example.maniacrevolution.stats.StatsManager.count(player, "perk_mana_spent", perk.getManaCost());
+        }
+        return result;
+    }
+
+    private ActivationResult tryActivateInternal(ServerPlayer player, PerkPhase currentPhase) {
         // Проверка типа
         if (!perk.getType().hasActiveAbility()) {
             return ActivationResult.NOT_ACTIVE_PERK;

@@ -102,6 +102,8 @@ public class GameManager {
             return;
         }
 
+        if (phase == 0 && oldPhase != 0) StatsManager.onGameStopped(server);
+
         Scoreboard scoreboard = server.getScoreboard();
         ensureObjectiveExists();
         Objective obj = scoreboard.getObjective(PHASE_OBJECTIVE);
@@ -206,7 +208,6 @@ public class GameManager {
         org.example.maniacrevolution.command.ApplySettingsCommand.applySettings(server, true, false);
         setPhase(1);
         startNewRoundTimer(org.example.maniacrevolution.settings.GameSettings.get(server).getGameTime() * 60);
-        StatsManager.onGameStarted(server);
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             PlayerData data = PlayerDataManager.get(player);
@@ -214,6 +215,7 @@ public class GameManager {
         }
         org.example.maniacrevolution.command.HpBoostCommand.applyHpBoost(server);
         giveAwakeningNeedles();
+        StatsManager.onGameStarted(server);
 
         source.sendSuccess(() -> Component.literal("§aИгра началась!"), true);
         Maniacrev.LOGGER.info("Game started by {}", source.getTextName());
@@ -295,6 +297,7 @@ public class GameManager {
     }
 
     public static void stopGame(CommandSourceStack source) {
+        if (server != null) StatsManager.onGameStopped(server);
         if (server != null) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 org.example.maniacrevolution.downed.DownedEventHandler.resetForMatch(player);

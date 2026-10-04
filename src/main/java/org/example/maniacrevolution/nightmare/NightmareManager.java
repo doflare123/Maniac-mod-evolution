@@ -305,6 +305,8 @@ public final class NightmareManager {
         state.returnLevel = level;
         state.returnPos = player.blockPosition();
         state.trialType = NightmareTrialType.MAZE;
+        org.example.maniacrevolution.stats.StatsManager.count(player, "nightmare_maze_started", 1);
+        org.example.maniacrevolution.stats.StatsManager.event("nightmare_started", player, null, java.util.Map.of("trial", "maze"));
         state.mazeTrialsStarted++;
         state.trialEndsAt = tick + NightmareConfig.MAZE_DURATION_TICKS;
         state.sanity = NightmareConfig.MAX_SANITY;
@@ -332,6 +334,8 @@ public final class NightmareManager {
         state.returnLevel = level;
         state.returnPos = player.blockPosition();
         state.trialType = NightmareTrialType.ARENA;
+        org.example.maniacrevolution.stats.StatsManager.count(player, "nightmare_arena_started", 1);
+        org.example.maniacrevolution.stats.StatsManager.event("nightmare_started", player, null, java.util.Map.of("trial", "arena"));
         state.trialEndsAt = tick + NightmareConfig.ARENA_DURATION_TICKS;
         state.sanity = NightmareConfig.MAX_SANITY;
 
@@ -354,6 +358,8 @@ public final class NightmareManager {
         state.returnLevel = level;
         state.returnPos = player.blockPosition();
         state.trialType = NightmareTrialType.FEAR_RACE;
+        org.example.maniacrevolution.stats.StatsManager.count(player, "nightmare_fear_race_started", 1);
+        org.example.maniacrevolution.stats.StatsManager.event("nightmare_started", player, null, java.util.Map.of("trial", "fear_race"));
         state.raceStartsAt = tick + NightmareConfig.FEAR_RACE_COUNTDOWN_TICKS;
         state.trialEndsAt = state.raceStartsAt + NightmareConfig.FEAR_RACE_DURATION_TICKS;
         state.sanity = NightmareConfig.MAX_SANITY;
@@ -454,6 +460,10 @@ public final class NightmareManager {
     }
 
     private void finishTrial(ServerPlayer player, NightmarePlayerState state, boolean failed, float damage) {
+        org.example.maniacrevolution.stats.StatsManager.count(player,
+                "nightmare_" + state.trialType.name().toLowerCase(java.util.Locale.ROOT) + (failed ? "_failed" : "_passed"), 1);
+        org.example.maniacrevolution.stats.StatsManager.event("nightmare_finished", player, null,
+                java.util.Map.of("trial", state.trialType.name(), "failed", failed));
         ServerLevel returnLevel = state.returnLevel != null ? state.returnLevel : (ServerLevel) player.level();
         UUID responsibleKeeperId = state.responsibleKeeperId;
         abortTrial(player, state);
@@ -474,6 +484,7 @@ public final class NightmareManager {
     }
 
     private void finishFearRaceDeath(ServerPlayer player, NightmarePlayerState state) {
+        org.example.maniacrevolution.stats.StatsManager.count(player, "nightmare_fear_race_failed", 1);
         UUID responsibleKeeperId = state.responsibleKeeperId;
 
         abortTrial(player, state);

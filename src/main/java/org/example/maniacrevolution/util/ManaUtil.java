@@ -21,6 +21,7 @@ public class ManaUtil {
         boolean[] success = {false};
         player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
             if (mana.consumeMana(amount)) {
+                org.example.maniacrevolution.stats.StatsManager.count((ServerPlayer) player, "mana_spent_via_util", amount);
                 success[0] = true;
                 // Синхронизируем с клиентом
                 syncManaToClient((ServerPlayer) player, mana);
@@ -37,7 +38,9 @@ public class ManaUtil {
         if (player.level().isClientSide()) return;
 
         player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+            float before = mana.getMana();
             mana.addMana(amount);
+            org.example.maniacrevolution.stats.StatsManager.count((ServerPlayer) player, "mana_added_via_util", mana.getMana() - before);
             syncManaToClient((ServerPlayer) player, mana);
         });
     }

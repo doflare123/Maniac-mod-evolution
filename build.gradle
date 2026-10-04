@@ -4,18 +4,13 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
 }
 
-jarJar.enable()
-
-// ── Stats DB credentials из gradle.properties ─────────────────────
-def stats_db_host = project.findProperty("stats_db_host") ?: "localhost"
-def stats_db_port = project.findProperty("stats_db_port") ?: "3306"
-def stats_db_name = project.findProperty("stats_db_name") ?: ""
-def stats_db_user = project.findProperty("stats_db_user") ?: ""
-def stats_db_pass = project.findProperty("stats_db_pass") ?: ""
-// ──────────────────────────────────────────────────────────────────
 
 group = mod_group_id
 version = mod_version
+def statsVersion = providers.gradleProperty('mod_stats_version').get()
+if (!(statsVersion ==~ /[A-Za-z0-9][A-Za-z0-9_.-]{0,95}/)) {
+    throw new GradleException('mod_stats_version must contain 1-96 letters, digits, dots, underscores or hyphens')
+}
 
 base {
     archivesName = mod_id
@@ -25,17 +20,6 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
-// ── Генерация BuildConfig.java ────────────────────────────────────
-def generatedSrcDir = layout.buildDirectory.dir("generated/sources/buildconfig/java/main")
-
-sourceSets {
-    main {
-        java {
-            srcDir generatedSrcDir
-        }
-    }
-}
-// ──────────────────────────────────────────────────────────────────
 
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
@@ -85,57 +69,33 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.4.7')
-    jarJar(implementation("mysql:mysql-connector-java:8.0.33")) {
-        jarJar.ranged(it, "[8.0.33,9.0)")
-    }
 }
 
 tasks.named('processResources', ProcessResources).configure {
+    // The release JAR includes the ingestion token; only the bot holds DB credentials.
+    // Use the existing local sender settings without publishing the token in source control.
+    def senderSettings = layout.projectDirectory.file('.local-stats/maniacrev-stats.properties')
+    inputs.file(senderSettings)
+    from(senderSettings) { into '' }
+    doFirst {
+        def senderProperties = new Properties()
+        senderSettings.asFile.withInputStream { senderProperties.load(it) }
+        if (!senderProperties.getProperty('token', '').trim()) {
+            throw new GradleException('Bundled statistics sender token is missing')
+        }
+    }
     var replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
             forge_version: forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
             mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
             mod_authors: mod_authors, mod_description: mod_description,
+            mod_stats_version: statsVersion,
     ]
     inputs.properties replaceProperties
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta', 'mod-stats-version.properties']) {
         expand replaceProperties + [project: project]
     }
-}
-
-// ── Генерация BuildConfig.java ─────────────────────────────────────
-tasks.register("generateBuildConfig") {
-    outputs.dir(generatedSrcDir)
-    inputs.property("db_host", stats_db_host)
-    inputs.property("db_port", stats_db_port)
-    inputs.property("db_name", stats_db_name)
-    inputs.property("db_user", stats_db_user)
-    inputs.property("db_pass", stats_db_pass)
-
-    doLast {
-        def dir = generatedSrcDir.get().asFile
-        def pkg = new File(dir, "org/example/maniacrevolution/stats")
-        pkg.mkdirs()
-
-        new File(pkg, "BuildConfig.java").text = """\
-package org.example.maniacrevolution.stats;
-
-/** Автогенерируемый файл. Не редактировать вручную. */
-public final class BuildConfig {
-    public static final String DB_HOST = "${stats_db_host}";
-    public static final String DB_PORT = "${stats_db_port}";
-    public static final String DB_NAME = "${stats_db_name}";
-    public static final String DB_USER = "${stats_db_user}";
-    public static final String DB_PASS = "${stats_db_pass}";
-    private BuildConfig() {}
-}
-"""
-    }
-}
-
-tasks.named("compileJava") {
-    dependsOn("generateBuildConfig")
 }
 
 tasks.register('verifyNightmareSync', JavaExec) {

@@ -556,6 +556,7 @@ public class HackManager {
                 session.currentPoints = Math.min(before + bonus,
                         HackConfig.HACK_POINTS_REQUIRED);
                 float actualBonus = session.currentPoints - before;
+                org.example.maniacrevolution.stats.StatsManager.count(player, "qte_hack_bonus_points", actualBonus);
                 if (actualBonus > 0.0F) {
                     SberSproutManager.onContribution(player, session, actualBonus);
                 }

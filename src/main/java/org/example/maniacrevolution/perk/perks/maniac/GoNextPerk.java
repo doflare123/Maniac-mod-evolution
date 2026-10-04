@@ -68,6 +68,7 @@ public class GoNextPerk extends Perk {
         }
 
         ScreamManager.trigger(screamTarget);
+        org.example.maniacrevolution.stats.StatsManager.perk(responsibleManiac, ID, "triggers");
         instance.startCooldown();
         PlayerDataManager.syncToClient(responsibleManiac);
     }

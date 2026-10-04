@@ -52,6 +52,7 @@ public class ActivateArmorAbilityPacket {
         }
 
         context.enqueueWork(() -> {
+            org.example.maniacrevolution.stats.StatsManager.count(player, "armor_ability_attempts", 1);
             if (NightmareManager.getInstance().isKeeper(player)) {
                 if (ModItems.GUARDIAN_HEAD.get() instanceof IActivatableArmor formAbility) {
                     formAbility.activateAbility(player);

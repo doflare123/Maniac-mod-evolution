@@ -24,3 +24,9 @@ Thumbs.db
 
 /src/GPT
 /test
+
+# Statistics receiver secrets and local dependencies
+stats-bot/private.json
+stats-bot/receiver-key.pem
+stats-bot/node_modules/
+.local-stats/

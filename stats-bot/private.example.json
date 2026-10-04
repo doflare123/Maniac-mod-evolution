@@ -1,0 +1,6 @@
+{
+  "enabled": true,
+  "port": 25912,
+  "database": {"host":"s2.bisquit.host","port":3307,"user":"SET_USER","password":"SET_PASSWORD","database":"minecraft"},
+  "tokens": {"community":"SET_RANDOM_64_CHARACTER_TOKEN"}
+}

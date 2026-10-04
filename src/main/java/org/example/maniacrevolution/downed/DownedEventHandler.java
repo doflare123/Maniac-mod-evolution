@@ -160,6 +160,7 @@ public class DownedEventHandler {
         }
 
         data.setState(DownedState.DOWNED);
+        org.example.maniacrevolution.stats.StatsManager.knockdown(player, responsibleManiac);
         data.setDownedTicksElapsed(0);
         data.cancelRevive();
         data.setUsedSecondChance(true);
@@ -439,6 +440,7 @@ public class DownedEventHandler {
     // ══════════════════════════════════════════════════════════════════════
 
     private static void revivePlayer(ServerPlayer target, DownedData data, ServerPlayer helper) {
+        org.example.maniacrevolution.stats.StatsManager.revive(target, helper);
         data.cancelRevive();
         data.setState(DownedState.WEAKENED);
         data.setDownedTicksElapsed(0);

@@ -108,7 +108,6 @@ public class Maniacrev {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        StatsManager.initDriver(event);
         event.enqueueWork(() -> {
             CapabilityManager.get(new CapabilityToken<DownedData>() {});
             ModNetworking.register();

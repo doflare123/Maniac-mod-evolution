@@ -221,6 +221,9 @@ public final class SberSproutManager {
 
         float savedPercent = roundPercent(removedPercent
                 * SberSproutPerk.PRESERVED_PROGRESS_PERCENT / 100.0F);
+        org.example.maniacrevolution.stats.StatsManager.count(player, "sprout_extracted_percent", removedPercent);
+        org.example.maniacrevolution.stats.StatsManager.count(player, "sprout_preserved_percent", savedPercent);
+        org.example.maniacrevolution.stats.StatsManager.perk(player, SberSproutPerk.ID, "extractions");
         giveFilledItem(player, savedPercent);
         SproutSession emptied = session.withContribution(0.0F);
         SESSIONS.put(player.getUUID(), emptied);
@@ -275,6 +278,8 @@ public final class SberSproutManager {
         float addedPoints = manager.addSproutProgress(player, hackSession.getSessionId(),
                 percentToPoints(storedPercent));
         float plantedPercent = roundPercent(pointsToPercent(addedPoints));
+        org.example.maniacrevolution.stats.StatsManager.count(player, "sprout_planted_percent", plantedPercent);
+        org.example.maniacrevolution.stats.StatsManager.perk(player, SberSproutPerk.ID, "plantings");
         SproutSession session = SESSIONS.get(player.getUUID());
         if (session == null || !session.hackSessionId().equals(hackSession.getSessionId())) {
             onParticipantJoined(player, hackSession);

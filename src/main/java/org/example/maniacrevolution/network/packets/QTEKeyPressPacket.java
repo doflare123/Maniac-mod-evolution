@@ -54,6 +54,9 @@ public class QTEKeyPressPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
 
+            org.example.maniacrevolution.stats.StatsManager.count(player,
+                    !packet.success ? "qte_failed" : packet.critical ? "qte_critical" : "qte_success", 1);
+
             if (packet.success) {
                 int rewardAmount = Config.getHackQTEReward();
                 ScoreboardUtil.addHackProgress(player, packet.generatorNumber, rewardAmount);

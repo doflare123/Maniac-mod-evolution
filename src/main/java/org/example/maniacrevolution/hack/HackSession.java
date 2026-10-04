@@ -47,6 +47,7 @@ public class HackSession {
         this.currentPoints = startPoints;
         this.nextQTEIntervalTicks = randomQTEInterval();
         this.currentQTEPlayers.add(hacker); // ← хакер всегда в списке
+        org.example.maniacrevolution.stats.StatsManager.count(hacker, "hack_sessions_started", 1);
         SberSproutManager.onParticipantJoined(hacker, this);
     }
 
@@ -121,6 +122,8 @@ public class HackSession {
         for (Map.Entry<ServerPlayer, Float> entry : contributions.entrySet()) {
             float actualContribution = entry.getValue() * contributionScale;
             if (actualContribution > 0.0F) {
+                org.example.maniacrevolution.stats.StatsManager.count(entry.getKey(), "hack_points_contributed", actualContribution);
+                org.example.maniacrevolution.stats.StatsManager.count(entry.getKey(), entry.getKey() == hacker ? "hacking_seconds" : "hack_support_seconds", 1);
                 SberSproutManager.onContribution(entry.getKey(), this, actualContribution);
             }
         }
@@ -279,6 +282,8 @@ public class HackSession {
     }
 
     private void onHackComplete(MinecraftServer server, ServerLevel level) {
+        org.example.maniacrevolution.stats.StatsManager.count(hacker, "computers_completed_as_hacker", 1);
+        org.example.maniacrevolution.stats.StatsManager.event("computer_completed", hacker, null, Map.of("computerId", computerId));
         finished = true;
         IdealychPerk.resetStacks(hacker);
         currentPoints = HackConfig.HACK_POINTS_REQUIRED;
@@ -294,6 +299,7 @@ public class HackSession {
     }
 
     private void cancel() {
+        org.example.maniacrevolution.stats.StatsManager.count(hacker, "hack_sessions_interrupted", 1);
         finished = true;
         IdealychPerk.resetStacks(hacker);
         stopAllQTE(); // ← вместо одиночного sendStopQTE(hacker)
