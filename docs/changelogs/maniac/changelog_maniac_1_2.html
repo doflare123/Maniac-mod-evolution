@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Maniac Revolution 1.2 — Flower Cleaning: 15 новых перков, цветочная охота, обновлённый интерфейс и исправления матчей.">
+  <meta name="theme-color" content="#0a0f0d">
+  <title>Хроники · Flower Cleaning 1.2 — Maniac Revolution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/changelog.css">
+  <link rel="stylesheet" href="../../css/flower-cleaning.css">
+</head>
+<body class="flower-cleaning">
+<div class="fl-garden-edges" aria-hidden="true"></div>
+<div class="fl-petals" aria-hidden="true">
+  <span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span>
+</div>
+<a class="fl-skip" href="#update-content">К содержанию обновления</a>
+<nav aria-label="Навигация сайта">
+  <a class="nav-logo" href="../../index.html#home"><span class="skull" aria-hidden="true">☠</span> NecroDwarf</a>
+  <ul class="nav-links">
+    <li><a href="../../index.html#home">Главная</a></li>
+    <li><a href="../../index.html#projects">Проекты</a></li>
+    <li><a href="../../index.html#changelog">Хроники</a></li>
+    <li><a href="../../index.html#about">О гильдии</a></li>
+  </ul>
+  <a class="fl-mobile-back" href="../../index.html#changelog">← Хроники</a>
+</nav>
+<header class="cl-header" id="top">
+  <span class="fl-header-sprig fl-header-sprig-left" aria-hidden="true"></span>
+  <span class="fl-header-sprig fl-header-sprig-right" aria-hidden="true"></span>
+  <div class="cl-label">Записи летописца · Maniac (DBD × Minecraft)</div>
+  <h1 class="cl-title">Хроники <span>Обновления</span></h1>
+  <p class="cl-sub">— Цветы расцветают. Баги увядают. Охота продолжается. —</p>
+  <div class="cl-sep" aria-hidden="true">✦ ✿ ☠ ✿ ✦</div>
+  <div class="cl-version-block">
+    <div class="cl-version-codename">Flower Cleaning</div>
+    <div class="cl-version-num">Версия 1.2</div>
+    <div class="cl-version-note">цветочная охота, новые способы выжить и большая уборка всего, что мешало хорошему матчу</div>
+  </div>
+</header>
+<main class="container" id="update-content">
+  <div class="cl-stats">
+    <div class="stat-item"><span class="stat-num">15</span><span class="stat-lbl">новых перков</span></div>
+    <div class="stat-item"><span class="stat-num">+1</span><span class="stat-lbl">слот в эксперименте</span></div>
+    <div class="stat-item"><span class="stat-num">7</span><span class="stat-lbl">направлений фиксов</span></div>
+  </div>
+  <section class="cl-section green" id="highlights">
+    <div class="cl-section-head"><span class="cl-section-icon" aria-hidden="true">✿</span><h2 class="cl-section-title">Главное обновления</h2></div>
+    <div class="cl-section-body">
+      <div class="cl-callout">В 1.2 цветы стали частью охоты: одни выдают следы, другие спасают от погони, а третьи собираются в букет на тот свет. Добавлены 15 перков для новых сборок, обновлены игровые экраны и исправлены неприятные сбои кошмаров, нокдауна и подготовки к матчу.</div>
+      <div class="cards">
+        <a class="card new cl-jump-card" href="#survivor-perks"><h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Перки выживших</h3><p>Точка возврата, орхидейная копия, перенос прогресса ремонта, защита и рывки для побега.</p></a>
+        <a class="card new cl-jump-card" href="#maniac-perks"><h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Перки маньяков</h3><p>Выслеживайте добычу по цветам, наблюдайте за ремонтом и превращайте один нокдаун в новую погоню.</p></a>
+        <a class="card new cl-jump-card" href="#common-perks"><h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Рулетка и краска</h3><p>Два общих перка: разыгрывайте цветные карты и оставляйте ловушки с проверкой реакции.</p></a>
+        <a class="card mod cl-jump-card" href="#interface"><h3 class="card-head"><span class="badge badge-mod">ОБНОВЛЕНО</span> Новый облик игры</h3><p>Игровая панель, выбор персонажей и перков, планшеты, справочник и подготовка к матчу.</p></a>
+        <a class="card mod cl-jump-card" href="#death"><h3 class="card-head"><span class="badge badge-mod">ИЗМЕНЕНО</span> Объятия Смерти</h3><p>Телепортация получила подготовку, предупреждение для цели и появление за её спиной.</p></a>
+        <a class="card mod cl-jump-card" href="#fixes"><h3 class="card-head"><span class="badge badge-mod">ФИКСЫ</span> Большая уборка</h3><p>Чище экран, надёжнее правила матча и меньше состояний, застрявших после прошлого раунда.</p></a>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" aria-hidden="true">✦ &nbsp; ❀ &nbsp; ✦</div>
+
+  <section class="cl-section blue" id="survivor-perks">
+    <div class="cl-section-head"><span class="cl-section-icon" aria-hidden="true">✿</span><h2 class="cl-section-title">Новые перки выживших</h2></div>
+    <div class="cl-section-body">
+      <div class="cl-callout">Цветы на вашей стороне: спрячьте путь отхода, обманите преследователя и сохраните часть ремонта, если компьютер стал слишком опасным.</div>
+      <div class="cards">
+        <article class="card new fl-survivor">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Незабудка</h3>
+          <p>Посадите личный цветок в безопасном месте и возвращайтесь к нему за 10 маны. На подготовку нужны 3 секунды без движения и урона.</p>
+          <div class="note">После удара маньяка возврат закрыт на 10 секунд. Маньяк может уничтожить цветок навсегда — выбирайте тайник с умом.</div>
+        </article>
+        <article class="card new fl-survivor">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Розовая Орхидея</h3>
+          <p>Запишите до 6 секунд своего маршрута, затем за 10 маны пустите по нему копию. Пусть маньяк потратит время на красивую подделку.</p>
+          <div class="note">Запись можно завершить раньше. Работает в фазах 1–2; перезарядка — 45 секунд.</div>
+        </article>
+        <article class="card new fl-survivor">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> СберРосток</h3>
+          <p>Перенесите часть своего труда с одного компьютера на другой. Росток извлекает лично внесённый за непрерывный ремонт прогресс и сохраняет 75% от него.</p>
+          <div class="note">Извлечение и посадка стоят по 5 маны. Нужен хотя бы 1% личного прогресса. Доступно в фазах 1–2.</div>
+        </article>
+        <article class="card new fl-survivor">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Розовые очки</h3>
+          <p>Держите очки во второй руке, чтобы смягчать урон на 25% в фазах 1–2. Розовый взгляд на мир теперь помогает пережить удар.</p>
+          <div class="note">Прочность — 15. Она расходуется при защите; полностью отменить урон очки не могут.</div>
+        </article>
+        <article class="card new fl-survivor">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Якорь реальности</h3>
+          <p>Критическое попадание в проверке реакции даёт заряд стабильности на 60 секунд. За матч можно заработать два заряда.</p>
+          <div class="note">Заряд автоматически сокращает одержимость Призрака на 6 секунд, один раз откладывает кошмар на 20 секунд либо уменьшает длительность Страха, Тишины или Оглушения на 40%.</div>
+        </article>
+        <article class="card new fl-survivor">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Аварийный разгон</h3>
+          <p>На 8 секунд обычный вклад в ремонт отключается: всё решают проверки реакции. Бонус за успех выше на 20%, за критическое попадание — на 50%.</p>
+          <div class="note">Промах отнимает 0,8 очка и накладывает Тишину на 5 секунд. Ставка для тех, кто уверен в своих руках.</div>
+        </article>
+        <article class="card new fl-survivor">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Я починил, я ухожу</h3>
+          <p>При начале третьей фазы восстанавливает 10 здоровья и даёт +20% скорости до конца матча.</p>
+          <div class="note">Если в момент перехода вы в нокдауне, бонус не сработает. Ускорения не складываются — действует самое сильное.</div>
+        </article>
+        <article class="card new fl-survivor">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Волшебный пендель</h3>
+          <p>Первый полученный урон от маньяка даёт +30% скорости на 20 секунд. Шанс разорвать дистанцию, пока погоня только начинается.</p>
+          <div class="note">Один раз за матч, только в фазах 1–2.</div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" aria-hidden="true">✦ &nbsp; ⚘ &nbsp; ✦</div>
+
+  <section class="cl-section red" id="maniac-perks">
+    <div class="cl-section-head"><span class="cl-section-icon" aria-hidden="true">❃</span><h2 class="cl-section-title">Новые перки маньяков</h2></div>
+    <div class="cl-section-body">
+      <div class="cl-callout">Запоминайте цвет своей добычи. Следы живут недолго, зато хороший букет способен сделать следующий нокдаун гораздо неприятнее.</div>
+      <div class="cards">
+        <article class="card new fl-maniac">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Следствие ведут цветы</h3>
+          <p>Каждые 6 секунд активный выживший оставляет цветочный след. Он живёт 12 секунд, а вид и цвет цветка закреплены за игроком на весь матч.</p>
+          <div class="note">Следы видят только маньяки с этим перком. Запоминайте цвет своей добычи и продолжайте погоню в фазах 1–2.</div>
+        </article>
+        <article class="card new fl-maniac">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Букет на тот свет</h3>
+          <p>Первый удар по каждому уникальному выжившему добавляет его цветок в букет — до трёх цветов. Следующий нокдаун автоматически расходует собранное.</p>
+          <div class="note">Каждый цветок сокращает время этого нокдауна и увеличивает цену самостоятельного подъёма на 20%. После расходования можно собирать снова.</div>
+        </article>
+        <article class="card new fl-maniac">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Диспетчер бутонов</h3>
+          <p>Девять компьютеров получают разные цветы, которые увядают каждые 20% прогресса. За 3 маны можно открыть сводку и увидеть, где работа зашла далеко.</p>
+          <div class="note">Цветы видны только владельцу перка. В сводке нет координат и точных процентов — запоминайте карту.</div>
+        </article>
+        <article class="card new fl-maniac">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Высокое напряжение</h3>
+          <p>Компьютер с прогрессом от 80% даёт маньяку +20% скорости в радиусе 8 блоков по горизонтали и двух по вертикали.</p>
+          <div class="note">Учитываются и завершённые, и временно заблокированные компьютеры. Работает в фазах 1–2; ускорения не складываются.</div>
+        </article>
+        <article class="card new fl-maniac">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Го некст</h3>
+          <p>Отправили выжившего в нокдаун? Ближайший другой активный выживший в пределах 32 блоков по горизонтали и 12 по вертикали кричит и выдаёт свою позицию маньякам.</p>
+          <div class="note">Перезарядка — 45 секунд. Одна законченная погоня становится началом следующей.</div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" aria-hidden="true">✦ &nbsp; 🎨 &nbsp; ✦</div>
+
+  <section class="cl-section purple" id="common-perks">
+    <div class="cl-section-head"><span class="cl-section-icon" aria-hidden="true">♦</span><h2 class="cl-section-title">Новые общие перки</h2></div>
+    <div class="cl-section-body">
+      <div class="cards">
+        <article class="card new ">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Кручу-верчу, цвет получить хочу</h3>
+          <p>Запустите рулетку за 10 маны и повторным нажатием клавиши перка остановите вращение. Карта живёт 45 секунд — успейте разыграть свой цвет.</p><ul><li><strong class="fl-red">Красная карта:</strong> Выживший бросает карту, отбрасывающую маньяка при попадании. Маньяки получают наводку на три незавершённых компьютера с наибольшим прогрессом.</li>
+            <li><strong class="fl-blue">Синяя карта:</strong> Выживший добавляет 5% прогресса незавершённому компьютеру, маньяк отнимает 5%.</li>
+            <li><strong class="fl-green">Зелёная карта:</strong> Выжившему — 4 здоровья. Маньяку — заряд, добавляющий 1,5 урона следующему прямому удару; заряды копятся.</li></ul><div class="note">Перезарядка — 45 секунд. Доступно в фазах 1–3.</div>
+        </article>
+        <article class="card new ">
+          <h3 class="card-head"><span class="badge badge-new">НОВОЕ</span> Краски сгущаются</h3>
+          <p>Общий перк выдаёт банку на три использования. Лужи остаются до конца матча, а наступившему выжившему приходится сделать три нажатия за две секунды. Плохой результат оглушает, средний замедляет, точный позволяет уйти без штрафа.</p><div class="note">Экран на 5 секунд покрывается краской. После любой попытки даются 30 секунд защиты от повторного срабатывания.</div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="cl-section purple" id="death">
+    <div class="cl-section-head"><span class="cl-section-icon" aria-hidden="true">☠</span><h2 class="cl-section-title">Смерть · Объятия перед встречей</h2></div>
+    <div class="cl-section-body">
+      <div class="cards">
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ИЗМЕНЕНО</span> Телепортация с предупреждением</h3>
+          <p>Телепортация Смерти теперь начинается с подготовки: души и дым собираются вокруг маньяка, а выбранный выживший видит предупреждение с костяными руками.</p><p>Через примерно 5,65 секунды Смерть появляется за спиной цели. Во время подготовки маньяк стоит на месте — у встречи появился отсчёт, который можно заметить и использовать.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" aria-hidden="true">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+  <section class="cl-section green" id="interface">
+    <div class="cl-section-head"><span class="cl-section-icon" aria-hidden="true">◈</span><h2 class="cl-section-title">Новый интерфейс и подготовка к матчу</h2></div>
+    <div class="cl-section-body">
+      <div class="cards">
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ОБНОВЛЕНО</span> Всё важное перед глазами</h3>
+          <p>Переработана игровая панель: здоровье, мана, предметы, способности и перки собраны в новом оформлении. Временные эффекты показывают оставшееся время, а заряды перков — свой запас.</p><p>Обновлены панели взлома, генератора, таймера и кошмаров. Предупреждение о штрафном слоте появляется ненадолго, а не висит перед глазами.</p>
+        </article>
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ОБНОВЛЕНО</span> Выбрать своего героя проще</h3>
+          <p>Крупные и компактные карточки, фильтры, подсказки и предпросмотр персонажа с его снаряжением. Предпочтительный размер карточек запоминается.</p><p>Выбор перков и сохранённых наборов получил новые экраны с подробностями выбранной способности и удобной прокруткой.</p>
+        </article>
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ОБНОВЛЕНО</span> Планшеты, которыми приятно пользоваться</h3>
+          <p>Планшеты Агента 47 и Медика получили новые экраны: карточки магазина, фотографии игроков, здоровье целей и панели пациентов стали нагляднее.</p><p>У Агента данные цели видны даже на планшете в руках.</p>
+        </article>
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ОБНОВЛЕНО</span> Подготовка без путаницы</h3>
+          <p>Обновлены голосование за карту, показ результатов и розыгрыш при равенстве голосов. Перед матчем появилась панель готовности с именем инициатора и вашим ответом.</p><p>Игровой справочник и настройки получили новое оформление. Описания, подсказки и сообщения расширены на русском и английском.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="cl-section " id="experiments">
+    <div class="cl-section-head"><span class="cl-section-icon" aria-hidden="true">✚</span><h2 class="cl-section-title">Третий перк · Эксперимент</h2></div>
+    <div class="cl-section-body">
+      <div class="cl-callout">Дополнительный слот включается по желанию в настройках. По умолчанию у игроков по-прежнему два перка.</div>
+      <div class="cards">
+        <article class="card new ">
+          <h3 class="card-head"><span class="badge badge-new">ЭКСПЕРИМЕНТ</span> Три перка вместо двух</h3>
+          <p>В настройках можно включить третий слот перка. Выбор, сохранённые наборы и игровая панель поддерживают новый размер сборки. По умолчанию остаются два слота; при отключении эксперимента лишний перк убирается.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" aria-hidden="true">✦ &nbsp; ⚒ &nbsp; ✦</div>
+
+  <section class="cl-section green" id="fixes">
+    <div class="cl-section-head"><span class="cl-section-icon" aria-hidden="true">✓</span><h2 class="cl-section-title">Исправления · Большая уборка</h2></div>
+    <div class="cl-section-body">
+      <div class="cl-callout">Выпололи баги, оставили страх. Здесь — исправления, которые заметны в самом матче.</div>
+      <div class="cards">
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ФИКС</span> Кошмары без призраков прошлого раунда</h3>
+          <p>Исправлено обновление шкалы рассудка и панели испытаний при переподключении, возрождении и смене измерения. Переподключение сохраняет рассудок; остановка игры убирает оставшиеся состояния кошмара.</p>
+        </article>
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ФИКС</span> Нокдаун заканчивается вместе с матчем</h3>
+          <p>На старте и остановке раунда сбрасываются нокдаун, принудительная поза и его панель. Исправлены пересечения между кошмаром, нокдауном и смертью, из-за которых переход мог обрабатываться неправильно.</p>
+        </article>
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ФИКС</span> Правила матча применяются последовательно</h3>
+          <p>Исправлены сохранение и применение настроек здоровья, времени и карты при входе и начале раунда. Обновление длительности таймера и параметров взлома больше не оставляет несогласованные значения.</p>
+        </article>
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ФИКС</span> Подсветка показывает то, что должна</h3>
+          <p>Исправлено состояние персональной подсветки. Эффекты, предназначенные конкретному игроку, корректно обновляются и снимаются.</p>
+        </article>
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ФИКС</span> Экран больше не тонет в частицах</h3>
+          <p>У многих временных боевых эффектов убраны лишние частицы вокруг игрока. Значки эффектов остаются видимыми, а происходящее в погоне легче читать.</p>
+        </article>
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ФИКС</span> Следующий раунд начинается с чистого листа</h3>
+          <p>Исправлена очистка цветочных следов, букетов, луж и временных состояний при выходе игроков и остановке сервера. Лабиринты и площадки испытаний корректнее возвращают окружение после завершения.</p>
+        </article>
+        <article class="card mod ">
+          <h3 class="card-head"><span class="badge badge-mod">ФИКС</span> Готовность и отсчёт без гонки друг с другом</h3>
+          <p>Исправлены пересечения отсчёта и готовности перед игрой. Голосования и подготовка корректно сбрасываются при остановке сервера.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" aria-hidden="true">✦ &nbsp; ✿ ☠ ✿ &nbsp; ✦</div>
+
+  <section class="cl-section " id="previous">
+    <div class="cl-section-head"><span class="cl-section-icon" aria-hidden="true">↩</span><h2 class="cl-section-title">Прошлое обновление</h2></div>
+    <div class="cl-section-body">
+      <div class="text-body"><p><a class="clink clink-green" href="changelog_maniac_1_1.html">Кошмарный додеп · Версия 1.1 →</a></p><p><a class="clink clink-green" href="#top">↑ К началу обновления</a></p></div>
+    </div>
+  </section>
+</main>
+<footer>
+  <div class="footer-name">☠ NecroDwarf ☠</div>
+  <div class="footer-runes">ᚾᛖᚲᚱᛟ ᛞᚹᚨᚱᚠ</div>
+  <p>Некоммерческая гильдия разработчиков · Кованы в любви к коду</p>
+</footer>
+</body>
+</html>
