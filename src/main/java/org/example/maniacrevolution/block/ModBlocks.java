@@ -52,4 +52,8 @@ public class ModBlocks {
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
     }
+
+    public static final RegistryObject<Block> WARDEN_SHRIEKER = BLOCKS.register("warden_shrieker",
+            () -> new org.example.maniacrevolution.warden.WardenShriekerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_CYAN).strength(3.0F).sound(SoundType.SCULK_SHRIEKER).noOcclusion()));
 }

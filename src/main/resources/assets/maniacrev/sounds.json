@@ -59,6 +59,9 @@
       }
     ]
   },
+  "scp173_scrape": { "sounds": [{ "name": "maniacrev:scp173/scrape", "attenuation_distance": 16 }] },
+  "scp173_impact": { "sounds": [{ "name": "maniacrev:scp173/impact", "attenuation_distance": 24 }] },
+  "scp173_blackout": { "sounds": [{ "name": "maniacrev:scp173/blackout", "attenuation_distance": 16 }] },
   "slot_death": {
     "sounds": [
       "maniacrev:slot_death"

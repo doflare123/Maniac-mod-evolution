@@ -39,6 +39,15 @@ public class ArmorAbilityKeyHandler {
     }
 
     private static void handleArmorAbilityActivation(LocalPlayer player) {
+        if (org.example.maniacrevolution.scp173.client.Scp173GameplayClient.statue()) {
+            if (Minecraft.getInstance().screen == null) org.example.maniacrevolution.scp173.client.Scp173GameplayClient.light();
+            return;
+        }
+        if (org.example.maniacrevolution.warden.client.WardenSniffClient.eligible()) {
+            if (Minecraft.getInstance().screen == null)
+                ModNetworking.sendToServer(new org.example.maniacrevolution.network.packets.WardenSniffPacket());
+            return;
+        }
         if (ClientPlayerData.isManiacClass(NightmareConfig.KEEPER_CLASS_ID)) {
             ModNetworking.sendToServer(new ActivateArmorAbilityPacket(EquipmentSlot.HEAD));
             return;

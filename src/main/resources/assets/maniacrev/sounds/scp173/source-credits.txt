@@ -1,0 +1,16 @@
+scrape.ogg: adapted from StoneDrag.ogg, SCP - Containment Breach, Regalis11/scpcb.
+Source: https://github.com/Regalis11/scpcb/blob/master/SFX/SCP/173/StoneDrag.ogg
+Download: https://raw.githubusercontent.com/Regalis11/scpcb/master/SFX/SCP/173/StoneDrag.ogg
+Project license: Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0).
+License: https://creativecommons.org/licenses/by-sa/3.0/
+License statement: https://github.com/Regalis11/scpcb/blob/master/README.md
+Credits: https://github.com/Regalis11/scpcb/blob/master/Credits.txt
+This adapted audio recording is distributed under CC BY-SA 3.0.
+Changes: 0.4-1.05 second excerpt, stereo to mono, 20ms fades, peak normalization, Vorbis re-encoding.
+The upstream credits do not identify an individual author for this particular recording.
+Upstream sound/music contributors: Joonas Rikkonen (Regalis), Caleb Yu (Omniary),
+Class401, FireFox, gmodfan11, Kevin MacLeod, phlip45, revo794,
+Shaun Gaylard (ENDSHN), Slagar, Tim Morrison, Vladislav Borisevich (Vane Brain), Walach.
+
+impact.ogg and blackout.ogg: original procedural recordings created for Maniac Revolution.
+Generator: GPT/generate_scp173_sounds.py; no borrowed samples.

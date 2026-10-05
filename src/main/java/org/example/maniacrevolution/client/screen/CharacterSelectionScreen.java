@@ -22,6 +22,8 @@ import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.gui.GuideTheme;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SelectCharacterPacket;
+import org.example.maniacrevolution.warden.client.WardenPlayerForm;
+import org.example.maniacrevolution.scp173.client.Scp173PlayerForm;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -52,7 +54,14 @@ public class CharacterSelectionScreen extends Screen {
             Map.entry("pudge", new FrescoDimensions(433, 910)),
             Map.entry("scientist", new FrescoDimensions(445, 906)),
             Map.entry("shaman", new FrescoDimensions(481, 1126)),
-            Map.entry("ursa", new FrescoDimensions(463, 1126))
+            Map.entry("ursa", new FrescoDimensions(463, 1126)),
+            Map.entry("warden", new FrescoDimensions(1024, 1536)),
+            Map.entry("scp_173", new FrescoDimensions(1024, 1536))
+    );
+
+    private static final Map<String, FrescoDimensions> SELECTION_FRESCO_DIMENSIONS = Map.of(
+            "warden", new FrescoDimensions(2172, 724),
+            "scp_173", new FrescoDimensions(2170, 725)
     );
 
     private final CharacterType type;
@@ -377,7 +386,7 @@ public class CharacterSelectionScreen extends Screen {
 
             int imageHeight = Math.max(20, card.height() - 17);
             Rect image = new Rect(card.x() + 2, card.y() + 2, Math.max(1, card.width() - 4), imageHeight);
-            drawCroppedFresco(graphics, character, image);
+            drawCroppedFresco(graphics, character, image, true);
             graphics.fill(card.x() + 1, card.bottom() - 16, card.right() - 1, card.bottom() - 1, 0xE511171E);
 
             String name = trim(character.getName(), Math.max(10, card.width() - 20));
@@ -415,7 +424,7 @@ public class CharacterSelectionScreen extends Screen {
 
             Rect image = new Rect(card.x() + 3, card.y() + 3,
                     Math.max(1, card.width() - 6), Math.max(1, card.height() - 22));
-            drawFittedFresco(graphics, filteredCharacters.get(index), image);
+            drawFittedFresco(graphics, filteredCharacters.get(index), image, true);
             graphics.fill(card.x() + 1, card.bottom() - 18, card.right() - 1, card.bottom() - 1, 0xE511171E);
             graphics.drawCenteredString(font,
                     trim(filteredCharacters.get(index).getName(), card.width() - 8),
@@ -446,11 +455,14 @@ public class CharacterSelectionScreen extends Screen {
                 cardViewport.x() + cardViewport.width() / 2, cardViewport.bottom() - 10, GuideTheme.TEXT_MUTED);
     }
 
-    private void drawCroppedFresco(GuiGraphics graphics, CharacterClass character, Rect destination) {
-        FrescoDimensions source = FRESCO_DIMENSIONS.getOrDefault(
-                character.getId(),
-                new FrescoDimensions(destination.width(), destination.height())
-        );
+    private void drawCroppedFresco(GuiGraphics graphics, CharacterClass character, Rect destination,
+                                   boolean selectionCard) {
+        // Dedicated compositions retain their full framing across window sizes.
+        if (SELECTION_FRESCO_DIMENSIONS.containsKey(character.getId())) {
+            drawFittedFresco(graphics, character, destination, selectionCard);
+            return;
+        }
+        FrescoDimensions source = frescoDimensions(character, destination, selectionCard);
         float targetAspect = destination.width() / (float) Math.max(1, destination.height());
         float sourceAspect = source.width() / (float) source.height();
 
@@ -468,16 +480,23 @@ public class CharacterSelectionScreen extends Screen {
         }
 
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        graphics.blit(character.getFrescoTexture(),
+        graphics.blit(selectionCard ? character.getSelectionFrescoTexture() : character.getFrescoTexture(),
                 destination.x(), destination.y(), destination.width(), destination.height(),
                 sourceX, sourceY, sourceWidth, sourceHeight, source.width(), source.height());
     }
 
-    private void drawFittedFresco(GuiGraphics graphics, CharacterClass character, Rect destination) {
-        FrescoDimensions source = FRESCO_DIMENSIONS.getOrDefault(
-                character.getId(),
-                new FrescoDimensions(destination.width(), destination.height())
-        );
+    private FrescoDimensions frescoDimensions(CharacterClass character, Rect destination,
+                                               boolean selectionCard) {
+        FrescoDimensions portrait = FRESCO_DIMENSIONS.getOrDefault(character.getId(),
+                new FrescoDimensions(destination.width(), destination.height()));
+        return selectionCard
+                ? SELECTION_FRESCO_DIMENSIONS.getOrDefault(character.getId(), portrait)
+                : portrait;
+    }
+
+    private void drawFittedFresco(GuiGraphics graphics, CharacterClass character, Rect destination,
+                                  boolean selectionCard) {
+        FrescoDimensions source = frescoDimensions(character, destination, selectionCard);
         float sourceAspect = source.width() / (float) Math.max(1, source.height());
         float targetAspect = destination.width() / (float) Math.max(1, destination.height());
         int width = destination.width();
@@ -490,7 +509,8 @@ public class CharacterSelectionScreen extends Screen {
         int x = destination.x() + (destination.width() - width) / 2;
         int y = destination.y() + (destination.height() - height) / 2;
         graphics.fill(destination.x(), destination.y(), destination.right(), destination.bottom(), 0xFF090C10);
-        graphics.blit(character.getFrescoTexture(), x, y, width, height,
+        graphics.blit(selectionCard ? character.getSelectionFrescoTexture() : character.getFrescoTexture(),
+                x, y, width, height,
                 0, 0, source.width(), source.height(), source.width(), source.height());
     }
 
@@ -505,7 +525,7 @@ public class CharacterSelectionScreen extends Screen {
 
         Rect frescoBackdrop = new Rect(previewPanel.x() + 2, previewPanel.y() + 18,
                 Math.max(1, previewPanel.width() - 4), Math.max(1, previewPanel.height() - 20));
-        drawCroppedFresco(graphics, selected, frescoBackdrop);
+        drawCroppedFresco(graphics, selected, frescoBackdrop, false);
         graphics.fill(frescoBackdrop.x(), frescoBackdrop.y(), frescoBackdrop.right(), frescoBackdrop.bottom(),
                 0x8A070B10);
 
@@ -549,6 +569,10 @@ public class CharacterSelectionScreen extends Screen {
             previewPlayer = new RemotePlayer(minecraft.level, minecraft.player.getGameProfile());
         }
         ClientKeeperFormData.setPreviewKeeper(previewPlayer, "keeper_of_nightmares".equals(selected.getId()));
+        boolean previewWarden = "warden".equals(selected.getId());
+        WardenPlayerForm.setPreviewWarden(previewPlayer, previewWarden);
+        boolean previewScp173 = "scp_173".equals(selected.getId());
+        Scp173PlayerForm.setPreviewScp173(previewPlayer, previewScp173);
 
         int modelX = previewPanel.x() + previewPanel.width() / 2;
         int modelBottom = previewPanel.bottom() - 5;
@@ -558,6 +582,7 @@ public class CharacterSelectionScreen extends Screen {
                 24,
                 92
         );
+        if (previewWarden) modelScale = Math.max(12, Math.round(modelScale * 0.5F));
 
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             previewPlayer.setItemSlot(slot, ItemStack.EMPTY);
@@ -567,9 +592,9 @@ public class CharacterSelectionScreen extends Screen {
         }
 
         float idleTime = (minecraft.level.getGameTime() + partialTick) * 0.05F;
-        float idleYaw = Mth.sin(idleTime * 0.7F) * 0.08F;
-        float idlePitch = Mth.sin(idleTime * 0.45F) * 0.02F;
-        int idleBob = Math.round(Mth.sin(idleTime * 0.9F));
+        float idleYaw = previewScp173 ? 0 : Mth.sin(idleTime * 0.7F) * 0.08F;
+        float idlePitch = previewScp173 ? 0 : Mth.sin(idleTime * 0.45F) * 0.02F;
+        int idleBob = previewScp173 ? 0 : Math.round(Mth.sin(idleTime * 0.9F));
 
         graphics.enableScissor(frescoBackdrop.x(), frescoBackdrop.y(),
                 frescoBackdrop.right(), frescoBackdrop.bottom());

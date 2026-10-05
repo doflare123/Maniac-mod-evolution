@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "6";
+    private static final String PROTOCOL_VERSION = "21";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -515,6 +515,69 @@ public class ModNetworking {
                 .decoder(PreGameReadyStatePacket::decode)
                 .consumerMainThread(PreGameReadyStatePacket::handle)
                 .add();
+
+        CHANNEL.messageBuilder(WardenFormPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WardenFormPacket::encode)
+                .decoder(WardenFormPacket::decode)
+                .consumerMainThread(WardenFormPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(WardenNoisePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WardenNoisePacket::encode)
+                .decoder(WardenNoisePacket::decode)
+                .consumerMainThread(WardenNoisePacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(WardenShriekerEchoPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WardenShriekerEchoPacket::encode).decoder(WardenShriekerEchoPacket::decode)
+                .consumerMainThread(WardenShriekerEchoPacket::handle).add();
+        CHANNEL.messageBuilder(WardenShriekSoundPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WardenShriekSoundPacket::encode).decoder(WardenShriekSoundPacket::decode)
+                .consumerMainThread(WardenShriekSoundPacket::handle).add();
+
+        CHANNEL.messageBuilder(WardenSniffPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(WardenSniffPacket::encode).decoder(WardenSniffPacket::decode)
+                .consumerMainThread(WardenSniffPacket::handle).add();
+        CHANNEL.messageBuilder(WardenScentPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WardenScentPacket::encode).decoder(WardenScentPacket::decode)
+                .consumerMainThread(WardenScentPacket::handle).add();
+
+        CHANNEL.messageBuilder(WardenCombatInputPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(WardenCombatInputPacket::encode).decoder(WardenCombatInputPacket::decode)
+                .consumerMainThread(WardenCombatInputPacket::handle).add();
+        CHANNEL.messageBuilder(WardenCombatStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WardenCombatStatePacket::encode).decoder(WardenCombatStatePacket::decode)
+                .consumerMainThread(WardenCombatStatePacket::handle).add();
+        CHANNEL.messageBuilder(WardenWavePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WardenWavePacket::encode).decoder(WardenWavePacket::decode)
+                .consumerMainThread(WardenWavePacket::handle).add();
+
+        CHANNEL.messageBuilder(WardenMeleeFeedbackPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WardenMeleeFeedbackPacket::encode).decoder(WardenMeleeFeedbackPacket::decode)
+                .consumerMainThread(WardenMeleeFeedbackPacket::handle).add();
+
+        CHANNEL.messageBuilder(WardenAnimationPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WardenAnimationPacket::encode).decoder(WardenAnimationPacket::decode)
+                .consumerMainThread(WardenAnimationPacket::handle).add();
+
+        CHANNEL.messageBuilder(Scp173HoldPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Scp173HoldPacket::encode).decoder(Scp173HoldPacket::decode)
+                .consumerMainThread(Scp173HoldPacket::handle).add();
+
+        CHANNEL.messageBuilder(Scp173FormPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Scp173FormPacket::encode).decoder(Scp173FormPacket::decode)
+                .consumerMainThread(Scp173FormPacket::handle).add();
+
+        CHANNEL.messageBuilder(Scp173InputPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(Scp173InputPacket::encode).decoder(Scp173InputPacket::decode)
+                .consumerMainThread(Scp173InputPacket::handle).add();
+        CHANNEL.messageBuilder(Scp173StatusPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(Scp173StatusPacket::encode).decoder(Scp173StatusPacket::decode)
+                .consumerMainThread(Scp173StatusPacket::handle).add();
+
+        CHANNEL.messageBuilder(WardenStaminaPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(WardenStaminaPacket::encode).decoder(WardenStaminaPacket::decode)
+                .consumerMainThread(WardenStaminaPacket::handle).add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }

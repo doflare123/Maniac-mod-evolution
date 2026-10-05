@@ -280,6 +280,9 @@ public class ModItems {
     public static final RegistryObject<Item> SLOT_MACHINE = ITEMS.register("slot_machine",
             () -> new BlockItem(ModBlocks.SLOT_MACHINE.get(), new Item.Properties().rarity(Rarity.RARE)));
 
+    public static final RegistryObject<Item> WARDEN_SHRIEKER = ITEMS.register("warden_shrieker",
+            () -> new BlockItem(ModBlocks.WARDEN_SHRIEKER.get(), new Item.Properties()));
+
     public static final RegistryObject<Item> NIGHTMARE_LIGHTER =
             ITEMS.register("nightmare_lighter", NightmareLighterItem::new);
 

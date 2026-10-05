@@ -37,6 +37,8 @@ public class CharacterRegistry {
         register(new DoctorClass());
         register(new FreddyBearClass());
         register(new KeeperOfNightmaresClass());
+        register(new WardenClass());
+        register(new Scp173Class());
 
         initialized = true;
     }

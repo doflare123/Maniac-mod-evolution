@@ -59,6 +59,7 @@ public class HackSession {
     }
 
     public BlockPos getPos() { return pos; }
+    public ServerPlayer getHacker() { return hacker; }
 
     /**
      * Тик сессии. Вызывается раз в секунду (20 тиков) из HackManager.tick().

@@ -72,6 +72,13 @@ public class ModSounds {
                     () -> SoundEvent.createVariableRangeEvent(
                             new ResourceLocation(Maniacrev.MODID, "slot_death")));
 
+    public static final RegistryObject<SoundEvent> SCP173_SCRAPE = SOUND_EVENTS.register("scp173_scrape",
+            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Maniacrev.MODID, "scp173_scrape")));
+    public static final RegistryObject<SoundEvent> SCP173_IMPACT = SOUND_EVENTS.register("scp173_impact",
+            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Maniacrev.MODID, "scp173_impact")));
+    public static final RegistryObject<SoundEvent> SCP173_BLACKOUT = SOUND_EVENTS.register("scp173_blackout",
+            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Maniacrev.MODID, "scp173_blackout")));
+
     // Регистрация в главном классе мода:
     // ModSounds.SOUND_EVENTS.register(modEventBus);
 }

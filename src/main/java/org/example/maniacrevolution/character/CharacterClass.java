@@ -71,6 +71,11 @@ public abstract class CharacterClass {
         return new ResourceLocation(Maniacrev.MODID, "textures/gui/frescos/" + id + ".png");
     }
 
+    /** Selection artwork can differ from the portrait used behind the character. */
+    public ResourceLocation getSelectionFrescoTexture() {
+        return getFrescoTexture();
+    }
+
     public String getDifficultyStars() {
         StringBuilder stars = new StringBuilder("§6");
         for (int i = 0; i < 5; i++) {

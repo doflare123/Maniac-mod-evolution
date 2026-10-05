@@ -120,7 +120,19 @@ public class ModEffects {
     public static final RegistryObject<MobEffect> GREEN_CHARGE =
             MOB_EFFECTS.register("green_charge", GreenChargeEffect::new);
 
+    public static final RegistryObject<MobEffect> WARDEN_ARMOR =
+            MOB_EFFECTS.register("warden_armor", WardenArmorEffect::new);
+    public static final RegistryObject<MobEffect> WARDEN_WEIGHT =
+            MOB_EFFECTS.register("warden_weight", () -> new WardenPaceEffect(false));
+    public static final RegistryObject<MobEffect> WARDEN_BURST =
+            MOB_EFFECTS.register("warden_burst", () -> new WardenPaceEffect(true));
+
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);
     }
+
+    public static final RegistryObject<MobEffect> SCP173_ARMOR =
+            MOB_EFFECTS.register("scp173_armor", Scp173ArmorEffect::new);
+    public static final RegistryObject<MobEffect> JUMP_COOLDOWN =
+            MOB_EFFECTS.register("jump_cooldown", JumpCooldownEffect::new);
 }

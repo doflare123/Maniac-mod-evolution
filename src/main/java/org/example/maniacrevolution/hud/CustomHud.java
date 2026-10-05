@@ -255,7 +255,11 @@ public class CustomHud implements IGuiOverlay {
 
     private static boolean isVisibleTimedEffect(MobEffectInstance effect) {
         return effect.showIcon() && (!effect.isInfiniteDuration()
-                || effect.getEffect() == ModEffects.GREEN_CHARGE.get());
+                || effect.getEffect() == ModEffects.GREEN_CHARGE.get()
+                || effect.getEffect() == ModEffects.WARDEN_ARMOR.get()
+                || effect.getEffect() == ModEffects.WARDEN_WEIGHT.get()
+                || effect.getEffect() == ModEffects.WARDEN_BURST.get()
+                || effect.getEffect() == ModEffects.SCP173_ARMOR.get());
     }
 
     private static int getTimedEffectPriority(MobEffectInstance effect) {
@@ -523,12 +527,16 @@ public class CustomHud implements IGuiOverlay {
         gui.fill(x, y, x + ABILITY_ICON_SIZE, y + ABILITY_ICON_SIZE, SLOT_BG);
         ResourceLocation icon = ability.getAbilityIcon();
         RenderSystem.enableBlend();
-        gui.blit(icon, x, y, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE,
-                ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
+        if (ability instanceof org.example.maniacrevolution.warden.client.WardenSniffHud)
+            gui.blit(icon, x + 4, y + 4, 0, 0, 16, 16, 16, 16);
+        else gui.blit(icon, x, y, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
         RenderSystem.disableBlend();
         gui.renderOutline(x, y, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, SLOT_BORDER);
 
-        if (ability instanceof ITimedAbility timed && timed.isAbilityActive(player)) {
+        if (ability instanceof org.example.maniacrevolution.warden.client.WardenSniffHud
+                && org.example.maniacrevolution.warden.client.WardenSniffClient.preparation() > 0) {
+            drawCentered(gui, "…", x, y + 8, ABILITY_ICON_SIZE, 0xFF79E5DC);
+        } else if (ability instanceof ITimedAbility timed && timed.isAbilityActive(player)) {
             renderRectangularProgress(gui, x, y, ABILITY_ICON_SIZE,
                     timed.getDurationProgress(player), 0xFF70E28A);
             int remaining = timed.getRemainingDurationSeconds(player);
@@ -737,6 +745,10 @@ public class CustomHud implements IGuiOverlay {
     }
 
     private IItemWithAbility findItemWithAbility(Player player) {
+        if (org.example.maniacrevolution.scp173.client.Scp173GameplayClient.statue())
+            return org.example.maniacrevolution.scp173.client.Scp173LightHud.INSTANCE;
+        if (org.example.maniacrevolution.warden.client.WardenSniffClient.eligible())
+            return org.example.maniacrevolution.warden.client.WardenSniffHud.INSTANCE;
         ItemStack mainHand = player.getMainHandItem();
         if (mainHand.getItem() instanceof IItemWithAbility ability) return ability;
 

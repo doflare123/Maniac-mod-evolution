@@ -67,6 +67,7 @@ public class QTEKeyPressPacket {
                     IdealychPerk.onNormalHit(player);
                 }
             } else {
+                org.example.maniacrevolution.warden.WardenNoiseManager.qteFailed(player);
                 EmergencyOverclockPerk.onQteFailed(player);
                 boolean perkActivated = CatchMistakesPerk.onQTEFailed(player);
                 // Идеалыч
