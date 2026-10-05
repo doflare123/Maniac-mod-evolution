@@ -254,8 +254,9 @@ public final class PaintPuddleManager {
     }
 
     private static boolean canTrigger(ServerPlayer player) {
+        PerkTeam team = PerkTeam.fromPlayer(player);
         if (!player.isAlive() || player.isRemoved() || player.isSpectator()
-                || PerkTeam.fromPlayer(player) != PerkTeam.SURVIVOR
+                || (team != PerkTeam.SURVIVOR && team != PerkTeam.MANIAC)
                 || player.hasEffect(ModEffects.PAINT_PROTECTION.get())) {
             return false;
         }

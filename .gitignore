@@ -30,3 +30,4 @@ stats-bot/private.json
 stats-bot/receiver-key.pem
 stats-bot/node_modules/
 .local-stats/
+/GPT
