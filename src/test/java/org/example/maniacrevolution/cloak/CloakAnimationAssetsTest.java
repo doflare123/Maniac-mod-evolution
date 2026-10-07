@@ -46,15 +46,15 @@ public final class CloakAnimationAssetsTest {
         double y = 64;
         for (int tick = 0; tick < 200; tick++) {
             var motion = CloakHoverMotion.calculate(0, 1, 0, 0.1, y, 64.5);
-            if (Math.abs(motion.z() - 0.21585) > 0.000001) throw new AssertionError("Walking-speed hover lost");
+            if (Math.abs(motion.z() * 20 - 0.5) > 0.000001) throw new AssertionError("Expected 0.5 blocks/second hover");
             y += motion.y();
             if (y > 64.5 + 1e-9) throw new AssertionError("Height overshoot");
             if (tick >= 6 && Math.abs(y - 64.5) > 1e-9) throw new AssertionError("Unstable hover height");
         }
         var diagonal = CloakHoverMotion.calculate(1, 1, 90, 0.1, 64.5, 64.5);
-        if (Math.abs(Math.hypot(diagonal.x(), diagonal.z()) - 0.21585) > 1e-9) throw new AssertionError("Diagonal speed boost");
+        if (Math.abs(Math.hypot(diagonal.x(), diagonal.z()) - 0.025) > 1e-9) throw new AssertionError("Diagonal speed boost");
         var idle = CloakHoverMotion.calculate(0, 0, 0, 0.1, 64.5, 64.5);
         if (idle.x() != 0 || idle.y() != 0 || idle.z() != 0) throw new AssertionError("Idle hover must remain still");
-        System.out.println("Hover checks passed: stable height, walking speed, normalized diagonals, relaxed riding pose.");
+        System.out.println("Hover checks passed: stable height, 0.5 blocks/second, normalized diagonals, relaxed riding pose.");
     }
 }

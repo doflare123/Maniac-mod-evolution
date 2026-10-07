@@ -20,6 +20,12 @@ import org.example.maniacrevolution.hack.client.ComputerBlockRenderer;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientSetupEvents {
+    @SubscribeEvent public static void strangeLayers(EntityRenderersEvent.AddLayers event) {
+        for (String skin : event.getSkins()) {
+            net.minecraft.client.renderer.entity.player.PlayerRenderer renderer = event.getSkin(skin);
+            if (renderer != null) renderer.addLayer(new org.example.maniacrevolution.strange.client.StrangeHandLayer(renderer));
+        }
+    }
 
     @SubscribeEvent
     public static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
@@ -30,6 +36,7 @@ public class ClientSetupEvents {
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.DOCTOR_STRANGE_CLOAK.get(), org.example.maniacrevolution.cloak.client.CloakRenderer::new);
+        event.registerEntityRenderer(ModEntities.STRANGE_EFFECT.get(), org.example.maniacrevolution.strange.client.StrangeEffectRenderer::new);
         event.registerEntityRenderer(ModEntities.MIMIC_BLOCK.get(), MimicBlockRenderer::new);
         event.registerEntityRenderer(ModEntities.PLAGUE_ORB.get(), PlagueOrbRenderer::new);
         event.registerEntityRenderer(ModEntities.RAGE_BEE.get(),

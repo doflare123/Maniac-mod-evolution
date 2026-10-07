@@ -25,6 +25,7 @@ public class ModItems {
 
     public static final RegistryObject<Item> DOCTOR_STRANGE_CLOAK = ITEMS.register("doctor_strange_cloak",
             org.example.maniacrevolution.item.armor.DoctorStrangeCloakItem::new);
+    public static final RegistryObject<Item> SPACE_AMULET = ITEMS.register("space_amulet", SpaceAmuletItem::new);
 
     public static final RegistryObject<Item> SHOP_TOKEN = ITEMS.register("shop_token",
             () -> new ShopOpenItem(new Item.Properties().stacksTo(1)));

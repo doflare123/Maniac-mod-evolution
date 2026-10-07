@@ -8,7 +8,8 @@ public final class CloakHoverMotion {
     public static Motion calculate(float left, float forward, float yaw, double movementAttribute,
                                    double currentHeight, double targetHeight) {
         double length = Math.max(1, Math.hypot(left, forward));
-        double speed = Math.max(0, movementAttribute) * 2.1585;
+        // 0.5 blocks/second at 20 TPS and the normal movement attribute of 0.1.
+        double speed = Math.max(0, movementAttribute) * 0.25;
         double angle = Math.toRadians(yaw);
         return new Motion((left * Math.cos(angle) - forward * Math.sin(angle)) / length * speed,
                 Math.max(-0.1, Math.min(0.1, targetHeight - currentHeight)),

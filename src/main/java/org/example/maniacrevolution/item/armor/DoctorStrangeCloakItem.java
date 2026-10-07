@@ -21,19 +21,23 @@ public final class DoctorStrangeCloakItem extends ArmorItem implements IActivata
         super(ArmorMaterials.LEATHER, Type.CHESTPLATE, new Properties().rarity(Rarity.EPIC));
     }
 
-    @Override public boolean activateAbility(ServerPlayer player) { return CloakManager.throwCloak(player); }
-    @Override public boolean canActivate(ServerPlayer player) { return CloakManager.canThrow(player); }
+    @Override public boolean activateAbility(ServerPlayer player) {
+        return org.example.maniacrevolution.strange.StrangeManager.switchStance(player);
+    }
+    @Override public boolean canActivate(ServerPlayer player) { return CloakManager.equipped(player); }
     @Override public float getManaCost() { return 0; }
-    @Override public int getDuration() { return 140; }
+    @Override public int getDuration() { return 0; }
     @Override public int getCooldown() { return 0; }
     @Override public int getCooldownSeconds(Player player) { return 0; }
     @Override public int getMaxCooldownSeconds() { return 0; }
     @Override public String getAbilityName() { return Component.translatable("ability.maniacrev.cloak.name").getString(); }
     @Override public String getAbilityDescription() { return Component.translatable("ability.maniacrev.cloak.desc").getString(); }
-    @Override public ResourceLocation getAbilityIcon() { return Maniacrev.loc("textures/item/doctor_strange_cloak.png"); }
+    @Override public ResourceLocation getAbilityIcon() { return Maniacrev.loc("textures/gui/strange_stance.png"); }
     @Override public void appendHoverText(ItemStack stack, Level level, List<Component> lines, TooltipFlag flag) {
         lines.add(Component.translatable("tooltip.maniacrev.cloak.hover"));
         lines.add(Component.translatable("tooltip.maniacrev.cloak.throw"));
+        lines.add(Component.translatable("tooltip.maniacrev.strange.stances"));
+        lines.add(Component.translatable("tooltip.maniacrev.strange.portal"));
     }
 
     // The animated entity supplies the complete cloak. Suppress the leather chestplate mesh.

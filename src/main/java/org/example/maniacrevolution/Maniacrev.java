@@ -95,6 +95,7 @@ public class Maniacrev {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModEntities.ENTITIES.register(modEventBus);
+        org.example.maniacrevolution.strange.StrangeParticles.TYPES.register(modEventBus);
         ModEffects.MOB_EFFECTS.register(modEventBus);
         ModPotions.POTIONS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);

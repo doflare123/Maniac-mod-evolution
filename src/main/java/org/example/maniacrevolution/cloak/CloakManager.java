@@ -118,7 +118,9 @@ public final class CloakManager {
 
     private static void update(Session s) {
         CloakEntity cloak = s.cloak;
-        boolean shift = s.hoverHeld && s.owner.level().getGameTime() - s.lastHoverInput <= 15;
+        boolean shift = s.hoverHeld && s.owner.level().getGameTime() - s.lastHoverInput <= 15
+                && !s.owner.getMainHandItem().is(ModItems.SPACE_AMULET.get())
+                && !s.owner.getOffhandItem().is(ModItems.SPACE_AMULET.get());
         boolean pressed = shift && !s.previousShift;
         s.previousShift = shift;
         if (cloak.stage().hovering() && (!shift || !usable(s.owner) || s.owner.isInWaterOrBubble() || s.owner.isInLava())) {
@@ -268,6 +270,8 @@ public final class CloakManager {
     }
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent event) { cleanup(event.getEntity()); }
     @SubscribeEvent public static void dimension(PlayerEvent.PlayerChangedDimensionEvent event) { cleanup(event.getEntity()); }
+    /** Same-dimension portals also invalidate the hover anchor and any captured target. */
+    public static void beforePortalTravel(Player player) { cleanup(player); }
     private static void cleanup(Player player) {
         Session owner = OWNERS.get(player.getUUID());
         if (owner != null) remove(owner);

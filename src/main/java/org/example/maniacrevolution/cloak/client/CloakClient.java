@@ -50,6 +50,8 @@ public final class CloakClient {
         var input = event.getInput();
         var mc = Minecraft.getInstance();
         boolean held = input.shiftKeyDown && mc.screen == null && game == null
+                && !event.getEntity().getMainHandItem().is(org.example.maniacrevolution.ModItems.SPACE_AMULET.get())
+                && !event.getEntity().getOffhandItem().is(org.example.maniacrevolution.ModItems.SPACE_AMULET.get())
                 && CloakManager.equipped(event.getEntity()) && event.getEntity().isAlive()
                 && !event.getEntity().isCreative() && !event.getEntity().isSpectator();
         if (held != hoverHeld || held && event.getEntity().tickCount % 5 == 0) {

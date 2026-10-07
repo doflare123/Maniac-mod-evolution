@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "8";
+    private static final String PROTOCOL_VERSION = "10";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -528,6 +528,16 @@ public class ModNetworking {
                 .consumerMainThread(PreGameReadyStatePacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(org.example.maniacrevolution.strange.StrangeActionPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(org.example.maniacrevolution.strange.StrangeActionPacket::encode)
+                .decoder(org.example.maniacrevolution.strange.StrangeActionPacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.strange.StrangeActionPacket::handle)
+                .add();
+
+        CHANNEL.messageBuilder(org.example.maniacrevolution.strange.PortalViewPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(org.example.maniacrevolution.strange.PortalViewPacket::encode)
+                .decoder(org.example.maniacrevolution.strange.PortalViewPacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.strange.PortalViewPacket::handle).add();
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
 

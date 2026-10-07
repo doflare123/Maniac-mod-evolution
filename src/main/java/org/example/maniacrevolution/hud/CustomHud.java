@@ -737,6 +737,8 @@ public class CustomHud implements IGuiOverlay {
     }
 
     private IItemWithAbility findItemWithAbility(Player player) {
+        if (org.example.maniacrevolution.cloak.CloakManager.equipped(player))
+            return (IItemWithAbility) org.example.maniacrevolution.ModItems.DOCTOR_STRANGE_CLOAK.get();
         ItemStack mainHand = player.getMainHandItem();
         if (mainHand.getItem() instanceof IItemWithAbility ability) return ability;
 

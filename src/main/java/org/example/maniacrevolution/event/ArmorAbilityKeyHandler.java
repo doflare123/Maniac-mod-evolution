@@ -39,6 +39,10 @@ public class ArmorAbilityKeyHandler {
     }
 
     private static void handleArmorAbilityActivation(LocalPlayer player) {
+        if (org.example.maniacrevolution.cloak.CloakManager.equipped(player)) {
+            ModNetworking.sendToServer(new ActivateArmorAbilityPacket(EquipmentSlot.CHEST));
+            return;
+        }
         if (ClientPlayerData.isManiacClass(NightmareConfig.KEEPER_CLASS_ID)) {
             ModNetworking.sendToServer(new ActivateArmorAbilityPacket(EquipmentSlot.HEAD));
             return;

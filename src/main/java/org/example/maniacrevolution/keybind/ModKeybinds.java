@@ -10,6 +10,7 @@ import org.lwjgl.glfw.GLFW;
 public class ModKeybinds {
     public static final String CATEGORY = "key.categories.maniacrev";
 
+
     // ФИКС: Инициализируем СРАЗУ при объявлении, а не в методе
     public static final KeyMapping OPEN_GUIDE = new KeyMapping(
             "key.maniacrev.open_guide",
