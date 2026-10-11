@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "21";
+    private static final String PROTOCOL_VERSION = "22";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -31,6 +31,18 @@ public class ModNetworking {
     private static int packetId = 0;
 
     public static void register() {
+        CHANNEL.messageBuilder(org.example.maniacrevolution.techies.TechiesPosePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(org.example.maniacrevolution.techies.TechiesPosePacket::encode)
+                .decoder(org.example.maniacrevolution.techies.TechiesPosePacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.techies.TechiesPosePacket::handle).add();
+        CHANNEL.messageBuilder(org.example.maniacrevolution.techies.TechiesActionPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(org.example.maniacrevolution.techies.TechiesActionPacket::encode)
+                .decoder(org.example.maniacrevolution.techies.TechiesActionPacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.techies.TechiesActionPacket::handle).add();
+        CHANNEL.messageBuilder(org.example.maniacrevolution.techies.TechiesStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(org.example.maniacrevolution.techies.TechiesStatePacket::encode)
+                .decoder(org.example.maniacrevolution.techies.TechiesStatePacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.techies.TechiesStatePacket::handle).add();
         // Server -> Client
         CHANNEL.messageBuilder(SyncPlayerDataPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(SyncPlayerDataPacket::encode)

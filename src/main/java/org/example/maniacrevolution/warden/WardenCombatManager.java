@@ -42,6 +42,14 @@ public final class WardenCombatManager {
         var d = DownedCapability.get(p);
         return active(p) && (d == null || d.getState() != DownedState.DOWNED) && !PenaltySlotManager.isInPenaltySlot(p);
     }
+    /** Techies mines use the same bare-hand melee gate and cooldown as ordinary Warden attacks. */
+    public static boolean tryMineAttack(ServerPlayer p) {
+        if (!allowed(p) || !hands(p)) return false;
+        var s = session(p);
+        if (!s.cycle.melee(p.level().getGameTime())) return false;
+        send(s, 0);
+        return true;
+    }
     private static boolean hands(ServerPlayer p) { return p.getMainHandItem().isEmpty() && p.getOffhandItem().isEmpty() && p.containerMenu == p.inventoryMenu; }
     private static boolean target(LivingEntity e) {
         return e.isAlive() && (!(e instanceof ServerPlayer p) || mode(p) && "survivors".equalsIgnoreCase(team(p)));

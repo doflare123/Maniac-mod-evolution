@@ -57,8 +57,10 @@ public class StatsManager {
     private static boolean activeMatchInvalidated = false;
     private static final Set<UUID> activeMatchParticipants = new HashSet<>();
 
+    // Resolve the new catalog row by name; its database id is independent of SurvivorClass 14.
+    private static final int TECHIES_STATS_REFERENCE = Integer.MAX_VALUE;
     private static final Map<Integer, Integer> SURVIVOR_CLASS_MAP = Map.of(
-            8, 10, 5, 11, 10, 4, 9, 3, 1, 2, 6, 1
+            8, 10, 5, 11, 10, 4, 9, 3, 1, 2, 6, 1, 14, TECHIES_STATS_REFERENCE
     );
     private static final Map<Integer, Integer> MANIAC_CLASS_MAP = Map.of(
             7, 8, 5, 6, 6, 9, 12, 12, 10, 7, 4, 5
@@ -464,9 +466,22 @@ public class StatsManager {
         String sql = "INSERT INTO " + table + " (" + gameIdCol + ", team, " + idCol + ", count) VALUES (?,?,?,?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             for (Map.Entry<Integer, Integer> e : map.entrySet()) {
+                int reference=e.getKey();
+                if (reference==TECHIES_STATS_REFERENCE && "class_id".equals(idCol)) {
+                    try (PreparedStatement lookup=conn.prepareStatement("SELECT id FROM ref_classes WHERE name = ? ORDER BY id LIMIT 1")) {
+                        lookup.setString(1,"techies");
+                        try (ResultSet row=lookup.executeQuery()) {
+                            if (!row.next()) {
+                                LOGGER.warn("Techies stats catalog row missing; apply stats_schema_migration_2026_10_techies.sql");
+                                continue;
+                            }
+                            reference=row.getInt(1);
+                        }
+                    }
+                }
                 ps.setInt(1, gameId);
                 ps.setInt(2, team);
-                ps.setInt(3, e.getKey());
+                ps.setInt(3, reference);
                 ps.setInt(4, e.getValue());
                 ps.addBatch();
             }

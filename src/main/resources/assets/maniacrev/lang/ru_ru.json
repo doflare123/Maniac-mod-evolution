@@ -1100,5 +1100,19 @@
   "character.maniacrev.scp_173.feature.0.name": "Удержание взглядом",
   "character.maniacrev.scp_173.feature.0.description": "Видимая часть тела в пределах 20 блоков и области 120° × 80° удерживает статую. Стекло пропускает взгляд.",
   "character.maniacrev.scp_173.feature.1.name": "Под взглядом",
-  "character.maniacrev.scp_173.feature.1.description": "Перки и способности доступны. Гравитация и внешние толчки продолжают действовать."
+  "character.maniacrev.scp_173.feature.1.description": "Перки и способности доступны. Гравитация и внешние толчки продолжают действовать.",
+  "character.maniacrev.techies.name": "Течис",
+  "death.attack.techies_mine": "%1$s подорвался на мине Течиса",
+  "character.maniacrev.techies.description": "Сапёр: три типа мин, ручной подрыв и перераспределение маны.",
+  "item.maniacrev.techies_helmet": "Каска Течиса",
+  "item.maniacrev.techies_remote": "Пульт Течиса",
+  "item.maniacrev.techies_mine_red": "Красная мина",
+  "item.maniacrev.techies_mine_green": "Зелёная мина",
+  "item.maniacrev.techies_mine_blue": "Синяя мина",
+  "hud.maniacrev.techies.red.ready": "Красная мина готова",
+  "hud.maniacrev.techies.red.recharging": "Красная мина перезаряжается",
+  "hud.maniacrev.techies.green.ready": "Зелёная мина готова",
+  "hud.maniacrev.techies.green.recharging": "Зелёная мина перезаряжается",
+  "hud.maniacrev.techies.blue.ready": "Синяя мина готова",
+  "hud.maniacrev.techies.blue.recharging": "Синяя мина перезаряжается"
 }

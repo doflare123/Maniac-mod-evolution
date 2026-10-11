@@ -39,6 +39,10 @@ public class ArmorAbilityKeyHandler {
     }
 
     private static void handleArmorAbilityActivation(LocalPlayer player) {
+        if (org.example.maniacrevolution.techies.client.TechiesClient.eligible()) {
+            org.example.maniacrevolution.techies.client.TechiesClient.openMenu();
+            return;
+        }
         if (org.example.maniacrevolution.scp173.client.Scp173GameplayClient.statue()) {
             if (Minecraft.getInstance().screen == null) org.example.maniacrevolution.scp173.client.Scp173GameplayClient.light();
             return;

@@ -49,6 +49,12 @@ public class ModCommands {
         dispatcher.register(Commands.literal("maniacrev")
                 .requires(src -> src.hasPermission(2))
 
+                .then(Commands.literal("techies").then(Commands.literal("clear").executes(ctx -> {
+                    int count=org.example.maniacrevolution.techies.TechiesManager.clear(ctx.getSource().getServer());
+                    ctx.getSource().sendSuccess(() -> Component.literal("Удалено мин Течиса: " + count), true);
+                    return Math.max(1,count);
+                })))
+
                 // /maniacrev start
                 .then(Commands.literal("start")
                         .executes(ctx -> {

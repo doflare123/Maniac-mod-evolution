@@ -212,6 +212,7 @@ public class HackSession {
         double r2 = HackConfig.SUPPORT_RADIUS * HackConfig.SUPPORT_RADIUS;
         for (ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
             if (p == hacker) continue;
+            if (org.example.maniacrevolution.techies.TechiesManager.placing(p)) continue;
             if (p.level() != level) continue;
             if (!isSurvivorAdventure(p)) continue;
             if (p.position().distanceToSqr(center) <= r2) result.add(p);

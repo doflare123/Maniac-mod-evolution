@@ -1100,5 +1100,19 @@
   "character.maniacrev.scp_173.feature.0.name": "Held by gaze",
   "character.maniacrev.scp_173.feature.0.description": "A visible body part within 20 blocks and a 120° × 80° field of view holds the statue. Glass allows sight.",
   "character.maniacrev.scp_173.feature.1.name": "While observed",
-  "character.maniacrev.scp_173.feature.1.description": "Perks and abilities remain available. Gravity and external impulses still apply."
+  "character.maniacrev.scp_173.feature.1.description": "Perks and abilities remain available. Gravity and external impulses still apply.",
+  "character.maniacrev.techies.name": "Techies",
+  "death.attack.techies_mine": "%1$s was caught by a Techies mine",
+  "character.maniacrev.techies.description": "A sapper with three mine types, remote detonation and mana redistribution.",
+  "item.maniacrev.techies_helmet": "Techies Helmet",
+  "item.maniacrev.techies_remote": "Techies Remote",
+  "item.maniacrev.techies_mine_red": "Red Mine",
+  "item.maniacrev.techies_mine_green": "Green Mine",
+  "item.maniacrev.techies_mine_blue": "Blue Mine",
+  "hud.maniacrev.techies.red.ready": "Red mine ready",
+  "hud.maniacrev.techies.red.recharging": "Red mine recharging",
+  "hud.maniacrev.techies.green.ready": "Green mine ready",
+  "hud.maniacrev.techies.green.recharging": "Green mine recharging",
+  "hud.maniacrev.techies.blue.ready": "Blue mine ready",
+  "hud.maniacrev.techies.blue.recharging": "Blue mine recharging"
 }

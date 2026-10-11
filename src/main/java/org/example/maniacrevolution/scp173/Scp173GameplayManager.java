@@ -71,6 +71,14 @@ public final class Scp173GameplayManager {
         return observer != null && observer.player == p && observer.dimension == p.level().dimension()
                 && observer.state.remaining(p.level().getGameTime()) > 0;
     }
+    /** Techies mine counterplay retains the statue gaze gate and its existing melee cooldown. */
+    public static boolean tryMineAttack(ServerPlayer p) {
+        if (!Scp173Manager.active(p) || Scp173Manager.held(p) || p.containerMenu != p.inventoryMenu) return false;
+        var s = statue(p);
+        if (!s.state.melee(p.level().getGameTime())) return false;
+        send(p, null, s);
+        return true;
+    }
     public static int blackout(ServerPlayer p) {
         long now = p.level().getGameTime(), until = now;
         for (var s : STATUES.values()) if (s.dimension == p.level().dimension() && s.dimension == s.player.level().dimension()

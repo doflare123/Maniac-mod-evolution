@@ -27,6 +27,10 @@ final class CharacterLoadoutPreview {
         List<Entry> entries = new ArrayList<>();
 
         switch (character.getId()) {
+            case "techies" -> {
+                addDefined(entries, character, 0, new ItemStack(ModItems.TECHIES_HELMET.get()), Placement.HEAD, null);
+                addDefined(entries, character, 1, new ItemStack(ModItems.TECHIES_REMOTE.get()), Placement.MAIN_HAND, null);
+            }
             case "alchemist" -> {
                 addDefined(entries, character, 0, waterPotions(), Placement.OTHER, "Взрывное зелье воды");
                 add(entries, new ItemStack(Items.BLAZE_POWDER), "Огненный порошок",

@@ -197,6 +197,7 @@ public class GameManager {
 
     public static void startGame(CommandSourceStack source) {
         if (server == null) return;
+        org.example.maniacrevolution.techies.TechiesManager.resetMatch(server);
 
         // A new match always starts from the saved menu settings, even if a
         // datapack or a previous round left a paused countdown behind.
@@ -295,6 +296,7 @@ public class GameManager {
     }
 
     public static void stopGame(CommandSourceStack source) {
+        org.example.maniacrevolution.techies.TechiesManager.resetMatch(source.getServer());
         if (server != null) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 org.example.maniacrevolution.downed.DownedEventHandler.resetForMatch(player);

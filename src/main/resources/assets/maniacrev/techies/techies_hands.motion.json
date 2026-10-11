@@ -1,0 +1,1259 @@
+{
+  "format": "maniacrev.art_direction.motion.v1",
+  "runtime_parser": "none; implementation contract",
+  "interpolation": "linear",
+  "angles": "additive degrees; convert to radians for HumanoidModel",
+  "fp_units": "blocks in hand local PoseStack",
+  "recovery_seconds": 0.15,
+  "mirror": "main/support swap; negate yaw/roll and X translation for left-handed",
+  "channels": {
+    "install_red": {
+      "duration_seconds": 1,
+      "keys": [
+        {
+          "time": 0,
+          "weight": 0,
+          "main_arm_deg": [
+            0,
+            0,
+            0
+          ],
+          "support_arm_deg": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_translation": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_rotation_deg": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "time": 0.15,
+          "weight": 1,
+          "main_arm_deg": [
+            -48.0,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.1,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            12.0,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.35,
+          "weight": 1,
+          "main_arm_deg": [
+            -43.88550323395269,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.09294657697249033,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            14.938926261462367,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.55,
+          "weight": 1,
+          "main_arm_deg": [
+            -54.657395614066075,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.11141267819554185,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            7.244717418524231,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.75,
+          "weight": 1,
+          "main_arm_deg": [
+            -41.342604385933925,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.08858732180445816,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            16.755282581475768,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1,
+          "weight": 1,
+          "main_arm_deg": [
+            -48,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.1,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            12,
+            0,
+            -8
+          ]
+        }
+      ]
+    },
+    "install_green": {
+      "duration_seconds": 5,
+      "keys": [
+        {
+          "time": 0,
+          "weight": 0,
+          "main_arm_deg": [
+            0,
+            0,
+            0
+          ],
+          "support_arm_deg": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_translation": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_rotation_deg": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "time": 0.15,
+          "weight": 1,
+          "main_arm_deg": [
+            -48.0,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.1,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            12.0,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.35,
+          "weight": 1,
+          "main_arm_deg": [
+            -43.88550323395269,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.09294657697249033,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            14.938926261462367,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.55,
+          "weight": 1,
+          "main_arm_deg": [
+            -54.657395614066075,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.11141267819554185,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            7.244717418524231,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.75,
+          "weight": 1,
+          "main_arm_deg": [
+            -41.342604385933925,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.08858732180445816,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            16.755282581475768,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.95,
+          "weight": 1,
+          "main_arm_deg": [
+            -52.11449676604731,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10705342302750968,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            9.061073738537637,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1.15,
+          "weight": 1,
+          "main_arm_deg": [
+            -48.000000000000014,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10000000000000003,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            11.99999999999999,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1.35,
+          "weight": 1,
+          "main_arm_deg": [
+            -43.88550323395268,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.09294657697249033,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            14.938926261462367,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1.55,
+          "weight": 1,
+          "main_arm_deg": [
+            -54.657395614066075,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.11141267819554185,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            7.244717418524231,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1.75,
+          "weight": 1,
+          "main_arm_deg": [
+            -41.342604385933925,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.08858732180445816,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            16.755282581475768,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1.95,
+          "weight": 1,
+          "main_arm_deg": [
+            -52.11449676604729,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10705342302750964,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            9.061073738537651,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 2.15,
+          "weight": 1,
+          "main_arm_deg": [
+            -48.00000000000001,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10000000000000002,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            11.999999999999995,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 2.35,
+          "weight": 1,
+          "main_arm_deg": [
+            -43.88550323395266,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.09294657697249029,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            14.938926261462385,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 2.55,
+          "weight": 1,
+          "main_arm_deg": [
+            -54.657395614066075,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.11141267819554185,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            7.24471741852423,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 2.75,
+          "weight": 1,
+          "main_arm_deg": [
+            -41.342604385933946,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.08858732180445819,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            16.755282581475754,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 2.95,
+          "weight": 1,
+          "main_arm_deg": [
+            -52.1144967660473,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10705342302750967,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            9.06107373853764,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 3.15,
+          "weight": 1,
+          "main_arm_deg": [
+            -48.00000000000006,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.1000000000000001,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            11.999999999999957,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 3.35,
+          "weight": 1,
+          "main_arm_deg": [
+            -43.885503233952676,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.09294657697249031,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            14.938926261462372,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 3.55,
+          "weight": 1,
+          "main_arm_deg": [
+            -54.657395614066075,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.11141267819554185,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            7.24471741852423,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 3.75,
+          "weight": 1,
+          "main_arm_deg": [
+            -41.342604385933946,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.08858732180445819,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            16.755282581475754,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 3.95,
+          "weight": 1,
+          "main_arm_deg": [
+            -52.1144967660473,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10705342302750967,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            9.061073738537642,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 4.15,
+          "weight": 1,
+          "main_arm_deg": [
+            -48.000000000000064,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10000000000000012,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            11.999999999999954,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 4.35,
+          "weight": 1,
+          "main_arm_deg": [
+            -43.88550323395263,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.09294657697249024,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            14.938926261462402,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 4.55,
+          "weight": 1,
+          "main_arm_deg": [
+            -54.6573956140661,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.11141267819554188,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            7.244717418524218,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 4.75,
+          "weight": 1,
+          "main_arm_deg": [
+            -41.342604385933946,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.08858732180445819,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            16.755282581475754,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 5,
+          "weight": 1,
+          "main_arm_deg": [
+            -48,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.1,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            12,
+            0,
+            -8
+          ]
+        }
+      ]
+    },
+    "install_blue": {
+      "duration_seconds": 3,
+      "keys": [
+        {
+          "time": 0,
+          "weight": 0,
+          "main_arm_deg": [
+            0,
+            0,
+            0
+          ],
+          "support_arm_deg": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_translation": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_rotation_deg": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "time": 0.15,
+          "weight": 1,
+          "main_arm_deg": [
+            -48.0,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.1,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            12.0,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.35,
+          "weight": 1,
+          "main_arm_deg": [
+            -43.88550323395269,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.09294657697249033,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            14.938926261462367,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.55,
+          "weight": 1,
+          "main_arm_deg": [
+            -54.657395614066075,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.11141267819554185,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            7.244717418524231,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.75,
+          "weight": 1,
+          "main_arm_deg": [
+            -41.342604385933925,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.08858732180445816,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            16.755282581475768,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 0.95,
+          "weight": 1,
+          "main_arm_deg": [
+            -52.11449676604731,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10705342302750968,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            9.061073738537637,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1.15,
+          "weight": 1,
+          "main_arm_deg": [
+            -48.000000000000014,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10000000000000003,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            11.99999999999999,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1.35,
+          "weight": 1,
+          "main_arm_deg": [
+            -43.88550323395268,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.09294657697249033,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            14.938926261462367,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1.55,
+          "weight": 1,
+          "main_arm_deg": [
+            -54.657395614066075,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.11141267819554185,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            7.244717418524231,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1.75,
+          "weight": 1,
+          "main_arm_deg": [
+            -41.342604385933925,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.08858732180445816,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            16.755282581475768,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 1.95,
+          "weight": 1,
+          "main_arm_deg": [
+            -52.11449676604729,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10705342302750964,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            9.061073738537651,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 2.15,
+          "weight": 1,
+          "main_arm_deg": [
+            -48.00000000000001,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.10000000000000002,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            11.999999999999995,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 2.35,
+          "weight": 1,
+          "main_arm_deg": [
+            -43.88550323395266,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.09294657697249029,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            14.938926261462385,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 2.55,
+          "weight": 1,
+          "main_arm_deg": [
+            -54.657395614066075,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.11141267819554185,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            7.24471741852423,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 2.75,
+          "weight": 1,
+          "main_arm_deg": [
+            -41.342604385933946,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.08858732180445819,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            16.755282581475754,
+            0,
+            -8
+          ]
+        },
+        {
+          "time": 3,
+          "weight": 1,
+          "main_arm_deg": [
+            -48,
+            -12,
+            15
+          ],
+          "support_arm_deg": [
+            -62,
+            10,
+            -12
+          ],
+          "fp_main_translation": [
+            -0.06,
+            -0.1,
+            -0.12
+          ],
+          "fp_main_rotation_deg": [
+            12,
+            0,
+            -8
+          ]
+        }
+      ]
+    },
+    "remote_press": {
+      "duration_seconds": 0.3,
+      "keys": [
+        {
+          "time": 0,
+          "weight": 0,
+          "main_arm_deg": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_translation": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_rotation_deg": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "time": 0.05,
+          "weight": 1,
+          "main_arm_deg": [
+            -8,
+            0,
+            0
+          ],
+          "fp_main_translation": [
+            0,
+            -0.012,
+            -0.018
+          ],
+          "fp_main_rotation_deg": [
+            -5,
+            0,
+            0
+          ]
+        },
+        {
+          "time": 0.2,
+          "weight": 0,
+          "main_arm_deg": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_translation": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_rotation_deg": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "time": 0.3,
+          "weight": 0,
+          "main_arm_deg": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_translation": [
+            0,
+            0,
+            0
+          ],
+          "fp_main_rotation_deg": [
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  }
+}

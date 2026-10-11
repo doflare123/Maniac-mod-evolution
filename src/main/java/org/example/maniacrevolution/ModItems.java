@@ -23,6 +23,12 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, Maniacrev.MODID);
 
+    public static final RegistryObject<Item> TECHIES_HELMET = ITEMS.register("techies_helmet", () -> new org.example.maniacrevolution.techies.TechiesItem("techies_helmet"));
+    public static final RegistryObject<Item> TECHIES_REMOTE = ITEMS.register("techies_remote", () -> new org.example.maniacrevolution.techies.TechiesItem("techies_remote"));
+    public static final RegistryObject<Item> TECHIES_MINE_RED = ITEMS.register("techies_mine_red", () -> new org.example.maniacrevolution.techies.TechiesItem("techies_mine_red"));
+    public static final RegistryObject<Item> TECHIES_MINE_GREEN = ITEMS.register("techies_mine_green", () -> new org.example.maniacrevolution.techies.TechiesItem("techies_mine_green"));
+    public static final RegistryObject<Item> TECHIES_MINE_BLUE = ITEMS.register("techies_mine_blue", () -> new org.example.maniacrevolution.techies.TechiesItem("techies_mine_blue"));
+
     public static final RegistryObject<Item> SHOP_TOKEN = ITEMS.register("shop_token",
             () -> new ShopOpenItem(new Item.Properties().stacksTo(1)));
 

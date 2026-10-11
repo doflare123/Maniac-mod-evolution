@@ -285,6 +285,10 @@ public class HackManager {
      * Если сессии нет — создаём. Если уже взломан — ничего.
      */
     public void onPlayerActivate(ServerPlayer player, BlockPos pos, int computerId) {
+        if (org.example.maniacrevolution.techies.TechiesManager.placing(player)) {
+            player.displayClientMessage(net.minecraft.network.chat.Component.literal("Сначала завершите установку мины"), true);
+            return;
+        }
         // Уже взломан?
         if (Boolean.TRUE.equals(hackedComputers.get(computerId))) {
             player.displayClientMessage(
