@@ -114,9 +114,18 @@ tasks.register('verifyGameSettings', JavaExec) {
     mainClass = 'org.example.maniacrevolution.settings.GameSettingsTest'
 }
 
+tasks.register('verifyPlayerDataSync', JavaExec) {
+    group = 'verification'
+    description = 'Checks player snapshot suppression and active charge synchronization.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.network.packets.PlayerDataSyncTest'
+}
+
 tasks.named('check') {
     dependsOn tasks.named('verifyNightmareSync')
     dependsOn tasks.named('verifyGameSettings')
+    dependsOn tasks.named('verifyPlayerDataSync')
 }
 // ──────────────────────────────────────────────────────────────────
 

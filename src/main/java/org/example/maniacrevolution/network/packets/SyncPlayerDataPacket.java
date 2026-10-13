@@ -115,6 +115,22 @@ public class SyncPlayerDataPacket {
         }
     }
 
+    /** Active charges need a clock refresh even when their server timer is paused. */
+    public boolean needsPeriodicSync(SyncPlayerDataPacket previous) {
+        if (previous == null || level != previous.level || experience != previous.experience
+                || expForNext != previous.expForNext || coins != previous.coins
+                || activePerkIndex != previous.activePerkIndex || maxPresets != previous.maxPresets
+                || !selectedPerks.equals(previous.selectedPerks) || !presets.equals(previous.presets)
+                || !purchasedCosmetics.equals(previous.purchasedCosmetics)
+                || !enabledCosmetics.equals(previous.enabledCosmetics)) {
+            return true;
+        }
+        for (PerkSyncData perk : selectedPerks) {
+            if (perk.chargeCount() > 0 && perk.chargeRemaining() > 0) return true;
+        }
+        return false;
+    }
+
     public static SyncPlayerDataPacket decode(FriendlyByteBuf buf) {
         int level = buf.readInt();
         int exp = buf.readInt();
@@ -176,5 +192,9 @@ public class SyncPlayerDataPacket {
     public record PerkSyncData(String id, int cooldown, int maxCooldown, int typeOrdinal,
                                float manaCost, int chargeCount, int chargeRemaining,
                                int chargeDuration) {}
-    public record PresetSyncData(String name, List<String> perkIds) {}
+    public record PresetSyncData(String name, List<String> perkIds) {
+        public PresetSyncData {
+            perkIds = List.copyOf(perkIds);
+        }
+    }
 }

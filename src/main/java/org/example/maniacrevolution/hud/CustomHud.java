@@ -93,6 +93,17 @@ public class CustomHud implements IGuiOverlay {
 
     private static final long ITEM_NAME_DURATION_MS = 1500L;
     private static final long ITEM_NAME_FADE_MS = 400L;
+    private static final int CIRCLE_SEGMENTS = 64;
+    private static final double[] CIRCLE_COS = new double[CIRCLE_SEGMENTS];
+    private static final double[] CIRCLE_SIN = new double[CIRCLE_SEGMENTS];
+
+    static {
+        for (int i = 0; i < CIRCLE_SEGMENTS; i++) {
+            double angle = -Math.PI / 2.0 + Math.PI * 2.0 * i / CIRCLE_SEGMENTS;
+            CIRCLE_COS[i] = Math.cos(angle);
+            CIRCLE_SIN[i] = Math.sin(angle);
+        }
+    }
     private static int activePerkCenterX = Integer.MIN_VALUE;
     private static int activePerkCenterY = Integer.MIN_VALUE;
 
@@ -772,16 +783,15 @@ public class CustomHud implements IGuiOverlay {
 
     private void renderCircularProgress(GuiGraphics gui, int x, int y, int size,
                                         float progress, int color, int thickness) {
-        int segments = 64;
+        int segments = CIRCLE_SEGMENTS;
         int visibleSegments = Math.round(segments * Mth.clamp(progress, 0.0f, 1.0f));
         double radius = size / 2.0 - 0.75;
         double center = (size - 1) / 2.0;
         for (int inset = 0; inset < thickness; inset++) {
             double ringRadius = radius - inset;
             for (int i = 0; i < visibleSegments; i++) {
-                double angle = -Math.PI / 2.0 + Math.PI * 2.0 * i / segments;
-                int pointX = x + (int) Math.round(center + Math.cos(angle) * ringRadius);
-                int pointY = y + (int) Math.round(center + Math.sin(angle) * ringRadius);
+                int pointX = x + (int) Math.round(center + CIRCLE_COS[i] * ringRadius);
+                int pointY = y + (int) Math.round(center + CIRCLE_SIN[i] * ringRadius);
                 gui.fill(pointX, pointY, pointX + 1, pointY + 1, color);
             }
         }

@@ -89,10 +89,10 @@ public class FNAFGeneratorBlockEntity extends BlockEntity {
         // Сохраняем изменения и синхронизируем
         if (stateChanged) {
             setChanged();
-            level.sendBlockUpdated(pos, state, state, 3);
 
             // Синхронизируем с клиентами каждую секунду (20 тиков)
             if (charge % 20 == 0) {
+                level.sendBlockUpdated(pos, state, state, 3);
                 syncToClients(level, pos);
             }
         }

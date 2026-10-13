@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PlayerDataManager {
     private static final Map<UUID, PlayerData> PLAYER_DATA = new ConcurrentHashMap<>();
     private static MinecraftServer server;
+    private static final Map<UUID, SyncPlayerDataPacket> LAST_SYNC = new HashMap<>();
 
     // ФИКС: Счётчик для периодической синхронизации кулдаунов
     private static int syncTickCounter = 0;
@@ -42,10 +43,15 @@ public class PlayerDataManager {
 
     public static void syncToClient(ServerPlayer player) {
         PlayerData data = get(player);
+        sendSnapshot(player, new SyncPlayerDataPacket(data));
+    }
+
+    private static void sendSnapshot(ServerPlayer player, SyncPlayerDataPacket snapshot) {
         ModNetworking.CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> player),
-                new SyncPlayerDataPacket(data)
+                snapshot
         );
+        LAST_SYNC.put(player.getUUID(), snapshot);
     }
 
     public static void syncClassToClient(ServerPlayer player) {
@@ -154,6 +160,7 @@ public class PlayerDataManager {
             if (data != null) {
                 data.clearPerks(player);
             }
+            LAST_SYNC.remove(player.getUUID());
         }
     }
 
@@ -184,7 +191,10 @@ public class PlayerDataManager {
 
                 // ФИКС: Периодически синхронизируем кулдауны с клиентом
                 if (shouldSync && !data.getSelectedPerks().isEmpty()) {
-                    syncToClient(player);
+                    SyncPlayerDataPacket snapshot = new SyncPlayerDataPacket(data);
+                    if (snapshot.needsPeriodicSync(LAST_SYNC.get(player.getUUID()))) {
+                        sendSnapshot(player, snapshot);
+                    }
                 }
             }
         }
@@ -193,6 +203,7 @@ public class PlayerDataManager {
     public static void load(MinecraftServer srv) {
         server = srv;
         PLAYER_DATA.clear();
+        LAST_SYNC.clear();
         syncTickCounter = 0;
 
         File file = getDataFile(srv);
@@ -237,6 +248,7 @@ public class PlayerDataManager {
     public static void shutdown() {
         server = null;
         PLAYER_DATA.clear();
+        LAST_SYNC.clear();
         syncTickCounter = 0;
     }
 
