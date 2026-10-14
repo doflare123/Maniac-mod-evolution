@@ -9,6 +9,8 @@ import org.lwjgl.glfw.GLFW;
 
 public class ModKeybinds {
     public static final String CATEGORY = "key.categories.maniacrev";
+    public static final KeyMapping HELSING_SWITCH_BOLT = new KeyMapping("key.maniacrev.helsing_switch_bolt",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C, CATEGORY);
 
     // ФИКС: Инициализируем СРАЗУ при объявлении, а не в методе
     public static final KeyMapping OPEN_GUIDE = new KeyMapping(
@@ -91,6 +93,7 @@ public class ModKeybinds {
     // Регистрация в Forge event
     public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(OPEN_GUIDE);
+        event.register(HELSING_SWITCH_BOLT);
         event.register(ACTIVATE_PERK);
         event.register(SWITCH_PERK);
         event.register(QTE_KEY_1);

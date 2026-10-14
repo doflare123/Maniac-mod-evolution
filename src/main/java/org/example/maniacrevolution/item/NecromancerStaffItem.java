@@ -57,7 +57,7 @@ public class NecromancerStaffItem extends Item {
 
             // Проверяем ману
             boolean hasMana = player.getCapability(ManaProvider.MANA).map(mana ->
-                    mana.getMana() >= MANA_COST
+                    mana.hasEnoughMana(MANA_COST)
             ).orElse(false);
 
             if (!hasMana) {

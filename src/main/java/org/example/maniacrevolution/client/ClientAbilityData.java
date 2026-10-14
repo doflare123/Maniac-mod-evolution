@@ -26,6 +26,8 @@ public class ClientAbilityData {
         }
 
         public int getCooldownSeconds() {
+            var player = net.minecraft.client.Minecraft.getInstance().player;
+            if (player != null && org.example.maniacrevolution.helsing.HelsingManager.isFrozen(player)) return cooldownSeconds;
             long elapsed = (System.currentTimeMillis() - lastUpdateTime) / 1000;
             return Math.max(0, cooldownSeconds - (int)elapsed);
         }

@@ -11,6 +11,15 @@ public class ModEffects {
     public static final DeferredRegister<MobEffect> MOB_EFFECTS =
             DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, "maniacrev");
 
+    public static final RegistryObject<MobEffect> HELSING_PROTECTION = MOB_EFFECTS.register("helsing_protection",
+            () -> new org.example.maniacrevolution.helsing.HelsingEffect(MobEffectCategory.BENEFICIAL, 0xCE3853));
+    public static final RegistryObject<MobEffect> HELSING_WEAKNESS = MOB_EFFECTS.register("helsing_weakness",
+            () -> new org.example.maniacrevolution.helsing.HelsingEffect(MobEffectCategory.HARMFUL, 0x9D496D));
+    public static final RegistryObject<MobEffect> HELSING_FREEZE = MOB_EFFECTS.register("helsing_freeze",
+            () -> new org.example.maniacrevolution.helsing.HelsingEffect(MobEffectCategory.HARMFUL, 0x66D5EA));
+    public static final RegistryObject<MobEffect> HELSING_RUNE = MOB_EFFECTS.register("helsing_rune",
+            () -> new org.example.maniacrevolution.helsing.HelsingEffect(MobEffectCategory.HARMFUL, 0xAC7BEC));
+
     public static final RegistryObject<MobEffect> FEAR = MOB_EFFECTS.register(
             "fear",
             FearEffect::new

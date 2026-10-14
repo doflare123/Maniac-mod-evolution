@@ -34,6 +34,15 @@ public class HookItem extends SwordItem implements IItemWithAbility {
     // ИСПРАВЛЕНО: Используем timestamp вместо тиков
     private static final Map<UUID, CooldownData> cooldowns = new HashMap<>();
 
+    public static void pauseCooldown(ServerPlayer player, long elapsedMillis) {
+        CooldownData data = cooldowns.get(player.getUUID());
+        if (data != null && System.currentTimeMillis() - data.timestamp - elapsedMillis < data.durationTicks * 50L) {
+            data.timestamp = org.example.maniacrevolution.helsing.HelsingTiming.pauseStart(
+                    data.timestamp, data.durationTicks * 50L, System.currentTimeMillis(), elapsedMillis);
+            player.getCooldowns().addCooldown(org.example.maniacrevolution.ModItems.HOOK.get(), Math.max(1, data.getRemaining()));
+        }
+    }
+
     private static class CooldownData {
         long timestamp;
         int durationTicks;

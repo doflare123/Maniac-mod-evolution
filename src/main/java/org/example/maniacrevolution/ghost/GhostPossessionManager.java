@@ -205,6 +205,15 @@ public class GhostPossessionManager {
         return until <= now ? 0 : (int) ((until - now + 19) / 20);
     }
 
+    public static void pauseCooldown(ServerPlayer player) {
+        long now = player.server.getTickCount();
+        Long until = COOLDOWN_UNTIL.get(player.getUUID());
+        if (until != null && until >= now) {
+            COOLDOWN_UNTIL.put(player.getUUID(), until + 1);
+            player.getCooldowns().addCooldown(ModItems.GHOST_HAND.get(), (int) Math.max(1, until + 1 - now));
+        }
+    }
+
     public static void resetGhostState(ServerPlayer player) {
         releasePossession(player, "сброс");
         ACTIVE_POSSESSIONS.remove(player.getUUID());

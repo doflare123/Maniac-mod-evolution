@@ -8,6 +8,11 @@ public class ManaData {
     private float baseRegenRate; // Базовая регенерация маны в секунду
     private float bonusRegenRate; // Бонусная регенерация (от эффектов)
     private boolean passiveRegenEnabled; // Включена ли пассивная регенерация
+    private java.util.function.DoubleSupplier costMultiplier = () -> 1.0;
+
+    public void setCostMultiplier(java.util.function.DoubleSupplier supplier) { costMultiplier = supplier; }
+    public float abilityCost(float amount) { return amount * (float) costMultiplier.getAsDouble(); }
+    public boolean hasEnoughMana(float amount) { return mana >= abilityCost(amount); }
 
     public ManaData(float maxMana, float baseRegenRate) {
         this.maxMana = maxMana;
@@ -80,6 +85,11 @@ public class ManaData {
     }
 
     public boolean consumeMana(float amount) {
+        return consumeRawMana(abilityCost(amount));
+    }
+
+    /** External drains are not ability activations and do not pay the rune surcharge. */
+    public boolean consumeRawMana(float amount) {
         if (mana >= amount) {
             mana -= amount;
             return true;

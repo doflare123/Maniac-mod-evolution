@@ -22,6 +22,19 @@ public class ArmorAbilityCooldownManager {
     // Кэш кулдаунов на сервере (для оптимизации)
     private static final Map<UUID, Map<Item, CooldownData>> cooldownCache = new HashMap<>();
 
+    public static void pauseCooldowns(ServerPlayer player, long elapsedMillis) {
+        CompoundTag nbt = player.getPersistentData();
+        for (String key : new java.util.ArrayList<>(nbt.getAllKeys())) {
+            if (key.startsWith(NBT_KEY_TIMESTAMP_PREFIX)) {
+                String durationKey = NBT_KEY_PREFIX + key.substring(NBT_KEY_TIMESTAMP_PREFIX.length());
+                long timestamp = nbt.getLong(key);
+                nbt.putLong(key, org.example.maniacrevolution.helsing.HelsingTiming.pauseStart(
+                        timestamp, nbt.getInt(durationKey) * 50L, System.currentTimeMillis(), elapsedMillis));
+            }
+        }
+        cooldownCache.remove(player.getUUID());
+    }
+
     // НОВОЕ: Класс для хранения данных кулдауна
     private static class CooldownData {
         long timestamp; // Время в миллисекундах когда был установлен кулдаун

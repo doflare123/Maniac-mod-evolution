@@ -155,7 +155,7 @@ public class PerkInstance {
         tickCharges(player);
 
         // Уменьшаем кулдаун
-        if (cooldownRemaining > 0) {
+        if (cooldownRemaining > 0 && !org.example.maniacrevolution.helsing.HelsingManager.isFrozen(player)) {
             cooldownRemaining--;
         }
 
@@ -265,7 +265,7 @@ public class PerkInstance {
         }
 
         // Активация
-        perk.consumeMana(player); // тратим ману
+        if (!perk.consumeMana(player)) return ActivationResult.NOT_ENOUGH_MANA;
         perk.onActivate(player);
         startCooldown();
         return ActivationResult.SUCCESS;

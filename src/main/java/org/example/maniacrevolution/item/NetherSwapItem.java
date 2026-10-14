@@ -101,11 +101,7 @@ public class NetherSwapItem extends Item implements IItemWithAbility {
 
         // Проверяем ману
         boolean hasEnoughMana = player.getCapability(ManaProvider.MANA).map(mana -> {
-            if (mana.getMana() >= MANA_COST) {
-                mana.setMana(mana.getMana() - MANA_COST);
-                return true;
-            }
-            return false;
+            return mana.consumeMana(MANA_COST);
         }).orElse(false);
 
         if (!hasEnoughMana) {
@@ -136,6 +132,7 @@ public class NetherSwapItem extends Item implements IItemWithAbility {
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
         if (level.isClientSide()) return;
+        if (entity instanceof Player p && org.example.maniacrevolution.helsing.HelsingManager.isFrozen(p)) return;
         int cd = getCooldownTicks(stack);
         if (cd > 0) setCooldownTicks(stack, cd - 1);
     }

@@ -23,6 +23,19 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, Maniacrev.MODID);
 
+    public static final RegistryObject<Item> HELSING_CROSSBOW = ITEMS.register("helsing_crossbow",
+            org.example.maniacrevolution.helsing.HelsingCrossbowItem::new);
+    public static final RegistryObject<Item> HELSING_HAT = ITEMS.register("helsing_hat",
+            org.example.maniacrevolution.helsing.HelsingHatItem::new);
+    public static final RegistryObject<Item> HELSING_IRON_BOLT = ITEMS.register("helsing_iron_bolt",
+            () -> new org.example.maniacrevolution.helsing.HelsingBoltItem(org.example.maniacrevolution.helsing.HelsingBoltItem.Kind.IRON));
+    public static final RegistryObject<Item> HELSING_RUNE_BOLT = ITEMS.register("helsing_rune_bolt",
+            () -> new org.example.maniacrevolution.helsing.HelsingBoltItem(org.example.maniacrevolution.helsing.HelsingBoltItem.Kind.RUNE));
+    public static final RegistryObject<Item> HELSING_SILVER_BOLT = ITEMS.register("helsing_silver_bolt",
+            () -> new org.example.maniacrevolution.helsing.HelsingBoltItem(org.example.maniacrevolution.helsing.HelsingBoltItem.Kind.SILVER));
+    public static final RegistryObject<Item> HELSING_ENCHANTED_BOLT = ITEMS.register("helsing_enchanted_bolt",
+            () -> new org.example.maniacrevolution.helsing.HelsingBoltItem(org.example.maniacrevolution.helsing.HelsingBoltItem.Kind.ENCHANTED));
+
     public static final RegistryObject<Item> SHOP_TOKEN = ITEMS.register("shop_token",
             () -> new ShopOpenItem(new Item.Properties().stacksTo(1)));
 

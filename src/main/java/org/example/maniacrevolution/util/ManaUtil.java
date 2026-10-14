@@ -20,8 +20,9 @@ public class ManaUtil {
 
         boolean[] success = {false};
         player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
+            float before = mana.getMana();
             if (mana.consumeMana(amount)) {
-                org.example.maniacrevolution.stats.StatsManager.count((ServerPlayer) player, "mana_spent_via_util", amount);
+                org.example.maniacrevolution.stats.StatsManager.count((ServerPlayer) player, "mana_spent_via_util", before - mana.getMana());
                 success[0] = true;
                 // Синхронизируем с клиентом
                 syncManaToClient((ServerPlayer) player, mana);
@@ -108,7 +109,7 @@ public class ManaUtil {
      * Проверить, достаточно ли маны
      */
     public static boolean hasMana(Player player, float amount) {
-        return getMana(player) >= amount;
+        return player.getCapability(ManaProvider.MANA).map(m -> m.hasEnoughMana(amount)).orElse(false);
     }
 
     /**

@@ -142,8 +142,7 @@ public class EjectionPerk extends Perk {
     public void onTrigger(ServerPlayer player) {
         // Проверяем ману
         boolean hasMana = player.getCapability(ManaProvider.MANA).map(mana -> {
-            if (mana.getMana() >= MANA_COST) {
-                mana.consumeMana(MANA_COST);
+            if (mana.consumeMana(MANA_COST)) {
                 ModNetworking.sendToPlayer(
                         new SyncManaPacket(mana.getMana(), mana.getMaxMana(), mana.getTotalRegenRate()),
                         player);

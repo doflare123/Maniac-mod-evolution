@@ -71,7 +71,7 @@ public class ManaBreakPerk extends Perk {
 
         victim.getCapability(ManaProvider.MANA).ifPresent(mana -> {
             float before = mana.getMana();
-            mana.consumeMana(MANA_DRAIN);
+            mana.consumeRawMana(MANA_DRAIN);
             float drained = before - mana.getMana();
 
             victim.displayClientMessage(

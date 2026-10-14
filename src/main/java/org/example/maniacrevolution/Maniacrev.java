@@ -80,6 +80,9 @@ public class Maniacrev {
 
     public Maniacrev() {
         GeckoLib.initialize();
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                net.minecraftforge.fml.config.ModConfig.Type.SERVER,
+                org.example.maniacrevolution.helsing.HelsingConfig.SPEC, "maniacrev-helsing.toml");
 
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
@@ -217,6 +220,7 @@ public class Maniacrev {
 
         @SubscribeEvent
         public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerEntityRenderer(ModEntities.HELSING_BOLT.get(), org.example.maniacrevolution.helsing.HelsingBoltRenderer::new);
             event.registerEntityRenderer(ModEntities.HOOK.get(), HookRenderer::new);
             event.registerEntityRenderer(ModEntities.SHAMAN_TOTEM.get(), TotemRenderer::new);
             event.registerEntityRenderer(ModEntities.FORGET_ME_NOT.get(), ForgetMeNotRenderer::new);

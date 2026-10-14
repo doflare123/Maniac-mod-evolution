@@ -172,7 +172,7 @@ public class CustomHud implements IGuiOverlay {
             timedEffectPlayer = player.getUUID();
         }
 
-        List<MobEffectInstance> allEffects = player.getActiveEffects().stream()
+        List<MobEffectInstance> allEffects = org.example.maniacrevolution.helsing.HelsingClient.displayedEffects(player)
                 .filter(CustomHud::isVisibleTimedEffect)
                 .sorted(Comparator
                         .comparingInt(CustomHud::getTimedEffectPriority)
@@ -277,7 +277,7 @@ public class CustomHud implements IGuiOverlay {
     public static int getTimedEffectSectionHeight(Player player) {
         if (player == null) return 0;
         int effectCount = (int) Math.min(MAX_VISIBLE_TIMED_EFFECTS,
-                player.getActiveEffects().stream().filter(CustomHud::isVisibleTimedEffect).count());
+                org.example.maniacrevolution.helsing.HelsingClient.displayedEffects(player).filter(CustomHud::isVisibleTimedEffect).count());
         if (effectCount == 0) return 0;
         int rowCount = (effectCount + MAX_TIMED_EFFECTS_PER_ROW - 1)
                 / MAX_TIMED_EFFECTS_PER_ROW;
@@ -438,8 +438,9 @@ public class CustomHud implements IGuiOverlay {
             String cooldown = perk.getCooldownSeconds() + "с";
             drawCentered(gui, cooldown, x, y + 8, PERK_ICON_SIZE, 0xFFFFFFFF);
         } else if (perk.hasManaCost()) {
-            String cost = Integer.toString((int) perk.manaCost());
-            int color = ClientManaData.getMana() >= perk.manaCost() ? 0xFF9ED7FF : 0xFFFF7777;
+            float actualCost = perk.manaCost() * org.example.maniacrevolution.helsing.HelsingManager.costMultiplier(Minecraft.getInstance().player);
+            String cost = Integer.toString((int) actualCost);
+            int color = ClientManaData.getMana() >= actualCost ? 0xFF9ED7FF : 0xFFFF7777;
             gui.drawString(mc.font, cost, x + PERK_ICON_SIZE - mc.font.width(cost) - 1,
                     y + PERK_ICON_SIZE - 10, color, true);
         }
@@ -551,8 +552,9 @@ public class CustomHud implements IGuiOverlay {
             drawCentered(gui, ability.getCooldownSeconds(player) + "с", x, y + 8,
                     ABILITY_ICON_SIZE, 0xFFFFFFFF);
         } else if (ability.getManaCost() > 0.0f) {
-            String cost = Integer.toString(Math.round(ability.getManaCost()));
-            int color = ClientManaData.getMana() >= ability.getManaCost() ? 0xFF9ED7FF : 0xFFFF7777;
+            float actualCost = ability.getManaCost() * org.example.maniacrevolution.helsing.HelsingManager.costMultiplier(player);
+            String cost = Integer.toString(Math.round(actualCost));
+            int color = ClientManaData.getMana() >= actualCost ? 0xFF9ED7FF : 0xFFFF7777;
             gui.drawString(mc.font, cost, x + ABILITY_ICON_SIZE - mc.font.width(cost) - 1,
                     y + ABILITY_ICON_SIZE - 10, color, true);
         }

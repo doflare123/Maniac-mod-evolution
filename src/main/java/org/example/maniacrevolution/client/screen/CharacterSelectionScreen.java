@@ -45,6 +45,7 @@ public class CharacterSelectionScreen extends Screen {
             Map.entry("dodepovich", new FrescoDimensions(887, 1774)),
             Map.entry("freddy_bear", new FrescoDimensions(452, 904)),
             Map.entry("ghost", new FrescoDimensions(377, 950)),
+            Map.entry("helsing", new FrescoDimensions(384, 768)),
             Map.entry("keeper_of_nightmares", new FrescoDimensions(941, 1672)),
             Map.entry("mefedronshchik", new FrescoDimensions(442, 972)),
             Map.entry("necromancer", new FrescoDimensions(436, 910)),

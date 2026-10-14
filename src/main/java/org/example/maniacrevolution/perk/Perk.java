@@ -202,11 +202,7 @@ public abstract class Perk {
     public boolean consumeMana(ServerPlayer player) {
         if (manaCost <= 0) return true;
         return player.getCapability(ManaProvider.MANA).map(mana -> {
-            if (mana.getMana() >= manaCost) {
-                mana.consumeMana(manaCost);
-                return true;
-            }
-            return false;
+            return mana.consumeMana(manaCost);
         }).orElse(false);
     }
 
@@ -214,7 +210,7 @@ public abstract class Perk {
     public boolean hasMana(ServerPlayer player) {
         if (manaCost <= 0) return true;
         return player.getCapability(ManaProvider.MANA)
-                .map(m -> m.getMana() >= manaCost)
+                .map(m -> m.hasEnoughMana(manaCost))
                 .orElse(false);
     }
 }

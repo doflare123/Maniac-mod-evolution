@@ -48,9 +48,9 @@ public class ManaEvents {
 
     @SubscribeEvent
     public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getObject() instanceof Player) {
+        if (event.getObject() instanceof Player player) {
             if (!event.getObject().getCapability(ManaProvider.MANA).isPresent()) {
-                event.addCapability(new ResourceLocation(Maniacrev.MODID, "mana"), new ManaProvider());
+                event.addCapability(new ResourceLocation(Maniacrev.MODID, "mana"), new ManaProvider(player));
             }
         }
     }

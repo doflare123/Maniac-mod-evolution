@@ -64,6 +64,13 @@ public class Config
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)
     {
+        // Other specs (including Helsing's server config) and unload events
+        // must not read values from this spec while it is unbound.
+        if (!(event instanceof ModConfigEvent.Loading || event instanceof ModConfigEvent.Reloading)
+                || event.getConfig().getSpec() != SPEC) {
+            return;
+        }
+
         logDirtBlock = LOG_DIRT_BLOCK.get();
         magicNumber = MAGIC_NUMBER.get();
         magicNumberIntroduction = MAGIC_NUMBER_INTRODUCTION.get();

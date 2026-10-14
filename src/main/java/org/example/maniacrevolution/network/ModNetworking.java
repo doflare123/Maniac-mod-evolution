@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "6";
+    private static final String PROTOCOL_VERSION = "8";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -31,6 +31,14 @@ public class ModNetworking {
     private static int packetId = 0;
 
     public static void register() {
+        CHANNEL.messageBuilder(org.example.maniacrevolution.helsing.HelsingStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(org.example.maniacrevolution.helsing.HelsingStatePacket::encode)
+                .decoder(org.example.maniacrevolution.helsing.HelsingStatePacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.helsing.HelsingStatePacket::handle).add();
+        CHANNEL.messageBuilder(org.example.maniacrevolution.helsing.SelectHelsingBoltPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(org.example.maniacrevolution.helsing.SelectHelsingBoltPacket::encode)
+                .decoder(org.example.maniacrevolution.helsing.SelectHelsingBoltPacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.helsing.SelectHelsingBoltPacket::handle).add();
         // Server -> Client
         CHANNEL.messageBuilder(SyncPlayerDataPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(SyncPlayerDataPacket::encode)

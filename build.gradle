@@ -122,10 +122,19 @@ tasks.register('verifyPlayerDataSync', JavaExec) {
     mainClass = 'org.example.maniacrevolution.network.packets.PlayerDataSyncTest'
 }
 
+tasks.register('verifyHelsing', JavaExec) {
+    group = 'verification'
+    description = 'Checks Helsing rune costs, cooldown freezing and prey acquisition.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.helsing.HelsingMechanicsTest'
+}
+
 tasks.named('check') {
     dependsOn tasks.named('verifyNightmareSync')
     dependsOn tasks.named('verifyGameSettings')
     dependsOn tasks.named('verifyPlayerDataSync')
+    dependsOn tasks.named('verifyHelsing')
 }
 // ──────────────────────────────────────────────────────────────────
 

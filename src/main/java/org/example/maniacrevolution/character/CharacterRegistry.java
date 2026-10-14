@@ -22,6 +22,7 @@ public class CharacterRegistry {
         // Регистрация выживших
         register(new AlchemistClass());
         register(new ShamanClass());
+        register(new HelsingClass());
         register(new MefedronshchikClass());
         register(new ScientistClass());
         register(new DodepovichClass());

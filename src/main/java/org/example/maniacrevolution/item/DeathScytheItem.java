@@ -47,6 +47,12 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
     private static final float MANA_COST = 7.0f;
     // Кулдауны телепортации для каждого игрока
     private static final Map<UUID, Long> teleportCooldowns = new HashMap<>();
+
+    public static void pauseCooldown(UUID id, long elapsedMillis) {
+        Long start = teleportCooldowns.get(id);
+        if (start != null) teleportCooldowns.put(id, org.example.maniacrevolution.helsing.HelsingTiming.pauseStart(
+                start, TELEPORT_COOLDOWN, System.currentTimeMillis(), elapsedMillis));
+    }
     private static final Map<UUID, PendingTeleport> pendingTeleports = new HashMap<>();
     /** 4.25 s death_embrace + 1.4 s release from bone_arms.animation.json. */
     public static final int TELEPORT_WINDUP_TICKS = 113;
@@ -108,6 +114,11 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
             return false;
         }
 
+        if (!ManaUtil.consumeMana(death, MANA_COST)) {
+            death.displayClientMessage(Component.translatable("message.maniacrev.not_enough_mana", (int) MANA_COST), true);
+            return false;
+        }
+
         // Сохраняем старую позицию для анимации
         Vec3 startPos = death.position();
 
@@ -128,7 +139,6 @@ public class DeathScytheItem extends SwordItem implements IItemWithAbility {
         // Звуковые эффекты
         death.level().playSound(null, startPos.x, startPos.y, startPos.z,
                 SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 0.8F);
-        ManaUtil.consumeMana(death, MANA_COST);
 
         death.displayClientMessage(
                 Component.literal("§5Вы готовитесь явиться к " + target.getName().getString()),

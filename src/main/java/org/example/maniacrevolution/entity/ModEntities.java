@@ -14,6 +14,14 @@ import org.example.maniacrevolution.Maniacrev;
 public class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES =
             DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Maniacrev.MODID);
+    public static final RegistryObject<EntityType<org.example.maniacrevolution.helsing.HelsingBoltEntity>> HELSING_BOLT =
+            registerHelsingBolt();
+
+    private static RegistryObject<EntityType<org.example.maniacrevolution.helsing.HelsingBoltEntity>> registerHelsingBolt() {
+        return ENTITIES.register("helsing_bolt", () -> EntityType.Builder
+                .<org.example.maniacrevolution.helsing.HelsingBoltEntity>of(org.example.maniacrevolution.helsing.HelsingBoltEntity::new, MobCategory.MISC)
+                .sized(0.25F, 0.25F).clientTrackingRange(64).updateInterval(1).build("helsing_bolt"));
+    }
 
     public static final RegistryObject<EntityType<MimicBlockEntity>> MIMIC_BLOCK =
             ENTITIES.register("mimic_block", () ->

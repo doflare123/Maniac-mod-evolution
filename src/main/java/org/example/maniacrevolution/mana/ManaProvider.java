@@ -15,11 +15,15 @@ public class ManaProvider implements ICapabilityProvider, INBTSerializable<Compo
     public static Capability<ManaData> MANA = CapabilityManager.get(new CapabilityToken<>() {});
 
     private ManaData manaData = null;
+    private net.minecraft.world.entity.player.Player owner;
+    public ManaProvider() {}
+    public ManaProvider(net.minecraft.world.entity.player.Player owner) { this.owner = owner; }
     private final LazyOptional<ManaData> optional = LazyOptional.of(this::createManaData);
 
     private ManaData createManaData() {
         if (this.manaData == null) {
             this.manaData = new ManaData();
+            this.manaData.setCostMultiplier(() -> owner == null ? 1.0 : org.example.maniacrevolution.helsing.HelsingManager.costMultiplier(owner));
         }
         return this.manaData;
     }

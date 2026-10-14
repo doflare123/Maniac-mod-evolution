@@ -453,6 +453,9 @@ public class ModCommands {
             if (GhostLoadoutManager.isGhostClass(player)) {
                 GhostLoadoutManager.refreshGhostLoadout(player);
             }
+            if (org.example.maniacrevolution.helsing.HelsingManager.isHelsing(player)) {
+                org.example.maniacrevolution.helsing.HelsingLoadout.equip(player);
+            }
         }
 
         ctx.getSource().sendSuccess(() ->

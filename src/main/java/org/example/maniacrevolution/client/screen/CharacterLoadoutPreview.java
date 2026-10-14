@@ -27,6 +27,12 @@ final class CharacterLoadoutPreview {
         List<Entry> entries = new ArrayList<>();
 
         switch (character.getId()) {
+            case "helsing" -> {
+                addDefined(entries, character, 0, new ItemStack(ModItems.HELSING_CROSSBOW.get()), Placement.MAIN_HAND, null);
+                addDefined(entries, character, 1, new ItemStack(ModItems.HELSING_HAT.get()), Placement.HEAD, null);
+                for (var kind : org.example.maniacrevolution.helsing.HelsingBoltItem.Kind.values())
+                    add(entries, new ItemStack(kind.item()), net.minecraft.network.chat.Component.translatable(kind.key()).getString(), "Выдаётся на карте.", Placement.OTHER);
+            }
             case "alchemist" -> {
                 addDefined(entries, character, 0, waterPotions(), Placement.OTHER, "Взрывное зелье воды");
                 add(entries, new ItemStack(Items.BLAZE_POWDER), "Огненный порошок",
