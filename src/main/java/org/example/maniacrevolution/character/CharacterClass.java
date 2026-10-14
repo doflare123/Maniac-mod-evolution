@@ -68,12 +68,12 @@ public abstract class CharacterClass {
      * Получить путь к текстуре фрески персонажа
      */
     public ResourceLocation getFrescoTexture() {
-        return new ResourceLocation(Maniacrev.MODID, "textures/gui/frescos/" + id + ".png");
+        return new ResourceLocation(Maniacrev.MODID, "textures/gui/frescos/" + id + "_portrait_refresh.png");
     }
 
     /** Selection artwork can differ from the portrait used behind the character. */
     public ResourceLocation getSelectionFrescoTexture() {
-        return getFrescoTexture();
+        return new ResourceLocation(Maniacrev.MODID, "textures/gui/frescos/" + id + "_selection_refresh.png");
     }
 
     public String getDifficultyStars() {

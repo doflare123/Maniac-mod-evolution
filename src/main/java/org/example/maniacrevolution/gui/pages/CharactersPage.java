@@ -38,6 +38,8 @@ public class CharactersPage extends GuidePage {
     // ── Размеры фрески ────────────────────────────────────────────────────────
     private static final int FRESCO_WIDTH = 200;
     private static final int FRESCO_HEIGHT = 500;
+    private static final int FRESCO_TEXTURE_WIDTH = 1024;
+    private static final int FRESCO_TEXTURE_HEIGHT = 1536;
     private static final float FRESCO_SCALE = 0.3f; // Масштаб для списка
     private static final int SCALED_FRESCO_WIDTH = (int) (FRESCO_WIDTH * FRESCO_SCALE);
     private static final int SCALED_FRESCO_HEIGHT = (int) (FRESCO_HEIGHT * FRESCO_SCALE);
@@ -607,7 +609,10 @@ public class CharactersPage extends GuidePage {
 
             RenderSystem.setShaderTexture(0, texture);
             RenderSystem.enableBlend();
-            gui.blit(texture, 0, 0, 0, 0, FRESCO_WIDTH, FRESCO_HEIGHT, FRESCO_WIDTH, FRESCO_HEIGHT);
+            int imageHeight = Math.round(FRESCO_WIDTH * FRESCO_TEXTURE_HEIGHT / (float) FRESCO_TEXTURE_WIDTH);
+            gui.blit(texture, 0, (FRESCO_HEIGHT - imageHeight) / 2, FRESCO_WIDTH, imageHeight,
+                    0, 0, FRESCO_TEXTURE_WIDTH, FRESCO_TEXTURE_HEIGHT,
+                    FRESCO_TEXTURE_WIDTH, FRESCO_TEXTURE_HEIGHT);
             RenderSystem.disableBlend();
 
             gui.pose().popPose();

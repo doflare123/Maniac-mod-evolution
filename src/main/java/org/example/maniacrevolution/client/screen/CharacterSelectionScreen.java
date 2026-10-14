@@ -40,28 +40,43 @@ public class CharacterSelectionScreen extends Screen {
     private static final UUID FALLBACK_PROFILE = new UUID(0L, 0L);
 
     private static final Map<String, FrescoDimensions> FRESCO_DIMENSIONS = Map.ofEntries(
-            Map.entry("agent", new FrescoDimensions(442, 969)),
-            Map.entry("alchemist", new FrescoDimensions(390, 913)),
-            Map.entry("death", new FrescoDimensions(441, 968)),
-            Map.entry("doctor", new FrescoDimensions(440, 968)),
-            Map.entry("dodepovich", new FrescoDimensions(887, 1774)),
-            Map.entry("freddy_bear", new FrescoDimensions(452, 904)),
-            Map.entry("ghost", new FrescoDimensions(377, 950)),
-            Map.entry("keeper_of_nightmares", new FrescoDimensions(941, 1672)),
-            Map.entry("mefedronshchik", new FrescoDimensions(442, 972)),
-            Map.entry("necromancer", new FrescoDimensions(436, 910)),
-            Map.entry("plague_doctor", new FrescoDimensions(396, 915)),
-            Map.entry("pudge", new FrescoDimensions(433, 910)),
-            Map.entry("scientist", new FrescoDimensions(445, 906)),
-            Map.entry("shaman", new FrescoDimensions(481, 1126)),
-            Map.entry("ursa", new FrescoDimensions(463, 1126)),
+            Map.entry("agent", new FrescoDimensions(1024, 1536)),
+            Map.entry("alchemist", new FrescoDimensions(1024, 1536)),
+            Map.entry("death", new FrescoDimensions(1024, 1536)),
+            Map.entry("doctor", new FrescoDimensions(1024, 1536)),
+            Map.entry("dodepovich", new FrescoDimensions(1024, 1536)),
+            Map.entry("freddy_bear", new FrescoDimensions(1024, 1536)),
+            Map.entry("ghost", new FrescoDimensions(1024, 1536)),
+            Map.entry("keeper_of_nightmares", new FrescoDimensions(1024, 1536)),
+            Map.entry("mefedronshchik", new FrescoDimensions(1024, 1536)),
+            Map.entry("necromancer", new FrescoDimensions(1024, 1536)),
+            Map.entry("plague_doctor", new FrescoDimensions(1024, 1536)),
+            Map.entry("pudge", new FrescoDimensions(1024, 1536)),
+            Map.entry("scientist", new FrescoDimensions(1024, 1536)),
+            Map.entry("shaman", new FrescoDimensions(1024, 1536)),
+            Map.entry("ursa", new FrescoDimensions(1024, 1536)),
             Map.entry("warden", new FrescoDimensions(1024, 1536)),
             Map.entry("scp_173", new FrescoDimensions(1024, 1536))
     );
 
-    private static final Map<String, FrescoDimensions> SELECTION_FRESCO_DIMENSIONS = Map.of(
-            "warden", new FrescoDimensions(2172, 724),
-            "scp_173", new FrescoDimensions(2170, 725)
+    private static final Map<String, FrescoDimensions> SELECTION_FRESCO_DIMENSIONS = Map.ofEntries(
+            Map.entry("agent", new FrescoDimensions(2170, 725)),
+            Map.entry("alchemist", new FrescoDimensions(2169, 725)),
+            Map.entry("death", new FrescoDimensions(2172, 724)),
+            Map.entry("doctor", new FrescoDimensions(2169, 725)),
+            Map.entry("dodepovich", new FrescoDimensions(2171, 724)),
+            Map.entry("freddy_bear", new FrescoDimensions(2168, 725)),
+            Map.entry("ghost", new FrescoDimensions(2171, 724)),
+            Map.entry("keeper_of_nightmares", new FrescoDimensions(2172, 724)),
+            Map.entry("mefedronshchik", new FrescoDimensions(2170, 725)),
+            Map.entry("necromancer", new FrescoDimensions(2172, 724)),
+            Map.entry("plague_doctor", new FrescoDimensions(2172, 724)),
+            Map.entry("pudge", new FrescoDimensions(2172, 724)),
+            Map.entry("scientist", new FrescoDimensions(2171, 724)),
+            Map.entry("shaman", new FrescoDimensions(2172, 724)),
+            Map.entry("ursa", new FrescoDimensions(2172, 724)),
+            Map.entry("warden", new FrescoDimensions(2172, 724)),
+            Map.entry("scp_173", new FrescoDimensions(2170, 725))
     );
 
     private final CharacterType type;
