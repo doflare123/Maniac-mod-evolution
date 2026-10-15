@@ -52,9 +52,7 @@ public final class TechiesClient {
     private static double recoveryStart=-1,recoverySeconds;
     private static int recoveryType=-1;
     private static Object connection;
-    private static TechiesRadialScreen menu;
-    private static int swallowedButtons;
-    public static boolean menuOpen() { return menu!=null; }
+    public static boolean menuOpen() { return Minecraft.getInstance().screen instanceof TechiesRadialScreen; }
     private TechiesClient() {}
     public static double time() {
         var mc=Minecraft.getInstance(); return mc.level==null?serverTick:serverTick+mc.level.getGameTime()-clientTick+mc.getFrameTime();
@@ -67,34 +65,13 @@ public final class TechiesClient {
     }
     public static void openMenu() {
         var mc=Minecraft.getInstance();
-        if(menu!=null) { closeMenu(); return; }
+        if(menuOpen()) { closeMenu(); return; }
         if(mc.screen==null && selected<0 && installStart<0 && !org.example.maniacrevolution.client.QTEClientHandler.isQTEActive()) {
-            menu=new TechiesRadialScreen(); menu.init(mc,mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight());
-            mc.mouseHandler.releaseMouse();
+            mc.setScreen(new TechiesRadialScreen());
         }
     }
     public static void closeMenu() {
-        if(menu==null) return;
-        menu=null; var mc=Minecraft.getInstance(); if(mc.screen==null) mc.mouseHandler.grabMouse();
-    }
-    @SubscribeEvent(priority=EventPriority.HIGHEST) public static void mouse(InputEvent.MouseButton.Pre e) {
-        if(e.getButton()<0 || e.getButton()>1) return;
-        int bit=1<<e.getButton();
-        if((swallowedButtons&bit)!=0) {
-            e.setCanceled(true); if(e.getAction()==0) swallowedButtons&=~bit; suppressClicks(); return;
-        }
-        if(menu==null || e.getAction()!=1) return;
-        var mc=Minecraft.getInstance();
-        double x=mc.mouseHandler.xpos()*mc.getWindow().getGuiScaledWidth()/mc.getWindow().getScreenWidth();
-        double y=mc.mouseHandler.ypos()*mc.getWindow().getGuiScaledHeight()/mc.getWindow().getScreenHeight();
-        int choice=menu.hover(x,y);
-        e.setCanceled(true); swallowedButtons|=bit; closeMenu(); suppressClicks();
-        if(e.getButton()==0 && choice>=0) request(TechiesActionPacket.SELECT,choice);
-    }
-    private static void suppressClicks() {
-        var mc=Minecraft.getInstance();
-        if((swallowedButtons&1)!=0) { mc.options.keyAttack.setDown(false); while(mc.options.keyAttack.consumeClick()) {} }
-        if((swallowedButtons&2)!=0) { mc.options.keyUse.setDown(false); while(mc.options.keyUse.consumeClick()) {} }
+        if(menuOpen()) Minecraft.getInstance().setScreen(null);
     }
     public static void request(int action,int value) {
         var mc=Minecraft.getInstance();
@@ -109,7 +86,7 @@ public final class TechiesClient {
     public static void remote() { if(eligible()) request(TechiesActionPacket.REMOTE,target); }
     public static void cancel() { if(installStart<0) { request(TechiesActionPacket.CANCEL,0); selected=-1; hand=null; } }
     private static void stop(View v) { if(v.warning!=null) { Minecraft.getInstance().getSoundManager().stop(v.warning); v.warning=null; } }
-    public static void clear() { closeMenu(); swallowedButtons=0; MINES.values().forEach(TechiesClient::stop); MINES.clear(); selected=slot=-1; installStart=-1; hand=null; target=0; recoveryStart=-1; TechiesHands.clear(); }
+    public static void clear() { closeMenu(); MINES.values().forEach(TechiesClient::stop); MINES.clear(); selected=slot=-1; installStart=-1; hand=null; target=0; recoveryStart=-1; TechiesHands.clear(); }
     public static void ensureConnection() {
         var current=Minecraft.getInstance().getConnection();
         if(current!=connection) { clear(); Arrays.fill(cooldowns,0); connection=current; }
@@ -164,8 +141,7 @@ public final class TechiesClient {
         if(e.phase!=TickEvent.Phase.END) return;
         var mc=Minecraft.getInstance();
         ensureConnection();
-        suppressClicks();
-        if(menu!=null && (!eligible() || mc.screen!=null || org.example.maniacrevolution.client.QTEClientHandler.isQTEActive())) closeMenu();
+        if(menuOpen() && (!eligible() || org.example.maniacrevolution.client.QTEClientHandler.isQTEActive())) closeMenu();
         if(selected>=0 && (!eligible() || mc.player==null)) { clear(); return; }
         if(selected>=0 && installStart<0 && mc.player.getInventory().selected!=slot) cancel();
     }
@@ -196,10 +172,6 @@ public final class TechiesClient {
         }
     }
     @SubscribeEvent public static void key(InputEvent.Key e) {
-        if(e.getKey()==org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE && e.getAction()==org.lwjgl.glfw.GLFW.GLFW_PRESS && menu!=null) {
-            var mc=Minecraft.getInstance(); if(mc.screen instanceof net.minecraft.client.gui.screens.PauseScreen) mc.setScreen(null);
-            closeMenu(); return;
-        }
         if(e.getKey()==org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE && e.getAction()==org.lwjgl.glfw.GLFW.GLFW_PRESS && selected>=0 && installStart<0) cancel();
     }
     private static void renderAt(PoseStack pose,net.minecraft.client.renderer.MultiBufferSource buffer,TechiesVisual v,Vec3 at,boolean neutral,boolean through) {
@@ -242,11 +214,6 @@ public final class TechiesClient {
     @SubscribeEvent public static void hud(RenderGuiEvent.Post e) {
         if(!eligible()) return;
         var mc=Minecraft.getInstance(); if(mc.options.hideGui) return;
-        if(menu!=null && mc.screen==null) {
-            menu.init(mc,mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight());
-            menu.render(e.getGuiGraphics(),(int)(mc.mouseHandler.xpos()*mc.getWindow().getGuiScaledWidth()/mc.getWindow().getScreenWidth()),
-                    (int)(mc.mouseHandler.ypos()*mc.getWindow().getGuiScaledHeight()/mc.getWindow().getScreenHeight()),mc.getFrameTime());
-        }
         var g=e.getGuiGraphics(); boolean compact=mc.getWindow().getGuiScaledWidth()<420;
         int cx=mc.getWindow().getGuiScaledWidth()/2,cy=mc.getWindow().getGuiScaledHeight()/2;
         int width=compact?100:140,x=cx-width/2,y=cy+42;

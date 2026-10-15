@@ -7,7 +7,6 @@ public final class HelsingMechanicsTest {
     private static void check(boolean ok, String reason) { if (!ok) throw new AssertionError(reason); }
     public static void main(String[] args) {
         checkConfigLifecycle();
-        checkWheel();
         checkCharge();
         checkSilverDamage();
         ManaData mana = new ManaData(100, 0);
@@ -40,7 +39,7 @@ public final class HelsingMechanicsTest {
         study.lose(161, 40); check(study.target == null && study.intel == null, "Grace expiry clears information");
         study.observe(a, 200); study.intel = "a"; study.observe(b, 201);
         check(study.held == 1 && study.intel == null && study.target.equals(b), "Changing prey cannot reuse another target's information");
-        System.out.println("Helsing: config lifecycle, persistent crossbow charge, bolt wheel, rune costs, cooldown freeze and prey study checks passed.");
+        System.out.println("Helsing: config lifecycle, persistent crossbow charge, rune costs, cooldown freeze and prey study checks passed.");
     }
     private static void checkSilverDamage() {
         var undead = java.util.List.of(
@@ -100,14 +99,5 @@ public final class HelsingMechanicsTest {
         check(HelsingConfig.COST.get() == 30.0 && HelsingConfig.RELOAD.get() == 30,
                 "After unload, resource reload uses defaults instead of cached server values");
         for (var value : values) check(value.get() != null, "All values remain safe after unload");
-    }
-    private static void checkWheel() {
-        check(HelsingBoltWheelMath.sector(0, -100, 40) == 0, "Top sector selects iron");
-        check(HelsingBoltWheelMath.sector(100, 0, 40) == 1, "Right sector selects rune");
-        check(HelsingBoltWheelMath.sector(0, 100, 40) == 2, "Bottom sector selects silver");
-        check(HelsingBoltWheelMath.sector(-100, 0, 40) == 3, "Left sector selects enchanted");
-        check(HelsingBoltWheelMath.sector(-1, -100, 40) == 0, "Wraparound stays in the top sector");
-        check(HelsingBoltWheelMath.sector(10, 10, 40) == -1, "Dead zone keeps current selection");
-        check(HelsingBoltWheelMath.sector(Double.NaN, 100, 40) == -1, "Invalid cursor coordinates cannot select a bolt");
     }
 }

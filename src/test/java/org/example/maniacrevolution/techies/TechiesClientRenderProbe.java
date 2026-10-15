@@ -139,28 +139,23 @@ public final class TechiesClientRenderProbe {
             }).get(10,java.util.concurrent.TimeUnit.SECONDS);
             scoreboard.addPlayerToTeam(mc.player.getScoreboardName(),team);
             TechiesClient.clear();
-            mc.setScreen(null); mc.options.keyUp.setDown(true); mc.options.keySprint.setDown(true);
+            mc.setScreen(null);
             TechiesClient.openMenu();
-            mc.player.input.tick(false,1);
-            if(!TechiesClient.menuOpen() || mc.screen!=null || !mc.options.keyUp.isDown()
-                    || !mc.options.keySprint.isDown() || mc.player.input.forwardImpulse<=0)
-                throw new AssertionError("Radial overlay must preserve movement/sprint without installing a Screen");
-            var outsideLeft=new net.minecraftforge.client.event.InputEvent.MouseButton.Pre(0,1,0);
-            TechiesClient.mouse(outsideLeft);
-            if(TechiesClient.menuOpen() || !outsideLeft.isCanceled() || mc.options.keyAttack.isDown())
-                throw new AssertionError("Left click in center/outside must close without attacking or placing");
-            TechiesClient.mouse(new net.minecraftforge.client.event.InputEvent.MouseButton.Pre(0,0,0));
+            if(!TechiesClient.menuOpen() || !(mc.screen instanceof org.example.maniacrevolution.client.screen.radial.RadialSelectionScreen)
+                    || mc.screen.isPauseScreen())
+                throw new AssertionError("Techies must use the shared non-pausing selection screen");
+            mc.screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE,0,0);
+            if(TechiesClient.menuOpen() || TechiesClient.selected>=0)
+                throw new AssertionError("Escape closes the wheel without selecting a mine");
             TechiesClient.openMenu();
-            var right=new net.minecraftforge.client.event.InputEvent.MouseButton.Pre(1,1,0); TechiesClient.mouse(right);
-            if(TechiesClient.menuOpen() || !right.isCanceled() || mc.options.keyUse.isDown())
+            boolean right=mc.screen.mouseClicked(0,0,org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            if(TechiesClient.menuOpen() || !right || TechiesClient.selected>=0)
                 throw new AssertionError("Right click anywhere must close without using held item");
-            TechiesClient.mouse(new net.minecraftforge.client.event.InputEvent.MouseButton.Pre(1,0,0));
-            mc.options.keyUp.setDown(false); mc.options.keySprint.setDown(false);
             var find=org.example.maniacrevolution.hud.CustomHud.class.getDeclaredMethod("findItemWithAbility",net.minecraft.world.entity.player.Player.class);
             find.setAccessible(true);
             if(find.invoke(new org.example.maniacrevolution.hud.CustomHud(),mc.player)!=TechiesAbilityHud.INSTANCE)
                 throw new AssertionError("Techies must occupy the existing class ability slot");
-            Maniacrev.LOGGER.info("TECHIES_OVERLAY_PROBE_PASS: movement/sprint preserved, left/right close without world actions, ability slot selected");
+            Maniacrev.LOGGER.info("TECHIES_WHEEL_PROBE_PASS: shared screen, Escape/RMB cancel without selecting, ability slot selected");
             for(MineType type:MineType.values()) {
                 TechiesClient.selected=type.ordinal(); TechiesClient.installStart=(long)TechiesClient.time()-type.install/2;
                 target.clear(Minecraft.ON_OSX); target.bindWrite(true);

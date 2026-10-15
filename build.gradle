@@ -130,11 +130,20 @@ tasks.register('verifyHelsing', JavaExec) {
     mainClass = 'org.example.maniacrevolution.helsing.HelsingMechanicsTest'
 }
 
+tasks.register('verifyRadialSelection', JavaExec) {
+    group = 'verification'
+    description = 'Checks shared radial sectors and merged class identities.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.client.screen.radial.RadialSelectionMathTest'
+}
+
 tasks.named('check') {
     dependsOn tasks.named('verifyNightmareSync')
     dependsOn tasks.named('verifyGameSettings')
     dependsOn tasks.named('verifyPlayerDataSync')
     dependsOn tasks.named('verifyHelsing')
+    dependsOn tasks.named('verifyRadialSelection')
 }
 // ──────────────────────────────────────────────────────────────────
 
