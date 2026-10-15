@@ -9,6 +9,7 @@ public final class TechiesRules {
     /** Ignore sub-packet standing jitter; real movement and teleports still cancel. */
     public static boolean moved(double squaredDistance) { return squaredDistance > 0.003 * 0.003; }
     public static boolean active(boolean alive, boolean gameMode, int phase, int id, String team) {
-        return alive && gameMode && phase >= 1 && phase <= 3 && id == 14 && "survivors".equals(team);
+        return alive && gameMode && phase >= 1 && phase <= 3
+                && id == org.example.maniacrevolution.character.survivor.TechiesClass.SCOREBOARD_ID && "survivors".equals(team);
     }
 }

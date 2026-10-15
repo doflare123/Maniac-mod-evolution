@@ -61,7 +61,7 @@ public final class TechiesClient {
     }
     public static boolean eligible() {
         var p=Minecraft.getInstance().player;
-        return p!=null && p.isAlive() && PlayerModeUtil.isSurvivalOrAdventure(p) && ClientPlayerData.isSurvivorClass(14)
+        return p!=null && p.isAlive() && PlayerModeUtil.isSurvivalOrAdventure(p) && ClientPlayerData.isSurvivorClass(org.example.maniacrevolution.character.survivor.TechiesClass.SCOREBOARD_ID)
                 && org.example.maniacrevolution.data.ClientGameState.getPhase()>=1 && org.example.maniacrevolution.data.ClientGameState.getPhase()<=3
                 && p.getTeam()!=null && "survivors".equals(p.getTeam().getName());
     }

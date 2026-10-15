@@ -6,7 +6,7 @@ import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterType;
 
 public final class TechiesClass extends CharacterClass {
-    public static final int SCOREBOARD_ID = 14;
+    public static final int SCOREBOARD_ID = 15;
     public TechiesClass() {
         super("techies", "Течис", CharacterType.SURVIVOR,
                 "Сапёр: три типа мин, ручной подрыв и перераспределение маны.", SCOREBOARD_ID, 0);

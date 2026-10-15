@@ -51,7 +51,7 @@ public final class TechiesGameTests {
             support=h.absolutePos(new BlockPos(4,2,4)); h.getLevel().setBlockAndUpdate(support,Blocks.STONE.defaultBlockState());
             owner=player("tc_owner","survivors",4,3,2); enemy=player("tc_enemy","maniac",12,3,12);
             var cls=sb.getObjective("SurvivorClass"); if(cls==null) cls=sb.addObjective("SurvivorClass",ObjectiveCriteria.DUMMY,Component.literal("class"),ObjectiveCriteria.RenderType.INTEGER);
-            sb.getOrCreatePlayerScore(owner.getScoreboardName(),cls).setScore(14);
+            sb.getOrCreatePlayerScore(owner.getScoreboardName(),cls).setScore(org.example.maniacrevolution.character.survivor.TechiesClass.SCOREBOARD_ID);
             owner.setYRot(0); owner.setXRot((float)Math.toDegrees(Math.atan2(owner.getEyeY()-(support.getY()+1.002),2)));
             tick=h.getLevel().getServer().overworld().getGameTime();
         }
@@ -182,7 +182,7 @@ public final class TechiesGameTests {
             s.select(MineType.BLUE); s.place(); var mine=mines().values().iterator().next();
             h.assertTrue(ManaUtil.getMana(s.owner)==80,"blue immediate twenty mana cost");
             var second=s.player("tc_second","survivors",4,3,2);
-            var obj=h.getLevel().getScoreboard().getObjective("SurvivorClass"); h.getLevel().getScoreboard().getOrCreatePlayerScore(second.getScoreboardName(),obj).setScore(14);
+            var obj=h.getLevel().getScoreboard().getObjective("SurvivorClass"); h.getLevel().getScoreboard().getOrCreatePlayerScore(second.getScoreboardName(),obj).setScore(org.example.maniacrevolution.character.survivor.TechiesClass.SCOREBOARD_ID);
             second.setYRot(s.owner.getYRot()); second.setXRot(s.owner.getXRot());
             TechiesManager.action(second,TechiesActionPacket.SELECT,0); TechiesManager.action(second,TechiesActionPacket.PLACE,0);
             h.assertTrue(mines().size()==1 && ManaUtil.getMana(second)==100,"another owner cannot bypass reserved space");

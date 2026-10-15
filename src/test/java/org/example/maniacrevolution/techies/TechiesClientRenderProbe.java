@@ -79,7 +79,7 @@ public final class TechiesClientRenderProbe {
             // Exercise the actual RenderHandEvent path without changing the server match or inventory.
             var scoreboard=mc.level.getScoreboard(); var team=scoreboard.getPlayerTeam("survivors"); if(team==null) team=scoreboard.addPlayerTeam("survivors");
             scoreboard.addPlayerToTeam(mc.player.getScoreboardName(),team);
-            org.example.maniacrevolution.data.ClientPlayerData.setSurvivorClass(14);
+            org.example.maniacrevolution.data.ClientPlayerData.setSurvivorClass(org.example.maniacrevolution.character.survivor.TechiesClass.SCOREBOARD_ID);
             org.example.maniacrevolution.data.ClientGameState.update(3,0,0,false);
             TechiesClient.clear();
             target.clear(Minecraft.ON_OSX); target.bindWrite(true);
