@@ -9,7 +9,7 @@ public final class HelsingConfig {
     public static final BalanceValue<Integer> PROTECTION, WEAKNESS, FREEZE, COOLDOWN,
             IRON_DURATION, RUNE_DURATION, BOLT_WEAKNESS_DURATION, STUDY, MEMORY, RELOAD, BLOOD_HITS;
     public static final BalanceValue<Double> COST, DAMAGE_REDUCTION, RUNE_MULTIPLIER,
-            BOLT_DAMAGE, SILVER_DAMAGE, ALLY_RANGE, STUDY_RANGE;
+            BOLT_DAMAGE, ALLY_RANGE, STUDY_RANGE;
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.push("helsing");
@@ -25,7 +25,6 @@ public final class HelsingConfig {
         MEMORY = new BalanceValue<>(b.defineInRange("studyMemoryTicks", 40, 0, 1200));
         RELOAD = new BalanceValue<>(b.defineInRange("crossbowLoadTicks", 30, 5, 200));
         BOLT_DAMAGE = new BalanceValue<>(b.defineInRange("boltDamage", 3.0, 0.0, 100.0));
-        SILVER_DAMAGE = new BalanceValue<>(b.defineInRange("silverBoltDamage", 6.0, 0.0, 100.0));
         IRON_DURATION = new BalanceValue<>(b.defineInRange("ironSlowTicks", 80, 1, 72000));
         RUNE_DURATION = new BalanceValue<>(b.defineInRange("runeDurationTicks", 160, 1, 72000));
         RUNE_MULTIPLIER = new BalanceValue<>(b.defineInRange("runeCostMultiplier", 1.5, 1.0, 10.0));

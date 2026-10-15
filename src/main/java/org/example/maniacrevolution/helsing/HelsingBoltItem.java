@@ -23,7 +23,7 @@ public final class HelsingBoltItem extends Item {
         Object[] values = switch (kind) {
             case IRON -> new Object[]{HelsingConfig.BOLT_DAMAGE.get(), HelsingConfig.IRON_DURATION.get() / 20.0};
             case RUNE -> new Object[]{HelsingConfig.BOLT_DAMAGE.get(), HelsingConfig.RUNE_MULTIPLIER.get(), HelsingConfig.RUNE_DURATION.get() / 20.0};
-            case SILVER -> new Object[]{HelsingConfig.SILVER_DAMAGE.get()};
+            case SILVER -> new Object[]{HelsingConfig.BOLT_DAMAGE.get() * 2.0, HelsingConfig.BOLT_DAMAGE.get() * 1.5};
             case ENCHANTED -> new Object[]{HelsingConfig.BOLT_DAMAGE.get(), Math.round(HelsingConfig.DAMAGE_REDUCTION.get() * 100), HelsingConfig.BOLT_WEAKNESS_DURATION.get() / 20.0};
         };
         tooltip.add(net.minecraft.network.chat.Component.translatable("tooltip.maniacrev.helsing.bolt." + kind.name().toLowerCase(java.util.Locale.ROOT), values));

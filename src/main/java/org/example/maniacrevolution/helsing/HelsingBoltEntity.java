@@ -13,8 +13,18 @@ import org.example.maniacrevolution.effect.ModEffects;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.server.level.ServerPlayer;
+import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.data.PlayerDataManager;
+import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.perk.PerkPhase;
 
 public final class HelsingBoltEntity extends AbstractArrow {
+    private static final ResourceKey<DamageType> SILVER_CHIP = ResourceKey.create(Registries.DAMAGE_TYPE, Maniacrev.loc("helsing_silver_chip"));
     private static final EntityDataAccessor<Integer> KIND = SynchedEntityData.defineId(HelsingBoltEntity.class, EntityDataSerializers.INT);
     public HelsingBoltEntity(EntityType<? extends AbstractArrow> type, Level level) { super(type, level); pickup = Pickup.DISALLOWED; }
     public HelsingBoltEntity(Level level, LivingEntity owner, HelsingBoltItem.Kind kind) {
@@ -30,8 +40,17 @@ public final class HelsingBoltEntity extends AbstractArrow {
     @Override protected void onHitEntity(EntityHitResult hit) {
         if (level().isClientSide || !(hit.getEntity() instanceof LivingEntity target)) return;
         HelsingBoltItem.Kind kind = kind();
-        float damage = (float) (kind == HelsingBoltItem.Kind.SILVER ? HelsingConfig.SILVER_DAMAGE.get() : HelsingConfig.BOLT_DAMAGE.get()).doubleValue();
-        if (target.hurt(damageSources().arrow(this, getOwner()), damage)) {
+        float damage = HelsingConfig.BOLT_DAMAGE.get().floatValue();
+        DamageSource source = damageSources().arrow(this, getOwner());
+        if (kind == HelsingBoltItem.Kind.SILVER) {
+            boolean reversal = GameManager.getCurrentPhase() == PerkPhase.REVERSAL;
+            int maniacClass = target instanceof ServerPlayer player ? PlayerDataManager.get(player).getManiacClassId() : -1;
+            damage = HelsingSilverDamage.amount(HelsingConfig.BOLT_DAMAGE.get(), reversal, maniacClass);
+            if (!reversal) {
+                source = new DamageSource(level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(SILVER_CHIP), this, getOwner());
+            }
+        }
+        if (target.hurt(source, damage)) {
             switch (kind) {
                 case IRON -> target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, HelsingConfig.IRON_DURATION.get(), 1, false, false, true));
                 case RUNE -> target.addEffect(new MobEffectInstance(ModEffects.HELSING_RUNE.get(), HelsingConfig.RUNE_DURATION.get(), 0, false, false, true));

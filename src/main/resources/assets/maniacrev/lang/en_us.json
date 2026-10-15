@@ -1107,6 +1107,6 @@
   "hud.maniacrev.helsing.ready": "Ready",
   "tooltip.maniacrev.helsing.bolt.iron": "§7%s HP, Slowness II for %s s.",
   "tooltip.maniacrev.helsing.bolt.rune": "§d%s HP, ability and perk costs ×%s for %s s.",
-  "tooltip.maniacrev.helsing.bolt.silver": "§f%s HP: increased damage.",
+  "tooltip.maniacrev.helsing.bolt.silver": "§fReversal: %s HP to undead (×2), %s HP to others (×1.5). Outside Reversal: 1 HP, bypasses armor, protection enchantments and resistance.",
   "tooltip.maniacrev.helsing.bolt.enchanted": "§c%s HP, attack damage −%s%% for %s s."
 }

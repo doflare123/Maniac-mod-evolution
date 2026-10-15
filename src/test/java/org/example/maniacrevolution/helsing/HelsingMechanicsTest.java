@@ -9,6 +9,7 @@ public final class HelsingMechanicsTest {
         checkConfigLifecycle();
         checkWheel();
         checkCharge();
+        checkSilverDamage();
         ManaData mana = new ManaData(100, 0);
         double[] multiplier = {1.5}; mana.setCostMultiplier(() -> multiplier[0]);
         mana.setMana(29);
@@ -41,6 +42,26 @@ public final class HelsingMechanicsTest {
         check(study.held == 1 && study.intel == null && study.target.equals(b), "Changing prey cannot reuse another target's information");
         System.out.println("Helsing: config lifecycle, persistent crossbow charge, bolt wheel, rune costs, cooldown freeze and prey study checks passed.");
     }
+    private static void checkSilverDamage() {
+        var undead = java.util.List.of(
+                new org.example.maniacrevolution.character.maniac.DeathClass(),
+                new org.example.maniacrevolution.character.maniac.GhostClass(),
+                new org.example.maniacrevolution.character.maniac.PudgeClass(),
+                new org.example.maniacrevolution.character.maniac.PlagueDoctorClass());
+        for (var character : undead) {
+            int id = character.getScoreboardId();
+            check(HelsingSilverDamage.undead(id), "Silver recognizes " + character.getId());
+            check(HelsingSilverDamage.amount(3, true, id) == 6, "Undead take double base damage in Reversal");
+            check(HelsingSilverDamage.amount(3, false, id) == 1, "Outside Reversal all undead take one HP");
+        }
+        for (int id : new int[]{-1, 0, 1, 4, 7, 9, 11}) {
+            check(!HelsingSilverDamage.undead(id), "Other classes are not undead");
+            check(HelsingSilverDamage.amount(3, true, id) == 4.5F, "Other classes take 1.5 times base damage");
+            check(HelsingSilverDamage.amount(100, false, id) == 1, "Non-Reversal damage ignores configured base");
+        }
+        check(HelsingSilverDamage.amount(8, true, 10) == 16 && HelsingSilverDamage.amount(8, true, -1) == 12,
+                "Multipliers follow configured boltDamage");
+    }
     private static void checkCharge() {
         var tag = new net.minecraft.nbt.CompoundTag();
         int use = HelsingCrossbowState.USE_DURATION;
@@ -64,7 +85,7 @@ public final class HelsingMechanicsTest {
                 HelsingConfig.COOLDOWN, HelsingConfig.IRON_DURATION, HelsingConfig.RUNE_DURATION,
                 HelsingConfig.BOLT_WEAKNESS_DURATION, HelsingConfig.STUDY, HelsingConfig.MEMORY,
                 HelsingConfig.RELOAD, HelsingConfig.BLOOD_HITS, HelsingConfig.COST, HelsingConfig.DAMAGE_REDUCTION,
-                HelsingConfig.RUNE_MULTIPLIER, HelsingConfig.BOLT_DAMAGE, HelsingConfig.SILVER_DAMAGE,
+                HelsingConfig.RUNE_MULTIPLIER, HelsingConfig.BOLT_DAMAGE,
                 HelsingConfig.ALLY_RANGE, HelsingConfig.STUDY_RANGE);
         for (var value : values) check(value.get() != null, "All balance values are safe outside a world");
         HelsingConfig.SPEC.setConfig(com.electronwill.nightconfig.core.CommentedConfig.inMemory());

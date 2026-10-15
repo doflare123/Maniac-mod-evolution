@@ -1107,6 +1107,6 @@
   "hud.maniacrev.helsing.ready": "Готово",
   "tooltip.maniacrev.helsing.bolt.iron": "§7%s HP, замедление II на %s с.",
   "tooltip.maniacrev.helsing.bolt.rune": "§d%s HP, стоимость способностей и перков ×%s на %s с.",
-  "tooltip.maniacrev.helsing.bolt.silver": "§f%s HP: повышенный урон.",
+  "tooltip.maniacrev.helsing.bolt.silver": "§fПереворот: %s HP нежити (×2), %s HP остальным (×1,5). Вне Переворота: 1 HP, игнорирует броню, чары защиты и сопротивление.",
   "tooltip.maniacrev.helsing.bolt.enchanted": "§c%s HP, урон атак −%s%% на %s с."
 }
