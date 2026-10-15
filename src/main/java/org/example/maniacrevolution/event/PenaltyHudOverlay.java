@@ -28,7 +28,10 @@ public final class PenaltyHudOverlay {
 
     @SubscribeEvent
     public static void onRenderOverlay(RenderGuiOverlayEvent.Post event) {
-        if (event.getOverlay() != VanillaGuiOverlay.CROSSHAIR.type()) return;
+        // The Warden replacement cancels vanilla CROSSHAIR, including its Post event.
+        boolean warden = event.getOverlay().id().equals(new net.minecraft.resources.ResourceLocation(Maniacrev.MODID, "warden_reticle"))
+                && org.example.maniacrevolution.warden.client.WardenCombatHud.visible();
+        if (event.getOverlay() != VanillaGuiOverlay.CROSSHAIR.type() && !warden) return;
 
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;

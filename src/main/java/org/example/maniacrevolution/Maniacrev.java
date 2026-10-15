@@ -98,6 +98,7 @@ public class Maniacrev {
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         DownedCapability.register(modEventBus);
         ModSounds.SOUND_EVENTS.register(modEventBus);
+        org.example.maniacrevolution.techies.TechiesSounds.init();
         ModHackRegistry.BLOCKS.register(modEventBus);
         ModHackRegistry.BLOCK_ENTITIES.register(modEventBus);
         ModHackRegistry.ITEMS.register(modEventBus);

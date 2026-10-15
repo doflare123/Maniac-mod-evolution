@@ -33,6 +33,10 @@ final class CharacterLoadoutPreview {
                 for (var kind : org.example.maniacrevolution.helsing.HelsingBoltItem.Kind.values())
                     add(entries, new ItemStack(kind.item()), net.minecraft.network.chat.Component.translatable(kind.key()).getString(), "Выдаётся на карте.", Placement.OTHER);
             }
+            case "techies" -> {
+                addDefined(entries, character, 0, new ItemStack(ModItems.TECHIES_HELMET.get()), Placement.HEAD, null);
+                addDefined(entries, character, 1, new ItemStack(ModItems.TECHIES_REMOTE.get()), Placement.MAIN_HAND, null);
+            }
             case "alchemist" -> {
                 addDefined(entries, character, 0, waterPotions(), Placement.OTHER, "Взрывное зелье воды");
                 add(entries, new ItemStack(Items.BLAZE_POWDER), "Огненный порошок",

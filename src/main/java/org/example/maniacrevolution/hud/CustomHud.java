@@ -190,24 +190,27 @@ public class CustomHud implements IGuiOverlay {
         List<MobEffectInstance> effects = allEffects.stream()
                 .limit(MAX_VISIBLE_TIMED_EFFECTS)
                 .toList();
-        if (effects.isEmpty()) {
+        int mineCount=org.example.maniacrevolution.techies.client.TechiesClient.eligible()?3:0;
+        int count=effects.size()+mineCount;
+        if (count==0) {
             return 0;
         }
 
         int effectsPerRow = MAX_TIMED_EFFECTS_PER_ROW;
-        int rowCount = (effects.size() + effectsPerRow - 1) / effectsPerRow;
+        int rowCount = (count + effectsPerRow - 1) / effectsPerRow;
 
-        for (int index = 0; index < effects.size(); index++) {
+        for (int index = 0; index < count; index++) {
             int row = index / effectsPerRow;
             int indexInRow = index % effectsPerRow;
-            int effectsInRow = Math.min(effectsPerRow, effects.size() - row * effectsPerRow);
+            int effectsInRow = Math.min(effectsPerRow, count - row * effectsPerRow);
             int rowWidth = effectsInRow * TIMED_EFFECT_SIZE
                     + (effectsInRow - 1) * TIMED_EFFECT_GAP;
             int x = (screenWidth - rowWidth) / 2
                     + indexInRow * (TIMED_EFFECT_SIZE + TIMED_EFFECT_GAP);
             int y = bottomY - TIMED_EFFECT_SIZE
                     - row * (TIMED_EFFECT_SIZE + TIMED_EFFECT_GAP);
-            renderTimedEffect(gui, effects.get(index), partialTick, x, y);
+            if(index<mineCount) renderMineStatus(gui,org.example.maniacrevolution.techies.MineType.values()[index],x,y);
+            else renderTimedEffect(gui, effects.get(index-mineCount), partialTick, x, y);
         }
 
         return rowCount * TIMED_EFFECT_SIZE
@@ -247,6 +250,36 @@ public class CustomHud implements IGuiOverlay {
         renderCircularProgress(gui, x, y, TIMED_EFFECT_SIZE, progress, effectColor, 2);
     }
 
+    private void renderMineStatus(GuiGraphics gui,org.example.maniacrevolution.techies.MineType type,int x,int y) {
+        long remaining=org.example.maniacrevolution.techies.client.TechiesHud.remaining(type);
+        int color=org.example.maniacrevolution.techies.client.TechiesHud.color(type);
+        renderFilledCircle(gui,x,y,TIMED_EFFECT_SIZE,0xE0181B20);
+        gui.renderItem(new ItemStack(type.item()),x+3,y+3);
+        // GeoItems write depth at z=150; status badges/countdown must sit above that model.
+        gui.pose().pushPose(); gui.pose().translate(0,0,200);
+        renderCircularProgress(gui,x,y,TIMED_EFFECT_SIZE,1,0xB05B626C,2);
+        renderCircularProgress(gui,x,y,TIMED_EFFECT_SIZE,remaining==0?1:(float)remaining/type.cooldown,color,2);
+        if(remaining==0) {
+            gui.fill(x+14,y+15,x+21,y+22,0xE011261C);
+            gui.fill(x+15,y+18,x+17,y+20,0xFF9FF2BB);
+            gui.fill(x+17,y+16,x+19,y+19,0xFF9FF2BB);
+        } else {
+            String seconds=Long.toString((remaining+19)/20); int w=Minecraft.getInstance().font.width(seconds);
+            gui.fill(x+(TIMED_EFFECT_SIZE-w)/2-1,y+13,x+(TIMED_EFFECT_SIZE+w)/2+1,y+22,0xD010141B);
+            gui.drawString(Minecraft.getInstance().font,seconds,x+(TIMED_EFFECT_SIZE-w)/2,y+13,0xFFFFD48A,true);
+        }
+        var mc=Minecraft.getInstance();
+        if(!mc.mouseHandler.isMouseGrabbed() && (mc.screen instanceof ChatScreen
+                || org.example.maniacrevolution.techies.client.TechiesClient.menuOpen())) {
+            int mx=(int)(mc.mouseHandler.xpos()*mc.getWindow().getGuiScaledWidth()/mc.getWindow().getScreenWidth());
+            int my=(int)(mc.mouseHandler.ypos()*mc.getWindow().getGuiScaledHeight()/mc.getWindow().getScreenHeight());
+            if(mx>=x && mx<x+TIMED_EFFECT_SIZE && my>=y && my<y+TIMED_EFFECT_SIZE)
+                gui.renderTooltip(mc.font,net.minecraft.network.chat.Component.translatable(
+                        org.example.maniacrevolution.techies.client.TechiesHud.stateKey(type)),mx,my);
+        }
+        gui.pose().popPose();
+    }
+
     private TimedEffectState updateTimedEffectState(MobEffectInstance effect) {
         MobEffect effectType = effect.getEffect();
         int remainingDuration = Math.max(0, effect.getDuration());
@@ -266,7 +299,11 @@ public class CustomHud implements IGuiOverlay {
 
     private static boolean isVisibleTimedEffect(MobEffectInstance effect) {
         return effect.showIcon() && (!effect.isInfiniteDuration()
-                || effect.getEffect() == ModEffects.GREEN_CHARGE.get());
+                || effect.getEffect() == ModEffects.GREEN_CHARGE.get()
+                || effect.getEffect() == ModEffects.WARDEN_ARMOR.get()
+                || effect.getEffect() == ModEffects.WARDEN_WEIGHT.get()
+                || effect.getEffect() == ModEffects.WARDEN_BURST.get()
+                || effect.getEffect() == ModEffects.SCP173_ARMOR.get());
     }
 
     private static int getTimedEffectPriority(MobEffectInstance effect) {
@@ -278,6 +315,7 @@ public class CustomHud implements IGuiOverlay {
         if (player == null) return 0;
         int effectCount = (int) Math.min(MAX_VISIBLE_TIMED_EFFECTS,
                 org.example.maniacrevolution.helsing.HelsingClient.displayedEffects(player).filter(CustomHud::isVisibleTimedEffect).count());
+        if(org.example.maniacrevolution.techies.client.TechiesClient.eligible()) effectCount+=3;
         if (effectCount == 0) return 0;
         int rowCount = (effectCount + MAX_TIMED_EFFECTS_PER_ROW - 1)
                 / MAX_TIMED_EFFECTS_PER_ROW;
@@ -535,12 +573,18 @@ public class CustomHud implements IGuiOverlay {
         gui.fill(x, y, x + ABILITY_ICON_SIZE, y + ABILITY_ICON_SIZE, SLOT_BG);
         ResourceLocation icon = ability.getAbilityIcon();
         RenderSystem.enableBlend();
-        gui.blit(icon, x, y, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE,
-                ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
+        if (ability instanceof org.example.maniacrevolution.techies.client.TechiesAbilityHud) {
+            gui.blit(icon,x,y,0,0,ABILITY_ICON_SIZE,ABILITY_ICON_SIZE,ABILITY_ICON_SIZE,ABILITY_ICON_SIZE);
+        } else if (ability instanceof org.example.maniacrevolution.warden.client.WardenSniffHud)
+            gui.blit(icon, x + 4, y + 4, 0, 0, 16, 16, 16, 16);
+        else gui.blit(icon, x, y, 0, 0, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE);
         RenderSystem.disableBlend();
         gui.renderOutline(x, y, ABILITY_ICON_SIZE, ABILITY_ICON_SIZE, SLOT_BORDER);
 
-        if (ability instanceof ITimedAbility timed && timed.isAbilityActive(player)) {
+        if (ability instanceof org.example.maniacrevolution.warden.client.WardenSniffHud
+                && org.example.maniacrevolution.warden.client.WardenSniffClient.preparation() > 0) {
+            drawCentered(gui, "…", x, y + 8, ABILITY_ICON_SIZE, 0xFF79E5DC);
+        } else if (ability instanceof ITimedAbility timed && timed.isAbilityActive(player)) {
             renderRectangularProgress(gui, x, y, ABILITY_ICON_SIZE,
                     timed.getDurationProgress(player), 0xFF70E28A);
             int remaining = timed.getRemainingDurationSeconds(player);
@@ -750,6 +794,12 @@ public class CustomHud implements IGuiOverlay {
     }
 
     private IItemWithAbility findItemWithAbility(Player player) {
+        if (org.example.maniacrevolution.techies.client.TechiesClient.eligible())
+            return org.example.maniacrevolution.techies.client.TechiesAbilityHud.INSTANCE;
+        if (org.example.maniacrevolution.scp173.client.Scp173GameplayClient.statue())
+            return org.example.maniacrevolution.scp173.client.Scp173LightHud.INSTANCE;
+        if (org.example.maniacrevolution.warden.client.WardenSniffClient.eligible())
+            return org.example.maniacrevolution.warden.client.WardenSniffHud.INSTANCE;
         ItemStack mainHand = player.getMainHandItem();
         if (mainHand.getItem() instanceof IItemWithAbility ability) return ability;
 

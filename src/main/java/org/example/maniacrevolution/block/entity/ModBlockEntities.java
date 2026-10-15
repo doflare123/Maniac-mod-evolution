@@ -21,4 +21,8 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("nightmare_cocoon", () ->
                     BlockEntityType.Builder.of(NightmareCocoonBlockEntity::new,
                             ModBlocks.NIGHTMARE_COCOON.get()).build(null));
+
+    public static final RegistryObject<BlockEntityType<org.example.maniacrevolution.warden.WardenShriekerBlockEntity>> WARDEN_SHRIEKER =
+            BLOCK_ENTITIES.register("warden_shrieker", () -> BlockEntityType.Builder.of(
+                    org.example.maniacrevolution.warden.WardenShriekerBlockEntity::new, ModBlocks.WARDEN_SHRIEKER.get()).build(null));
 }

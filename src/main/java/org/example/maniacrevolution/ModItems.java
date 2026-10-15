@@ -35,6 +35,11 @@ public class ModItems {
             () -> new org.example.maniacrevolution.helsing.HelsingBoltItem(org.example.maniacrevolution.helsing.HelsingBoltItem.Kind.SILVER));
     public static final RegistryObject<Item> HELSING_ENCHANTED_BOLT = ITEMS.register("helsing_enchanted_bolt",
             () -> new org.example.maniacrevolution.helsing.HelsingBoltItem(org.example.maniacrevolution.helsing.HelsingBoltItem.Kind.ENCHANTED));
+    public static final RegistryObject<Item> TECHIES_HELMET = ITEMS.register("techies_helmet", () -> new org.example.maniacrevolution.techies.TechiesItem("techies_helmet"));
+    public static final RegistryObject<Item> TECHIES_REMOTE = ITEMS.register("techies_remote", () -> new org.example.maniacrevolution.techies.TechiesItem("techies_remote"));
+    public static final RegistryObject<Item> TECHIES_MINE_RED = ITEMS.register("techies_mine_red", () -> new org.example.maniacrevolution.techies.TechiesItem("techies_mine_red"));
+    public static final RegistryObject<Item> TECHIES_MINE_GREEN = ITEMS.register("techies_mine_green", () -> new org.example.maniacrevolution.techies.TechiesItem("techies_mine_green"));
+    public static final RegistryObject<Item> TECHIES_MINE_BLUE = ITEMS.register("techies_mine_blue", () -> new org.example.maniacrevolution.techies.TechiesItem("techies_mine_blue"));
 
     public static final RegistryObject<Item> SHOP_TOKEN = ITEMS.register("shop_token",
             () -> new ShopOpenItem(new Item.Properties().stacksTo(1)));
@@ -292,6 +297,9 @@ public class ModItems {
 
     public static final RegistryObject<Item> SLOT_MACHINE = ITEMS.register("slot_machine",
             () -> new BlockItem(ModBlocks.SLOT_MACHINE.get(), new Item.Properties().rarity(Rarity.RARE)));
+
+    public static final RegistryObject<Item> WARDEN_SHRIEKER = ITEMS.register("warden_shrieker",
+            () -> new BlockItem(ModBlocks.WARDEN_SHRIEKER.get(), new Item.Properties()));
 
     public static final RegistryObject<Item> NIGHTMARE_LIGHTER =
             ITEMS.register("nightmare_lighter", NightmareLighterItem::new);

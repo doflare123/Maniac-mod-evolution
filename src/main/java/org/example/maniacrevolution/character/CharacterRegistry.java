@@ -23,6 +23,7 @@ public class CharacterRegistry {
         register(new AlchemistClass());
         register(new ShamanClass());
         register(new HelsingClass());
+        register(new TechiesClass());
         register(new MefedronshchikClass());
         register(new ScientistClass());
         register(new DodepovichClass());
@@ -38,6 +39,8 @@ public class CharacterRegistry {
         register(new DoctorClass());
         register(new FreddyBearClass());
         register(new KeeperOfNightmaresClass());
+        register(new WardenClass());
+        register(new Scp173Class());
 
         initialized = true;
     }

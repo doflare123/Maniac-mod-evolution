@@ -59,6 +59,20 @@
       }
     ]
   },
+  "techies_mine_red_warning": { "sounds": [{ "name": "maniacrev:techies/mine_red_warning", "attenuation_distance": 12 }] },
+  "techies_mine_red_explode": { "sounds": [{ "name": "maniacrev:techies/mine_red_explode", "attenuation_distance": 16 }] },
+  "techies_mine_green_activate": { "sounds": [{ "name": "maniacrev:techies/mine_green_activate", "attenuation_distance": 10 }] },
+  "techies_mine_green_explode": { "sounds": [{ "name": "maniacrev:techies/mine_green_explode", "attenuation_distance": 24 }] },
+  "techies_mine_blue_warning": { "sounds": [{ "name": "maniacrev:techies/mine_blue_warning", "attenuation_distance": 12 }] },
+  "techies_mine_blue_drain": { "sounds": [{ "name": "maniacrev:techies/mine_blue_drain", "attenuation_distance": 16 }] },
+  "techies_install_click": { "sounds": [
+    { "name": "maniacrev:techies/install_click_01", "attenuation_distance": 6 },
+    { "name": "maniacrev:techies/install_click_02", "attenuation_distance": 6 },
+    { "name": "maniacrev:techies/install_click_03", "attenuation_distance": 6 }
+  ] },
+  "scp173_scrape": { "sounds": [{ "name": "maniacrev:scp173/scrape", "attenuation_distance": 16 }] },
+  "scp173_impact": { "sounds": [{ "name": "maniacrev:scp173/impact", "attenuation_distance": 24 }] },
+  "scp173_blackout": { "sounds": [{ "name": "maniacrev:scp173/blackout", "attenuation_distance": 16 }] },
   "slot_death": {
     "sounds": [
       "maniacrev:slot_death"
