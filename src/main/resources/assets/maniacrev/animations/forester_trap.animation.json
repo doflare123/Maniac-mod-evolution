@@ -1,0 +1,107 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "open": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "jaw_front": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "1": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "jaw_back": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "1": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "caught": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "jaw_front": {
+          "rotation": {
+            "0": [
+              78,
+              0,
+              0
+            ],
+            "1": [
+              78,
+              0,
+              0
+            ]
+          }
+        },
+        "jaw_back": {
+          "rotation": {
+            "0": [
+              -78,
+              0,
+              0
+            ],
+            "1": [
+              -78,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "spent": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "jaw_front": {
+          "rotation": {
+            "0": [
+              45,
+              0,
+              0
+            ],
+            "1": [
+              45,
+              0,
+              0
+            ]
+          }
+        },
+        "jaw_back": {
+          "rotation": {
+            "0": [
+              -45,
+              0,
+              0
+            ],
+            "1": [
+              -45,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

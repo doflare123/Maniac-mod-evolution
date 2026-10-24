@@ -1,0 +1,22 @@
+// Optional isolated integration run:
+// .\gradlew.bat -I tools/forester-gametest.gradle runGameTestServer --no-daemon
+allprojects {
+    afterEvaluate {
+        minecraft.runs.gameTestServer {
+            workingDirectory project.file('run/forester-tests')
+            property 'forge.enabledGameTestNamespaces', 'forester_tests'
+            mods {
+                maniacrev { source sourceSets.test }
+            }
+        }
+        tasks.matching { it.name == 'runGameTestServer' }.configureEach {
+            doFirst {
+                project.copy {
+                    from project.file('src/test/resources/gameteststructures/scp173_empty.snbt')
+                    into project.file('run/forester-tests/gameteststructures')
+                }
+                assert project.file('run/forester-tests/gameteststructures/scp173_empty.snbt').isFile()
+            }
+        }
+    }
+}

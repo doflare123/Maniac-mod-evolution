@@ -23,6 +23,10 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, Maniacrev.MODID);
 
+    public static final RegistryObject<Item> FORESTER_TRAP = ITEMS.register("forester_trap", org.example.maniacrevolution.forester.ForesterTrapItem::new);
+    public static final RegistryObject<Item> PEPPER_CANISTER = ITEMS.register("pepper_canister", org.example.maniacrevolution.forester.PepperCanisterItem::new);
+    public static final RegistryObject<Item> FORESTER_FLASHLIGHT = ITEMS.register("forester_flashlight", org.example.maniacrevolution.forester.ForesterFlashlightItem::new);
+
     public static final RegistryObject<Item> HELSING_CROSSBOW = ITEMS.register("helsing_crossbow",
             org.example.maniacrevolution.helsing.HelsingCrossbowItem::new);
     public static final RegistryObject<Item> HELSING_HAT = ITEMS.register("helsing_hat",

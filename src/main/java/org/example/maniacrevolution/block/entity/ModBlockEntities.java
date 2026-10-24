@@ -12,6 +12,10 @@ public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, Maniacrev.MODID);
 
+    public static final RegistryObject<BlockEntityType<org.example.maniacrevolution.forester.ForesterTrapBlockEntity>> FORESTER_TRAP =
+            BLOCK_ENTITIES.register("forester_trap", () -> BlockEntityType.Builder.of(
+                    org.example.maniacrevolution.forester.ForesterTrapBlockEntity::new, ModBlocks.FORESTER_TRAP.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<FNAFGeneratorBlockEntity>> FNAF_GENERATOR =
             BLOCK_ENTITIES.register("fnaf_generator", () ->
                     BlockEntityType.Builder.of(FNAFGeneratorBlockEntity::new,

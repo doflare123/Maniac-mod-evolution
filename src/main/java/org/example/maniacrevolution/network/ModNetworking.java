@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "23";
+    private static final String PROTOCOL_VERSION = "25";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -31,6 +31,18 @@ public class ModNetworking {
     private static int packetId = 0;
 
     public static void register() {
+        CHANNEL.messageBuilder(org.example.maniacrevolution.forester.ForesterWorkPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(org.example.maniacrevolution.forester.ForesterWorkPacket::encode)
+                .decoder(org.example.maniacrevolution.forester.ForesterWorkPacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.forester.ForesterWorkPacket::handle).add();
+        CHANNEL.messageBuilder(org.example.maniacrevolution.forester.ForesterStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(org.example.maniacrevolution.forester.ForesterStatePacket::encode)
+                .decoder(org.example.maniacrevolution.forester.ForesterStatePacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.forester.ForesterStatePacket::handle).add();
+        CHANNEL.messageBuilder(org.example.maniacrevolution.forester.ForesterInputPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(org.example.maniacrevolution.forester.ForesterInputPacket::encode)
+                .decoder(org.example.maniacrevolution.forester.ForesterInputPacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.forester.ForesterInputPacket::handle).add();
         CHANNEL.messageBuilder(org.example.maniacrevolution.helsing.HelsingStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(org.example.maniacrevolution.helsing.HelsingStatePacket::encode)
                 .decoder(org.example.maniacrevolution.helsing.HelsingStatePacket::decode)

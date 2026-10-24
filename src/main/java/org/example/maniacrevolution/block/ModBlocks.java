@@ -14,6 +14,11 @@ public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS =
             DeferredRegister.create(ForgeRegistries.BLOCKS, Maniacrev.MODID);
 
+    public static final RegistryObject<Block> FORESTER_TRAP = BLOCKS.register("forester_trap",
+            () -> new org.example.maniacrevolution.forester.ForesterTrapBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(-1, 3600000).sound(SoundType.METAL).noOcclusion().noLootTable()));
+    public static final RegistryObject<Block> FORESTER_LIGHT = BLOCKS.register("forester_light", org.example.maniacrevolution.forester.ForesterLightBlock::new);
+
     public static final RegistryObject<Block> SALT_BLOCK = BLOCKS.register("salt_block",
             () -> new SaltBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.SNOW)

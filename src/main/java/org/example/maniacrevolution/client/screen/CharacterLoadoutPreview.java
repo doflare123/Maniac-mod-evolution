@@ -27,6 +27,11 @@ final class CharacterLoadoutPreview {
         List<Entry> entries = new ArrayList<>();
 
         switch (character.getId()) {
+            case "forester" -> {
+                addDefined(entries, character, 0, new ItemStack(ModItems.FORESTER_TRAP.get()), Placement.OTHER, null);
+                addDefined(entries, character, 1, new ItemStack(ModItems.PEPPER_CANISTER.get()), Placement.OTHER, null);
+                addDefined(entries, character, 2, new ItemStack(ModItems.FORESTER_FLASHLIGHT.get()), Placement.MAIN_HAND, null);
+            }
             case "helsing" -> {
                 addDefined(entries, character, 0, new ItemStack(ModItems.HELSING_CROSSBOW.get()), Placement.MAIN_HAND, null);
                 addDefined(entries, character, 1, new ItemStack(ModItems.HELSING_HAT.get()), Placement.HEAD, null);

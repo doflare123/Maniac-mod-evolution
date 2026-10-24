@@ -11,6 +11,13 @@ public class ModEffects {
     public static final DeferredRegister<MobEffect> MOB_EFFECTS =
             DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, "maniacrev");
 
+    public static final RegistryObject<MobEffect> FORESTER_TRAPPED = MOB_EFFECTS.register("forester_trapped",
+            () -> new org.example.maniacrevolution.forester.ForesterEffect(0xA9A7A0, true));
+    public static final RegistryObject<MobEffect> PEPPER = MOB_EFFECTS.register("pepper",
+            () -> new org.example.maniacrevolution.forester.ForesterEffect(0xC99C63, false));
+    public static final RegistryObject<MobEffect> FORESTER_BLIND = MOB_EFFECTS.register("forester_blind",
+            () -> new org.example.maniacrevolution.forester.ForesterEffect(0xFFF5C4, false));
+
     public static final RegistryObject<MobEffect> HELSING_PROTECTION = MOB_EFFECTS.register("helsing_protection",
             () -> new org.example.maniacrevolution.helsing.HelsingEffect(MobEffectCategory.BENEFICIAL, 0xCE3853));
     public static final RegistryObject<MobEffect> HELSING_WEAKNESS = MOB_EFFECTS.register("helsing_weakness",

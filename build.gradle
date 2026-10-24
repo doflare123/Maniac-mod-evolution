@@ -138,12 +138,37 @@ tasks.register('verifyRadialSelection', JavaExec) {
     mainClass = 'org.example.maniacrevolution.client.screen.radial.RadialSelectionMathTest'
 }
 
+tasks.register('verifyForester', JavaExec) {
+    group = 'verification'
+    description = 'Checks forester trap timing and skill-check target windows.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.forester.ForesterRulesTest'
+}
+
+def foresterTestRuntime = layout.buildDirectory.dir('forester-test-runtime')
+tasks.register('extractForesterTestRuntime', Copy) {
+    from { zipTree(configurations.runtimeClasspath.files.find { it.name.startsWith('geckolib-') }) }
+    include 'META-INF/jarjar/mclib-20.jar'
+    into foresterTestRuntime
+}
+
+tasks.register('verifyForesterAssets', JavaExec) {
+    group = 'verification'
+    description = 'Bakes the forester GeckoLib mesh and validates item resources.'
+    dependsOn tasks.named('testClasses')
+    dependsOn tasks.named('extractForesterTestRuntime')
+    classpath = sourceSets.test.runtimeClasspath + fileTree(foresterTestRuntime) { include '**/*.jar' }
+    mainClass = 'org.example.maniacrevolution.forester.ForesterAssetsTest'
+}
+
 tasks.named('check') {
     dependsOn tasks.named('verifyNightmareSync')
     dependsOn tasks.named('verifyGameSettings')
     dependsOn tasks.named('verifyPlayerDataSync')
     dependsOn tasks.named('verifyHelsing')
     dependsOn tasks.named('verifyRadialSelection')
+    dependsOn tasks.named('verifyForester')
 }
 // ──────────────────────────────────────────────────────────────────
 

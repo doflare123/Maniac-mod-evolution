@@ -1,0 +1,12 @@
+// Opt-in first-person model checks; opens an isolated client, saves PNGs and closes it.
+// .\gradlew.bat -I tools/forester-render.gradle runClient --no-daemon
+allprojects {
+    afterEvaluate {
+        minecraft.runs.client {
+            workingDirectory project.file('run/forester-client')
+            property 'maniacrev.forester.renderProbe', 'true'
+            mods { maniacrev { source sourceSets.test } }
+            args '--width', '960', '--height', '540'
+        }
+    }
+}

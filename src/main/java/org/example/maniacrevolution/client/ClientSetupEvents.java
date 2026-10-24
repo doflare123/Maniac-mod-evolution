@@ -29,6 +29,8 @@ public class ClientSetupEvents {
 
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModBlockEntities.FORESTER_TRAP.get(), context -> new org.example.maniacrevolution.forester.ForesterTrapRenderer());
+        event.registerEntityRenderer(ModEntities.PEPPER_CANISTER.get(), context -> new net.minecraft.client.renderer.entity.ThrownItemRenderer<>(context, .7F, false));
         event.registerEntityRenderer(ModEntities.MIMIC_BLOCK.get(), MimicBlockRenderer::new);
         event.registerEntityRenderer(ModEntities.PLAGUE_ORB.get(), PlagueOrbRenderer::new);
         event.registerEntityRenderer(ModEntities.RAGE_BEE.get(),
