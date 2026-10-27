@@ -19,6 +19,10 @@ public final class ForesterRulesTest {
         check(ForesterRules.REARM == 50 && ForesterRules.COLLECT == 30, "Approved interaction timings");
         check(ForesterRules.PEPPER_BURN == 300 && ForesterRules.PEPPER_EFFECT == 100, "Smoke and lingering duration are independent");
         check(ForesterRules.FLASH_DURATION == 60 && ForesterRules.FLASH_BLIND == 40, "Beam and whiteout durations are independent");
-        System.out.println("Forester: delay, full game window, reachable targets, interaction and effect timing checks passed.");
+        check(!ForesterRules.workInterrupted(.1 * .1, .2F, 5), "Small movement and camera adjustments preserve work");
+        check(!ForesterRules.workInterrupted(0, -358, 0), "Crossing the yaw wrap is a small turn");
+        check(ForesterRules.workInterrupted(.31 * .31, 0, 0), "Walking beyond the action's movement tolerance cancels");
+        check(ForesterRules.workInterrupted(0, 13, 0) && ForesterRules.workInterrupted(0, 0, -13), "Large yaw and pitch turns cancel");
+        System.out.println("Forester: trap timing, skill-check windows and forgiving work cancellation checks passed.");
     }
 }

@@ -139,7 +139,11 @@ public final class ForesterManager {
         return hit.getType() == HitResult.Type.BLOCK && hit.getBlockPos().equals(pos);
     }
     private static boolean workable(ServerPlayer player, BlockPos pos) {
-        if (!canUse(player) || !aimedAt(player, pos) || player.isUsingItem()) return false;
+        return workable(player, pos, true);
+    }
+    private static boolean workable(ServerPlayer player, BlockPos pos, boolean checkAim) {
+        if (!canUse(player) || player.isUsingItem() || !player.serverLevel().hasChunkAt(pos)
+                || player.getEyePosition().distanceToSqr(Vec3.atCenterOf(pos)) > 36 || (checkAim && !aimedAt(player, pos))) return false;
         var state = player.level().getBlockState(pos);
         return state.is(ModBlocks.FORESTER_TRAP.get()) && state.getValue(ForesterTrapBlock.STATE) == ForesterTrapBlock.State.SPENT;
     }
@@ -168,10 +172,14 @@ public final class ForesterManager {
         return new BlockPlaceContext(player, hand, player.getItemInHand(hand), hit).getClickedPos().immutable();
     }
     private static boolean placeable(ServerPlayer player, BlockPos pos, InteractionHand hand) {
+        return placeable(player, pos, hand, true);
+    }
+    private static boolean placeable(ServerPlayer player, BlockPos pos, InteractionHand hand, boolean checkAim) {
         var level = player.serverLevel();
         if (!canUse(player) || !player.getItemInHand(hand).is(ModItems.FORESTER_TRAP.get()) || !level.hasChunkAt(pos)
                 || !level.getWorldBorder().isWithinBounds(pos) || level.isOutsideBuildHeight(pos) || !level.mayInteract(player, pos)
-                || !pos.equals(placementTarget(player, hand)) || !level.getBlockState(pos).isAir()) return false;
+                || player.getEyePosition().distanceToSqr(Vec3.atCenterOf(pos)) > 36
+                || (checkAim && !pos.equals(placementTarget(player, hand))) || !level.getBlockState(pos).isAir()) return false;
         var state = ModBlocks.FORESTER_TRAP.get().defaultBlockState();
         return state.canSurvive(level, pos) && level.isUnobstructed(state, pos, net.minecraft.world.phys.shapes.CollisionContext.of(player));
     }
@@ -222,11 +230,10 @@ public final class ForesterManager {
         } else if (trapped(player)) player.removeEffect(ModEffects.FORESTER_TRAPPED.get());
         Work work = WORK.get(player.getUUID());
         if (work != null) {
-            boolean moved = work.origin.distanceToSqr(player.position()) > .0001
-                    || Math.abs(net.minecraft.util.Mth.wrapDegrees(player.getYRot() - work.yaw)) > .05F
-                    || Math.abs(player.getXRot() - work.pitch) > .05F;
+            boolean moved = ForesterRules.workInterrupted(work.origin.distanceToSqr(player.position()),
+                    player.getYRot() - work.yaw, player.getXRot() - work.pitch);
             if (work.level != player.level() || moved || work.slot != player.getInventory().selected || work.stack != player.getItemInHand(work.hand)
-                    || !(work.kind == PLACE ? placeable(player, work.pos, work.hand) : workable(player, work.pos))) {
+                    || !(work.kind == PLACE ? placeable(player, work.pos, work.hand, false) : workable(player, work.pos, false))) {
                 cancelWork(player);
             } else if (now - work.start >= work.duration()) {
                 WORK.remove(player.getUUID());

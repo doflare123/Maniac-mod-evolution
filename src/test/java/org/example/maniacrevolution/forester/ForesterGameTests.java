@@ -224,10 +224,21 @@ public final class ForesterGameTests {
             s.spent(); s.aim();
             ForesterManager.workInput(s.forester, s.trap, false);
             h.assertTrue(ForesterManager.state(s.forester).work() >= 0, "Valid rearm starts");
-            s.forester.setYRot(s.forester.getYRot() + .2F);
-            h.assertTrue(ForesterManager.aimedAt(s.forester, s.trap), "Small camera turn still points at trap");
+            float startingYaw = s.forester.getYRot();
+            s.forester.setYRot(startingYaw + .2F);
             s.tick(s.forester);
-            h.assertTrue(ForesterManager.state(s.forester).work() == -1, "Any intentional camera turn cancels work");
+            h.assertTrue(ForesterManager.state(s.forester).work() >= 0, "Small camera turn preserves work");
+            s.forester.setXRot(s.forester.getXRot() - 8);
+            h.assertTrue(!ForesterManager.aimedAt(s.forester, s.trap), "Tolerated camera adjustment can leave the thin trap's hitbox");
+            s.tick(s.forester);
+            h.assertTrue(ForesterManager.state(s.forester).work() >= 0, "Losing exact aim within the tolerance does not cancel");
+            s.forester.setPos(s.forester.position().add(.1, 0, 0)); s.tick(s.forester);
+            h.assertTrue(ForesterManager.state(s.forester).work() >= 0, "Small positional shift preserves work");
+            s.forester.setYRot(startingYaw + 13); s.tick(s.forester);
+            h.assertTrue(ForesterManager.state(s.forester).work() == -1, "A substantial camera turn cancels work");
+            s.aim(); ForesterManager.workInput(s.forester, s.trap, false);
+            s.forester.setPos(s.forester.position().add(.31, 0, 0)); s.tick(s.forester);
+            h.assertTrue(ForesterManager.state(s.forester).work() == -1, "Walking beyond the positional tolerance cancels work");
             s.aim(); ForesterManager.workInput(s.forester, s.trap, true);
             s.forester.getInventory().selected = 1; s.tick(s.forester);
             h.assertTrue(ForesterManager.state(s.forester).work() == -1 && s.forester.getInventory().countItem(ModItems.FORESTER_TRAP.get()) == 0, "Slot switch cancels collection without duplicating trap");
@@ -247,10 +258,12 @@ public final class ForesterGameTests {
         ForesterManager.input(s.forester, place);
         h.assertTrue(ForesterManager.state(s.forester).work() == 0 && stack.getCount() == 2, "Single press starts adventure placement without spending early");
         ForesterManager.input(s.forester, new ForesterInputPacket(ForesterInputPacket.Action.RELEASE, BlockPos.ZERO, InteractionHand.MAIN_HAND, 0, 0));
+        s.forester.setXRot(s.forester.getXRot() - 8);
+        h.assertTrue(!s.trap.equals(ForesterManager.placementTarget(s.forester, InteractionHand.MAIN_HAND)), "Tolerated turn can change the currently aimed placement cell");
         h.runAfterDelay(51, () -> {
             try {
                 s.tick(s.forester);
-                h.assertTrue(h.getLevel().getBlockState(s.trap).is(ModBlocks.FORESTER_TRAP.get()) && stack.getCount() == 1, "Adventure placement completes after mouse release and consumes exactly one item");
+                h.assertTrue(h.getLevel().getBlockState(s.trap).is(ModBlocks.FORESTER_TRAP.get()) && stack.getCount() == 1, "Adventure placement completes at the original target after a small camera adjustment");
                 s.spent(); s.aim();
                 ForesterManager.input(s.forester, new ForesterInputPacket(ForesterInputPacket.Action.COLLECT, s.trap, InteractionHand.MAIN_HAND, 0, 0));
             } catch (Throwable failure) { s.close(); throw failure; }

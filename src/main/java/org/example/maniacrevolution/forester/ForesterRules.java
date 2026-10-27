@@ -9,6 +9,9 @@ public final class ForesterRules {
     public static final double PEPPER_RADIUS = 5, FLASH_RANGE = 10;
     public static final double THROW_SPEED = 1.1, GRAVITY = (double) .03F, DRAG = (double) .99F, WATER_DRAG = (double) .8F;
     public static final float ZONE_WIDTH = 0.16F;
+    public static final double WORK_MOVE_TOLERANCE = 0.3;
+    public static final float WORK_TURN_TOLERANCE = 12;
+    public static final int WORK_INPUT_GRACE = 5;
 
     private ForesterRules() {}
 
@@ -23,4 +26,11 @@ public final class ForesterRules {
     }
 
     public static boolean expired(int age) { return age >= TRAP_DELAY + TRAP_GAME; }
+
+    /** Compare against the action's start, so gradual motion cannot bypass cancellation. */
+    public static boolean workInterrupted(double distanceSquared, float yawDelta, float pitchDelta) {
+        return distanceSquared > WORK_MOVE_TOLERANCE * WORK_MOVE_TOLERANCE
+                || Math.abs(Math.IEEEremainder(yawDelta, 360)) > WORK_TURN_TOLERANCE
+                || Math.abs(pitchDelta) > WORK_TURN_TOLERANCE;
+    }
 }

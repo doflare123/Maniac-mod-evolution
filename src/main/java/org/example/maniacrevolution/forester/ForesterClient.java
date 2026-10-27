@@ -30,11 +30,14 @@ public final class ForesterClient {
     private static boolean wasSpace;
     private static boolean wasUse, pendingWork;
     private static float workYaw, workPitch;
+    private static Vec3 workOrigin = Vec3.ZERO;
+    private static int movementIntentTicks;
     private ForesterClient() {}
     public static void receive(ForesterStatePacket packet) {
         var mc = Minecraft.getInstance();
         world = mc.level; state = packet; received = world == null ? 0 : world.getGameTime();
         pendingWork = packet.work() >= 0;
+        if (!pendingWork) movementIntentTicks = 0;
     }
     private static boolean fresh() {
         var mc = Minecraft.getInstance();
@@ -45,7 +48,7 @@ public final class ForesterClient {
         if (event.phase != TickEvent.Phase.END) return;
         var mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || mc.level != world) {
-            state = null; world = mc.level; wasSpace = false; wasUse = false; pendingWork = false; ForesterWorkAnimation.clear();
+            state = null; world = mc.level; wasSpace = false; wasUse = false; pendingWork = false; movementIntentTicks = 0; ForesterWorkAnimation.clear();
         }
         if (mc.player == null || mc.level == null) return;
         boolean space = GLFW.glfwGetKey(mc.getWindow().getWindow(), GLFW.GLFW_KEY_SPACE) == GLFW.GLFW_PRESS;
@@ -54,8 +57,8 @@ public final class ForesterClient {
         wasSpace = space;
         boolean use = mc.options.keyUse.isDown();
         if (!use && wasUse) request(ForesterInputPacket.Action.RELEASE, BlockPos.ZERO, InteractionHand.MAIN_HAND);
-        if (pendingWork && (mc.screen != null || Math.abs(net.minecraft.util.Mth.wrapDegrees(mc.player.getYRot() - workYaw)) > .05F
-                || Math.abs(mc.player.getXRot() - workPitch) > .05F)) cancelWork();
+        if (pendingWork && (mc.screen != null || ForesterRules.workInterrupted(workOrigin.distanceToSqr(mc.player.position()),
+                mc.player.getYRot() - workYaw, mc.player.getXRot() - workPitch))) cancelWork();
         if (mc.screen == null && use && !wasUse && !pendingWork && ForesterManager.canUse(mc.player) && mc.hitResult instanceof BlockHitResult hit) {
             InteractionHand hand = mc.player.getMainHandItem().getItem() instanceof ForesterTrapItem ? InteractionHand.MAIN_HAND
                     : mc.player.getOffhandItem().getItem() instanceof ForesterTrapItem ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
@@ -77,11 +80,12 @@ public final class ForesterClient {
     }
     private static void begin(ForesterInputPacket.Action action, BlockPos pos, InteractionHand hand) {
         var player = Minecraft.getInstance().player;
-        workYaw = player.getYRot(); workPitch = player.getXRot(); pendingWork = true;
+        workYaw = player.getYRot(); workPitch = player.getXRot(); workOrigin = player.position(); movementIntentTicks = 0; pendingWork = true;
         request(action, pos, hand);
     }
     private static void cancelWork() {
         pendingWork = false;
+        movementIntentTicks = 0;
         request(ForesterInputPacket.Action.CANCEL, BlockPos.ZERO, InteractionHand.MAIN_HAND);
     }
     @SubscribeEvent public static void useInput(InputEvent.InteractionKeyMappingTriggered event) {
@@ -95,8 +99,10 @@ public final class ForesterClient {
     }
     @SubscribeEvent public static void input(MovementInputUpdateEvent event) {
         var movement = event.getInput();
-        if (pendingWork && (movement.up || movement.down || movement.left || movement.right || movement.jumping || movement.shiftKeyDown
-                || movement.forwardImpulse != 0 || movement.leftImpulse != 0)) cancelWork();
+        boolean moving = movement.up || movement.down || movement.left || movement.right || movement.jumping || movement.shiftKeyDown
+                || movement.forwardImpulse != 0 || movement.leftImpulse != 0;
+        movementIntentTicks = pendingWork && moving ? movementIntentTicks + 1 : 0;
+        if (movementIntentTicks >= ForesterRules.WORK_INPUT_GRACE) cancelWork();
         if (!ForesterManager.trapped(event.getEntity())) return;
         var input = event.getInput(); input.forwardImpulse = 0; input.leftImpulse = 0;
         input.up = input.down = input.left = input.right = input.jumping = input.shiftKeyDown = false;
