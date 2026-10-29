@@ -120,6 +120,11 @@ public class HackSession {
                 : actualPoints / requestedPoints;
         currentPoints += actualPoints;
 
+        Map<ServerPlayer, Float> actualContributions = new LinkedHashMap<>();
+        contributions.forEach((player, points) -> actualContributions.put(player, points * contributionScale));
+        org.example.maniacrevolution.engineer.EngineerManager.onProgress(computerId,
+                currentPoints - actualPoints, currentPoints, actualContributions);
+
         for (Map.Entry<ServerPlayer, Float> entry : contributions.entrySet()) {
             float actualContribution = entry.getValue() * contributionScale;
             if (actualContribution > 0.0F) {
@@ -216,6 +221,7 @@ public class HackSession {
         for (ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
             if (p == hacker) continue;
             if (org.example.maniacrevolution.techies.TechiesManager.placing(p)) continue;
+            if (org.example.maniacrevolution.engineer.EngineerManager.busy(p)) continue;
             if (p.level() != level) continue;
             if (!isSurvivorAdventure(p)) continue;
             if (p.position().distanceToSqr(center) <= r2) result.add(p);
@@ -351,6 +357,7 @@ public class HackSession {
         float actual = Math.min(requestedPoints,
                 Math.max(0.0F, HackConfig.HACK_POINTS_REQUIRED - currentPoints));
         currentPoints += actual;
+        org.example.maniacrevolution.engineer.EngineerManager.observeProgress(computerId, currentPoints);
         updateBlockDisplay(level);
         return actual;
     }
@@ -358,6 +365,7 @@ public class HackSession {
     float removeSproutPoints(ServerLevel level, float requestedPoints) {
         if (finished || requestedPoints <= 0.0F) return 0.0F;
         float actual = Math.min(requestedPoints, Math.max(0.0F, currentPoints));
+        org.example.maniacrevolution.engineer.EngineerManager.observeProgress(computerId, currentPoints);
         currentPoints -= actual;
         updateBlockDisplay(level);
         return actual;

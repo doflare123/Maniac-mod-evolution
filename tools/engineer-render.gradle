@@ -1,0 +1,11 @@
+// Isolated client render probe, saves PNGs and closes: gradlew -I tools/engineer-render.gradle runClient
+allprojects {
+    afterEvaluate {
+        minecraft.runs.client {
+            workingDirectory project.file('run/engineer-client')
+            property 'maniacrev.engineer.renderProbe', 'true'
+            mods { maniacrev { source sourceSets.test } }
+            args '--width', '960', '--height', '640'
+        }
+    }
+}

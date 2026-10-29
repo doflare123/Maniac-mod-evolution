@@ -27,6 +27,12 @@ final class CharacterLoadoutPreview {
         List<Entry> entries = new ArrayList<>();
 
         switch (character.getId()) {
+            case "engineer" -> {
+                addDefined(entries, character, 0, new ItemStack(ModItems.ENGINEER_TABLET.get()), Placement.MAIN_HAND, null);
+                addDefined(entries, character, 1, new ItemStack(ModItems.ENGINEER_REMOTE.get()), Placement.OTHER, null);
+                addDefined(entries, character, 2, new ItemStack(ModItems.ENGINEER_BARRICADE.get()), Placement.OTHER, null);
+                addDefined(entries, character, 3, new ItemStack(ModItems.ENGINEER_PANEL.get()), Placement.OTHER, null);
+            }
             case "forester" -> {
                 addDefined(entries, character, 0, new ItemStack(ModItems.FORESTER_TRAP.get()), Placement.OTHER, null);
                 addDefined(entries, character, 1, new ItemStack(ModItems.PEPPER_CANISTER.get()), Placement.OTHER, null);

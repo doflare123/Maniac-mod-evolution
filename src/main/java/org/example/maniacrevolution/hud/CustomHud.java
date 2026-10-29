@@ -83,6 +83,7 @@ public class CustomHud implements IGuiOverlay {
     private static final int HP_TRAIL_COLOR = 0xFFC98A8A;
     private static final int MANA_COLOR = 0xFF3C9FE8;
     private static final int ABSORPTION_COLOR = 0xFFFFC94A;
+    private static final int SCRAP_ARMOR_COLOR = 0xFF65717D;
     private static final int PENALTY_BG = 0xD02A1115;
     private static final int PENALTY_BORDER = 0xFFD54A54;
 
@@ -148,6 +149,7 @@ public class CustomHud implements IGuiOverlay {
         int hudY = screenHeight - HUD_HEIGHT - 4 - (chatOpen ? CHAT_HUD_OFFSET : 0);
 
         renderDock(gui, screenWidth / 2, hudY, player);
+        org.example.maniacrevolution.engineer.client.EngineerClient.resourceHud(gui, screenWidth - 5, screenHeight - 5 - (chatOpen ? CHAT_HUD_OFFSET : 0));
         int timedEffectsHeight = renderTimedEffects(gui, partialTick, screenWidth,
                 hudY - TIMED_EFFECT_SECTION_GAP, player);
         renderContextStatus(gui, screenWidth / 2, hudY - 16 - timedEffectsHeight, player);
@@ -401,32 +403,43 @@ public class CustomHud implements IGuiOverlay {
 
     private void renderHealthBar(GuiGraphics gui, Player player, int x, int y) {
         int innerWidth = RESOURCE_BAR_WIDTH - 2;
+        float scrapArmor = org.example.maniacrevolution.engineer.client.EngineerClient.armor();
+        float absorption = player.getAbsorptionAmount();
+        // A reserve extends effective HP, so it stays visible even at full health.
+        float capacity = Math.max(1, player.getMaxHealth() + (scrapArmor > 0 ? scrapArmor + absorption : 0));
+        float healthScale = player.getMaxHealth() / capacity;
         gui.fill(x, y, x + RESOURCE_BAR_WIDTH, y + RESOURCE_BAR_HEIGHT, 0xE02B1114);
 
-        int trailWidth = Math.round(innerWidth * Mth.clamp(animation.healthTrail(), 0.0f, 1.0f));
-        int healthWidth = Math.round(innerWidth * Mth.clamp(animation.health(), 0.0f, 1.0f));
+        int trailWidth = Math.round(innerWidth * Mth.clamp(animation.healthTrail(), 0.0f, 1.0f) * healthScale);
+        int healthWidth = Math.round(innerWidth * Mth.clamp(animation.health(), 0.0f, 1.0f) * healthScale);
         if (trailWidth > 0) gui.fill(x + 1, y + 1, x + 1 + trailWidth, y + RESOURCE_BAR_HEIGHT - 1, HP_TRAIL_COLOR);
         if (healthWidth > 0) gui.fill(x + 1, y + 1, x + 1 + healthWidth, y + RESOURCE_BAR_HEIGHT - 1, HP_COLOR);
 
         float plague = Math.min(ClientPlagueData.getProgress(), animation.health());
-        int plagueWidth = Math.round(innerWidth * Mth.clamp(plague, 0.0f, 1.0f));
+        int plagueWidth = Math.round(innerWidth * Mth.clamp(plague, 0.0f, 1.0f) * healthScale);
         if (plagueWidth > 0) {
             int plagueColor = lerpColor(0xFF236417, 0xFF6DFF3A, ClientPlagueData.getProgress());
             gui.fill(x + 1, y + 1, x + 1 + plagueWidth, y + RESOURCE_BAR_HEIGHT - 1, plagueColor);
         }
 
-        float absorption = player.getAbsorptionAmount();
+        int protectedWidth = Math.min(innerWidth, healthWidth + Math.round(innerWidth * scrapArmor / capacity));
+        if (scrapArmor > 0) {
+            gui.fill(x + 1 + healthWidth, y + 1, x + 1 + protectedWidth, y + RESOURCE_BAR_HEIGHT - 1, SCRAP_ARMOR_COLOR);
+            gui.fill(x + 1 + healthWidth, y + 1, x + 2 + healthWidth, y + RESOURCE_BAR_HEIGHT - 1, 0xFFD5DAE0);
+        }
         if (absorption > 0.0f) {
             int totalWidth = Math.round(innerWidth * Mth.clamp(
-                    (player.getHealth() + absorption) / player.getMaxHealth(), 0.0f, 1.0f));
-            if (totalWidth > healthWidth) {
-                gui.fill(x + 1 + healthWidth, y + 1, x + 1 + totalWidth,
+                    (player.getHealth() + scrapArmor + absorption) / capacity, 0.0f, 1.0f));
+            if (totalWidth > protectedWidth) {
+                gui.fill(x + 1 + protectedWidth, y + 1, x + 1 + totalWidth,
                         y + RESOURCE_BAR_HEIGHT - 1, ABSORPTION_COLOR);
             }
         }
 
         gui.renderOutline(x, y, RESOURCE_BAR_WIDTH, RESOURCE_BAR_HEIGHT, PANEL_BORDER);
         String text = Math.round(player.getHealth()) + " / " + Math.round(player.getMaxHealth());
+        if (scrapArmor > 0) text = net.minecraft.network.chat.Component.translatable("hud.maniacrev.engineer.health_armor",
+                Math.round(player.getHealth()), Math.round(player.getMaxHealth()), org.example.maniacrevolution.engineer.client.EngineerClient.armorText(scrapArmor)).getString();
         if (absorption > 0.0f) text += " +" + Math.round(absorption);
         drawCentered(gui, text, x, y + 3, RESOURCE_BAR_WIDTH, 0xFFFFFFFF);
 

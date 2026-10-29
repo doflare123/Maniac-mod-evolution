@@ -1,0 +1,11 @@
+// End-to-end local UI check; creates its own test world and closes the client.
+allprojects {
+    afterEvaluate {
+        minecraft.runs.client {
+            workingDirectory project.file('run/engineer-items-client')
+            property 'maniacrev.engineer.itemsProbe', 'true'
+            mods { maniacrev { source sourceSets.test } }
+            args '--width', '960', '--height', '640'
+        }
+    }
+}

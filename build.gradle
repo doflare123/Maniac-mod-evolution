@@ -163,12 +163,21 @@ tasks.register('verifyForesterAssets', JavaExec) {
 }
 
 tasks.named('check') {
+    dependsOn tasks.named('verifyEngineer')
     dependsOn tasks.named('verifyNightmareSync')
     dependsOn tasks.named('verifyGameSettings')
     dependsOn tasks.named('verifyPlayerDataSync')
     dependsOn tasks.named('verifyHelsing')
     dependsOn tasks.named('verifyRadialSelection')
     dependsOn tasks.named('verifyForester')
+}
+
+tasks.register('verifyEngineer', JavaExec) {
+    group = 'verification'
+    description = 'Checks engineer movement tolerance and non-repeatable scrap progress accounting.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.engineer.EngineerRulesTest'
 }
 // ──────────────────────────────────────────────────────────────────
 

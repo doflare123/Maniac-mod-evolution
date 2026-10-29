@@ -39,6 +39,10 @@ public class ArmorAbilityKeyHandler {
     }
 
     private static void handleArmorAbilityActivation(LocalPlayer player) {
+        if (org.example.maniacrevolution.engineer.client.EngineerClient.eligible()) {
+            org.example.maniacrevolution.engineer.client.EngineerClient.open(false);
+            return;
+        }
         if (org.example.maniacrevolution.techies.client.TechiesClient.eligible()) {
             org.example.maniacrevolution.techies.client.TechiesClient.openMenu();
             return;

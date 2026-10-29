@@ -136,6 +136,7 @@ public class HackManager {
 
             float rollback = HackConfig.HACK_POINTS_REQUIRED * rollbackPercent;
             float newProgress = Math.max(0f, current - rollback);
+            org.example.maniacrevolution.engineer.EngineerManager.observeProgress(computerId, current);
             hackProgress.put(computerId, newProgress);
 
             for (HackSession session : activeSessions.values()) {
@@ -163,6 +164,7 @@ public class HackManager {
         float current = getLiveProgress(computerId);
         float updated = Math.min(HackConfig.HACK_POINTS_REQUIRED,
                 current + HackConfig.HACK_POINTS_REQUIRED * addPercent);
+        org.example.maniacrevolution.engineer.EngineerManager.observeProgress(computerId, updated);
         hackProgress.put(computerId, updated);
 
         if (updated >= HackConfig.HACK_POINTS_REQUIRED) {
@@ -192,6 +194,7 @@ public class HackManager {
         if (current <= 0.0F) return false;
 
         stopSessionsForComputer(computerId, true);
+        org.example.maniacrevolution.engineer.EngineerManager.observeProgress(computerId, current);
         float updated = Math.max(0.0F,
                 current - HackConfig.HACK_POINTS_REQUIRED * rollbackPercent);
         hackProgress.put(computerId, updated);
@@ -235,6 +238,7 @@ public class HackManager {
 
         float rollback = HackConfig.HACK_POINTS_REQUIRED * rollbackPercent;
         float newProgress = Math.max(0f, current - rollback);
+        org.example.maniacrevolution.engineer.EngineerManager.observeProgress(computerId, current);
         hackProgress.put(computerId, newProgress);
 
         // Обновляем активную сессию
@@ -285,6 +289,7 @@ public class HackManager {
      * Если сессии нет — создаём. Если уже взломан — ничего.
      */
     public void onPlayerActivate(ServerPlayer player, BlockPos pos, int computerId) {
+        if (org.example.maniacrevolution.engineer.EngineerManager.busy(player)) return;
         if (org.example.maniacrevolution.techies.TechiesManager.placing(player)) {
             player.displayClientMessage(net.minecraft.network.chat.Component.literal("Сначала завершите установку мины"), true);
             return;
@@ -560,6 +565,8 @@ public class HackManager {
                 session.currentPoints = Math.min(before + bonus,
                         HackConfig.HACK_POINTS_REQUIRED);
                 float actualBonus = session.currentPoints - before;
+                org.example.maniacrevolution.engineer.EngineerManager.onProgress(session.computerId, before,
+                        session.currentPoints, java.util.Map.of(player, actualBonus));
                 org.example.maniacrevolution.stats.StatsManager.count(player, "qte_hack_bonus_points", actualBonus);
                 if (actualBonus > 0.0F) {
                     SberSproutManager.onContribution(player, session, actualBonus);
@@ -580,6 +587,7 @@ public class HackManager {
         if (player == null || penalty <= 0.0F) return false;
         for (HackSession session : activeSessions.values()) {
             if (session.hasQTEParticipant(player)) {
+                org.example.maniacrevolution.engineer.EngineerManager.observeProgress(session.computerId, session.currentPoints);
                 session.currentPoints = Math.max(0.0F, session.currentPoints - penalty);
                 Maniacrev.LOGGER.debug("[HackManager] QTE emergency-overclock penalty -{} for {} -> {}",
                         penalty,

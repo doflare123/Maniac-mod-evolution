@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "25";
+    private static final String PROTOCOL_VERSION = "28";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -31,6 +31,12 @@ public class ModNetworking {
     private static int packetId = 0;
 
     public static void register() {
+        CHANNEL.messageBuilder(org.example.maniacrevolution.engineer.EngineerActionPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(org.example.maniacrevolution.engineer.EngineerActionPacket::encode).decoder(org.example.maniacrevolution.engineer.EngineerActionPacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.engineer.EngineerActionPacket::handle).add();
+        CHANNEL.messageBuilder(org.example.maniacrevolution.engineer.EngineerStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(org.example.maniacrevolution.engineer.EngineerStatePacket::encode).decoder(org.example.maniacrevolution.engineer.EngineerStatePacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.engineer.EngineerStatePacket::handle).add();
         CHANNEL.messageBuilder(org.example.maniacrevolution.forester.ForesterWorkPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(org.example.maniacrevolution.forester.ForesterWorkPacket::encode)
                 .decoder(org.example.maniacrevolution.forester.ForesterWorkPacket::decode)

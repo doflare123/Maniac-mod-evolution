@@ -1,0 +1,35 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.engineer_panel.idle": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {}
+    },
+    "animation.engineer_panel.play": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "antenna": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              -4
+            ],
+            "0.5": [
+              0,
+              0,
+              4
+            ],
+            "1": [
+              0,
+              0,
+              -4
+            ]
+          }
+        }
+      }
+    }
+  }
+}

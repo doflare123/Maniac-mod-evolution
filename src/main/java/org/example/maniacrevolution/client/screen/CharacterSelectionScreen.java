@@ -59,13 +59,15 @@ public class CharacterSelectionScreen extends Screen {
             Map.entry("warden", new FrescoDimensions(1024, 1536)),
             Map.entry("scp_173", new FrescoDimensions(1024, 1536)),
             Map.entry("techies", new FrescoDimensions(1024, 1536)),
+            Map.entry("engineer", new FrescoDimensions(512, 512)),
             Map.entry("forester", new FrescoDimensions(128, 192))
     );
 
     private static final Map<String, FrescoDimensions> SELECTION_FRESCO_DIMENSIONS = Map.of(
             "warden", new FrescoDimensions(2172, 724),
             "scp_173", new FrescoDimensions(2170, 725),
-            "techies", new FrescoDimensions(2172, 724)
+            "techies", new FrescoDimensions(2172, 724),
+            "engineer", new FrescoDimensions(512, 512)
     );
 
     private final CharacterType type;

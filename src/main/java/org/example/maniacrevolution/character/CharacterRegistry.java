@@ -24,6 +24,7 @@ public class CharacterRegistry {
         register(new ShamanClass());
         register(new HelsingClass());
         register(new TechiesClass());
+        register(new EngineerClass());
         register(new ForesterClass());
         register(new MefedronshchikClass());
         register(new ScientistClass());

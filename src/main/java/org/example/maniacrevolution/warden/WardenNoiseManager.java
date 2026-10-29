@@ -75,6 +75,10 @@ public final class WardenNoiseManager {
     public static void waveNoise(ServerPlayer player, Vec3 position, float strength, double hearing) {
         if (participant(player)) emit(player.serverLevel(), player.getUUID(), position, WardenNoise.Kind.WAVE, strength, hearing);
     }
+    /** Device-local pulse: it must never reveal the remote engineer's position or model. */
+    public static void deviceNoise(ServerLevel level, Vec3 position) {
+        emit(level, null, position, WardenNoise.Kind.SOUND, .6f, 32);
+    }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void tick(TickEvent.ServerTickEvent event) {

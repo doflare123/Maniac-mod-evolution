@@ -12,6 +12,11 @@ public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, Maniacrev.MODID);
 
+    public static final RegistryObject<BlockEntityType<org.example.maniacrevolution.engineer.EngineerDeviceBlockEntity>> ENGINEER_DEVICE =
+            BLOCK_ENTITIES.register("engineer_device", () -> BlockEntityType.Builder.of(
+                    org.example.maniacrevolution.engineer.EngineerDeviceBlockEntity::new,
+                    ModBlocks.ENGINEER_BARRICADE.get(), ModBlocks.ENGINEER_PANEL.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<org.example.maniacrevolution.forester.ForesterTrapBlockEntity>> FORESTER_TRAP =
             BLOCK_ENTITIES.register("forester_trap", () -> BlockEntityType.Builder.of(
                     org.example.maniacrevolution.forester.ForesterTrapBlockEntity::new, ModBlocks.FORESTER_TRAP.get()).build(null));

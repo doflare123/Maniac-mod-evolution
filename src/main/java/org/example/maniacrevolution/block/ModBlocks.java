@@ -14,6 +14,9 @@ public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS =
             DeferredRegister.create(ForgeRegistries.BLOCKS, Maniacrev.MODID);
 
+    public static final RegistryObject<Block> ENGINEER_BARRICADE = BLOCKS.register("engineer_barricade", () -> new org.example.maniacrevolution.engineer.EngineerDeviceBlock(true));
+    public static final RegistryObject<Block> ENGINEER_PANEL = BLOCKS.register("engineer_panel", () -> new org.example.maniacrevolution.engineer.EngineerDeviceBlock(false));
+
     public static final RegistryObject<Block> FORESTER_TRAP = BLOCKS.register("forester_trap",
             () -> new org.example.maniacrevolution.forester.ForesterTrapBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL).strength(-1, 3600000).sound(SoundType.METAL).noOcclusion().noLootTable()));

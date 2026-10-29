@@ -23,6 +23,12 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, Maniacrev.MODID);
 
+    public static final RegistryObject<Item> ENGINEER_TABLET = ITEMS.register("engineer_tablet", () -> new org.example.maniacrevolution.engineer.EngineerItem(org.example.maniacrevolution.engineer.EngineerItem.Kind.TABLET));
+    public static final RegistryObject<Item> ENGINEER_REMOTE = ITEMS.register("engineer_remote", () -> new org.example.maniacrevolution.engineer.EngineerItem(org.example.maniacrevolution.engineer.EngineerItem.Kind.REMOTE));
+    public static final RegistryObject<Item> ENGINEER_BARRICADE = ITEMS.register("engineer_barricade", () -> new org.example.maniacrevolution.engineer.EngineerItem(org.example.maniacrevolution.engineer.EngineerItem.Kind.BARRICADE));
+    public static final RegistryObject<Item> ENGINEER_PANEL = ITEMS.register("engineer_panel", () -> new org.example.maniacrevolution.engineer.EngineerItem(org.example.maniacrevolution.engineer.EngineerItem.Kind.PANEL));
+    public static final RegistryObject<Item> ENGINEER_SCRAP = ITEMS.register("engineer_scrap", () -> new org.example.maniacrevolution.engineer.EngineerItem(org.example.maniacrevolution.engineer.EngineerItem.Kind.SCRAP));
+
     public static final RegistryObject<Item> FORESTER_TRAP = ITEMS.register("forester_trap", org.example.maniacrevolution.forester.ForesterTrapItem::new);
     public static final RegistryObject<Item> PEPPER_CANISTER = ITEMS.register("pepper_canister", org.example.maniacrevolution.forester.PepperCanisterItem::new);
     public static final RegistryObject<Item> FORESTER_FLASHLIGHT = ITEMS.register("forester_flashlight", org.example.maniacrevolution.forester.ForesterFlashlightItem::new);
