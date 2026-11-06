@@ -1,0 +1,12 @@
+// Isolated synthetic scene: compile/run the real Veil shader, save PNGs, then close.
+// .\gradlew.bat -I tools/atmosphere-render.gradle runClient --no-daemon
+allprojects {
+    afterEvaluate {
+        minecraft.runs.client {
+            workingDirectory project.file('run/atmosphere-client')
+            property 'maniacrev.atmosphere.renderProbe', 'true'
+            mods { maniacrev { source sourceSets.test } }
+            args '--width', '960', '--height', '540'
+        }
+    }
+}

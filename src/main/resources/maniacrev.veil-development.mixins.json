@@ -1,0 +1,8 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "org.example.maniacrevolution.atmosphere.mixin",
+  "plugin": "org.example.maniacrevolution.atmosphere.compat.VeilDevelopmentPlugin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": []
+}

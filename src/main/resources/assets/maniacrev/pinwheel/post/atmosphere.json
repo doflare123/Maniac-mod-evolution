@@ -1,0 +1,23 @@
+{
+  "stages": [
+    {
+      "type": "veil:blit",
+      "shader": "maniacrev:atmosphere",
+      "in": "veil:post",
+      "out": "atmosphere_swap"
+    },
+    {
+      "type": "veil:copy",
+      "in": "atmosphere_swap",
+      "out": "veil:post",
+      "color": true,
+      "depth": false
+    }
+  ],
+  "framebuffers": {
+    "atmosphere_swap": {
+      "depth": false,
+      "format": "RGBA16F"
+    }
+  }
+}

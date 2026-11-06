@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "28";
+    private static final String PROTOCOL_VERSION = "29";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -616,6 +616,11 @@ public class ModNetworking {
         CHANNEL.messageBuilder(WardenStaminaPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(WardenStaminaPacket::encode).decoder(WardenStaminaPacket::decode)
                 .consumerMainThread(WardenStaminaPacket::handle).add();
+
+        CHANNEL.messageBuilder(org.example.maniacrevolution.atmosphere.ChaseStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(org.example.maniacrevolution.atmosphere.ChaseStatePacket::encode)
+                .decoder(org.example.maniacrevolution.atmosphere.ChaseStatePacket::decode)
+                .consumerMainThread(org.example.maniacrevolution.atmosphere.ChaseStatePacket::handle).add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }

@@ -30,6 +30,9 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            args '--mixin.config', 'maniacrev.veil-development.mixins.json'
 
             mods {
                 "${mod_id}" {
@@ -40,6 +43,9 @@ minecraft {
 
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
+            // Veil 1.20.1's optional editor can lose its ImGui context during nested
+            // world loading and then crash inside native GLFW input callbacks.
+            property 'veil.disableImgui', 'true'
         }
 
         server {
@@ -60,7 +66,26 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+configurations {
+    veilLibraries
+    implementation.extendsFrom veilLibraries
+}
+
+minecraft.runs.configureEach {
+    lazyToken('minecraft_classpath') {
+        configurations.veilLibraries.resolve().collect { it.absolutePath }.join(File.pathSeparator)
+    }
+}
+
 repositories {
+    maven {
+        name = 'Veil'
+        url = 'https://maven.blamejared.com'
+        content {
+            includeGroup 'foundry.veil'
+            includeGroup 'gg.moonflower'
+        }
+    }
     maven {
         url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
     }
@@ -69,6 +94,30 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.4.7')
+    // The full 1.20.1 Maven JAR embeds LWJGL core and conflicts with Forge's modules.
+    // Use the author's slim artifact and resolve its runtime libraries separately.
+    implementation(fg.deobf("foundry.veil:Veil-forge-${minecraft_version}:${veil_version}:slim")) {
+        transitive = false
+    }
+    veilLibraries('gg.moonflower:molang-compiler:3.1.1.19') {
+        exclude group: 'org.ow2.asm' // Forge already provides ASM.
+    }
+    veilLibraries 'io.github.spair:imgui-java-binding:1.86.11'
+    veilLibraries('io.github.spair:imgui-java-lwjgl3:1.86.11') { exclude group: 'org.lwjgl' }
+    def veilOs = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+    def veilNative = veilOs.contains('win') ? 'windows' : veilOs.contains('mac') ? 'macos' : 'linux'
+    veilLibraries "io.github.spair:imgui-java-natives-${veilNative == 'macos' ? 'macos-ft' : veilNative}:1.86.11"
+    veilLibraries('org.lwjgl:lwjgl-opencl:3.3.1') { transitive = false }
+    veilLibraries('org.lwjgl:lwjgl-shaderc:3.3.1') { transitive = false }
+    veilLibraries("org.lwjgl:lwjgl-shaderc:3.3.1:natives-${veilNative}") { transitive = false }
+}
+
+tasks.register('verifyAtmosphere', JavaExec) {
+    group = 'verification'
+    description = 'Checks atmosphere eligibility and chase acquisition/contact loss.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.atmosphere.AtmosphereRulesTest'
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -189,6 +238,7 @@ tasks.named('jar', Jar).configure {
                 "Specification-Version": "1",
                 "Implementation-Title": project.name,
                 "Implementation-Version": project.jar.archiveVersion,
+                "MixinConfigs": "maniacrev.veil-development.mixins.json",
                 "Implementation-Vendor": mod_authors,
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
