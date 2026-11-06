@@ -1,5 +1,7 @@
 package org.example.maniacrevolution.character.survivor;
 
+import net.minecraft.resources.ResourceLocation;
+import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.character.*;
 import org.example.maniacrevolution.engineer.EngineerRules;
 
@@ -15,5 +17,10 @@ public final class EngineerClass extends CharacterClass {
         addItem("Пульт панелей", "ПКМ: список собственных панелей, координат, зарядов и перезарядки. Выберите звуковой сценарий и запустите панель.");
         addItem("Складная баррикада", "ПКМ предметом по полу: сборка за 2,5 с с расходом предмета. Задерживает всех игроков. Shift + ПКМ 1 с — разбор без возврата скрапа.");
         addItem("Звуковая панель", "ПКМ предметом по полу: сборка за 2,5 с. Стационарная приманка с тремя запусками с пульта. Удержание ЛКМ маньяком 2 с — разрушение.");
+    }
+
+    @Override
+    public ResourceLocation getSelectionFrescoTexture() {
+        return Maniacrev.loc("textures/gui/frescos/engineer_selection.png");
     }
 }

@@ -260,7 +260,9 @@ def extras(root,runtime):
     for i,yaw in enumerate((0,90,-25)): scrap_preview.alpha_composite(preview(scrap,yaw=yaw,side=260),(i*260,0))
     scrap_preview.save(root/'engineer_scrap_preview.png')
     card=sheet.crop((0,0,520,520)).resize((512,512)).convert('RGB'); card.save(root/'engineer_card.png')
-    target=runtime/'textures/gui/frescos/engineer.png'; target.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(root/'engineer_card.png',target)
+    # Keep the finished character fresco when regenerating equipment previews.
+    target=runtime/'textures/gui/frescos/engineer.png'; target.parent.mkdir(parents=True,exist_ok=True)
+    if not target.exists(): shutil.copy2(root/'engineer_card.png',target)
 
 def main():
     parser=argparse.ArgumentParser(); parser.add_argument('--source',type=Path,required=True); parser.add_argument('--install',type=Path,required=True); args=parser.parse_args()

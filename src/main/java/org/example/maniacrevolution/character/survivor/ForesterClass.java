@@ -1,5 +1,7 @@
 package org.example.maniacrevolution.character.survivor;
 
+import net.minecraft.resources.ResourceLocation;
+import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterType;
 import org.example.maniacrevolution.forester.ForesterRules;
@@ -13,5 +15,10 @@ public final class ForesterClass extends CharacterClass {
         addItem("Капкан", "Задерживает на 1,5 с, затем даёт 5 с на два попадания пробелом. Удар другого игрока освобождает и вызывает кровотечение. ПКМ запускает установку или зарядку на 2,5 с; Ctrl + ПКМ — сбор на 1,5 с. Удерживать кнопку не нужно. Движение или поворот прерывают действие.");
         addItem("Перцовая шашка", "Удерживайте ПКМ для прицеливания, отпустите для броска. Дым 15 с, радиус 5 блоков. Чихание выдаёт позицию; эффект длится ещё 5 с после выхода.");
         addItem("Фонарик", "Удерживайте ПКМ до 3 с: свет и ослепление маньяков до 10 блоков. Белый экран сохраняется 2 с после потери луча. Число включений ограничено.");
+    }
+
+    @Override
+    public ResourceLocation getSelectionFrescoTexture() {
+        return Maniacrev.loc("textures/gui/frescos/forester_selection.png");
     }
 }

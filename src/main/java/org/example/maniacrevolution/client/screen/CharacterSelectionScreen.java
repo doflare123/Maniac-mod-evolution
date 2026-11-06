@@ -47,7 +47,7 @@ public class CharacterSelectionScreen extends Screen {
             Map.entry("dodepovich", new FrescoDimensions(887, 1774)),
             Map.entry("freddy_bear", new FrescoDimensions(452, 904)),
             Map.entry("ghost", new FrescoDimensions(377, 950)),
-            Map.entry("helsing", new FrescoDimensions(384, 768)),
+            Map.entry("helsing", new FrescoDimensions(1024, 1536)),
             Map.entry("keeper_of_nightmares", new FrescoDimensions(941, 1672)),
             Map.entry("mefedronshchik", new FrescoDimensions(442, 972)),
             Map.entry("necromancer", new FrescoDimensions(436, 910)),
@@ -59,15 +59,17 @@ public class CharacterSelectionScreen extends Screen {
             Map.entry("warden", new FrescoDimensions(1024, 1536)),
             Map.entry("scp_173", new FrescoDimensions(1024, 1536)),
             Map.entry("techies", new FrescoDimensions(1024, 1536)),
-            Map.entry("engineer", new FrescoDimensions(512, 512)),
-            Map.entry("forester", new FrescoDimensions(128, 192))
+            Map.entry("engineer", new FrescoDimensions(1024, 1536)),
+            Map.entry("forester", new FrescoDimensions(1024, 1536))
     );
 
     private static final Map<String, FrescoDimensions> SELECTION_FRESCO_DIMENSIONS = Map.of(
             "warden", new FrescoDimensions(2172, 724),
             "scp_173", new FrescoDimensions(2170, 725),
             "techies", new FrescoDimensions(2172, 724),
-            "engineer", new FrescoDimensions(512, 512)
+            "helsing", new FrescoDimensions(2172, 724),
+            "forester", new FrescoDimensions(2172, 724),
+            "engineer", new FrescoDimensions(2172, 724)
     );
 
     private final CharacterType type;
