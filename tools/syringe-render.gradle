@@ -1,0 +1,12 @@
+// Opt-in runtime hand/model previews in an isolated client; saves PNGs and exits.
+// .\gradlew.bat -I tools/syringe-render.gradle runClient --no-daemon
+allprojects {
+    afterEvaluate {
+        minecraft.runs.client {
+            workingDirectory project.file('run/syringe-client')
+            property 'maniacrev.syringe.renderProbe', 'true'
+            mods { maniacrev { source sourceSets.test } }
+            args '--width', '960', '--height', '540'
+        }
+    }
+}

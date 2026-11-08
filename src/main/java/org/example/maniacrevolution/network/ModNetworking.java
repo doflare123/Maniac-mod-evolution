@@ -19,7 +19,11 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
+<<<<<<< Updated upstream
     private static final String PROTOCOL_VERSION = "28";
+=======
+    private static final String PROTOCOL_VERSION = "30";
+>>>>>>> Stashed changes
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -31,6 +35,9 @@ public class ModNetworking {
     private static int packetId = 0;
 
     public static void register() {
+        CHANNEL.messageBuilder(SyringeAnimationPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SyringeAnimationPacket::encode).decoder(SyringeAnimationPacket::decode)
+                .consumerMainThread(SyringeAnimationPacket::handle).add();
         CHANNEL.messageBuilder(org.example.maniacrevolution.engineer.EngineerActionPacket.class, packetId++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(org.example.maniacrevolution.engineer.EngineerActionPacket::encode).decoder(org.example.maniacrevolution.engineer.EngineerActionPacket::decode)
                 .consumerMainThread(org.example.maniacrevolution.engineer.EngineerActionPacket::handle).add();

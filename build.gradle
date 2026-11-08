@@ -162,6 +162,14 @@ tasks.register('verifyForesterAssets', JavaExec) {
     mainClass = 'org.example.maniacrevolution.forester.ForesterAssetsTest'
 }
 
+tasks.register('verifySyringeAssets', JavaExec) {
+    group = 'verification'
+    description = 'Bakes the syringe mesh and checks paired animation attachment and injection poses.'
+    dependsOn tasks.named('testClasses'), tasks.named('extractForesterTestRuntime')
+    classpath = sourceSets.test.runtimeClasspath + fileTree(foresterTestRuntime) { include '**/*.jar' }
+    mainClass = 'org.example.maniacrevolution.client.renderer.SyringeAssetsTest'
+}
+
 tasks.named('check') {
     dependsOn tasks.named('verifyEngineer')
     dependsOn tasks.named('verifyNightmareSync')

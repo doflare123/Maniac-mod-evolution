@@ -1,6 +1,7 @@
 package org.example.maniacrevolution.item;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -13,14 +14,20 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.capability.AddictionCapability;
 import org.example.maniacrevolution.capability.AddictionCapabilityProvider;
+import org.example.maniacrevolution.client.renderer.SyringeItemRenderer;
 import org.example.maniacrevolution.event.AddictionEventHandler;
 import net.minecraft.server.level.ServerPlayer;
+import org.example.maniacrevolution.network.ModNetworking;
+import org.example.maniacrevolution.network.packets.SyringeAnimationPacket;
 import org.example.maniacrevolution.sound.ModSounds;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Шприц адреналина.
@@ -42,6 +49,18 @@ public class SyringeItem extends Item {
 
     public SyringeItem(Properties props) { super(props); }
 
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new IClientItemExtensions() {
+            private final BlockEntityWithoutLevelRenderer renderer = new SyringeItemRenderer();
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                return renderer;
+            }
+        });
+    }
+
     // ── Использование ────────────────────────────────────────────────────────
 
     @Override
@@ -57,6 +76,9 @@ public class SyringeItem extends Item {
 
         AddictionCapability cap = AddictionCapabilityProvider.get(sp);
         if (cap == null) return InteractionResultHolder.fail(stack);
+
+        ModNetworking.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> sp),
+                new SyringeAnimationPacket(sp.getId(), hand, level.getGameTime()));
 
         long now = level.getGameTime();
 
