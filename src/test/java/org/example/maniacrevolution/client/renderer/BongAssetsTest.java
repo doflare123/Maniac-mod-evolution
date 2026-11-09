@@ -73,5 +73,6 @@ public final class BongAssetsTest {
         if (BongAssetsTest.class.getResource("/assets/maniacrev/textures/item/bong.png") == null)
             throw new AssertionError("Missing bong texture");
         System.out.println("Bong: GeckoLib baked " + vertices[0] + " finite vertices; idle/run/using parsed; bones, item display and texture resolved.");
+        BongThirdPersonPoseTest.verify();
     }
 }

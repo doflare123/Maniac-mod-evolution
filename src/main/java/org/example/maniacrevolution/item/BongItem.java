@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -19,6 +20,7 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.capability.AddictionCapability;
 import org.example.maniacrevolution.capability.AddictionCapabilityProvider;
 import org.example.maniacrevolution.client.renderer.BongItemRenderer;
+import org.example.maniacrevolution.client.renderer.BongRenderEvents;
 import org.example.maniacrevolution.entity.BongCloudEntity;
 import org.example.maniacrevolution.mana.ManaProvider;
 import software.bernie.geckolib.animatable.GeoItem;
@@ -45,7 +47,7 @@ public class BongItem extends Item implements IItemWithAbility, GeoItem {
     public static final float MANA_COST      = 5f;
     public static final int   COOLDOWN_TICKS = 300;  // 15 секунд
     public static final int   COOLDOWN_SECS  = 15;
-    private static final int USING_ANIMATION_TICKS = 48; // using: 2.4 seconds
+    public static final int USING_ANIMATION_TICKS = 48; // using: 2.4 seconds
     // Радиус и длительность облака — см. BongCloudEntity
 
     private static final String NBT_CD = "BongCooldownTick";
@@ -88,6 +90,12 @@ public class BongItem extends Item implements IItemWithAbility, GeoItem {
                 if (renderer == null) renderer = new BongItemRenderer();
                 return renderer;
             }
+
+            @Override
+            public net.minecraft.client.model.HumanoidModel.ArmPose getArmPose(
+                    LivingEntity entity, InteractionHand hand, ItemStack stack) {
+                return BongRenderEvents.armPose(entity, stack);
+            }
         });
     }
 
@@ -119,6 +127,11 @@ public class BongItem extends Item implements IItemWithAbility, GeoItem {
     public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
         // Running, cooldown and GeckoLib instance NBT updates keep the item in hand.
         return slotChanged || oldStack.getItem() != newStack.getItem();
+    }
+
+    public static long getUseStartedAt(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag != null && tag.contains(NBT_CD) ? tag.getLong(NBT_CD) - COOLDOWN_TICKS : -1;
     }
 
     // ── Использование ────────────────────────────────────────────────────────
