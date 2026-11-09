@@ -1,0 +1,18 @@
+// .\gradlew.bat -I tools/bong-verify.gradle verifyBongAssets --no-daemon
+allprojects {
+    afterEvaluate {
+        def verifierClasses = layout.buildDirectory.dir('bong-verifier-classes')
+        tasks.register('compileBongAssetVerifier', JavaCompile) {
+            source = project.files(project.file('src/test/java/org/example/maniacrevolution/client/renderer/BongAssetsTest.java'))
+            classpath = sourceSets.main.compileClasspath
+            destinationDirectory = verifierClasses
+            options.encoding = 'UTF-8'
+        }
+        tasks.register('verifyBongAssets', JavaExec) {
+            // Keep asset verification usable when an unrelated mod source fails to compile.
+            dependsOn tasks.named('compileBongAssetVerifier'), tasks.named('processResources'), tasks.named('extractForesterTestRuntime')
+            classpath = files(verifierClasses, sourceSets.main.output.resourcesDir) + configurations.runtimeClasspath + fileTree(layout.buildDirectory.dir('forester-test-runtime')) { include '**/*.jar' }
+            mainClass = 'org.example.maniacrevolution.client.renderer.BongAssetsTest'
+        }
+    }
+}

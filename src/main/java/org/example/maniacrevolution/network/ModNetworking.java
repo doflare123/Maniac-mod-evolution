@@ -19,11 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-<<<<<<< Updated upstream
-    private static final String PROTOCOL_VERSION = "28";
-=======
     private static final String PROTOCOL_VERSION = "30";
->>>>>>> Stashed changes
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
