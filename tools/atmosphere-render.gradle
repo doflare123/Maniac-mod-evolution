@@ -2,6 +2,16 @@
 // .\gradlew.bat -I tools/atmosphere-render.gradle runClient --no-daemon
 allprojects {
     afterEvaluate {
+        def syncAtmosphereShaders = tasks.register('syncAtmosphereProbeShaders', Copy) {
+            from(project.file('src/main/resources')) {
+                include 'assets/maniacrev/pinwheel/**'
+                include 'maniacrev.veil-development.mixins.json'
+            }
+            into project.layout.buildDirectory.dir('resources/main')
+            mustRunAfter tasks.named('processResources')
+        }
+        tasks.named('compileTestJava').configure { dependsOn syncAtmosphereShaders }
+        tasks.matching { it.name == 'runClient' }.configureEach { dependsOn syncAtmosphereShaders }
         minecraft.runs.client {
             workingDirectory project.file('run/atmosphere-client')
             property 'maniacrev.atmosphere.renderProbe', 'true'

@@ -121,6 +121,7 @@ public final class AtmosphereClient {
         pipeline.setFloat("Corruption", corruption * comfort);
         pipeline.setFloat("Pursuit", pursuit * comfort);
         pipeline.setFloat("Keeper", keeper);
+        pipeline.setFloat("KeeperMotion", comfort);
         pipeline.setFloat("Hunter", current == Profile.MANIAC || current == Profile.KEEPER ? 1 : 0);
         pipeline.setFloat("FogGround", fogGround);
         pipeline.setFloat("FogDensity", (0.018F + corruption * 0.008F) * (1 - indoor * 0.7F));
