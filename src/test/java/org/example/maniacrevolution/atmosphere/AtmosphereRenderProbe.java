@@ -48,18 +48,18 @@ public final class AtmosphereRenderProbe {
             var rotation = new Matrix4f();
             VeilRenderSystem.renderer().getCameraMatrices().update(projection, rotation, new Vector3f(0, 2, 4), 0.05F, 160);
             double baseline = 0;
-            for (String variant : new String[]{"vanilla", "survivor", "sanity", "keeper", "chase", "lamp", "keeper_calm", "keeper_lamp"}) {
+            long commonHash = 0;
+            for (String variant : new String[]{"vanilla", "survivor", "maniac", "keeper", "sanity", "chase", "lamp"}) {
                 scene();
-                boolean keeper = variant.startsWith("keeper");
                 pipeline.setFloat("Active", variant.equals("vanilla") ? 0 : 1);
                 pipeline.setFloat("Time", 12.0F);
                 pipeline.setFloat("Corruption", variant.equals("sanity") ? .95F : 0);
-                pipeline.setFloat("Keeper", keeper ? 1 : 0);
-                pipeline.setFloat("KeeperMotion", variant.equals("keeper_calm") ? 0 : 1);
-                pipeline.setFloat("Hunter", keeper ? 1 : 0);
                 pipeline.setFloat("Pursuit", variant.equals("chase") ? 1 : 0);
                 pipeline.setFloat("FogGround", 0);
-                pipeline.setFloat("FogDensity", .024F);
+                pipeline.setFloat("FogDensity", .055F);
+                pipeline.setFloat("SightFadeStart", AtmosphereRules.FOG_FADE_START);
+                pipeline.setFloat("SightRange", AtmosphereRules.FOG_END);
+                pipeline.setFloat("Indoor", 0);
                 pipeline.setInt("FogSamples", 12);
                 pipeline.setFloat("Hurt", 0);
                 pipeline.setFloat("Fear", 0);
@@ -69,17 +69,22 @@ public final class AtmosphereRenderProbe {
                 manager.runPipeline(pipeline);
                 try (var image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
                     double sum = 0;
+                    long hash = 1;
                     for (int y = 0; y < image.getHeight(); y += 3) for (int x = 0; x < image.getWidth(); x += 3) {
                         int pixel = image.getPixelRGBA(x, y);
                         sum += (pixel & 255) + ((pixel >> 8) & 255) + ((pixel >> 16) & 255);
+                        hash = hash * 31 + pixel;
                     }
                     if (sum < 10000) throw new AssertionError("Black output: " + variant);
                     if (variant.equals("vanilla")) baseline = sum;
                     else if (Math.abs(sum - baseline) < 100) throw new AssertionError("Effect missing: " + variant);
-                    if (keeper) {
+                    if (variant.equals("survivor")) commonHash = hash;
+                    if ((variant.equals("maniac") || variant.equals("keeper")) && hash != commonHash)
+                        throw new AssertionError("Roles do not share the same base: " + variant);
+                    if (!variant.equals("vanilla")) {
                         int light = image.getPixelRGBA(image.getWidth() / 2, image.getHeight() / 2);
                         int red = light & 255, green = light >> 8 & 255, blue = light >> 16 & 255;
-                        if (red <= green || green <= blue + 15) throw new AssertionError("Keeper lost the warm light: " + variant);
+                        if (red <= green || green <= blue + 15) throw new AssertionError("Atmosphere lost the warm light: " + variant);
                     }
                     image.writeToFile(mc.gameDirectory.toPath().resolve("atmosphere-" + variant + ".png"));
                     Maniacrev.LOGGER.info("Atmosphere render probe {}: luminance sum {}", variant, sum);
@@ -96,18 +101,18 @@ public final class AtmosphereRenderProbe {
             b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             quad(b, -80, -80, -30, 80, -80, -30, 80, 80, -30, -80, 80, -30, .5F, .5F, .5F);
             BufferUploader.drawWithShader(b.end());
-            pipeline.setFloat("KeeperMotion", 0);
             pipeline.setFloat("LampStrength", 0);
             pipeline.setFloat("FogDensity", .045F);
             manager.runPipeline(pipeline);
             try (var image = Screenshot.takeScreenshot(target)) {
                 int upper = image.getPixelRGBA(image.getWidth() / 2, image.getHeight() / 2 - image.getHeight() / 14);
                 int lower = image.getPixelRGBA(image.getWidth() / 2, image.getHeight() / 2 + image.getHeight() / 14);
-                if (Math.abs((upper & 255) - (lower & 255)) < 4) throw new AssertionError("Keeper fog became a flat screen tint");
-                image.writeToFile(mc.gameDirectory.toPath().resolve("atmosphere-keeper-height-check.png"));
-                Maniacrev.LOGGER.info("Keeper fog height check PASSED: upper {}, lower {}", upper & 255, lower & 255);
+                if (Math.abs((upper & 255) - (lower & 255)) < 4) throw new AssertionError("Volumetric fog became a flat screen tint");
+                image.writeToFile(mc.gameDirectory.toPath().resolve("atmosphere-fog-height-check.png"));
+                Maniacrev.LOGGER.info("Fog height check PASSED: upper {}, lower {}", upper & 255, lower & 255);
             }
-            Maniacrev.LOGGER.info("Atmosphere render probe PASSED: input, eight variants, warm highlights, fog height, real shader compiled");
+            visibilityChecks(manager, pipeline);
+            Maniacrev.LOGGER.info("Atmosphere render probe PASSED: input, seven variants, shared base, warm light, volumetric fog, 28-block extinction");
         } catch (Exception | AssertionError error) {
             Maniacrev.LOGGER.error("Atmosphere render probe FAILED", error);
         } finally {
@@ -117,6 +122,55 @@ public final class AtmosphereRenderProbe {
             mc.getMainRenderTarget().bindWrite(true);
             mc.stop();
         }
+    }
+
+    /** A white source and black source at the same point must become indistinguishable. */
+    private static void visibilityChecks(foundry.veil.api.client.render.post.PostProcessingManager manager,
+                                         foundry.veil.api.client.render.post.PostPipeline pipeline) throws java.io.IOException {
+        pipeline.setFloat("Active", 1); pipeline.setFloat("Corruption", 0); pipeline.setFloat("Pursuit", 0);
+        pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+        pipeline.setFloat("LampStrength", 0); pipeline.setFloat("FogDensity", .055F);
+        for (int samples : new int[]{8, 12, 24}) for (int indoor = 0; indoor <= 1; indoor++) {
+            pipeline.setInt("FogSamples", samples); pipeline.setFloat("Indoor", indoor);
+            for (float ground : new float[]{0, -20}) {
+                pipeline.setFloat("FogGround", ground);
+                int nearContrast = planeContrast(manager, pipeline, 6);
+                if (nearContrast < 80) throw new AssertionError("Fog destroys nearby visibility: " + nearContrast);
+                int midContrast = planeContrast(manager, pipeline, 20);
+                if (midContrast >= nearContrast / 2) throw new AssertionError("20-block objects remain too clear: " + midContrast);
+                for (float distance : new float[]{28, 30, 100}) {
+                    int farContrast = planeContrast(manager, pipeline, distance);
+                    if (farContrast > 2) throw new AssertionError("Fog reveals geometry at " + distance + ": " + farContrast);
+                }
+            }
+        }
+        // Bright scattered light also must not restore the hidden source silhouette.
+        pipeline.setFloat("LampStrength", 1);
+        if (planeContrast(manager, pipeline, 30) > 2) throw new AssertionError("Lamp reveals distant source");
+        Maniacrev.LOGGER.info("Fog range PASSED: 6 blocks readable, 20 fading, 28/30/100 hidden; 8/12/24 samples, indoors, above low fog, lamp");
+    }
+
+    private static int planeContrast(foundry.veil.api.client.render.post.PostProcessingManager manager,
+                                     foundry.veil.api.client.render.post.PostPipeline pipeline, float distance) {
+        int[] pixels = new int[2];
+        var mc = Minecraft.getInstance(); var target = mc.getMainRenderTarget();
+        for (int source = 0; source <= 1; source++) {
+            target.clear(Minecraft.ON_OSX); target.bindWrite(true);
+            RenderSystem.enableDepthTest(); RenderSystem.depthMask(true);
+            RenderSystem.disableCull(); RenderSystem.disableBlend();
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            var b = Tesselator.getInstance().getBuilder(); b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            float size = distance * 2;
+            quad(b, -size, -size, -distance, size, -size, -distance, size, size, -distance, -size, size, -distance, source, source, source);
+            BufferUploader.drawWithShader(b.end()); manager.runPipeline(pipeline);
+            try (var image = Screenshot.takeScreenshot(target)) {
+                pixels[source] = image.getPixelRGBA(image.getWidth() / 2, image.getHeight() / 2);
+            }
+        }
+        int contrast = 0;
+        for (int shift : new int[]{0, 8, 16}) contrast = Math.max(contrast,
+                Math.abs((pixels[0] >> shift & 255) - (pixels[1] >> shift & 255)));
+        return contrast;
     }
 
     /** Exercise the installed GLFW callbacks that previously called ImGui without a context. */

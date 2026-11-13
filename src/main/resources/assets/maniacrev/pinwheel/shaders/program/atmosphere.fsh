@@ -7,11 +7,11 @@ uniform float Active;
 uniform float Time;
 uniform float Corruption;
 uniform float Pursuit;
-uniform float Keeper;
-uniform float KeeperMotion;
-uniform float Hunter;
 uniform float FogGround;
 uniform float FogDensity;
+uniform float SightFadeStart;
+uniform float SightRange;
+uniform float Indoor;
 uniform int FogSamples;
 uniform float Hurt;
 uniform float Fear;
@@ -38,12 +38,12 @@ float noise(vec3 p) {
                    mix(hash(cell + vec3(0, 1, 1)), hash(cell + vec3(1, 1, 1)), f.x), f.y), f.z);
 }
 
-#include maniacrev:keeper_vision
+#include maniacrev:atmosphere_base
 
 // Integrate heterogeneous extinction up to the visible surface. Geometry stops the ray.
 // The lamp adds unshadowed scattering; this prototype does not promise light occlusion.
-vec4 atmosphere(vec3 origin, vec3 direction, float distance, vec3 fogColor) {
-    float travel = max(0.0, min(distance, 110.0) - 1.5);
+vec4 atmosphere(vec3 origin, vec3 direction, float distance) {
+    float travel = max(0.0, min(distance, SightRange) - 1.5);
     int count = clamp(FogSamples, 8, 24);
     float stepLength = travel / float(count);
     float transmission = 1.0;
@@ -51,24 +51,9 @@ vec4 atmosphere(vec3 origin, vec3 direction, float distance, vec3 fogColor) {
     for (int i = 0; i < 24; ++i) {
         if (i >= count) break;
         vec3 p = origin + direction * (1.5 + (float(i) + 0.5) * stepLength);
-        float density;
-        vec3 incident;
-        if (Keeper >= 0.999) {
-            vec4 medium = keeperMedium(p);
-            density = medium.a;
-            incident = medium.rgb;
-        } else {
-            float height = exp(-max(p.y - FogGround - 0.5, 0.0) * 0.20);
-            vec3 flow = p * 0.075 + vec3(Time * 0.018, 0.0, Time * 0.009);
-            float cloud = noise(flow) * 0.7 + noise(flow * 2.1) * 0.3;
-            density = FogDensity * mix(0.25, 1.0, height) * mix(0.55, 1.45, cloud);
-            incident = fogColor;
-            if (Keeper > 0.001) {
-                vec4 medium = keeperMedium(p);
-                density = mix(density, medium.a, Keeper);
-                incident = mix(incident, medium.rgb, Keeper);
-            }
-        }
+        vec4 medium = atmosphereMedium(p);
+        float density = medium.a;
+        vec3 incident = mix(medium.rgb, medium.rgb * vec3(0.91, 1.0, 0.82), Plague * 0.5);
         float absorbed = 1.0 - exp(-density * stepLength);
         if (LampStrength > 0.0) {
             vec3 lightVector = LampPosition - p;
@@ -94,7 +79,6 @@ void main() {
     float wave = sin(texCoord.y * 29.0 + Time * 1.9) + sin(texCoord.y * 53.0 - Time * 2.7) * 0.4;
     vec2 uv = clamp(texCoord + vec2(wave, sin(Time * 1.3 + texCoord.x * 14.0))
                     * 0.0018 * (instability + Fear * 0.4) * edge, vec2(0.001), vec2(0.999));
-    if (Keeper > 0.001) uv = clamp(uv + keeperRefraction(uv, edge) * Keeper, vec2(0.001), vec2(0.999));
     float separation = instability * edge * 2.5 / InSize.x;
     vec3 color = vec3(texture(DiffuseSampler0, clamp(uv + vec2(separation, 0), vec2(0), vec2(1))).r,
                       texture(DiffuseSampler0, uv).g,
@@ -105,22 +89,18 @@ void main() {
 
     float depth = texture(DiffuseDepthSampler, uv).r;
     vec3 viewPosition = viewPosFromDepthSample(depth, uv);
-    vec3 source = color;
-    float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
-    color = mix(vec3(luma), color, 0.78 - Corruption * 0.15);
-    // Deeper shadows while keeping emissive highlights and warm light readable.
-    color = pow(max(color, vec3(0.0)), vec3(mix(1.12, 1.04, Hunter)));
-    vec3 shadowTint = vec3(0.86, 0.95, 1.04);
-    color *= mix(shadowTint, vec3(1.02, 0.99, 0.96), smoothstep(0.15, 0.8, luma));
-    if (Keeper > 0.001) color = mix(color, keeperSurface(source, uv, viewPosition, depth), Keeper);
+    color = atmosphereSurface(color, uv, viewPosition, depth);
     color = mix(color, color * vec3(0.83, 1.04, 0.73), Plague * 0.5);
 
     vec3 direction = normalize(viewToWorldSpaceDirection(viewPosition));
-    float distance = depth >= 0.999999 ? 110.0 : length(viewPosition);
-    vec3 fogColor = vec3(0.105, 0.145, 0.165);
-    fogColor = mix(fogColor, vec3(0.13, 0.15, 0.095), Plague * 0.5);
-    vec4 fog = atmosphere(VeilCamera.CameraPosition, direction, distance, fogColor);
-    color = color * fog.a + fog.rgb;
+    float distance = depth >= 0.999999 ? SightRange : length(viewPosition);
+    vec4 fog = atmosphere(VeilCamera.CameraPosition, direction, distance);
+    vec3 fogColor = fog.rgb / max(1.0 - fog.a, 0.00001);
+    // No low-density hole, roof, bright emitter or quality setting can reveal
+    // the source image at/behind SightRange. Near space stays readable.
+    float visible = 1.0 - smoothstep(SightFadeStart, SightRange, distance);
+    float transmission = fog.a * visible;
+    color = color * transmission + fogColor * (1.0 - transmission);
 
     float heartbeat = pow(0.5 + 0.5 * sin(Time * 8.0), 5.0);
     float vignette = edge * edge * (0.10 + Corruption * 0.18 + Pursuit * (0.08 + 0.055 * heartbeat));

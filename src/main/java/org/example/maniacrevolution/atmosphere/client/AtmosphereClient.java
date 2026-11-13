@@ -40,7 +40,7 @@ public final class AtmosphereClient {
     private static Profile preview;
     private static boolean disabled;
     private static float previewSanity = 1, previewChase;
-    private static float serverChase, corruption, pursuit, keeper;
+    private static float serverChase, corruption, pursuit;
     private static ClientLevel world;
     private static java.util.UUID playerId;
     private static float fogGround, indoor;
@@ -58,20 +58,37 @@ public final class AtmosphereClient {
         return profile() == Profile.SURVIVOR ? corruption : 0;
     }
 
-    public static Profile profile() {
+    private static boolean viewingWorld() {
         var mc = Minecraft.getInstance();
         var player = mc.player;
-        if (disabled || !AtmosphereConfig.ENABLED.get() || player == null || mc.level == null
-                || !player.isAlive() || !PlayerModeUtil.isSurvivalOrAdventure(player)
-                || mc.getCameraEntity() != player || WardenVisionPrototype.inMatch()
-                || mc.gameRenderer.getMainCamera().getFluidInCamera() != FogType.NONE
-                || player.hasEffect(MobEffects.BLINDNESS) || player.hasEffect(MobEffects.DARKNESS)
-                || player.hasEffect(ModEffects.FORESTER_BLIND.get())) return Profile.OFF;
-        if (preview != null) return preview;
+        return player != null && mc.level != null && player.isAlive()
+                && PlayerModeUtil.isSurvivalOrAdventure(player) && mc.getCameraEntity() == player
+                && !WardenVisionPrototype.inMatch();
+    }
+
+    private static Profile matchProfile() {
+        var player = Minecraft.getInstance().player;
         return AtmosphereRules.profile(true, true, ClientGameState.getPhase(),
                 player.getTeam() == null ? null : player.getTeam().getName(),
                 ClientPlayerData.getManiacClassId() == NightmareConfig.KEEPER_CLASS_ID,
                 ClientPlayerData.getManiacClassId() == WardenClass.SCOREBOARD_ID);
+    }
+
+    /** The match visibility rule survives disabling optional post-processing. */
+    public static boolean hasFogLimit() {
+        return viewingWorld() && (matchProfile() != Profile.OFF
+                || preview != null && !disabled && AtmosphereConfig.ENABLED.get());
+    }
+
+    public static Profile profile() {
+        var mc = Minecraft.getInstance();
+        var player = mc.player;
+        if (disabled || !AtmosphereConfig.ENABLED.get() || !viewingWorld()
+                || mc.gameRenderer.getMainCamera().getFluidInCamera() != FogType.NONE
+                || player.hasEffect(MobEffects.BLINDNESS) || player.hasEffect(MobEffects.DARKNESS)
+                || player.hasEffect(ModEffects.FORESTER_BLIND.get())) return Profile.OFF;
+        if (preview != null) return preview;
+        return matchProfile();
     }
 
     @SubscribeEvent
@@ -90,7 +107,6 @@ public final class AtmosphereClient {
         float target = AtmosphereRules.corruption(current, preview != null || ClientNightmareData.isActive(), sanity);
         corruption += (target - corruption) * 0.12F;
         pursuit += ((current == Profile.OFF ? 0 : preview != null ? previewChase : serverChase) - pursuit) * 0.2F;
-        keeper += ((current == Profile.KEEPER ? 1 : 0) - keeper) * 0.15F;
         fogGround += ((float) mc.player.getY() - fogGround) * 0.05F;
         if (mc.player.tickCount % 10 == 0) {
             float roof = mc.level.canSeeSky(mc.player.blockPosition().above()) ? 0 : 1;
@@ -120,11 +136,11 @@ public final class AtmosphereClient {
         pipeline.setFloat("Time", time);
         pipeline.setFloat("Corruption", corruption * comfort);
         pipeline.setFloat("Pursuit", pursuit * comfort);
-        pipeline.setFloat("Keeper", keeper);
-        pipeline.setFloat("KeeperMotion", comfort);
-        pipeline.setFloat("Hunter", current == Profile.MANIAC || current == Profile.KEEPER ? 1 : 0);
         pipeline.setFloat("FogGround", fogGround);
-        pipeline.setFloat("FogDensity", (0.018F + corruption * 0.008F) * (1 - indoor * 0.7F));
+        pipeline.setFloat("FogDensity", 0.055F + corruption * 0.012F);
+        pipeline.setFloat("Indoor", indoor);
+        pipeline.setFloat("SightFadeStart", AtmosphereRules.FOG_FADE_START);
+        pipeline.setFloat("SightRange", AtmosphereRules.FOG_END);
         pipeline.setFloat("Hurt", Math.min(1, mc.player.hurtTime / 10F) * comfort);
         pipeline.setFloat("Fear", mc.player.hasEffect(ModEffects.FEAR.get()) ? comfort : 0);
         pipeline.setFloat("Plague", mc.player.hasEffect(ModEffects.PLAGUE.get()) ? 1 : 0);
@@ -168,7 +184,7 @@ public final class AtmosphereClient {
         preview = null;
         disabled = testLight = false;
         previewSanity = 1;
-        previewChase = serverChase = corruption = pursuit = keeper = indoor = 0;
+        previewChase = serverChase = corruption = pursuit = indoor = 0;
     }
 
     @SubscribeEvent
@@ -200,7 +216,7 @@ public final class AtmosphereClient {
                 }))
                 .then(Commands.literal("off").executes(c -> {
                     disabled = true; testLight = false; removeLight();
-                    return message("Прототип атмосферы выключен; /mrvisual auto — включить.");
+                    return message("Постобработка выключена; предел обзора в матче остаётся. /mrvisual auto — включить эффекты.");
                 }))
                 .then(Commands.literal("preview")
                         .then(Commands.literal("survivor").executes(c -> preview(Profile.SURVIVOR)))
@@ -232,6 +248,7 @@ public final class AtmosphereClient {
                     var pipeline = renderer.getPostProcessingManager().getPipeline(PIPELINE);
                     return message("Veil: профиль=" + profile() + ", шейдер=" + (pipeline != null && pipeline.hasUniform("FogDensity"))
                             + ", свет=" + renderer.getDeferredRenderer().isEnabled()
+                            + ", обзор=" + (hasFogLimit() ? AtmosphereRules.FOG_END + " блоков" : "обычный")
                             + ", рассудок=" + Math.round((1 - corruption) * 100) + "%, погоня=" + pursuit);
                 })));
     }

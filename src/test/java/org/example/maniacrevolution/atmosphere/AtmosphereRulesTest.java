@@ -16,6 +16,15 @@ public final class AtmosphereRulesTest {
         check(AtmosphereRules.corruption(KEEPER, true, 0) == 0, "keeper has no sanity distortion");
         check(AtmosphereRules.corruption(SURVIVOR, false, 0) == 0, "disabled sanity mirror");
         check(AtmosphereRules.corruption(SURVIVOR, true, .2F) == .8F, "survivor corruption");
+        check(AtmosphereRules.fogVisibility(8) == 1, "near space stays clear of range cutoff");
+        check(AtmosphereRules.fogVisibility(18) == 1, "range cutoff starts at 18 blocks");
+        check(AtmosphereRules.fogVisibility(20) > 0 && AtmosphereRules.fogVisibility(20) < 1, "20-block transition");
+        check(AtmosphereRules.fogVisibility(25) < .25F, "25-block objects strongly fade");
+        check(AtmosphereRules.fogVisibility(28) == 0, "28-block cutoff");
+        check(AtmosphereRules.fogVisibility(100000) == 0, "far geometry cannot return");
+        check(!AtmosphereRules.beyondFog(27 * 27), "near living entity remains renderable");
+        check(AtmosphereRules.beyondFog(28 * 28), "hide living entity and name at cutoff");
+        check(AtmosphereRules.beyondFog(100 * 100), "hide distant silhouettes");
 
         ChaseContact chase = new ChaseContact();
         chase.update(0, true, true);
@@ -38,7 +47,7 @@ public final class AtmosphereRulesTest {
         check(chase.strength(320) == 0, "contact eventually expires");
         ChaseContact other = new ChaseContact();
         check(other.strength(220) == 0, "each killer/victim pair is independent");
-        System.out.println("Atmosphere: 22 checks passed");
+        System.out.println("Atmosphere: 31 checks passed");
     }
 
     private static AtmosphereRules.Profile profile(boolean alive, boolean survival, int phase,

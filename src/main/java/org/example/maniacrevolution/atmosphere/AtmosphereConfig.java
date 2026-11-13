@@ -10,7 +10,7 @@ public final class AtmosphereConfig {
 
     static {
         var builder = new ForgeConfigSpec.Builder();
-        ENABLED = builder.comment("Enable the experimental Veil atmosphere renderer.").define("enabled", true);
+        ENABLED = builder.comment("Enable Veil post-processing. The match sight limit remains active when disabled.").define("enabled", true);
         FOG_SAMPLES = builder.comment("Fog integration samples. Higher costs more GPU time.")
                 .defineInRange("fogSamples", 12, 8, 24);
         DISTORTION = builder.comment("Comfort setting for distortion, grain and chase pulses.")

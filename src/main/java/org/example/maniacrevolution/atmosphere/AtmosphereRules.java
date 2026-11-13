@@ -3,6 +3,19 @@ package org.example.maniacrevolution.atmosphere;
 /** Decisions shared by the prototype and its dependency-free regression checks. */
 public final class AtmosphereRules {
     public enum Profile { OFF, SURVIVOR, MANIAC, KEEPER }
+    public static final float FOG_NEAR = 8;
+    public static final float FOG_FADE_START = 18;
+    public static final float FOG_END = 28;
+
+    /** Additional extinction guarantees that even bright surfaces disappear at FOG_END. */
+    public static float fogVisibility(float distance) {
+        float t = clamp((distance - FOG_FADE_START) / (FOG_END - FOG_FADE_START));
+        return 1 - t * t * (3 - 2 * t);
+    }
+
+    public static boolean beyondFog(double distanceSquared) {
+        return distanceSquared >= FOG_END * FOG_END;
+    }
 
     private AtmosphereRules() {}
 
