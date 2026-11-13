@@ -1,4 +1,9 @@
 {
+  "item.maniacrev.lich_book": "Lich's Grimoire",
+  "item.maniacrev.lich_phylactery": "Lich's Phylactery",
+  "item.maniacrev.lich_corpse_editor": "Corpse Spawn Editor (placeholder icon)",
+  "entity.maniacrev.lich_unit": "Lich's Undead",
+  "entity.maniacrev.lich_object": "Lich's Necromancy",
   "effect.maniacrev.jump_cooldown": "Jump Recovery",
   "key.maniacrev.scp173_blink": "Blink (SCP-173)",
   "hud.maniacrev.scp173.blink": "Blink [%s]",
@@ -1100,5 +1105,6 @@
   "character.maniacrev.scp_173.feature.0.name": "Held by gaze",
   "character.maniacrev.scp_173.feature.0.description": "A visible body part within 20 blocks and a 120° × 80° field of view holds the statue. Glass allows sight.",
   "character.maniacrev.scp_173.feature.1.name": "While observed",
-  "character.maniacrev.scp_173.feature.1.description": "Perks and abilities remain available. Gravity and external impulses still apply."
+  "character.maniacrev.scp_173.feature.1.description": "Perks and abilities remain available. Gravity and external impulses still apply.",
+  "effect.maniacrev.lich_phylactery_guard": "Phylactery Guard"
 }

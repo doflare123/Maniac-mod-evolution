@@ -44,6 +44,8 @@ public class SelectCharacterPacket {
 
             String scoreboardName = characterClass.getType().getScoreboardName();
             int classId = characterClass.getScoreboardId();
+            // Check and commit on the same server thread before touching the scoreboard.
+            if (!PlayerDataManager.setSelectedClass(player, characterClass.getType(), classId)) return;
 
             Scoreboard scoreboard = player.getServer().getScoreboard();
             Objective objective = scoreboard.getObjective(scoreboardName);
@@ -57,7 +59,6 @@ public class SelectCharacterPacket {
             }
             scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective).setScore(classId);
 
-            PlayerDataManager.setSelectedClass(player, characterClass.getType(), classId);
             PlayerDataManager.syncPlayerClassToAll(player);
 
             Maniacrev.LOGGER.info("Player {} selected character: {} (type={}, id={})",

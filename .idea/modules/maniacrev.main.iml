@@ -13,7 +13,11 @@
     </facet>
   </component>
   <component name="McpModuleSettings">
+<<<<<<< Updated upstream
     <option name="mappingFile" value="D:\dev_prikols\ManiacRevolution\maniacrev\build\createMcpToSrg\output.tsrg" />
+=======
+    <option name="mappingFile" value="E:\coding\Github\Maniac-mod-evolution\build\createMcpToSrg\output.tsrg" />
+>>>>>>> Stashed changes
     <option name="mcpVersion" value="official_1.20.1" />
     <option name="minecraftVersion" value="1.20.1" />
     <option name="platformVersion" value="47.2.18" />

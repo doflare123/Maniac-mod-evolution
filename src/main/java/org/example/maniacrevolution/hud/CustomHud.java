@@ -146,12 +146,18 @@ public class CustomHud implements IGuiOverlay {
         TimerHud.render(gui, screenWidth / 2, 5);
 
         int trackerX = screenWidth - ComputerHackHud.WIDTH - 5;
-        int trackerY = 5;
+        int trackerY = RightHudLayout.TOP;
         if (ClientGameState.isGameRunning()) {
             ComputerHackHud.render(gui, trackerX, trackerY);
-            trackerY += ComputerHackHud.HEIGHT + 4;
         }
-        GeneratorChargeHud.render(gui, screenWidth - GeneratorChargeHud.WIDTH - 5, trackerY);
+        GeneratorChargeHud.render(gui, screenWidth - GeneratorChargeHud.WIDTH - 5,
+                RightHudLayout.generatorY(ClientGameState.isGameRunning()));
+    }
+
+    public static int getRightTrackersBottom() {
+        if(!HudConfig.isCustomHudEnabled())return 0;
+        return RightHudLayout.bottom(ClientGameState.isGameRunning(),
+                org.example.maniacrevolution.block.entity.FNAFGeneratorBlockEntity.getInstance()!=null);
     }
 
     private int renderTimedEffects(GuiGraphics gui, float partialTick, int screenWidth,
@@ -384,6 +390,9 @@ public class CustomHud implements IGuiOverlay {
         String text = Math.round(player.getHealth()) + " / " + Math.round(player.getMaxHealth());
         if (absorption > 0.0f) text += " +" + Math.round(absorption);
         drawCentered(gui, text, x, y + 3, RESOURCE_BAR_WIDTH, 0xFFFFFFFF);
+
+        org.example.maniacrevolution.lich.client.LichArmyOverlay.phylactery(
+                gui, x, y, RESOURCE_BAR_WIDTH, RESOURCE_BAR_HEIGHT);
 
         float regen = ClientHealthData.getHealthRegen();
         if (Math.abs(regen) > 0.01f) {
@@ -745,6 +754,8 @@ public class CustomHud implements IGuiOverlay {
     }
 
     private IItemWithAbility findItemWithAbility(Player player) {
+        if (org.example.maniacrevolution.lich.client.LichClient.active())
+            return org.example.maniacrevolution.lich.client.LichArmyHud.INSTANCE;
         if (org.example.maniacrevolution.scp173.client.Scp173GameplayClient.statue())
             return org.example.maniacrevolution.scp173.client.Scp173LightHud.INSTANCE;
         if (org.example.maniacrevolution.warden.client.WardenSniffClient.eligible())

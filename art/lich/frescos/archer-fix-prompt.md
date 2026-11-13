@@ -1,0 +1,11 @@
+# Horizontal fresco: archer correction
+
+Edited with built-in image_gen. Updated resource: `src/main/resources/assets/maniacrev/textures/gui/frescos/lich_selection_refresh.png`, 2172 x 724. The bow is now in front of the skeleton, with the string drawn back and the arrow aimed left toward the fleeing survivors.
+
+## Prompt
+
+Use case: precise-object-edit.
+Edit the provided horizontal mosaic fresco with ONE very localized correction: fix ONLY the skeleton ARCHER and his bow in the left third of the image (approximately x=330..565, y=230..450 in the 2172x724 original). The existing pose has bow/string arrangement reversed, looking like the skeleton is shooting himself. Replace that local pose with a physically correct archer aiming LEFT toward the distant fleeing human silhouettes.
+Correct pose unambiguously: skeleton body and skull face LEFT. His bow-holding arm extends toward LEFT, holding the grip of a vertical wooden bow well IN FRONT OF and LEFT OF his skull and torso. The bow's curved wooden limbs are on the LEFT side of the bowstring. His other hand pulls the string BACK TO THE RIGHT, close to the right side of his jaw. The bowstring forms a clear drawn triangular V from upper and lower bow tips on the LEFT to drawing hand near jaw on the RIGHT. A single straight horizontal arrow runs from nock at the right drawing hand through the grip area toward a pointed mint-jade arrowhead well out to the LEFT. Arrow tip points LEFT away from skull, not into him. The arrow and string must be visibly separate, no arrow through torso or skull. Readable skeletal hands with physically credible grip. Skeleton's ivory bones and cold mint glowing eyes match existing mosaic artwork.
+Keep him within his existing local area, modestly moving head or arms to fit corrected bow if needed, without overlap with zombie, ghoul or butcher. Preserve ALL other parts exactly: Lich, other undead, phylactery, spirits, red-black frame, crypt, candles, muted colors, lighting, tile sizes, tesserae material, composition, fine detail, 3:1 aspect ratio and EXACT 2172x724 dimensions. No global restyling or rearrangement, no text, no watermark. Return the complete original panorama with only this local archer correction.
+

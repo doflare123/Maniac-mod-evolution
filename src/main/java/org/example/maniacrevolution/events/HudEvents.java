@@ -20,6 +20,7 @@ public class HudEvents {
     public static void registerOverlays(RegisterGuiOverlaysEvent event) {
         event.registerAboveAll("custom_hud", CustomHud.INSTANCE);
         event.registerAboveAll("warden_reticle", org.example.maniacrevolution.warden.client.WardenCombatHud.INSTANCE);
+        event.registerAboveAll("lich_reticle", org.example.maniacrevolution.lich.client.LichReticle.INSTANCE);
         event.registerAboveAll("pregame_ready", PreGameReadyOverlay.INSTANCE);
         event.registerAboveAll("color_roulette", ColorRouletteOverlay.INSTANCE);
         event.registerAboveAll("guide_update_indicator", new GuideUpdateIndicatorHud());

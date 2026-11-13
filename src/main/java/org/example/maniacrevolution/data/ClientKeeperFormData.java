@@ -20,6 +20,7 @@ public final class ClientKeeperFormData {
     public static void setManiacClass(UUID playerId, int classId) {
         MANIAC_CLASSES.put(playerId, classId);
     }
+    public static int getManiacClass(UUID playerId) { return MANIAC_CLASSES.getOrDefault(playerId,-1); }
 
     public static void setPreviewKeeper(Player player, boolean keeper) {
         PREVIEW_KEEPER_OVERRIDES.put(player, keeper);

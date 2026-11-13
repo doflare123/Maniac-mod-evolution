@@ -1,0 +1,40 @@
+// Isolated verification runner; leaves the user's build.gradle unchanged.
+gradle.projectsEvaluated {
+    def project = gradle.rootProject
+    project.minecraft.runs.gameTestServer {
+        workingDirectory project.file('build/lich-gametest')
+        property 'forge.enabledGameTestNamespaces', 'maniacrev_lich'
+    }
+    project.tasks.matching { it.name == 'runGameTestServer' }.configureEach {
+        doFirst {
+            project.copy {
+                from project.file('src/test/resources/gameteststructures')
+                into project.file('build/lich-gametest/gameteststructures')
+            }
+        }
+    }
+    project.tasks.register('verifyLichModels', JavaExec) {
+        dependsOn project.tasks.named('testClasses'), project.tasks.named('prepareScp173ModelRuntime')
+        classpath = project.sourceSets.test.runtimeClasspath + project.files(project.fileTree('build/scp173-model-runtime') { include '**/*.jar' })
+        mainClass = 'org.example.maniacrevolution.lich.LichModelBakeTest'
+    }
+    if (project.hasProperty('lich_client_probe')) {
+        project.minecraft.runs.client {
+            workingDirectory project.file('build/lich-client-probe')
+            property 'maniacrev.lich.clientProbe', 'true'
+            args '--quickPlaySingleplayer', 'lich-render-test', '--width', '1280', '--height', '720'
+            mods { maniacrev { source project.sourceSets.test } }
+        }
+        project.tasks.matching { it.name == 'runClient' }.configureEach {
+            doFirst {
+                if (!project.file('build/lich-client-probe/saves/lich-render-test/level.dat').exists()) {
+                    project.copy {
+                        from project.file('build/lich-gametest/world')
+                        exclude '**/session.lock', 'playerdata/**', 'stats/**', 'advancements/**'
+                        into project.file('build/lich-client-probe/saves/lich-render-test')
+                    }
+                }
+            }
+        }
+    }
+}

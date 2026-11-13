@@ -135,4 +135,6 @@ public class ModEffects {
             MOB_EFFECTS.register("scp173_armor", Scp173ArmorEffect::new);
     public static final RegistryObject<MobEffect> JUMP_COOLDOWN =
             MOB_EFFECTS.register("jump_cooldown", JumpCooldownEffect::new);
+    public static final RegistryObject<MobEffect> LICH_PHYLACTERY_GUARD =
+            MOB_EFFECTS.register("lich_phylactery_guard", LichPhylacteryGuardEffect::new);
 }

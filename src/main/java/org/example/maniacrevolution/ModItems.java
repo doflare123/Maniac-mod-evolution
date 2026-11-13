@@ -23,6 +23,13 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, Maniacrev.MODID);
 
+    public static final RegistryObject<Item> LICH_BOOK = ITEMS.register("lich_book",
+            () -> new org.example.maniacrevolution.lich.LichItem(org.example.maniacrevolution.lich.LichItem.Role.BOOK));
+    public static final RegistryObject<Item> LICH_PHYLACTERY = ITEMS.register("lich_phylactery",
+            () -> new org.example.maniacrevolution.lich.LichItem(org.example.maniacrevolution.lich.LichItem.Role.PHYLACTERY));
+    public static final RegistryObject<Item> LICH_CORPSE_EDITOR = ITEMS.register("lich_corpse_editor",
+            () -> new org.example.maniacrevolution.lich.LichItem(org.example.maniacrevolution.lich.LichItem.Role.EDITOR));
+
     public static final RegistryObject<Item> SHOP_TOKEN = ITEMS.register("shop_token",
             () -> new ShopOpenItem(new Item.Properties().stacksTo(1)));
 

@@ -14,6 +14,15 @@ import org.example.maniacrevolution.Maniacrev;
 public class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES =
             DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Maniacrev.MODID);
+    public static final RegistryObject<EntityType<org.example.maniacrevolution.lich.LichUnit>> LICH_UNIT =
+            ENTITIES.register("lich_unit", () -> EntityType.Builder.<org.example.maniacrevolution.lich.LichUnit>of(
+                    org.example.maniacrevolution.lich.LichUnit::new, MobCategory.CREATURE).sized(.6F, 1.95F).clientTrackingRange(128).build("lich_unit"));
+    public static final RegistryObject<EntityType<org.example.maniacrevolution.lich.LichObject>> LICH_OBJECT =
+            ENTITIES.register("lich_object", () -> EntityType.Builder.<org.example.maniacrevolution.lich.LichObject>of(
+                    org.example.maniacrevolution.lich.LichObject::new, MobCategory.MISC).sized(.8F, .5F).clientTrackingRange(128).build("lich_object"));
+    public static final RegistryObject<EntityType<org.example.maniacrevolution.lich.LichBolt>> LICH_BOLT =
+            ENTITIES.register("lich_bolt",()->EntityType.Builder.<org.example.maniacrevolution.lich.LichBolt>of(
+                    org.example.maniacrevolution.lich.LichBolt::new,MobCategory.MISC).sized(.2f,.2f).clientTrackingRange(64).updateInterval(1).noSave().build("lich_bolt"));
 
     public static final RegistryObject<EntityType<MimicBlockEntity>> MIMIC_BLOCK =
             ENTITIES.register("mimic_block", () ->

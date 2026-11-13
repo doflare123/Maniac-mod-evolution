@@ -56,6 +56,12 @@ minecraft {
 
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
+            if (project.hasProperty('scp173_render_probe')) {
+                workingDirectory project.file('build/scp173-client-probe')
+                property 'maniacrev.scp173.renderProbe', 'true'
+                args '--quickPlaySingleplayer', 'scp173-render-test'
+                mods { "${mod_id}" { source sourceSets.test } }
+            }
         }
 
         server {
@@ -65,6 +71,12 @@ minecraft {
 
         gameTestServer {
             property 'forge.enabledGameTestNamespaces', mod_id
+            workingDirectory project.file('build/scp173-gametest')
+            mods {
+                "${mod_id}" {
+                    source sourceSets.test
+                }
+            }
         }
 
         data {
@@ -152,6 +164,74 @@ tasks.register('verifyGameSettings', JavaExec) {
     dependsOn tasks.named('testClasses')
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'org.example.maniacrevolution.settings.GameSettingsTest'
+}
+
+tasks.register('verifyWardenPrototype', JavaExec) {
+    group = 'verification'
+    description = 'Checks Warden prototype surface sampling, fade and frozen echo snapshots.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.warden.client.WardenVisionPrototypeTest'
+}
+
+tasks.register('verifyScp173', JavaExec) {
+    group = 'verification'
+    description = 'Checks SCP-173 eligibility, rectangular head FOV and range boundaries.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.scp173.Scp173RulesTest'
+}
+
+tasks.register('prepareScp173ModelRuntime', Copy) {
+    from {
+        configurations.runtimeClasspath.findAll { it.name.startsWith('geckolib-') }.collect {
+            zipTree(it).matching { include 'META-INF/jarjar/*.jar' }
+        }
+    }
+    into 'build/scp173-model-runtime'
+}
+
+tasks.register('prepareScp173RenderProbe', Copy) {
+    from 'build/scp173-gametest/world'
+    exclude '**/session.lock', 'playerdata/**', 'stats/**', 'advancements/**'
+    into 'build/scp173-client-probe/saves/scp173-render-test'
+}
+if (project.hasProperty('scp173_render_probe')) {
+    tasks.matching { it.name == 'runClient' }.configureEach {
+        dependsOn tasks.named('prepareScp173RenderProbe')
+    }
+}
+
+tasks.register('verifyScp173Model', JavaExec) {
+    group = 'verification'
+    description = 'Bakes the actual SCP-173 GeckoLib resource and checks emitted mesh vertices.'
+    dependsOn tasks.named('testClasses'), tasks.named('prepareScp173ModelRuntime')
+    classpath = sourceSets.test.runtimeClasspath + files(fileTree('build/scp173-model-runtime') { include '**/*.jar' })
+    mainClass = 'org.example.maniacrevolution.scp173.Scp173ModelBakeTest'
+}
+
+tasks.register('verifyWardenArmor', JavaExec) {
+    group = 'verification'
+    description = 'Checks Warden armor-effect equivalence, refresh and modifier cleanup.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.warden.WardenArmorTest'
+}
+
+tasks.register('verifyWardenMovement', JavaExec) {
+    group = 'verification'
+    description = 'Checks Warden stamina, percentage speed effects and swimming animation mesh.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.warden.client.WardenMovementTest'
+}
+
+tasks.register('prepareScp173GameTests', Copy) {
+    from 'src/test/resources/gameteststructures'
+    into 'build/scp173-gametest/gameteststructures'
+}
+tasks.matching { it.name == 'runGameTestServer' }.configureEach {
+    dependsOn tasks.named('prepareScp173GameTests')
 }
 
 tasks.named('check') {

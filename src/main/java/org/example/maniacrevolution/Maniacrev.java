@@ -95,6 +95,7 @@ public class Maniacrev {
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         DownedCapability.register(modEventBus);
         ModSounds.SOUND_EVENTS.register(modEventBus);
+        org.example.maniacrevolution.lich.LichSounds.SOUNDS.register(modEventBus);
         ModHackRegistry.BLOCKS.register(modEventBus);
         ModHackRegistry.BLOCK_ENTITIES.register(modEventBus);
         ModHackRegistry.ITEMS.register(modEventBus);
@@ -179,6 +180,7 @@ public class Maniacrev {
         HackCommands.register(event.getDispatcher());
         StatsCommand.register(event.getDispatcher());
         GhostCommand.register(event.getDispatcher());
+        org.example.maniacrevolution.lich.LichCommands.register(event.getDispatcher());
 
         SettingsCommand.register(event.getDispatcher());
         HpBoostCommand.register(event.getDispatcher());
@@ -235,6 +237,7 @@ public class Maniacrev {
 
         @SubscribeEvent
         public static void onAttributeCreate(EntityAttributeCreationEvent event) {
+            event.put(ModEntities.LICH_UNIT.get(), org.example.maniacrevolution.lich.LichUnit.attributes().build());
             // RageBee — расширяет ванильную Bee, нужны её атрибуты
             event.put(ModEntities.RAGE_BEE.get(),
                     net.minecraft.world.entity.animal.Bee.createAttributes().build());

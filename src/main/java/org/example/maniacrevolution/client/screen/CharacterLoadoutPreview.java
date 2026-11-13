@@ -154,6 +154,10 @@ final class CharacterLoadoutPreview {
                 add(entries, new ItemStack(ModItems.GENERATOR.get()), "Генератор",
                         featureDescription(character, "Генератор"), Placement.OTHER);
             }
+            case "lich" -> {
+                addDefined(entries, character, 0, new ItemStack(ModItems.LICH_BOOK.get()), Placement.MAIN_HAND, null);
+                addDefined(entries, character, 1, new ItemStack(ModItems.LICH_PHYLACTERY.get()), Placement.OTHER, null);
+            }
             case "keeper_of_nightmares" -> {
                 addDefined(entries, character, 0, new ItemStack(ModItems.NIGHTMARE_LIGHTER.get()),
                         Placement.OTHER, null);

@@ -21,6 +21,15 @@ public class ArmorAbilityKeyHandler {
 
     private static boolean wasPressed = false;
 
+    /** The closing press stays consumed until release, including keyboard repeats. */
+    public static boolean closeLichMenu(net.minecraft.client.gui.screens.Screen screen, int key, int scan) {
+        if (!ModKeybinds.ACTIVATE_ARMOR_ABILITY.matches(key, scan)) return false;
+        screen.onClose();
+        wasPressed = true;
+        ModKeybinds.ACTIVATE_ARMOR_ABILITY.setDown(true);
+        return true;
+    }
+
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
@@ -39,6 +48,10 @@ public class ArmorAbilityKeyHandler {
     }
 
     private static void handleArmorAbilityActivation(LocalPlayer player) {
+        if (org.example.maniacrevolution.lich.client.LichClient.active()) {
+            if (Minecraft.getInstance().screen == null) org.example.maniacrevolution.lich.client.LichClient.request("open");
+            return;
+        }
         if (org.example.maniacrevolution.scp173.client.Scp173GameplayClient.statue()) {
             if (Minecraft.getInstance().screen == null) org.example.maniacrevolution.scp173.client.Scp173GameplayClient.light();
             return;

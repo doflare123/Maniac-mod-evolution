@@ -1,4 +1,258 @@
 {
+  "lich.book": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/book_01",
+        "volume": 0.6,
+        "attenuation_distance": 16,
+        "stream": false
+      },
+      {
+        "name": "maniacrev:lich/book_02",
+        "volume": 0.6,
+        "attenuation_distance": 16,
+        "stream": false
+      }
+    ]
+  },
+  "lich.command": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/command",
+        "volume": 0.65,
+        "attenuation_distance": 16,
+        "stream": false
+      }
+    ]
+  },
+  "lich.cast.raise": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/cast_raise",
+        "volume": 0.65,
+        "attenuation_distance": 16,
+        "stream": false
+      }
+    ]
+  },
+  "lich.cast.absorb": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/cast_absorb",
+        "volume": 0.65,
+        "attenuation_distance": 16,
+        "stream": false
+      }
+    ]
+  },
+  "lich.cast.repair": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/cast_repair",
+        "volume": 0.65,
+        "attenuation_distance": 16,
+        "stream": false
+      }
+    ]
+  },
+  "lich.emerge": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/emerge",
+        "volume": 0.5,
+        "attenuation_distance": 12,
+        "stream": false
+      }
+    ]
+  },
+  "lich.emerge.ready": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/emerge_ready",
+        "volume": 0.65,
+        "attenuation_distance": 16,
+        "stream": false
+      }
+    ]
+  },
+  "lich.absorb.complete": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/absorb_complete",
+        "volume": 0.7,
+        "attenuation_distance": 16,
+        "stream": false
+      }
+    ]
+  },
+  "lich.repair.complete": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/repair_complete",
+        "volume": 0.7,
+        "attenuation_distance": 16,
+        "stream": false
+      }
+    ]
+  },
+  "lich.phylactery.hit": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/phylactery_hit",
+        "volume": 0.8,
+        "attenuation_distance": 20,
+        "stream": false
+      }
+    ]
+  },
+  "lich.phylactery.carried_hit": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/phylactery_carried_hit",
+        "volume": 0.8,
+        "attenuation_distance": 20,
+        "stream": false
+      }
+    ]
+  },
+  "lich.phylactery.destroy": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/phylactery_destroy",
+        "volume": 0.9,
+        "attenuation_distance": 24,
+        "stream": false
+      }
+    ]
+  },
+  "lich.ghoul.step": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/ghoul_step_01",
+        "volume": 0.45,
+        "attenuation_distance": 8,
+        "stream": false
+      },
+      {
+        "name": "maniacrev:lich/ghoul_step_02",
+        "volume": 0.45,
+        "attenuation_distance": 8,
+        "stream": false
+      }
+    ]
+  },
+  "lich.ghoul.attack": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/ghoul_attack_01",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      },
+      {
+        "name": "maniacrev:lich/ghoul_attack_02",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      }
+    ]
+  },
+  "lich.ghoul.hurt": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/ghoul_hurt_01",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      },
+      {
+        "name": "maniacrev:lich/ghoul_hurt_02",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      }
+    ]
+  },
+  "lich.ghoul.death": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/ghoul_death_01",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      },
+      {
+        "name": "maniacrev:lich/ghoul_death_02",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      }
+    ]
+  },
+  "lich.butcher.step": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/butcher_step_01",
+        "volume": 0.45,
+        "attenuation_distance": 8,
+        "stream": false
+      },
+      {
+        "name": "maniacrev:lich/butcher_step_02",
+        "volume": 0.45,
+        "attenuation_distance": 8,
+        "stream": false
+      }
+    ]
+  },
+  "lich.butcher.attack": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/butcher_attack_01",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      },
+      {
+        "name": "maniacrev:lich/butcher_attack_02",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      }
+    ]
+  },
+  "lich.butcher.hurt": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/butcher_hurt_01",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      },
+      {
+        "name": "maniacrev:lich/butcher_hurt_02",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      }
+    ]
+  },
+  "lich.butcher.death": {
+    "sounds": [
+      {
+        "name": "maniacrev:lich/butcher_death_01",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      },
+      {
+        "name": "maniacrev:lich/butcher_death_02",
+        "volume": 0.6,
+        "attenuation_distance": 12,
+        "stream": false
+      }
+    ]
+  },
   "heartbeat": {
     "subtitle": "Стук сердца",
     "sounds": [

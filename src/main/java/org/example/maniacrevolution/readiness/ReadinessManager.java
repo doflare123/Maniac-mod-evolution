@@ -172,6 +172,7 @@ public class ReadinessManager {
      * Начать 5-секундный отсчёт
      */
     private static void startCountdown(MinecraftServer server) {
+        if (!org.example.maniacrevolution.character.UniqueManiacSelection.validateMatch(server)) return;
         if (countdownTask != null && countdownTask.isRunning()) {
             return; // Отсчёт уже идёт
         }

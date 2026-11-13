@@ -60,14 +60,17 @@ public class PlayerDataManager {
         );
     }
 
-    public static void setSelectedClass(ServerPlayer player, CharacterType type, int classId) {
+    public static boolean setSelectedClass(ServerPlayer player, CharacterType type, int classId) {
+        if (type == CharacterType.MANIAC && !org.example.maniacrevolution.character.UniqueManiacSelection.allow(player,classId)) return false;
         get(player).setSelectedClass(type, classId);
         syncClassToClient(player);
+        return true;
     }
 
     public static void clearSelectedClasses(ServerPlayer player) {
         get(player).clearSelectedClasses();
         syncClassToClient(player);
+        syncPlayerClassToAll(player);
     }
 
     public static boolean isSelectedClass(ServerPlayer player, CharacterType type, int classId) {
@@ -110,6 +113,8 @@ public class PlayerDataManager {
             migrateClassFromScoreboardIfMissing(player, data);
             syncToClient(player);
             syncClassToClient(player);
+            syncAllPlayerClassesTo(player);
+            syncPlayerClassToAll(player);
         }
     }
 

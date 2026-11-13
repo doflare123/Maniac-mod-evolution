@@ -197,6 +197,7 @@ public class GameManager {
 
     public static void startGame(CommandSourceStack source) {
         if (server == null) return;
+        if (!org.example.maniacrevolution.character.UniqueManiacSelection.validateMatch(server)) return;
 
         // A new match always starts from the saved menu settings, even if a
         // datapack or a previous round left a paused countdown behind.

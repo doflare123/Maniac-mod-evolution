@@ -74,6 +74,7 @@ public class CountdownTask {
             broadcastMessage("§cИгра отменена - карта больше не выбрана!");
             return;
         }
+        if (!org.example.maniacrevolution.character.UniqueManiacSelection.validateMatch(server)) return;
 
         broadcastMessage("§6Игра начинается!");
 
