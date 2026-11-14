@@ -4,6 +4,17 @@ import static org.example.maniacrevolution.atmosphere.AtmosphereRules.Profile.*;
 
 public final class AtmosphereRulesTest {
     public static void main(String[] args) {
+        var off = org.example.maniacrevolution.settings.GraphicsMode.OFF;
+        var light = org.example.maniacrevolution.settings.GraphicsMode.LIGHT;
+        var normal = org.example.maniacrevolution.settings.GraphicsMode.NORMAL;
+        var heavy = org.example.maniacrevolution.settings.GraphicsMode.HEAVY;
+        check(!off.enabled() && !off.volumetric() && !off.dynamicLights(), "OFF removes atmosphere and range limit");
+        check(light.enabled() && !light.volumetric() && !light.dynamicLights(), "LIGHT uses analytic fog without ray-marching");
+        check(normal.enabled() && normal.fogSamples() == 12 && !normal.dynamicLights(), "NORMAL quality");
+        check(heavy.enabled() && heavy.fogSamples() == 24 && heavy.dynamicLights(), "HEAVY quality");
+        check(off.step(-5) == off && heavy.step(5) == heavy, "Selector stops at boundaries");
+        check(off.step(5) == light && heavy.step(-5) == normal, "Shift does not skip modes");
+        check(org.example.maniacrevolution.settings.GraphicsMode.fromId(-1) == normal, "Invalid wire id defaults safely");
         check(profile(true, true, 1, "survivors", false, false) == SURVIVOR, "survivor match");
         check(profile(true, true, 3, "maniac", true, false) == KEEPER, "keeper match");
         check(profile(true, true, 2, "maniac", false, false) == MANIAC, "maniac match");
@@ -47,7 +58,7 @@ public final class AtmosphereRulesTest {
         check(chase.strength(320) == 0, "contact eventually expires");
         ChaseContact other = new ChaseContact();
         check(other.strength(220) == 0, "each killer/victim pair is independent");
-        System.out.println("Atmosphere: 31 checks passed");
+        System.out.println("Atmosphere: 38 checks passed");
     }
 
     private static AtmosphereRules.Profile profile(boolean alive, boolean survival, int phase,

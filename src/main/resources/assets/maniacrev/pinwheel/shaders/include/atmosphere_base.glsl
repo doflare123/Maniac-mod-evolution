@@ -1,4 +1,5 @@
 // Shared world-space medium and material treatment for every atmosphere profile.
+#include maniacrev:atmosphere_color
 
 vec4 atmosphereMedium(vec3 p) {
     vec3 drift = p * vec3(0.11, 0.18, 0.11) + vec3(Time * 0.018, 0.0, -Time * 0.012);
@@ -34,13 +35,8 @@ float atmosphereContour(vec2 uv, vec3 positionVS, float depth) {
 }
 
 vec3 atmosphereSurface(vec3 source, vec2 uv, vec3 positionVS, float depth) {
-    float luma = dot(source, vec3(0.2126, 0.7152, 0.0722));
     float highlight = smoothstep(0.48, 0.86, max(source.r, max(source.g, source.b)));
-    float distant = smoothstep(5.0, SightRange, length(positionVS));
-    float saturation = mix(mix(0.64, 0.18, distant), 1.0, highlight);
-    vec3 surface = mix(vec3(luma), source, saturation);
-    surface = pow(max(surface, vec3(0.0)), vec3(1.14));
-    surface *= mix(vec3(0.86, 0.93, 0.94), vec3(1.02, 1.0, 0.98), highlight);
+    vec3 surface = atmosphereMaterial(source, length(positionVS));
     float contour = atmosphereContour(uv, positionVS, depth);
     surface += vec3(0.31, 0.38, 0.35) * contour * (1.0 - highlight * 0.7) * 0.15;
     return surface;

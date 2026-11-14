@@ -1,6 +1,14 @@
 package org.example.maniacrevolution.settings;
 
 public class ClientGameSettings {
+    private static GraphicsMode graphicsMode = GameSettings.DEFAULT_GRAPHICS_MODE;
+
+    public static GraphicsMode getGraphicsMode() { return graphicsMode; }
+    public static void setGraphicsMode(GraphicsMode mode) {
+        graphicsMode = mode == null ? GameSettings.DEFAULT_GRAPHICS_MODE : mode;
+    }
+    public static void resetGraphicsMode() { graphicsMode = GameSettings.DEFAULT_GRAPHICS_MODE; }
+
     // ── Игра ──────────────────────────────────────────────────────────────
     private static int   hpBoost       = 0;
     private static int   maniacCount   = 1;

@@ -112,7 +112,9 @@ public final class AtmosphereRenderProbe {
                 Maniacrev.LOGGER.info("Fog height check PASSED: upper {}, lower {}", upper & 255, lower & 255);
             }
             visibilityChecks(manager, pipeline);
-            Maniacrev.LOGGER.info("Atmosphere render probe PASSED: input, seven variants, shared base, warm light, volumetric fog, 28-block extinction");
+            graphicsModes(manager);
+            org.example.maniacrevolution.settings.SettingsGraphicsProbe.run();
+            Maniacrev.LOGGER.info("Atmosphere render probe PASSED: common base, four graphics modes, light shader, visibility range, settings menu");
         } catch (Exception | AssertionError error) {
             Maniacrev.LOGGER.error("Atmosphere render probe FAILED", error);
         } finally {
@@ -124,13 +126,40 @@ public final class AtmosphereRenderProbe {
         }
     }
 
+    private static void graphicsModes(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        var light = manager.getPipeline(AtmosphereClient.LIGHT_PIPELINE);
+        if (light == null || !light.hasUniform("FogDensity")) throw new AssertionError("Light shader did not compile");
+        for (var mode : org.example.maniacrevolution.settings.GraphicsMode.values()) {
+            org.example.maniacrevolution.settings.ClientGameSettings.setGraphicsMode(mode);
+            scene();
+            var pipeline = manager.getPipeline(mode == org.example.maniacrevolution.settings.GraphicsMode.LIGHT
+                    ? AtmosphereClient.LIGHT_PIPELINE : AtmosphereClient.PIPELINE);
+            pipeline.setFloat("Active", mode.enabled() ? 1 : 0);
+            pipeline.setFloat("Time", 12); pipeline.setFloat("Corruption", 0); pipeline.setFloat("Pursuit", 0);
+            pipeline.setFloat("FogGround", 0); pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("Indoor", 0);
+            pipeline.setFloat("SightFadeStart", AtmosphereRules.FOG_FADE_START);
+            pipeline.setFloat("SightRange", AtmosphereRules.FOG_END);
+            pipeline.setFloat("Hurt", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("LampStrength", 0); pipeline.setInt("FogSamples", mode.fogSamples());
+            if (mode.enabled()) manager.runPipeline(pipeline);
+            try (var image = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget())) {
+                image.writeToFile(Minecraft.getInstance().gameDirectory.toPath()
+                        .resolve("graphics-world-" + mode.name().toLowerCase(java.util.Locale.ROOT) + ".png"));
+            }
+        }
+        visibilityChecks(manager, light);
+        org.example.maniacrevolution.settings.ClientGameSettings.resetGraphicsMode();
+        Maniacrev.LOGGER.info("Graphics modes render PASSED: OFF without a pass, LIGHT analytic fog, NORMAL 12 steps, HEAVY 24 steps");
+    }
+
     /** A white source and black source at the same point must become indistinguishable. */
     private static void visibilityChecks(foundry.veil.api.client.render.post.PostProcessingManager manager,
                                          foundry.veil.api.client.render.post.PostPipeline pipeline) throws java.io.IOException {
         pipeline.setFloat("Active", 1); pipeline.setFloat("Corruption", 0); pipeline.setFloat("Pursuit", 0);
         pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
         pipeline.setFloat("LampStrength", 0); pipeline.setFloat("FogDensity", .055F);
-        for (int samples : new int[]{8, 12, 24}) for (int indoor = 0; indoor <= 1; indoor++) {
+        int[] qualities = pipeline.hasUniform("FogSamples") ? new int[]{8, 12, 24} : new int[]{0};
+        for (int samples : qualities) for (int indoor = 0; indoor <= 1; indoor++) {
             pipeline.setInt("FogSamples", samples); pipeline.setFloat("Indoor", indoor);
             for (float ground : new float[]{0, -20}) {
                 pipeline.setFloat("FogGround", ground);

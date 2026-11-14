@@ -31,12 +31,15 @@ import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.nightmare.ClientNightmareData;
 import org.example.maniacrevolution.nightmare.NightmareConfig;
 import org.example.maniacrevolution.util.PlayerModeUtil;
+import org.example.maniacrevolution.settings.ClientGameSettings;
+import org.example.maniacrevolution.settings.GraphicsMode;
 import org.example.maniacrevolution.warden.client.WardenVisionPrototype;
 
 /** Client-only Veil adapter. Gameplay state remains on the server. */
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public final class AtmosphereClient {
     public static final ResourceLocation PIPELINE = Maniacrev.loc("atmosphere");
+    public static final ResourceLocation LIGHT_PIPELINE = Maniacrev.loc("atmosphere_light");
     private static Profile preview;
     private static boolean disabled;
     private static float previewSanity = 1, previewChase;
@@ -49,6 +52,10 @@ public final class AtmosphereClient {
     private static PointLight lamp;
 
     private AtmosphereClient() {}
+
+    public static GraphicsMode graphicsMode() {
+        return ClientGameSettings.getGraphicsMode();
+    }
 
     public static void chase(float value) {
         serverChase = AtmosphereRules.clamp(value);
@@ -74,16 +81,16 @@ public final class AtmosphereClient {
                 ClientPlayerData.getManiacClassId() == WardenClass.SCOREBOARD_ID);
     }
 
-    /** The match visibility rule survives disabling optional post-processing. */
+    /** Local post-processing toggles keep the sight limit; the host's OFF mode removes it. */
     public static boolean hasFogLimit() {
-        return viewingWorld() && (matchProfile() != Profile.OFF
+        return graphicsMode().enabled() && viewingWorld() && (matchProfile() != Profile.OFF
                 || preview != null && !disabled && AtmosphereConfig.ENABLED.get());
     }
 
     public static Profile profile() {
         var mc = Minecraft.getInstance();
         var player = mc.player;
-        if (disabled || !AtmosphereConfig.ENABLED.get() || !viewingWorld()
+        if (!graphicsMode().enabled() || disabled || !AtmosphereConfig.ENABLED.get() || !viewingWorld()
                 || mc.gameRenderer.getMainCamera().getFluidInCamera() != FogType.NONE
                 || player.hasEffect(MobEffects.BLINDNESS) || player.hasEffect(MobEffects.DARKNESS)
                 || player.hasEffect(ModEffects.FORESTER_BLIND.get())) return Profile.OFF;
@@ -119,13 +126,20 @@ public final class AtmosphereClient {
     public static void frame(TickEvent.RenderTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
         var manager = VeilRenderSystem.renderer().getPostProcessingManager();
-        if (profile() == Profile.OFF) manager.remove(PIPELINE);
-        else manager.add(PIPELINE);
+        ResourceLocation selected = graphicsMode() == GraphicsMode.LIGHT ? LIGHT_PIPELINE : PIPELINE;
+        manager.remove(selected.equals(PIPELINE) ? LIGHT_PIPELINE : PIPELINE);
+        if (profile() == Profile.OFF) {
+            manager.remove(selected);
+            removeLight();
+        } else {
+            manager.add(selected);
+            if (!graphicsMode().dynamicLights()) removeLight();
+        }
     }
 
     @SubscribeEvent
     public static void uniforms(ForgeVeilPostProcessingEvent.Pre event) {
-        if (!PIPELINE.equals(event.getName())) return;
+        if (!PIPELINE.equals(event.getName()) && !LIGHT_PIPELINE.equals(event.getName())) return;
         var mc = Minecraft.getInstance();
         var pipeline = event.getPipeline();
         Profile current = profile();
@@ -144,7 +158,7 @@ public final class AtmosphereClient {
         pipeline.setFloat("Hurt", Math.min(1, mc.player.hurtTime / 10F) * comfort);
         pipeline.setFloat("Fear", mc.player.hasEffect(ModEffects.FEAR.get()) ? comfort : 0);
         pipeline.setFloat("Plague", mc.player.hasEffect(ModEffects.PLAGUE.get()) ? 1 : 0);
-        pipeline.setInt("FogSamples", AtmosphereConfig.FOG_SAMPLES.get());
+        pipeline.setInt("FogSamples", graphicsMode().fogSamples());
         // Do not brighten blackout states or use the point light as wall vision.
         pipeline.setFloat("LampStrength", lampPosition == null || current == Profile.OFF ? 0 : 1);
         Vec3 light = lampPosition == null ? Vec3.ZERO : lampPosition;
@@ -154,7 +168,7 @@ public final class AtmosphereClient {
     private static void updateLight(Profile current) {
         var mc = Minecraft.getInstance();
         boolean lighter = mc.player.isHolding(ModItems.NIGHTMARE_LIGHTER.get());
-        if (current == Profile.OFF || !testLight && !lighter) {
+        if (!graphicsMode().dynamicLights() || current == Profile.OFF || !testLight && !lighter) {
             removeLight();
             return;
         }
@@ -180,6 +194,7 @@ public final class AtmosphereClient {
 
     private static void reset() {
         VeilRenderSystem.renderer().getPostProcessingManager().remove(PIPELINE);
+        VeilRenderSystem.renderer().getPostProcessingManager().remove(LIGHT_PIPELINE);
         removeLight();
         preview = null;
         disabled = testLight = false;
@@ -190,6 +205,7 @@ public final class AtmosphereClient {
     @SubscribeEvent
     public static void logout(ClientPlayerNetworkEvent.LoggingOut event) {
         reset();
+        ClientGameSettings.resetGraphicsMode();
         world = null;
         playerId = null;
     }
@@ -236,6 +252,8 @@ public final class AtmosphereClient {
                         })))
                 .then(Commands.literal("light").then(Commands.argument("enabled", BoolArgumentType.bool())
                         .executes(c -> {
+                            if (BoolArgumentType.getBool(c, "enabled") && !graphicsMode().dynamicLights())
+                                return message("Дополнительный свет доступен в режиме «Тяжёлый», который выбирает хост в настройках матча.");
                             testLight = BoolArgumentType.getBool(c, "enabled");
                             removeLight();
                             var player = Minecraft.getInstance().player;
@@ -245,8 +263,10 @@ public final class AtmosphereClient {
                         })))
                 .then(Commands.literal("status").executes(c -> {
                     var renderer = VeilRenderSystem.renderer();
-                    var pipeline = renderer.getPostProcessingManager().getPipeline(PIPELINE);
+                    var pipeline = renderer.getPostProcessingManager().getPipeline(
+                            graphicsMode() == GraphicsMode.LIGHT ? LIGHT_PIPELINE : PIPELINE);
                     return message("Veil: профиль=" + profile() + ", шейдер=" + (pipeline != null && pipeline.hasUniform("FogDensity"))
+                            + ", графика=" + graphicsMode().displayName()
                             + ", свет=" + renderer.getDeferredRenderer().isEnabled()
                             + ", обзор=" + (hasFogLimit() ? AtmosphereRules.FOG_END + " блоков" : "обычный")
                             + ", рассудок=" + Math.round((1 - corruption) * 100) + "%, погоня=" + pursuit);

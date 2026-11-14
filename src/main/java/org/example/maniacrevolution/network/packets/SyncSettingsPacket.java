@@ -3,6 +3,7 @@ package org.example.maniacrevolution.network.packets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.settings.ClientGameSettings;
+import org.example.maniacrevolution.settings.GraphicsMode;
 
 import java.util.function.Supplier;
 
@@ -26,6 +27,7 @@ public class SyncSettingsPacket {
     private final int   computersNeededForWin;
     // Эксперименты
     private final boolean threePerksEnabled;
+    private final GraphicsMode graphicsMode;
 
     public SyncSettingsPacket(int hpBoost,
                               int maniacCount, int gameTime, int selectedMap,
@@ -35,7 +37,7 @@ public class SyncSettingsPacket {
                               int qteIntervalMin, int qteIntervalMax,
                               float qteSuccessBonus, float qteCritBonus,
                               int computersNeededForWin,
-                              boolean threePerksEnabled) {
+                              boolean threePerksEnabled, GraphicsMode graphicsMode) {
         this.hpBoost              = hpBoost;
         this.maniacCount          = maniacCount;
         this.gameTime             = gameTime;
@@ -52,6 +54,7 @@ public class SyncSettingsPacket {
         this.qteCritBonus         = qteCritBonus;
         this.computersNeededForWin = computersNeededForWin;
         this.threePerksEnabled    = threePerksEnabled;
+        this.graphicsMode = graphicsMode == null ? GraphicsMode.NORMAL : graphicsMode;
     }
 
     /** Удобный конструктор из GameSettings */
@@ -65,7 +68,7 @@ public class SyncSettingsPacket {
                 s.getQteIntervalMin(), s.getQteIntervalMax(),
                 s.getQteSuccessBonus(), s.getQteCritBonus(),
                 s.getComputersNeededForWin(),
-                s.isThreePerksEnabled()
+                s.isThreePerksEnabled(), s.getGraphicsMode()
         );
     }
 
@@ -86,6 +89,7 @@ public class SyncSettingsPacket {
         buf.writeFloat(msg.qteCritBonus);
         buf.writeInt(msg.computersNeededForWin);
         buf.writeBoolean(msg.threePerksEnabled);
+        buf.writeVarInt(msg.graphicsMode.id());
     }
 
     public static SyncSettingsPacket decode(FriendlyByteBuf buf) {
@@ -97,24 +101,22 @@ public class SyncSettingsPacket {
                 buf.readInt(), buf.readInt(),
                 buf.readFloat(), buf.readFloat(),
                 buf.readInt(),
-                buf.readBoolean()
+                buf.readBoolean(), GraphicsMode.fromId(buf.readVarInt())
         );
     }
 
     public static void handle(SyncSettingsPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ClientGameSettings.setSettings(
-                    msg.hpBoost,
-                    msg.maniacCount, msg.gameTime, msg.selectedMap);
-            ClientGameSettings.setComputerSettings(
-                    msg.hackPointsRequired, msg.pointsPerPlayer,
-                    msg.pointsPerSpecialist, msg.maxBonusPlayers,
-                    msg.hackerRadius, msg.supportRadius,
-                    msg.qteIntervalMin, msg.qteIntervalMax,
-                    msg.qteSuccessBonus, msg.qteCritBonus,
-                    msg.computersNeededForWin);
-            ClientGameSettings.setExperimentSettings(msg.threePerksEnabled);
-        });
+        ctx.get().enqueueWork(msg::applyToClient);
         ctx.get().setPacketHandled(true);
+    }
+
+    public void applyToClient() {
+        ClientGameSettings.setSettings(hpBoost, maniacCount, gameTime, selectedMap);
+        ClientGameSettings.setComputerSettings(
+                hackPointsRequired, pointsPerPlayer, pointsPerSpecialist, maxBonusPlayers,
+                hackerRadius, supportRadius, qteIntervalMin, qteIntervalMax,
+                qteSuccessBonus, qteCritBonus, computersNeededForWin);
+        ClientGameSettings.setExperimentSettings(threePerksEnabled);
+        ClientGameSettings.setGraphicsMode(graphicsMode);
     }
 }
