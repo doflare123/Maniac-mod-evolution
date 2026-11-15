@@ -39,7 +39,6 @@ public class CharacterRegistry {
         register(new KeeperOfNightmaresClass());
         register(new WardenClass());
         register(new Scp173Class());
-        register(new LichClass());
 
         initialized = true;
     }

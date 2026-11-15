@@ -31,9 +31,7 @@ public final class PenaltyHudOverlay {
         // The Warden replacement cancels vanilla CROSSHAIR, including its Post event.
         boolean warden = event.getOverlay().id().equals(new net.minecraft.resources.ResourceLocation(Maniacrev.MODID, "warden_reticle"))
                 && org.example.maniacrevolution.warden.client.WardenCombatHud.visible();
-        boolean lich = event.getOverlay().id().equals(new net.minecraft.resources.ResourceLocation(Maniacrev.MODID, "lich_reticle"))
-                && org.example.maniacrevolution.lich.client.LichReticle.visible();
-        if (event.getOverlay() != VanillaGuiOverlay.CROSSHAIR.type() && !warden && !lich) return;
+        if (event.getOverlay() != VanillaGuiOverlay.CROSSHAIR.type() && !warden) return;
 
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;

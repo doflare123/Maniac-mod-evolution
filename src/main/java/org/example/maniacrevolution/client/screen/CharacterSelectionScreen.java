@@ -48,7 +48,6 @@ public class CharacterSelectionScreen extends Screen {
             Map.entry("freddy_bear", new FrescoDimensions(1024, 1536)),
             Map.entry("ghost", new FrescoDimensions(1024, 1536)),
             Map.entry("keeper_of_nightmares", new FrescoDimensions(1024, 1536)),
-            Map.entry("lich", new FrescoDimensions(1024, 1536)),
             Map.entry("mefedronshchik", new FrescoDimensions(1024, 1536)),
             Map.entry("necromancer", new FrescoDimensions(1024, 1536)),
             Map.entry("plague_doctor", new FrescoDimensions(1024, 1536)),
@@ -69,7 +68,6 @@ public class CharacterSelectionScreen extends Screen {
             Map.entry("freddy_bear", new FrescoDimensions(2168, 725)),
             Map.entry("ghost", new FrescoDimensions(2171, 724)),
             Map.entry("keeper_of_nightmares", new FrescoDimensions(2172, 724)),
-            Map.entry("lich", new FrescoDimensions(2172, 724)),
             Map.entry("mefedronshchik", new FrescoDimensions(2170, 725)),
             Map.entry("necromancer", new FrescoDimensions(2172, 724)),
             Map.entry("plague_doctor", new FrescoDimensions(2172, 724)),
@@ -474,13 +472,6 @@ public class CharacterSelectionScreen extends Screen {
 
     private void drawCroppedFresco(GuiGraphics graphics, CharacterClass character, Rect destination,
                                    boolean selectionCard) {
-        if ("lich".equals(character.getId()) && minecraft.getResourceManager().getResource(
-                selectionCard?character.getSelectionFrescoTexture():character.getFrescoTexture()).isEmpty()) {
-            graphics.fill(destination.x(),destination.y(),destination.right(),destination.bottom(),0xff21142f);
-            graphics.drawCenteredString(font,"ЛИЧ",destination.x()+destination.width()/2,destination.y()+destination.height()/2-8,0xe6b8ff);
-            if(destination.width()>110)graphics.drawCenteredString(font,"Фреска: временная замена",destination.x()+destination.width()/2,destination.y()+destination.height()/2+5,0xa98abc);
-            return;
-        }
         // Dedicated compositions retain their full framing across window sizes.
         if (SELECTION_FRESCO_DIMENSIONS.containsKey(character.getId())) {
             drawFittedFresco(graphics, character, destination, selectionCard);
@@ -597,7 +588,6 @@ public class CharacterSelectionScreen extends Screen {
         WardenPlayerForm.setPreviewWarden(previewPlayer, previewWarden);
         boolean previewScp173 = "scp_173".equals(selected.getId());
         Scp173PlayerForm.setPreviewScp173(previewPlayer, previewScp173);
-        org.example.maniacrevolution.lich.client.LichPlayerForm.preview(previewPlayer,"lich".equals(selected.getId()));
 
         int modelX = previewPanel.x() + previewPanel.width() / 2;
         int modelBottom = previewPanel.bottom() - 5;
