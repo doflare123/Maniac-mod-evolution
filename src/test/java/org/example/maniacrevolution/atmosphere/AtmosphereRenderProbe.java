@@ -54,6 +54,8 @@ public final class AtmosphereRenderProbe {
                 pipeline.setFloat("Active", variant.equals("vanilla") ? 0 : 1);
                 pipeline.setFloat("Time", 12.0F);
                 pipeline.setFloat("Corruption", variant.equals("sanity") ? .95F : 0);
+                pipeline.setFloat("LightCorruption", variant.equals("sanity") ? .95F : 0);
+                pipeline.setFloat("Comfort", 1);
                 pipeline.setFloat("Pursuit", variant.equals("chase") ? 1 : 0);
                 pipeline.setFloat("FogGround", 0);
                 pipeline.setFloat("FogDensity", .055F);
@@ -64,8 +66,8 @@ public final class AtmosphereRenderProbe {
                 pipeline.setFloat("Hurt", 0);
                 pipeline.setFloat("Fear", 0);
                 pipeline.setFloat("Plague", 0);
-                pipeline.setFloat("LampStrength", variant.endsWith("lamp") ? 1 : 0);
-                pipeline.setVector("LampPosition", 0, 2, -6);
+                source(pipeline, variant.equals("lamp"));
+                pipeline.setFloat("SurfaceLight", variant.equals("lamp") ? 1 : 0);
                 manager.runPipeline(pipeline);
                 try (var image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
                     double sum = 0;
@@ -84,7 +86,8 @@ public final class AtmosphereRenderProbe {
                     if (!variant.equals("vanilla")) {
                         int light = image.getPixelRGBA(image.getWidth() / 2, image.getHeight() / 2);
                         int red = light & 255, green = light >> 8 & 255, blue = light >> 16 & 255;
-                        if (red <= green || green <= blue + 15) throw new AssertionError("Atmosphere lost the warm light: " + variant);
+                        if (red <= green || green <= blue + (variant.equals("sanity") ? 0 : 15))
+                            throw new AssertionError("Atmosphere lost the warm light: " + variant);
                     }
                     image.writeToFile(mc.gameDirectory.toPath().resolve("atmosphere-" + variant + ".png"));
                     Maniacrev.LOGGER.info("Atmosphere render probe {}: luminance sum {}", variant, sum);
@@ -101,7 +104,8 @@ public final class AtmosphereRenderProbe {
             b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             quad(b, -80, -80, -30, 80, -80, -30, 80, 80, -30, -80, 80, -30, .5F, .5F, .5F);
             BufferUploader.drawWithShader(b.end());
-            pipeline.setFloat("LampStrength", 0);
+            source(pipeline, false);
+            pipeline.setFloat("SurfaceLight", 0);
             pipeline.setFloat("FogDensity", .045F);
             manager.runPipeline(pipeline);
             try (var image = Screenshot.takeScreenshot(target)) {
@@ -113,8 +117,15 @@ public final class AtmosphereRenderProbe {
             }
             visibilityChecks(manager, pipeline);
             graphicsModes(manager);
+            lightingChecks(manager);
+            lighterChecks(manager);
+            fogMaskChecks(manager);
+            coloredLightsChecks(manager);
+            rowLightingChecks(manager);
+            ceilingLightChecks(manager);
+            haloContinuityChecks(manager);
             org.example.maniacrevolution.settings.SettingsGraphicsProbe.run();
-            Maniacrev.LOGGER.info("Atmosphere render probe PASSED: common base, four graphics modes, light shader, visibility range, settings menu");
+            Maniacrev.LOGGER.info("Atmosphere render probe PASSED: common base, four graphics modes, warm lighting, sanity, depth occlusion, visibility range, settings menu");
         } catch (Exception | AssertionError error) {
             Maniacrev.LOGGER.error("Atmosphere render probe FAILED", error);
         } finally {
@@ -136,11 +147,13 @@ public final class AtmosphereRenderProbe {
                     ? AtmosphereClient.LIGHT_PIPELINE : AtmosphereClient.PIPELINE);
             pipeline.setFloat("Active", mode.enabled() ? 1 : 0);
             pipeline.setFloat("Time", 12); pipeline.setFloat("Corruption", 0); pipeline.setFloat("Pursuit", 0);
+            pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
             pipeline.setFloat("FogGround", 0); pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("Indoor", 0);
             pipeline.setFloat("SightFadeStart", AtmosphereRules.FOG_FADE_START);
             pipeline.setFloat("SightRange", AtmosphereRules.FOG_END);
             pipeline.setFloat("Hurt", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Plague", 0);
-            pipeline.setFloat("LampStrength", 0); pipeline.setInt("FogSamples", mode.fogSamples());
+            source(pipeline, mode.lightSamples() > 0); pipeline.setInt("FogSamples", mode.fogSamples());
+            pipeline.setFloat("SurfaceLight", mode.dynamicLights() ? 1 : 0);
             if (mode.enabled()) manager.runPipeline(pipeline);
             try (var image = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget())) {
                 image.writeToFile(Minecraft.getInstance().gameDirectory.toPath()
@@ -156,8 +169,10 @@ public final class AtmosphereRenderProbe {
     private static void visibilityChecks(foundry.veil.api.client.render.post.PostProcessingManager manager,
                                          foundry.veil.api.client.render.post.PostPipeline pipeline) throws java.io.IOException {
         pipeline.setFloat("Active", 1); pipeline.setFloat("Corruption", 0); pipeline.setFloat("Pursuit", 0);
+        pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
         pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
-        pipeline.setFloat("LampStrength", 0); pipeline.setFloat("FogDensity", .055F);
+        source(pipeline, false); pipeline.setFloat("FogDensity", .055F);
+        pipeline.setFloat("SurfaceLight", 0);
         int[] qualities = pipeline.hasUniform("FogSamples") ? new int[]{8, 12, 24} : new int[]{0};
         for (int samples : qualities) for (int indoor = 0; indoor <= 1; indoor++) {
             pipeline.setInt("FogSamples", samples); pipeline.setFloat("Indoor", indoor);
@@ -174,9 +189,417 @@ public final class AtmosphereRenderProbe {
             }
         }
         // Bright scattered light also must not restore the hidden source silhouette.
-        pipeline.setFloat("LampStrength", 1);
+        source(pipeline, true);
+        pipeline.setFloat("SurfaceLight", 1);
         if (planeContrast(manager, pipeline, 30) > 2) throw new AssertionError("Lamp reveals distant source");
         Maniacrev.LOGGER.info("Fog range PASSED: 6 blocks readable, 20 fading, 28/30/100 hidden; 8/12/24 samples, indoors, above low fog, lamp");
+    }
+
+    private static void source(foundry.veil.api.client.render.post.PostPipeline pipeline, boolean enabled) {
+        source(pipeline, enabled ? 1 : 0);
+    }
+
+    private static void source(foundry.veil.api.client.render.post.PostPipeline pipeline, int count) {
+        var positions = new org.joml.Vector4f[8];
+        var colors = new org.joml.Vector4f[8];
+        for (int i = 0; i < 8; i++) { positions[i] = new org.joml.Vector4f(); colors[i] = new org.joml.Vector4f(); }
+        for (int i = 0; i < count; i++) {
+            positions[i].set(.5F + i * .2F, .5F, -4, 8);
+            colors[i].set(1, .63F, .28F, 1.1F);
+        }
+        pipeline.setInt("LightCount", count);
+        pipeline.setInt("LightSamples", 8);
+        pipeline.setFloat("ContactShadows", 1);
+        pipeline.setInt("HandLightCount", 0);
+        pipeline.setVectors("LightPositionRadius", positions);
+        pipeline.setVectors("LightColorPower", colors);
+        var extents = new org.joml.Vector4f[64];
+        for (int i = 0; i < extents.length; i++) extents[i] = new org.joml.Vector4f();
+        pipeline.setVectors("LightExtent", extents);
+    }
+
+    /** Numeric assertions exercise the real shader, not a Java copy of its lighting equations. */
+    private static void lightingChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        var volume = manager.getPipeline(AtmosphereClient.PIPELINE);
+        var light = manager.getPipeline(AtmosphereClient.LIGHT_PIPELINE);
+        for (var pipeline : new foundry.veil.api.client.render.post.PostPipeline[]{light, volume}) {
+            if (!pipeline.hasUniform("LightCorruption")) throw new AssertionError("Sanity lighting uniform missing");
+            pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
+            pipeline.setFloat("Corruption", 0); pipeline.setFloat("Pursuit", 0);
+            pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
+            pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("FogGround", -20); pipeline.setFloat("Indoor", 1); pipeline.setFloat("FogDensity", .055F);
+            pipeline.setFloat("SightFadeStart", 18); pipeline.setFloat("SightRange", 28);
+            pipeline.setInt("FogSamples", 24); pipeline.setFloat("SurfaceLight", 0); source(pipeline, false);
+            int healthy = lightingPlane(manager, pipeline, 6);
+            pipeline.setFloat("LightCorruption", 1);
+            int broken = lightingPlane(manager, pipeline, 6);
+            if (brightness(broken) >= brightness(healthy) - 10) throw new AssertionError("Sanity does not dim lighting");
+            if (warmth(broken) >= warmth(healthy) - 10) throw new AssertionError("Sanity does not cool lighting");
+            pipeline.setFloat("LightCorruption", 0);
+        }
+        light.setFloat("LightCorruption", 1); light.setFloat("Comfort", 0); light.setFloat("Time", 0);
+        int stable = lightingPlane(manager, light, 6);
+        light.setFloat("Time", 1.5F);
+        if (lightingPlane(manager, light, 6) != stable) throw new AssertionError("Comfort zero leaves lighting pulses");
+        light.setFloat("Comfort", 1);
+        if (brightness(lightingPlane(manager, light, 6)) >= brightness(stable) - 3)
+            throw new AssertionError("Critical sanity has no soft light dip");
+
+        source(volume, false);
+        int unlit = lightingPlane(manager, volume, 6);
+        source(volume, true);
+        int scattered = lightingPlane(manager, volume, 6);
+        if (brightness(scattered) < brightness(unlit) + 8 || warmth(scattered) < warmth(unlit) + 5)
+            throw new AssertionError("Point source does not warm the fog");
+        volume.setFloat("SurfaceLight", 1);
+        int surface = lightingPlane(manager, volume, 6);
+        if (brightness(surface) < brightness(scattered) + 8) throw new AssertionError("Heavy mode does not light surfaces");
+        // A foreground plane is a wall between camera and source; heavy scattering must stop at it.
+        int blocked = lightingPlane(manager, volume, 2);
+        source(volume, false);
+        int wall = lightingPlane(manager, volume, 2);
+        if (Math.abs(brightness(blocked) - brightness(wall)) > 3) throw new AssertionError("Light leaks through a foreground wall");
+        source(volume, true);
+        int emitter = lightingPlane(manager, volume, 3.5F);
+        source(volume, false);
+        if (warmth(emitter) < warmth(lightingPlane(manager, volume, 3.5F)) + 5)
+            throw new AssertionError("An emitter's own block face extinguishes its glow");
+        source(volume, 8);
+        if (brightness(lightingPlane(manager, volume, 6)) < brightness(surface))
+            throw new AssertionError("Eight-source uniform upload loses lights");
+        source(volume, true);
+        scene(); manager.runPipeline(volume);
+        try (var image = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget())) {
+            image.writeToFile(Minecraft.getInstance().gameDirectory.toPath().resolve("atmosphere-lighting-heavy.png"));
+        }
+        volume.setFloat("LightCorruption", 1);
+        scene(); manager.runPipeline(volume);
+        try (var image = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget())) {
+            image.writeToFile(Minecraft.getInstance().gameDirectory.toPath().resolve("atmosphere-lighting-sanity.png"));
+        }
+        Maniacrev.LOGGER.info("Atmosphere lighting PASSED: warm fog, heavy surfaces, sanity cooling/dimming, comfort, wall occlusion, solid emitters, eight sources");
+    }
+
+    private static int lightingPlane(foundry.veil.api.client.render.post.PostProcessingManager manager,
+                                     foundry.veil.api.client.render.post.PostPipeline pipeline, float distance) {
+        var target = Minecraft.getInstance().getMainRenderTarget();
+        target.clear(Minecraft.ON_OSX); target.bindWrite(true);
+        RenderSystem.enableDepthTest(); RenderSystem.depthMask(true);
+        RenderSystem.disableCull(); RenderSystem.disableBlend();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        var b = Tesselator.getInstance().getBuilder(); b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float size = distance * 2;
+        quad(b, -size, -size, -distance, size, -size, -distance, size, size, -distance, -size, size, -distance, .5F, .5F, .5F);
+        BufferUploader.drawWithShader(b.end()); manager.runPipeline(pipeline);
+        try (var image = Screenshot.takeScreenshot(target)) {
+            return image.getPixelRGBA(image.getWidth() / 2, image.getHeight() / 2);
+        }
+    }
+
+    private static int brightness(int pixel) { return (pixel & 255) + (pixel >> 8 & 255) + (pixel >> 16 & 255); }
+    private static int warmth(int pixel) { return (pixel & 255) - (pixel >> 16 & 255); }
+
+    /** Run the actual Lit-tag predicate and measure surface illumination with fog completely disabled. */
+    private static void lighterChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        var stack = new net.minecraft.world.item.ItemStack(org.example.maniacrevolution.ModItems.NIGHTMARE_LIGHTER.get());
+        if (org.example.maniacrevolution.item.NightmareLighterItem.isLit(stack)) throw new AssertionError("Closed lighter emits light");
+        stack.getOrCreateTag().putBoolean("Lit", true);
+        if (!org.example.maniacrevolution.item.NightmareLighterItem.isLit(stack)) throw new AssertionError("Opened lighter has no light");
+        var other = new net.minecraft.world.item.ItemStack(Blocks.STONE);
+        other.getOrCreateTag().putBoolean("Lit", true);
+        if (org.example.maniacrevolution.item.NightmareLighterItem.isLit(other)) throw new AssertionError("Non-lighter NBT activates hand light");
+        for (var mode : new org.example.maniacrevolution.settings.GraphicsMode[]{
+                org.example.maniacrevolution.settings.GraphicsMode.LIGHT,
+                org.example.maniacrevolution.settings.GraphicsMode.NORMAL,
+                org.example.maniacrevolution.settings.GraphicsMode.HEAVY}) {
+            var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : AtmosphereClient.LIGHT_PIPELINE);
+            pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
+            pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
+            pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("FogDensity", 0); pipeline.setFloat("SurfaceLight", 0);
+            pipeline.setInt("FogSamples", mode.fogSamples());
+            source(pipeline, false);
+            int closed = lightingPlane(manager, pipeline, 3);
+            handSource(pipeline, true);
+            int burning = lightingPlane(manager, pipeline, 3);
+            if (brightness(burning) < brightness(closed) + 12 || warmth(burning) < warmth(closed) + 4)
+                throw new AssertionError("Lighter only tints fog instead of lighting a surface: " + mode);
+            for (float time : new float[]{0, .5F, 1, 2, 5}) {
+                pipeline.setFloat("Time", time);
+                if (brightness(lightingPlane(manager, pipeline, 3)) < brightness(burning) - 2)
+                    throw new AssertionError("Held lighter flashes then decays: " + mode);
+            }
+            pipeline.setFloat("FogDensity", .055F);
+            scene(); manager.runPipeline(pipeline);
+            try (var image = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget())) {
+                image.writeToFile(Minecraft.getInstance().gameDirectory.toPath().resolve("atmosphere-lighter-" + mode.name().toLowerCase(java.util.Locale.ROOT) + ".png"));
+            }
+            stack.getOrCreateTag().putBoolean("Lit", false);
+            if (org.example.maniacrevolution.item.NightmareLighterItem.isLit(stack)) throw new AssertionError("Closed state still emits");
+            handSource(pipeline, false);
+        }
+        Maniacrev.LOGGER.info("Lighter lighting PASSED: closed off, Lit tag, non-lighter rejection, surfaces without fog, stable LIGHT/NORMAL/HEAVY");
+    }
+
+    private static void handSource(foundry.veil.api.client.render.post.PostPipeline pipeline, boolean enabled) {
+        source(pipeline, enabled);
+        var position = new org.joml.Vector4f[]{new org.joml.Vector4f(0, -.3F, 0, 10)};
+        var color = new org.joml.Vector4f[]{new org.joml.Vector4f(1, .63F, .28F, 1.35F)};
+        pipeline.setVectors("LightPositionRadius", position);
+        pipeline.setVectors("LightColorPower", color);
+        pipeline.setInt("HandLightCount", enabled ? 1 : 0);
+    }
+
+    /** A nearby post must not paint a false shadow onto unobstructed fog elsewhere on screen. */
+    private static void fogMaskChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        var pipeline = manager.getPipeline(AtmosphereClient.PIPELINE);
+        pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
+        pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
+        pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+        pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("FogGround", -20); pipeline.setFloat("Indoor", 1);
+        pipeline.setInt("FogSamples", 24); source(pipeline, true);
+        var sourcePosition = new org.joml.Vector4f[]{new org.joml.Vector4f(.5F, .5F, -6, 8)};
+        pipeline.setVectors("LightPositionRadius", sourcePosition);
+        int[] baseline = null;
+        for (int heavy = 0; heavy <= 1; heavy++) {
+            pipeline.setFloat("SurfaceLight", heavy);
+            var target = Minecraft.getInstance().getMainRenderTarget();
+            target.clear(Minecraft.ON_OSX); target.bindWrite(true);
+            RenderSystem.enableDepthTest(); RenderSystem.depthMask(true);
+            RenderSystem.disableCull(); RenderSystem.disableBlend();
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            var b = Tesselator.getInstance().getBuilder(); b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            quad(b, -40, -40, -20, 40, -40, -20, 40, 40, -20, -40, 40, -20, .3F, .3F, .3F);
+            quad(b, -.6F, -5, -3, -.3F, -5, -3, -.3F, 5, -3, -.6F, 5, -3, .2F, .2F, .2F);
+            BufferUploader.drawWithShader(b.end()); manager.runPipeline(pipeline);
+            try (var image = Screenshot.takeScreenshot(target)) {
+                int[] pixels = new int[24];
+                for (int i = 0; i < pixels.length; i++) {
+                    float x = i < 12 ? .08F + i * .018F : .65F + (i - 12) * .02F;
+                    pixels[i] = image.getPixelRGBA((int) (image.getWidth() * x), image.getHeight() / 2);
+                    if (baseline != null) for (int shift : new int[]{0, 8, 16}) {
+                        if (Math.abs((pixels[i] >> shift & 255) - (baseline[i] >> shift & 255)) > 2)
+                            throw new AssertionError("Foreground geometry casts a fake screen-space fog shadow at sample " + i);
+                    }
+                }
+                baseline = pixels;
+                if (heavy == 1) image.writeToFile(Minecraft.getInstance().gameDirectory.toPath().resolve("atmosphere-fog-post-check.png"));
+            }
+        }
+        Maniacrev.LOGGER.info("Fog mask PASSED: nearby post does not shadow unrelated fog rays");
+    }
+
+    /** The distant emitter is AFTER fifteen nearer lights: it must still light its own pixel in every quality. */
+    private static void coloredLightsChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        var red = org.example.maniacrevolution.atmosphere.client.AtmosphereLightPalette.color(Blocks.REDSTONE_TORCH.defaultBlockState());
+        var cyan = org.example.maniacrevolution.atmosphere.client.AtmosphereLightPalette.color(Blocks.SOUL_LANTERN.defaultBlockState());
+        var sea = org.example.maniacrevolution.atmosphere.client.AtmosphereLightPalette.color(Blocks.SEA_LANTERN.defaultBlockState());
+        var flame = org.example.maniacrevolution.atmosphere.client.AtmosphereLightPalette.color(Blocks.TORCH.defaultBlockState());
+        checkPalette(red != cyan && cyan != flame && sea != flame, "Different luminous materials share one color");
+        for (var mode : org.example.maniacrevolution.settings.GraphicsMode.values()) {
+            if (!mode.enabled()) continue;
+            var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : AtmosphereClient.LIGHT_PIPELINE);
+            pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
+            pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
+            pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("FogDensity", 0); pipeline.setInt("FogSamples", mode.fogSamples());
+            pipeline.setFloat("SightFadeStart", 18); pipeline.setFloat("SightRange", 28);
+            source(pipeline, false);
+            pipeline.setFloat("SurfaceLight", 1); pipeline.setFloat("ContactShadows", mode.dynamicLights() ? 1 : 0);
+            pipeline.setInt("LightSamples", mode.lightSamples());
+            var positions = new org.joml.Vector4f[64];
+            var colors = new org.joml.Vector4f[64];
+            for (int i = 0; i < 64; i++) {
+                positions[i] = new org.joml.Vector4f(); colors[i] = new org.joml.Vector4f();
+                if (i < 15) { positions[i].set(2 + i * .05F, 0, -2, 1); colors[i].set(1, .65F, .3F, 1); }
+            }
+            positions[15].set(0, 0, -22, 8);
+            pipeline.setInt("LightCount", 16);
+            pipeline.setVectors("LightPositionRadius", positions);
+            for (int tint : new int[]{red, cyan}) {
+                colors[15].set((tint >> 16 & 255) / 255F, (tint >> 8 & 255) / 255F, (tint & 255) / 255F, 1.35F);
+                pipeline.setVectors("LightColorPower", colors);
+                int pixel = lightingPlane(manager, pipeline, 24);
+                int r = pixel & 255, g = pixel >> 8 & 255, b = pixel >> 16 & 255;
+                if (tint == red) checkPalette(r > g + 8 && r > b + 8, "Red source is missing/orange: " + mode);
+                else checkPalette(g > r + 6 && b > r + 6, "Soul source is missing/orange: " + mode);
+            }
+        }
+        Maniacrev.LOGGER.info("Colored local lighting PASSED: red/cyan at 22 blocks after 15 near lights, LIGHT/NORMAL/HEAVY");
+    }
+
+    /** Compare a four-lamp row to its two-point representation using pixels from the real shader. */
+    private static void rowLightingChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        for (var name : new net.minecraft.resources.ResourceLocation[]{AtmosphereClient.LIGHT_PIPELINE, AtmosphereClient.PIPELINE}) {
+            var pipeline = manager.getPipeline(name);
+            source(pipeline, false);
+            pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
+            pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
+            pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("FogDensity", 0); pipeline.setFloat("SurfaceLight", 1); pipeline.setFloat("ContactShadows", 0);
+            int[] unlit = rowPixels(manager, pipeline);
+            var points = new org.joml.Vector4f[4];
+            var powers = new org.joml.Vector4f[4];
+            for (int i = 0; i < 4; i++) {
+                points[i] = new org.joml.Vector4f(i - 1.5F, .5F, -4, 8);
+                powers[i] = new org.joml.Vector4f(1, .63F, .28F, 1);
+            }
+            pipeline.setInt("LightCount", 4);
+            pipeline.setVectors("LightPositionRadius", points); pipeline.setVectors("LightColorPower", powers);
+            int[] individual = rowPixels(manager, pipeline);
+            pipeline.setInt("LightCount", 1);
+            pipeline.setVectors("LightPositionRadius", new org.joml.Vector4f[]{new org.joml.Vector4f(0, .5F, -4, 8)});
+            pipeline.setVectors("LightColorPower", new org.joml.Vector4f[]{new org.joml.Vector4f(1, .63F, .28F, 4)});
+            pipeline.setVectors("LightExtent", new org.joml.Vector4f[]{new org.joml.Vector4f(1.5F, 0, 0, 4)});
+            int[] grouped = rowPixels(manager, pipeline);
+            for (int i = 0; i < grouped.length; i++) {
+                if (brightness(grouped[i]) <= brightness(unlit[i]) + 10)
+                    throw new AssertionError("Grouped row lost illumination at its center/end: " + i);
+                if (Math.abs(brightness(grouped[i]) - brightness(individual[i])) > 24)
+                    throw new AssertionError("Grouped row changed brightness excessively: " + i);
+            }
+            source(pipeline, false);
+        }
+        Maniacrev.LOGGER.info("Lamp rows render PASSED: four blocks in one slot retain center/end illumination in both shaders");
+    }
+
+    private static int[] rowPixels(foundry.veil.api.client.render.post.PostProcessingManager manager,
+                                   foundry.veil.api.client.render.post.PostPipeline pipeline) {
+        lightingPlane(manager, pipeline, 6);
+        try (var image = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget())) {
+            return new int[]{image.getPixelRGBA(image.getWidth() / 2, image.getHeight() / 2),
+                    image.getPixelRGBA(image.getWidth() / 3, image.getHeight() / 2),
+                    image.getPixelRGBA(image.getWidth() * 2 / 3, image.getHeight() / 2)};
+        }
+    }
+
+    /** Grazing view of adjacent luminous blocks: their depth must not project boxes into open fog. */
+    private static void ceilingLightChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        var pipeline = manager.getPipeline(AtmosphereClient.PIPELINE);
+        var rotation = new Matrix4f().rotationX((float) Math.toRadians(-22));
+        var camera = VeilRenderSystem.renderer().getCameraMatrices();
+        camera.update(RenderSystem.getProjectionMatrix(), rotation, new Vector3f(0, 2, 4), .05F, 160);
+        pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
+        pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
+        pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+        pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("FogGround", -20); pipeline.setFloat("Indoor", 1);
+        pipeline.setInt("FogSamples", 24);
+        source(pipeline, false);
+        pipeline.setInt("LightCount", 4); pipeline.setInt("LightSamples", 8);
+        var positions = new org.joml.Vector4f[4];
+        var colors = new org.joml.Vector4f[4];
+        var extents = new org.joml.Vector4f[4];
+        for (int i = 0; i < 4; i++) {
+            var p = new Vector3f(i < 2 ? -2 : 3, 3.3F, -6.5F - i % 2 - (i < 2 ? 0 : 5));
+            positions[i] = new org.joml.Vector4f(p.x, p.y, p.z, 9.25F);
+            colors[i] = new org.joml.Vector4f(1, .76F, .45F, 2);
+            // Each 2x2 fixture consists of two touching rows; use the same packed metadata as the uploader.
+            extents[i] = new org.joml.Vector4f(.5F, 0, 0, 2 | (((i ^ 1) + 1) << 3));
+        }
+        pipeline.setVectors("LightPositionRadius", positions); pipeline.setVectors("LightColorPower", colors);
+        pipeline.setVectors("LightExtent", extents);
+        int[] clearFog = null;
+        int changed = 0, maximum = 0;
+        for (int surface = 0; surface <= 1; surface++) for (int shadows = 0; shadows <= 1; shadows++) {
+            ceilingScene(rotation);
+            pipeline.setFloat("SurfaceLight", surface); pipeline.setFloat("ContactShadows", shadows);
+            manager.runPipeline(pipeline);
+            try (var image = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget())) {
+                int width = image.getWidth(), height = image.getHeight();
+                if (surface == 0 && shadows == 0) clearFog = new int[width * height];
+                for (int y = 0; y < height; y++) for (int x = 0; x < width; x++) {
+                    int pixel = image.getPixelRGBA(x, y), at = y * width + x;
+                    if (surface == 0 && shadows == 0) clearFog[at] = pixel;
+                    if (surface == 0 && shadows == 1) {
+                        int difference = 0;
+                        for (int shift : new int[]{0, 8, 16}) difference = Math.max(difference,
+                                Math.abs((pixel >> shift & 255) - (clearFog[at] >> shift & 255)));
+                        maximum = Math.max(maximum, difference);
+                        if (difference > 8) changed++;
+                    }
+                }
+                image.writeToFile(Minecraft.getInstance().gameDirectory.toPath().resolve("atmosphere-ceiling-"
+                        + (surface == 0 ? "fog" : "surface") + (shadows == 0 ? "-clear.png" : "-shadow.png")));
+            }
+        }
+        camera.update(RenderSystem.getProjectionMatrix(), new Matrix4f(), new Vector3f(0, 2, 4), .05F, 160);
+        Maniacrev.LOGGER.info("Ceiling emitter diagnostics: {} fog pixels differ by >8, maximum {}", changed, maximum);
+        if (changed > 200) throw new AssertionError("Adjacent ceiling emitters project rectangular shadows into fog: " + changed + " pixels, max=" + maximum);
+        source(pipeline, false);
+        Maniacrev.LOGGER.info("Ceiling emitters PASSED: two 2x2 lamps at a grazing angle do not project boxes into fog");
+    }
+
+    private static void ceilingScene(Matrix4f rotation) {
+        var target = Minecraft.getInstance().getMainRenderTarget();
+        target.clear(Minecraft.ON_OSX); target.bindWrite(true);
+        RenderSystem.enableDepthTest(); RenderSystem.depthMask(true);
+        RenderSystem.disableCull(); RenderSystem.disableBlend();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        var b = Tesselator.getInstance().getBuilder();
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        ceilingBox(b, rotation, -12, 3.8F, -28, 24, 1, 30, .26F, .28F, .25F);
+        ceilingBox(b, rotation, -12, -3, -28, 24, .2F, 30, .25F, .27F, .24F);
+        ceilingBox(b, rotation, -12, -3, -28, 24, 7, .2F, .22F, .24F, .22F);
+        ceilingBox(b, rotation, -8, -3, -28, .2F, 7, 30, .24F, .26F, .23F);
+        ceilingBox(b, rotation, 8, -3, -28, .2F, 7, 30, .24F, .26F, .23F);
+        for (int fixture = 0; fixture < 2; fixture++) for (int x = 0; x < 2; x++) for (int z = 0; z < 2; z++)
+            ceilingBox(b, rotation, (fixture == 0 ? -3 : 2) + x, 2.8F, -7 - z - fixture * 5,
+                    1, 1, 1, .95F, .78F, .42F);
+        BufferUploader.drawWithShader(b.end());
+    }
+
+    private static void ceilingBox(BufferBuilder b, Matrix4f rotation, float x, float y, float z,
+                                   float sx, float sy, float sz, float r, float g, float blue) {
+        float[][] points = {{x,y,z}, {x+sx,y,z}, {x+sx,y+sy,z}, {x,y+sy,z},
+                {x,y,z+sz}, {x+sx,y,z+sz}, {x+sx,y+sy,z+sz}, {x,y+sy,z+sz}};
+        for (int[] face : new int[][]{{0,1,2,3}, {5,4,7,6}, {4,0,3,7}, {1,5,6,2}, {3,2,6,7}, {4,5,1,0}})
+            for (int vertex : face) b.vertex(rotation, points[vertex][0], points[vertex][1], points[vertex][2]).color(r,g,blue,1F).endVertex();
+    }
+
+    private static void checkPalette(boolean condition, String description) {
+        if (!condition) throw new AssertionError(description);
+    }
+
+    /** Intersecting colored halos must not acquire circles/seams from a changing top-N selection. */
+    private static void haloContinuityChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        for (var mode : org.example.maniacrevolution.settings.GraphicsMode.values()) {
+            if (!mode.enabled()) continue;
+            var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : AtmosphereClient.LIGHT_PIPELINE);
+            source(pipeline, false);
+            pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
+            pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
+            pipeline.setFloat("Fear", 0); pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("FogGround", -20); pipeline.setFloat("Indoor", 1);
+            pipeline.setFloat("SurfaceLight", 1); pipeline.setFloat("ContactShadows", 0);
+            pipeline.setInt("FogSamples", mode.fogSamples()); pipeline.setInt("LightSamples", mode.lightSamples());
+            var positions = new org.joml.Vector4f[64];
+            var colors = new org.joml.Vector4f[64];
+            for (int i = 0; i < 64; i++) {
+                positions[i] = new org.joml.Vector4f(); colors[i] = new org.joml.Vector4f();
+                if (i < 12) {
+                    positions[i].set(i % 2 == 0 ? -4 : 4, 0, -4 - (i / 2) * 2, 9);
+                    colors[i].set(i % 2 == 0 ? 1 : .3F, i % 2 == 0 ? .15F : .9F, i % 2 == 0 ? .2F : 1, .8F);
+                }
+            }
+            pipeline.setInt("LightCount", 12);
+            pipeline.setVectors("LightPositionRadius", positions); pipeline.setVectors("LightColorPower", colors);
+            lightingPlane(manager, pipeline, 30);
+            try (var image = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget())) {
+                int maximum = 0;
+                for (int y = image.getHeight() / 3; y <= image.getHeight() * 2 / 3; y += image.getHeight() / 12) {
+                    for (int x = image.getWidth() / 10 + 1; x < image.getWidth() * 9 / 10; x++) {
+                        int a = image.getPixelRGBA(x - 1, y), b = image.getPixelRGBA(x, y);
+                        for (int shift : new int[]{0, 8, 16}) maximum = Math.max(maximum,
+                                Math.abs((a >> shift & 255) - (b >> shift & 255)));
+                    }
+                }
+                if (maximum > 4) throw new AssertionError("Intersecting halos have a hard edge: " + mode + ", jump=" + maximum);
+                image.writeToFile(Minecraft.getInstance().gameDirectory.toPath().resolve("atmosphere-colored-halos-"
+                        + mode.name().toLowerCase(java.util.Locale.ROOT) + ".png"));
+            }
+        }
+        Maniacrev.LOGGER.info("Colored halo continuity PASSED: twelve intersecting red/cyan lights have no hard seams in three qualities");
     }
 
     private static int planeContrast(foundry.veil.api.client.render.post.PostProcessingManager manager,

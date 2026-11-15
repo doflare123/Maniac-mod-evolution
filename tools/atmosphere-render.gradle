@@ -13,8 +13,10 @@ allprojects {
         tasks.named('compileTestJava').configure { dependsOn syncAtmosphereShaders }
         tasks.matching { it.name == 'runClient' }.configureEach { dependsOn syncAtmosphereShaders }
         minecraft.runs.client {
-            workingDirectory project.file('run/atmosphere-client')
-            property 'maniacrev.atmosphere.renderProbe', 'true'
+            def worldProbe = project.hasProperty('atmosphereWorldProbe')
+            workingDirectory project.file(worldProbe ? 'run/atmosphere-world-probe' : 'run/atmosphere-client')
+            property 'maniacrev.atmosphere.renderProbe', (!worldProbe).toString()
+            property 'maniacrev.atmosphere.worldProbe', worldProbe.toString()
             mods { maniacrev { source sourceSets.test } }
             args '--width', '960', '--height', '540'
         }

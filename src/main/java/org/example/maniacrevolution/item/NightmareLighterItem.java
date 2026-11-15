@@ -91,7 +91,7 @@ public class NightmareLighterItem extends Item implements GeoItem {
     }
 
     public static boolean isLit(ItemStack stack) {
-        return stack.hasTag() && stack.getTag().getBoolean(LIT_TAG);
+        return stack.getItem() instanceof NightmareLighterItem && stack.hasTag() && stack.getTag().getBoolean(LIT_TAG);
     }
 
     private static void setLit(ItemStack stack, boolean lit) {
@@ -120,7 +120,7 @@ public class NightmareLighterItem extends Item implements GeoItem {
         }
 
         if (canReplaceWithLight(level, lightPos)) {
-            level.setBlock(lightPos, Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, 6), 3);
+            level.setBlock(lightPos, Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, NightmareConfig.LIGHTER_LIGHT_LEVEL), 3);
             LIGHT_POSITIONS.put(player.getUUID(), lightPos.immutable());
         }
     }

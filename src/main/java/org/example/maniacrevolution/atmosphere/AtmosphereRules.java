@@ -17,6 +17,11 @@ public final class AtmosphereRules {
         return distanceSquared >= FOG_END * FOG_END;
     }
 
+    /** Cull the influence volume, never the emitter's center at the fog boundary. */
+    public static boolean lightIntersectsView(double distance, double reach) {
+        return Double.isFinite(distance) && Double.isFinite(reach) && reach >= 0 && distance < FOG_END + reach;
+    }
+
     private AtmosphereRules() {}
 
     public static Profile profile(boolean alive, boolean survivalOrAdventure, int phase,

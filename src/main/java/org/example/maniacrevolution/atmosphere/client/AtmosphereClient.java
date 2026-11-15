@@ -3,7 +3,6 @@ package org.example.maniacrevolution.atmosphere.client;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import foundry.veil.api.client.render.VeilRenderSystem;
-import foundry.veil.api.client.render.deferred.light.PointLight;
 import foundry.veil.forge.event.ForgeVeilPostProcessingEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -20,7 +19,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
-import org.example.maniacrevolution.ModItems;
+import org.example.maniacrevolution.item.NightmareLighterItem;
 import org.example.maniacrevolution.atmosphere.AtmosphereConfig;
 import org.example.maniacrevolution.atmosphere.AtmosphereRules;
 import org.example.maniacrevolution.atmosphere.AtmosphereRules.Profile;
@@ -49,7 +48,6 @@ public final class AtmosphereClient {
     private static float fogGround, indoor;
     private static boolean testLight;
     private static Vec3 lampPosition;
-    private static PointLight lamp;
 
     private AtmosphereClient() {}
 
@@ -119,7 +117,8 @@ public final class AtmosphereClient {
             float roof = mc.level.canSeeSky(mc.player.blockPosition().above()) ? 0 : 1;
             indoor += (roof - indoor) * 0.4F;
         }
-        updateLight(current);
+        if (current == Profile.OFF) AtmosphereLights.suspend();
+        else AtmosphereLights.tick(graphicsMode(), testLight && lampPosition != null || holdingBurningLighter());
     }
 
     @SubscribeEvent
@@ -133,7 +132,6 @@ public final class AtmosphereClient {
             removeLight();
         } else {
             manager.add(selected);
-            if (!graphicsMode().dynamicLights()) removeLight();
         }
     }
 
@@ -146,12 +144,15 @@ public final class AtmosphereClient {
         if (mc.level == null || mc.player == null) return;
         float time = (mc.level.getGameTime() % 240000 + mc.getFrameTime()) / 20F;
         float comfort = AtmosphereConfig.DISTORTION.get().floatValue();
+        float lightingCorruption = current == Profile.SURVIVOR ? corruption : 0;
         pipeline.setFloat("Active", current == Profile.OFF ? 0 : 1);
         pipeline.setFloat("Time", time);
-        pipeline.setFloat("Corruption", corruption * comfort);
+        pipeline.setFloat("Corruption", lightingCorruption * comfort);
+        pipeline.setFloat("LightCorruption", lightingCorruption);
+        pipeline.setFloat("Comfort", comfort);
         pipeline.setFloat("Pursuit", pursuit * comfort);
         pipeline.setFloat("FogGround", fogGround);
-        pipeline.setFloat("FogDensity", 0.055F + corruption * 0.012F);
+        pipeline.setFloat("FogDensity", 0.055F + lightingCorruption * 0.012F);
         pipeline.setFloat("Indoor", indoor);
         pipeline.setFloat("SightFadeStart", AtmosphereRules.FOG_FADE_START);
         pipeline.setFloat("SightRange", AtmosphereRules.FOG_END);
@@ -159,43 +160,28 @@ public final class AtmosphereClient {
         pipeline.setFloat("Fear", mc.player.hasEffect(ModEffects.FEAR.get()) ? comfort : 0);
         pipeline.setFloat("Plague", mc.player.hasEffect(ModEffects.PLAGUE.get()) ? 1 : 0);
         pipeline.setInt("FogSamples", graphicsMode().fogSamples());
-        // Do not brighten blackout states or use the point light as wall vision.
-        pipeline.setFloat("LampStrength", lampPosition == null || current == Profile.OFF ? 0 : 1);
-        Vec3 light = lampPosition == null ? Vec3.ZERO : lampPosition;
-        pipeline.setVector("LampPosition", (float) light.x, (float) light.y, (float) light.z);
+        Vec3 light = testLight ? lampPosition : holdingBurningLighter()
+                ? mc.player.getEyePosition(mc.getFrameTime()).add(0, -0.3, 0) : null;
+        AtmosphereLights.upload(pipeline, current == Profile.OFF ? GraphicsMode.OFF : graphicsMode(),
+                light, testLight, mc.getFrameTime());
     }
 
-    private static void updateLight(Profile current) {
-        var mc = Minecraft.getInstance();
-        boolean lighter = mc.player.isHolding(ModItems.NIGHTMARE_LIGHTER.get());
-        if (!graphicsMode().dynamicLights() || current == Profile.OFF || !testLight && !lighter) {
-            removeLight();
-            return;
-        }
-        if (!testLight || lampPosition == null) lampPosition = mc.player.getEyePosition().add(0, -0.4, 0);
-        var deferred = VeilRenderSystem.renderer().getDeferredRenderer();
-        if (!deferred.isEnabled()) {
-            if (lamp != null) deferred.getLightRenderer().removeLight(lamp);
-            lamp = null;
-            return;
-        }
-        if (lamp == null) {
-            lamp = new PointLight().setColor(1.0F, 0.55F, 0.22F).setRadius(10).setBrightness(1.3F);
-            deferred.getLightRenderer().addLight(lamp);
-        }
-        lamp.setPosition(lampPosition.x, lampPosition.y, lampPosition.z);
+    private static boolean holdingBurningLighter() {
+        var player = Minecraft.getInstance().player;
+        return player != null && (NightmareLighterItem.isLit(player.getMainHandItem())
+                || NightmareLighterItem.isLit(player.getOffhandItem()));
     }
 
     private static void removeLight() {
-        if (lamp != null) VeilRenderSystem.renderer().getDeferredRenderer().getLightRenderer().removeLight(lamp);
-        lamp = null;
         lampPosition = null;
+        AtmosphereLights.suspend();
     }
 
     private static void reset() {
         VeilRenderSystem.renderer().getPostProcessingManager().remove(PIPELINE);
         VeilRenderSystem.renderer().getPostProcessingManager().remove(LIGHT_PIPELINE);
         removeLight();
+        AtmosphereLights.clear();
         preview = null;
         disabled = testLight = false;
         previewSanity = 1;
@@ -252,13 +238,13 @@ public final class AtmosphereClient {
                         })))
                 .then(Commands.literal("light").then(Commands.argument("enabled", BoolArgumentType.bool())
                         .executes(c -> {
-                            if (BoolArgumentType.getBool(c, "enabled") && !graphicsMode().dynamicLights())
-                                return message("Дополнительный свет доступен в режиме «Тяжёлый», который выбирает хост в настройках матча.");
+                            if (BoolArgumentType.getBool(c, "enabled") && !graphicsMode().enabled())
+                                return message("Сначала включите один из режимов графики в настройках матча.");
                             testLight = BoolArgumentType.getBool(c, "enabled");
                             removeLight();
                             var player = Minecraft.getInstance().player;
                             if (testLight && player != null) lampPosition = player.getEyePosition().add(player.getLookAngle().scale(3));
-                            return message(testLight ? "Тестовый свет поставлен перед вами. Для освещения поверхностей включите ресурс-пак Veil Deferred (Fast/Fancy, без Embeddium)."
+                            return message(testLight ? "Тёплый тестовый свет поставлен перед вами. Он освещает поверхности во всех включённых режимах."
                                     : "Тестовый свет убран.");
                         })))
                 .then(Commands.literal("status").executes(c -> {
@@ -267,7 +253,9 @@ public final class AtmosphereClient {
                             graphicsMode() == GraphicsMode.LIGHT ? LIGHT_PIPELINE : PIPELINE);
                     return message("Veil: профиль=" + profile() + ", шейдер=" + (pipeline != null && pipeline.hasUniform("FogDensity"))
                             + ", графика=" + graphicsMode().displayName()
-                            + ", свет=" + renderer.getDeferredRenderer().isEnabled()
+                            + ", источники=" + AtmosphereLights.sourceCount() + "/" + AtmosphereLights.MAX_SOURCES
+                            + ", группы=" + AtmosphereLights.groupCount() + ", секции=" + AtmosphereLights.cachedSections()
+                            + ", сканирования=" + AtmosphereLights.sectionScans()
                             + ", обзор=" + (hasFogLimit() ? AtmosphereRules.FOG_END + " блоков" : "обычный")
                             + ", рассудок=" + Math.round((1 - corruption) * 100) + "%, погоня=" + pursuit);
                 })));

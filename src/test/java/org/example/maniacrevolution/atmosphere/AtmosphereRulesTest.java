@@ -12,6 +12,8 @@ public final class AtmosphereRulesTest {
         check(light.enabled() && !light.volumetric() && !light.dynamicLights(), "LIGHT uses analytic fog without ray-marching");
         check(normal.enabled() && normal.fogSamples() == 12 && !normal.dynamicLights(), "NORMAL quality");
         check(heavy.enabled() && heavy.fogSamples() == 24 && heavy.dynamicLights(), "HEAVY quality");
+        check(off.lightSamples() == 0 && light.lightSamples() == 2, "LIGHT uses two integration samples per source");
+        check(normal.lightSamples() == 4 && heavy.lightSamples() == 8, "Integration precision is bounded by quality");
         check(off.step(-5) == off && heavy.step(5) == heavy, "Selector stops at boundaries");
         check(off.step(5) == light && heavy.step(-5) == normal, "Shift does not skip modes");
         check(org.example.maniacrevolution.settings.GraphicsMode.fromId(-1) == normal, "Invalid wire id defaults safely");
@@ -36,6 +38,27 @@ public final class AtmosphereRulesTest {
         check(!AtmosphereRules.beyondFog(27 * 27), "near living entity remains renderable");
         check(AtmosphereRules.beyondFog(28 * 28), "hide living entity and name at cutoff");
         check(AtmosphereRules.beyondFog(100 * 100), "hide distant silhouettes");
+        for (float distance : new float[]{12, 16, 20, 24, 28})
+            check(AtmosphereRules.lightIntersectsView(distance, 9.25), "Light stays active throughout visible space: " + distance);
+        check(AtmosphereRules.lightIntersectsView(30, 9.25), "Lamp beyond the fog can illuminate visible space");
+        check(AtmosphereRules.lightIntersectsView(38, 10.75), "Row endpoint influence intersects the view");
+        check(!AtmosphereRules.lightIntersectsView(38, 9.25), "Cull only after the whole light volume leaves the view");
+        check(!AtmosphereRules.lightIntersectsView(Double.NaN, 9.25), "Invalid light bounds are rejected");
+        LightTransition transition = new LightTransition();
+        LightTransition existingLamp = new LightTransition(1);
+        check(existingLamp.value(0) == 1 && existingLamp.value(1) == 1, "An already-lit lamp has no discovery/ignition delay");
+        existingLamp.tick(0); existingLamp.tick(0); existingLamp.snap(1);
+        check(existingLamp.value(0) == 1 && existingLamp.value(1) == 1, "A lamp coming around a corner is immediately lit");
+        transition.tick(1);
+        check(transition.value(0) == 0 && transition.value(1) < .5F, "New source ramps in instead of flashing");
+        for (int i = 0; i < 100; i++) transition.tick(1);
+        check(transition.value(1) > .99F, "A held or rediscovered source stays on");
+        transition.tick(0);
+        check(transition.value(1) > .7F, "One missed visibility tick does not extinguish the source");
+        transition.tick(1);
+        check(transition.value(1) > .8F, "Visibility recovery retains source strength");
+        for (int i = 0; i < 30; i++) transition.tick(0);
+        check(transition.dark(), "An extinguished source eventually releases its slot");
 
         ChaseContact chase = new ChaseContact();
         chase.update(0, true, true);
@@ -58,7 +81,7 @@ public final class AtmosphereRulesTest {
         check(chase.strength(320) == 0, "contact eventually expires");
         ChaseContact other = new ChaseContact();
         check(other.strength(220) == 0, "each killer/victim pair is independent");
-        System.out.println("Atmosphere: 38 checks passed");
+        System.out.println("Atmosphere rules checks passed");
     }
 
     private static AtmosphereRules.Profile profile(boolean alive, boolean survival, int phase,

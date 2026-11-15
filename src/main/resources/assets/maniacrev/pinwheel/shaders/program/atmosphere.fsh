@@ -6,6 +6,8 @@ uniform vec2 InSize;
 uniform float Active;
 uniform float Time;
 uniform float Corruption;
+uniform float LightCorruption;
+uniform float Comfort;
 uniform float Pursuit;
 uniform float FogGround;
 uniform float FogDensity;
@@ -16,8 +18,6 @@ uniform int FogSamples;
 uniform float Hurt;
 uniform float Fear;
 uniform float Plague;
-uniform vec3 LampPosition;
-uniform float LampStrength;
 
 in vec2 texCoord;
 out vec4 fragColor;
@@ -39,9 +39,9 @@ float noise(vec3 p) {
 }
 
 #include maniacrev:atmosphere_base
+#include maniacrev:atmosphere_lighting
 
 // Integrate heterogeneous extinction up to the visible surface. Geometry stops the ray.
-// The lamp adds unshadowed scattering; this prototype does not promise light occlusion.
 vec4 atmosphere(vec3 origin, vec3 direction, float distance) {
     float travel = max(0.0, min(distance, SightRange) - 1.5);
     int count = clamp(FogSamples, 8, 24);
@@ -53,13 +53,8 @@ vec4 atmosphere(vec3 origin, vec3 direction, float distance) {
         vec3 p = origin + direction * (1.5 + (float(i) + 0.5) * stepLength);
         vec4 medium = atmosphereMedium(p);
         float density = medium.a;
-        vec3 incident = mix(medium.rgb, medium.rgb * vec3(0.91, 1.0, 0.82), Plague * 0.5);
+        vec3 incident = atmosphereHaze(mix(medium.rgb, medium.rgb * vec3(0.91, 1.0, 0.82), Plague * 0.5));
         float absorbed = 1.0 - exp(-density * stepLength);
-        if (LampStrength > 0.0) {
-            vec3 lightVector = LampPosition - p;
-            float light = exp(-dot(lightVector, lightVector) / 22.0) * LampStrength;
-            incident += vec3(0.72, 0.31, 0.08) * light;
-        }
         scattered += transmission * absorbed * incident;
         transmission *= 1.0 - absorbed;
     }
@@ -89,12 +84,16 @@ void main() {
 
     float depth = texture(DiffuseDepthSampler, uv).r;
     vec3 viewPosition = viewPosFromDepthSample(depth, uv);
-    color = atmosphereSurface(color, uv, viewPosition, depth);
-    color = mix(color, color * vec3(0.83, 1.04, 0.73), Plague * 0.5);
-
     vec3 direction = normalize(viewToWorldSpaceDirection(viewPosition));
     float distance = depth >= 0.999999 ? SightRange : length(viewPosition);
+    color = atmosphereSurface(color, uv, viewPosition, depth);
+    color = surfaceLighting(color, viewPosition, depth);
+    color = mix(color, color * vec3(0.83, 1.04, 0.73), Plague * 0.5);
+
     vec4 fog = atmosphere(VeilCamera.CameraPosition, direction, distance);
+    float homogeneousOpacity = 1.0 - exp(-FogDensity * max(0.0, min(distance, SightRange) - 1.5));
+    float mediumResponse = clamp((1.0 - fog.a) / max(homogeneousOpacity, 0.00001), 0.25, 2.0);
+    fog.rgb += pointLightFog(direction, distance) * mediumResponse;
     vec3 fogColor = fog.rgb / max(1.0 - fog.a, 0.00001);
     // No low-density hole, roof, bright emitter or quality setting can reveal
     // the source image at/behind SightRange. Near space stays readable.
