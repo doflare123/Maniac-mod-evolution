@@ -15,13 +15,17 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Apply Veil's client default during Mixin bootstrap, before Veil caches IMGUI.
  * ForgeGradle does not rename Veil's shadow$SRG declarations when mapping dependencies.
  * Supply the dev SRG -> Mojang remapper to Mixin's shadow lookup, without modifying Veil.
- * No mappings file/property is supplied in a normal installed client/server.
+ * The default also applies in an installed client; the mappings adapter is development-only.
  */
 public final class VeilDevelopmentPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
+        // Veil reads this once in its static initializer. An @Mod constructor or client config is too late.
+        // The editor can lose its ImGui context while loading worlds; gameplay uses only Veil's renderer.
+        System.setProperty("veil.disableImgui", "true");
         String filename = System.getProperty("mixin.env.refMapRemappingFile");
         if (filename == null || !Files.isRegularFile(Path.of(filename))) return;
         Map<String, String> methods = new HashMap<>();

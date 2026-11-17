@@ -43,9 +43,7 @@ minecraft {
 
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
-            // Veil 1.20.1's optional editor can lose its ImGui context during nested
-            // world loading and then crash inside native GLFW input callbacks.
-            property 'veil.disableImgui', 'true'
+            // The Mixin bootstrap disables Veil's editor in both dev and installed clients.
         }
 
         server {
