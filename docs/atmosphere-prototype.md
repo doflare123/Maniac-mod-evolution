@@ -197,6 +197,9 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 
 ## Проверки
 
+Устройство оптимизированного прохода, измерения на RTX 4070 в 4К и команды
+для GPU-замеров описаны в [atmosphere-performance.md](atmosphere-performance.md).
+
 ```powershell
 .\gradlew.bat compileJava verifyAtmosphere verifyAtmosphereLightCache verifyGameSettings -x processResources --no-daemon
 .\gradlew.bat -I tools/atmosphere-render.gradle runClient -x processResources --no-daemon

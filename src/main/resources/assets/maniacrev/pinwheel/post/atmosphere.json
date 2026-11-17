@@ -2,6 +2,12 @@
   "stages": [
     {
       "type": "veil:blit",
+      "shader": "maniacrev:atmosphere_volume",
+      "in": "veil:post",
+      "out": "atmosphere_volume"
+    },
+    {
+      "type": "veil:blit",
       "shader": "maniacrev:atmosphere",
       "in": "veil:post",
       "out": "atmosphere_swap"
@@ -14,7 +20,20 @@
       "depth": false
     }
   ],
+  "textures": {
+    "FogSampler": { "type": "framebuffer", "name": "atmosphere_volume" },
+    "FogDistanceSampler": { "type": "framebuffer", "name": "atmosphere_volume", "sampler": 1 }
+  },
   "framebuffers": {
+    "atmosphere_volume": {
+      "width": "math.ceil(q.screen_width / (q.screen_height >= 1080 ? 2 : 1))",
+      "height": "math.ceil(q.screen_height / (q.screen_height >= 1080 ? 2 : 1))",
+      "depth": false,
+      "color_buffers": [
+        { "format": "RGBA16F" },
+        { "format": "R32F" }
+      ]
+    },
     "atmosphere_swap": {
       "depth": false,
       "format": "RGBA16F"

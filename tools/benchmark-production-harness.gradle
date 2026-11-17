@@ -1,0 +1,19 @@
+// Build a separate, obfuscated test mod. Never included in the distributed Maniac Revolution JAR.
+allprojects {
+    afterEvaluate {
+        def fixture = sourceSets.create('benchmarkProductionHarness') {
+            java.srcDir project.file('tools/fixtures/benchmark-production')
+            resources.srcDir project.file('tools/fixtures/benchmark-production')
+            resources.include 'META-INF/mods.toml'
+            compileClasspath = sourceSets.main.compileClasspath + sourceSets.main.output
+        }
+        tasks.named(fixture.compileJavaTaskName).configure { dependsOn tasks.named('compileJava') }
+        tasks.register('portableBenchmarkHarnessJar', Jar) {
+            dependsOn tasks.named(fixture.classesTaskName)
+            from fixture.output
+            archiveFileName = 'mrbench-production-smoke.jar'
+            destinationDirectory = project.layout.buildDirectory.dir('benchmark-production-harness')
+        }
+        reobf.create('portableBenchmarkHarnessJar')
+    }
+}

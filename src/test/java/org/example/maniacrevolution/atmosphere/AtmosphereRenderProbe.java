@@ -40,6 +40,11 @@ public final class AtmosphereRenderProbe {
             var manager = VeilRenderSystem.renderer().getPostProcessingManager();
             var pipeline = manager.getPipeline(AtmosphereClient.PIPELINE);
             if (pipeline == null || !pipeline.hasUniform("FogDensity")) throw new AssertionError("Atmosphere shader failed to load/compile");
+            int probeWidth = Integer.getInteger("maniacrev.atmosphere.probeWidth", 0);
+            if (probeWidth > 0) {
+                mc.getMainRenderTarget().resize(probeWidth, probeWidth * 9 / 16, Minecraft.ON_OSX);
+                VeilRenderSystem.renderer().getFramebufferManager().resizeFramebuffers(probeWidth, probeWidth * 9 / 16);
+            }
             var projection = new Matrix4f().perspective((float) Math.toRadians(70),
                     (float) mc.getMainRenderTarget().width / mc.getMainRenderTarget().height, 0.05F, 160);
             RenderSystem.setProjectionMatrix(projection, VertexSorting.DISTANCE_TO_ORIGIN);
@@ -47,6 +52,10 @@ public final class AtmosphereRenderProbe {
             RenderSystem.applyModelViewMatrix();
             var rotation = new Matrix4f();
             VeilRenderSystem.renderer().getCameraMatrices().update(projection, rotation, new Vector3f(0, 2, 4), 0.05F, 160);
+            if (!System.getProperty("maniacrev.atmosphere.benchmark", "").isEmpty()) {
+                AtmospherePerformanceProbe.run(AtmosphereRenderProbe::scene);
+                return;
+            }
             double baseline = 0;
             long commonHash = 0;
             for (String variant : new String[]{"vanilla", "survivor", "maniac", "keeper", "sanity", "chase", "lamp"}) {
@@ -116,6 +125,7 @@ public final class AtmosphereRenderProbe {
                 Maniacrev.LOGGER.info("Fog height check PASSED: upper {}, lower {}", upper & 255, lower & 255);
             }
             visibilityChecks(manager, pipeline);
+            thinGeometryChecks(manager, pipeline);
             graphicsModes(manager);
             lightingChecks(manager);
             lighterChecks(manager);
@@ -600,6 +610,39 @@ public final class AtmosphereRenderProbe {
             }
         }
         Maniacrev.LOGGER.info("Colored halo continuity PASSED: twelve intersecting red/cyan lights have no hard seams in three qualities");
+    }
+
+    /** A single even-column foreground pixel is missed by half-resolution depth sampling. */
+    private static void thinGeometryChecks(foundry.veil.api.client.render.post.PostProcessingManager manager,
+                                           foundry.veil.api.client.render.post.PostPipeline pipeline) {
+        var mc = Minecraft.getInstance(); var target = mc.getMainRenderTarget();
+        source(pipeline, false); pipeline.setFloat("SurfaceLight", 0);
+        pipeline.setFloat("FogGround", 0); pipeline.setFloat("FogDensity", .055F);
+        pipeline.setFloat("Indoor", 0); pipeline.setInt("FogSamples", 24);
+        int[] foreground = new int[2], background = new int[2];
+        for (int color = 0; color < 2; color++) {
+            target.clear(Minecraft.ON_OSX); target.bindWrite(true);
+            RenderSystem.enableDepthTest(); RenderSystem.depthMask(true);
+            RenderSystem.disableCull(); RenderSystem.disableBlend();
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            var b = Tesselator.getInstance().getBuilder();
+            b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            quad(b, -80, -80, -30, 80, -80, -30, 80, 80, -30, -80, 80, -30, .5F, .5F, .5F);
+            float right = 12F / (target.width * RenderSystem.getProjectionMatrix().m00());
+            quad(b, 0, -12, -6, right, -12, -6, right, 12, -6, 0, 12, -6, color, color, color);
+            BufferUploader.drawWithShader(b.end()); manager.runPipeline(pipeline);
+            try (var image = Screenshot.takeScreenshot(target)) {
+                foreground[color] = image.getPixelRGBA(target.width / 2, target.height / 2);
+                background[color] = image.getPixelRGBA(target.width / 2 + 2, target.height / 2);
+            }
+        }
+        int contrast = 0, leak = 0;
+        for (int shift : new int[]{0, 8, 16}) {
+            contrast = Math.max(contrast, Math.abs((foreground[1] >> shift & 255) - (foreground[0] >> shift & 255)));
+            leak = Math.max(leak, Math.abs((background[1] >> shift & 255) - (background[0] >> shift & 255)));
+        }
+        if (contrast < 80 || leak > 2) throw new AssertionError("Thin foreground lost or fog bled across its edge: contrast=" + contrast + ", leak=" + leak);
+        Maniacrev.LOGGER.info("Thin geometry PASSED: one-pixel foreground contrast={}, background leak={}", contrast, leak);
     }
 
     private static int planeContrast(foundry.veil.api.client.render.post.PostProcessingManager manager,

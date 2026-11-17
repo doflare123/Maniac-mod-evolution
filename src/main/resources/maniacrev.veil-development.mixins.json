@@ -5,5 +5,5 @@
   "plugin": "org.example.maniacrevolution.atmosphere.compat.VeilDevelopmentPlugin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [],
-  "client": ["ClientLevelLightMixin"]
+  "client": ["ClientLevelLightMixin", "VeilRenderSystemGateMixin", "VeilFirstPersonGateMixin", "VeilCameraGateMixin", "VeilGuiGateMixin"]
 }

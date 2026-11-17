@@ -4,8 +4,15 @@ allprojects {
     afterEvaluate {
         def syncAtmosphereShaders = tasks.register('syncAtmosphereProbeShaders', Copy) {
             from(project.file('src/main/resources')) {
-                include 'assets/maniacrev/pinwheel/**'
                 include 'maniacrev.veil-development.mixins.json'
+            }
+            if (project.hasProperty('atmosphereReference')) {
+                if (!project.file('build/atmosphere-perf/original-shaders/pinwheel').isDirectory()) {
+                    throw new GradleException('Capture the reference pinwheel directory before using -PatmosphereReference')
+                }
+                from(project.file('build/atmosphere-perf/original-shaders/pinwheel')) { into 'assets/maniacrev/pinwheel' }
+            } else {
+                from(project.file('src/main/resources')) { include 'assets/maniacrev/pinwheel/**' }
             }
             into project.layout.buildDirectory.dir('resources/main')
             mustRunAfter tasks.named('processResources')
@@ -14,11 +21,15 @@ allprojects {
         tasks.matching { it.name == 'runClient' }.configureEach { dependsOn syncAtmosphereShaders }
         minecraft.runs.client {
             def worldProbe = project.hasProperty('atmosphereWorldProbe')
-            workingDirectory project.file(worldProbe ? 'run/atmosphere-world-probe' : 'run/atmosphere-client')
-            property 'maniacrev.atmosphere.renderProbe', (!worldProbe).toString()
+            def mapProbe = project.hasProperty('atmosphereMapBenchmark')
+            workingDirectory project.file(mapProbe ? 'run/atmosphere-map-client' : worldProbe ? 'run/atmosphere-world-probe' : 'run/atmosphere-client')
+            property 'maniacrev.atmosphere.renderProbe', (!worldProbe && !mapProbe).toString()
             property 'maniacrev.atmosphere.worldProbe', worldProbe.toString()
+            property 'maniacrev.atmosphere.benchmark', project.findProperty('atmosphereBenchmark') ?: ''
+            property 'maniacrev.atmosphere.mapBenchmark', project.findProperty('atmosphereMapBenchmark') ?: ''
+            property 'maniacrev.atmosphere.probeWidth', project.findProperty('atmosphereProbeWidth') ?: '0'
             mods { maniacrev { source sourceSets.test } }
-            args '--width', '960', '--height', '540'
+            args '--width', mapProbe ? '3840' : '960', '--height', mapProbe ? '2160' : '540'
         }
     }
 }

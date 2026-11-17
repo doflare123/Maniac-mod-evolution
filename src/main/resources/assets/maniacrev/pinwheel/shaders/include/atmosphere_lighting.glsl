@@ -58,9 +58,11 @@ float screenOcclusion(vec3 relative, float nearBias, float farBias, int index) {
     float depth = texture(DiffuseDepthSampler, uv).r;
     if (depth >= 0.999999) return 0.0;
     vec3 surfaceVS = viewPosFromDepthSample(depth, uv);
-    if (emitterSurface(viewToWorldSpaceDirection(surfaceVS), index)) return 0.0;
     float surfaceZ = -surfaceVS.z;
-    return smoothstep(nearBias, farBias, -probe.z - surfaceZ);
+    float blocked = smoothstep(nearBias, farBias, -probe.z - surfaceZ);
+    if (blocked <= 0.0) return 0.0;
+    if (emitterSurface(viewToWorldSpaceDirection(surfaceVS), index)) return 0.0;
+    return blocked;
 }
 
 float lightDepthOcclusion(vec3 relative, vec3 end, int index) {
@@ -70,8 +72,10 @@ float lightDepthOcclusion(vec3 relative, vec3 end, int index) {
 
 float lightVisibility(vec3 start, vec3 end, int index) {
     float blocked = 0.0;
-    for (int step = 1; step <= 4; ++step)
+    for (int step = 1; step <= 4; ++step) {
         blocked = max(blocked, lightDepthOcclusion(mix(start, end, float(step) / 5.0), end, index));
+        if (blocked >= 1.0) break;
+    }
     return 1.0 - blocked;
 }
 

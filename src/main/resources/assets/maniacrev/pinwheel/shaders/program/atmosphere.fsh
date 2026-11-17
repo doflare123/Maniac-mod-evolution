@@ -1,64 +1,37 @@
 #include veil:deferred_utils
 
-uniform sampler2D DiffuseSampler0;
-uniform sampler2D DiffuseDepthSampler;
-uniform vec2 InSize;
-uniform float Active;
-uniform float Time;
-uniform float Corruption;
-uniform float LightCorruption;
-uniform float Comfort;
-uniform float Pursuit;
-uniform float FogGround;
-uniform float FogDensity;
-uniform float SightFadeStart;
-uniform float SightRange;
-uniform float Indoor;
-uniform int FogSamples;
-uniform float Hurt;
-uniform float Fear;
-uniform float Plague;
+#include maniacrev:atmosphere_uniforms
+uniform sampler2D FogSampler;
+uniform sampler2D FogDistanceSampler;
 
 in vec2 texCoord;
 out vec4 fragColor;
 
-float hash(vec3 p) {
-    p = fract(p * 0.1031);
-    p += dot(p, p.yzx + 33.33);
-    return fract((p.x + p.y) * p.z);
-}
-
-float noise(vec3 p) {
-    vec3 cell = floor(p);
-    vec3 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(mix(hash(cell), hash(cell + vec3(1, 0, 0)), f.x),
-                   mix(hash(cell + vec3(0, 1, 0)), hash(cell + vec3(1, 1, 0)), f.x), f.y),
-               mix(mix(hash(cell + vec3(0, 0, 1)), hash(cell + vec3(1, 0, 1)), f.x),
-                   mix(hash(cell + vec3(0, 1, 1)), hash(cell + vec3(1, 1, 1)), f.x), f.y), f.z);
-}
-
+#include maniacrev:atmosphere_noise
 #include maniacrev:atmosphere_base
 #include maniacrev:atmosphere_lighting
+#include maniacrev:atmosphere_volume
 
-// Integrate heterogeneous extinction up to the visible surface. Geometry stops the ray.
-vec4 atmosphere(vec3 origin, vec3 direction, float distance) {
-    float travel = max(0.0, min(distance, SightRange) - 1.5);
-    int count = clamp(FogSamples, 8, 24);
-    float stepLength = travel / float(count);
-    float transmission = 1.0;
-    vec3 scattered = vec3(0.0);
-    for (int i = 0; i < 24; ++i) {
-        if (i >= count) break;
-        vec3 p = origin + direction * (1.5 + (float(i) + 0.5) * stepLength);
-        vec4 medium = atmosphereMedium(p);
-        float density = medium.a;
-        vec3 incident = atmosphereHaze(mix(medium.rgb, medium.rgb * vec3(0.91, 1.0, 0.82), Plague * 0.5));
-        float absorbed = 1.0 - exp(-density * stepLength);
-        scattered += transmission * absorbed * incident;
-        transmission *= 1.0 - absorbed;
+vec4 reconstructedVolume(vec2 uv, vec3 direction, float distance) {
+    ivec2 size = textureSize(FogSampler, 0);
+    if (all(equal(size, textureSize(DiffuseDepthSampler, 0)))) return texture(FogSampler, uv);
+    vec2 pixel = uv * vec2(size) - 0.5;
+    ivec2 base = ivec2(floor(pixel));
+    vec2 f = fract(pixel);
+    vec4 total = vec4(0.0);
+    float weights = 0.0;
+    float center = min(distance, SightRange);
+    float tolerance = 0.12 + center * 0.01;
+    for (int y = 0; y < 2; ++y) for (int x = 0; x < 2; ++x) {
+        ivec2 tap = clamp(base + ivec2(x, y), ivec2(0), size - 1);
+        float delta = abs(texelFetch(FogDistanceSampler, tap, 0).r - center);
+        float weight = (x == 0 ? 1.0 - f.x : f.x) * (y == 0 ? 1.0 - f.y : f.y)
+                * (1.0 - smoothstep(tolerance * 0.5, tolerance, delta));
+        total += texelFetch(FogSampler, tap, 0) * weight;
+        weights += weight;
     }
-    return vec4(scattered, transmission);
+    // A thin foreground object can miss every coarse depth sample. Integrate its own ray in that case.
+    return weights > 0.0001 ? total / weights : atmosphereVolume(direction, distance);
 }
 
 void main() {
@@ -90,16 +63,12 @@ void main() {
     color = surfaceLighting(color, viewPosition, depth);
     color = mix(color, color * vec3(0.83, 1.04, 0.73), Plague * 0.5);
 
-    vec4 fog = atmosphere(VeilCamera.CameraPosition, direction, distance);
-    float homogeneousOpacity = 1.0 - exp(-FogDensity * max(0.0, min(distance, SightRange) - 1.5));
-    float mediumResponse = clamp((1.0 - fog.a) / max(homogeneousOpacity, 0.00001), 0.25, 2.0);
-    fog.rgb += pointLightFog(direction, distance) * mediumResponse;
-    vec3 fogColor = fog.rgb / max(1.0 - fog.a, 0.00001);
+    vec4 fog = reconstructedVolume(uv, direction, distance);
     // No low-density hole, roof, bright emitter or quality setting can reveal
     // the source image at/behind SightRange. Near space stays readable.
     float visible = 1.0 - smoothstep(SightFadeStart, SightRange, distance);
     float transmission = fog.a * visible;
-    color = color * transmission + fogColor * (1.0 - transmission);
+    color = color * transmission + fog.rgb * (1.0 - transmission);
 
     float heartbeat = pow(0.5 + 0.5 * sin(Time * 8.0), 5.0);
     float vignette = edge * edge * (0.10 + Corruption * 0.18 + Pursuit * (0.08 + 0.055 * heartbeat));

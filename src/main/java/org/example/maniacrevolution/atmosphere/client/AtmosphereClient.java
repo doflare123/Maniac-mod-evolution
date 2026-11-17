@@ -52,7 +52,8 @@ public final class AtmosphereClient {
     private AtmosphereClient() {}
 
     public static GraphicsMode graphicsMode() {
-        return ClientGameSettings.getGraphicsMode();
+        GraphicsMode benchmark = AtmosphereBenchmark.graphicsOverride();
+        return benchmark == null ? ClientGameSettings.getGraphicsMode() : benchmark;
     }
 
     public static void chase(float value) {
@@ -60,6 +61,7 @@ public final class AtmosphereClient {
     }
 
     public static float cameraCorruption() {
+        if (AtmosphereBenchmark.forcingProfile()) return 0;
         return profile() == Profile.SURVIVOR ? corruption : 0;
     }
 
@@ -81,17 +83,18 @@ public final class AtmosphereClient {
 
     /** Local post-processing toggles keep the sight limit; the host's OFF mode removes it. */
     public static boolean hasFogLimit() {
-        return graphicsMode().enabled() && viewingWorld() && (matchProfile() != Profile.OFF
+        return !VeilRenderControl.isBypassed() && graphicsMode().enabled() && viewingWorld() && (AtmosphereBenchmark.forcingProfile() || matchProfile() != Profile.OFF
                 || preview != null && !disabled && AtmosphereConfig.ENABLED.get());
     }
 
     public static Profile profile() {
         var mc = Minecraft.getInstance();
         var player = mc.player;
-        if (!graphicsMode().enabled() || disabled || !AtmosphereConfig.ENABLED.get() || !viewingWorld()
+        if (VeilRenderControl.isBypassed() || !graphicsMode().enabled() || (!AtmosphereBenchmark.forcingProfile() && (disabled || !AtmosphereConfig.ENABLED.get())) || !viewingWorld()
                 || mc.gameRenderer.getMainCamera().getFluidInCamera() != FogType.NONE
                 || player.hasEffect(MobEffects.BLINDNESS) || player.hasEffect(MobEffects.DARKNESS)
                 || player.hasEffect(ModEffects.FORESTER_BLIND.get())) return Profile.OFF;
+        if (AtmosphereBenchmark.forcingProfile()) return Profile.SURVIVOR;
         if (preview != null) return preview;
         return matchProfile();
     }
@@ -164,6 +167,7 @@ public final class AtmosphereClient {
                 ? mc.player.getEyePosition(mc.getFrameTime()).add(0, -0.3, 0) : null;
         AtmosphereLights.upload(pipeline, current == Profile.OFF ? GraphicsMode.OFF : graphicsMode(),
                 light, testLight, mc.getFrameTime());
+        AtmosphereBenchmark.configureUniforms(pipeline);
     }
 
     private static boolean holdingBurningLighter() {

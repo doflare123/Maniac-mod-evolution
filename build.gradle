@@ -126,6 +126,14 @@ tasks.register('verifyAtmosphereLightCache', JavaExec) {
     mainClass = 'org.example.maniacrevolution.atmosphere.client.AtmosphereLightIndexTest'
 }
 
+tasks.register('verifyAtmosphereBenchmark', JavaExec) {
+    group = 'verification'
+    description = 'Checks benchmark schedule coverage, reverse repeats and frame statistics.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.atmosphere.client.BenchmarkPlanTest'
+}
+
 tasks.named('processResources', ProcessResources).configure {
     // The release JAR includes the ingestion token; only the bot holds DB credentials.
     // Use the existing local sender settings without publishing the token in source control.
