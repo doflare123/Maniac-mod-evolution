@@ -39,6 +39,8 @@ import org.example.maniacrevolution.warden.client.WardenVisionPrototype;
 public final class AtmosphereClient {
     public static final ResourceLocation PIPELINE = Maniacrev.loc("atmosphere");
     public static final ResourceLocation LIGHT_PIPELINE = Maniacrev.loc("atmosphere_light");
+    public static final ResourceLocation REDUCED_LIGHT_PIPELINE = Maniacrev.loc("atmosphere_light_reduced");
+    public static final java.util.List<ResourceLocation> PIPELINES = java.util.List.of(PIPELINE, LIGHT_PIPELINE, REDUCED_LIGHT_PIPELINE);
     private static Profile preview;
     private static boolean disabled;
     private static float previewSanity = 1, previewChase;
@@ -50,6 +52,16 @@ public final class AtmosphereClient {
     private static Vec3 lampPosition;
 
     private AtmosphereClient() {}
+
+    /** Keep the original single-pass shader where the measured extra pass does not pay off. */
+    public static ResourceLocation lightPipelineFor(int framebufferHeight, int sources) {
+        return framebufferHeight >= 1080 && sources >= 40 ? REDUCED_LIGHT_PIPELINE : LIGHT_PIPELINE;
+    }
+
+    private static ResourceLocation selectedPipeline() {
+        return graphicsMode() == GraphicsMode.LIGHT
+                ? lightPipelineFor(Minecraft.getInstance().getMainRenderTarget().height, AtmosphereLights.sourceCount()) : PIPELINE;
+    }
 
     public static GraphicsMode graphicsMode() {
         GraphicsMode benchmark = AtmosphereBenchmark.graphicsOverride();
@@ -128,8 +140,8 @@ public final class AtmosphereClient {
     public static void frame(TickEvent.RenderTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
         var manager = VeilRenderSystem.renderer().getPostProcessingManager();
-        ResourceLocation selected = graphicsMode() == GraphicsMode.LIGHT ? LIGHT_PIPELINE : PIPELINE;
-        manager.remove(selected.equals(PIPELINE) ? LIGHT_PIPELINE : PIPELINE);
+        ResourceLocation selected = selectedPipeline();
+        for (var id : PIPELINES) if (!id.equals(selected)) manager.remove(id);
         if (profile() == Profile.OFF) {
             manager.remove(selected);
             removeLight();
@@ -140,7 +152,7 @@ public final class AtmosphereClient {
 
     @SubscribeEvent
     public static void uniforms(ForgeVeilPostProcessingEvent.Pre event) {
-        if (!PIPELINE.equals(event.getName()) && !LIGHT_PIPELINE.equals(event.getName())) return;
+        if (!PIPELINES.contains(event.getName())) return;
         var mc = Minecraft.getInstance();
         var pipeline = event.getPipeline();
         Profile current = profile();
@@ -182,8 +194,7 @@ public final class AtmosphereClient {
     }
 
     private static void reset() {
-        VeilRenderSystem.renderer().getPostProcessingManager().remove(PIPELINE);
-        VeilRenderSystem.renderer().getPostProcessingManager().remove(LIGHT_PIPELINE);
+        for (var id : PIPELINES) VeilRenderSystem.renderer().getPostProcessingManager().remove(id);
         removeLight();
         AtmosphereLights.clear();
         preview = null;
@@ -254,7 +265,7 @@ public final class AtmosphereClient {
                 .then(Commands.literal("status").executes(c -> {
                     var renderer = VeilRenderSystem.renderer();
                     var pipeline = renderer.getPostProcessingManager().getPipeline(
-                            graphicsMode() == GraphicsMode.LIGHT ? LIGHT_PIPELINE : PIPELINE);
+                            selectedPipeline());
                     return message("Veil: профиль=" + profile() + ", шейдер=" + (pipeline != null && pipeline.hasUniform("FogDensity"))
                             + ", графика=" + graphicsMode().displayName()
                             + ", источники=" + AtmosphereLights.sourceCount() + "/" + AtmosphereLights.MAX_SOURCES

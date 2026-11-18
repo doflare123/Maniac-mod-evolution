@@ -29,7 +29,7 @@ public final class VeilRenderControl {
         var renderer = VeilRenderSystem.renderer();
         if (renderer.getDeferredRenderer().isEnabled()) return "Включён отдельный Veil Deferred: отключите его ресурс-пак для этой проверки.";
         for (var entry : renderer.getPostProcessingManager().getActivePipelines()) {
-            if (!entry.getPipeline().equals(AtmosphereClient.PIPELINE) && !entry.getPipeline().equals(AtmosphereClient.LIGHT_PIPELINE))
+            if (!AtmosphereClient.PIPELINES.contains(entry.getPipeline()))
                 return "У Veil активен сторонний эффект: " + entry.getPipeline();
         }
         return null;
@@ -42,8 +42,7 @@ public final class VeilRenderControl {
         if (value) {
             String reason = unsupportedReason();
             if (reason != null) throw new IllegalStateException(reason);
-            renderer.getPostProcessingManager().remove(AtmosphereClient.PIPELINE);
-            renderer.getPostProcessingManager().remove(AtmosphereClient.LIGHT_PIPELINE);
+            for (var id : AtmosphereClient.PIPELINES) renderer.getPostProcessingManager().remove(id);
             renderer.getCameraMatrices().unbind();
             renderer.getGuiInfo().unbind();
             VeilRenderSystem.endFrame();

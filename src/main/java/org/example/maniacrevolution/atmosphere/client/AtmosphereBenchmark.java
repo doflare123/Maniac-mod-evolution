@@ -220,7 +220,7 @@ public final class AtmosphereBenchmark {
             String dimension = mc.level.dimension().location().toString();
             if (route.stream().anyMatch(point -> !point.dimension().equals(dimension))) return message("Все точки маршрута должны находиться в текущем измерении.");
             var manager = VeilRenderSystem.renderer().getPostProcessingManager();
-            for (var id : List.of(AtmosphereClient.PIPELINE, AtmosphereClient.LIGHT_PIPELINE))
+            for (var id : AtmosphereClient.PIPELINES)
                 if (manager.getPipeline(id) == null || !manager.getPipeline(id).hasUniform("FogDensity")) throw new IllegalStateException("Шейдер атмосферы не загрузился: " + id);
             var resolutions = BenchmarkPlan.resolutions(mc.getMainRenderTarget().width, mc.getMainRenderTarget().height, matrix);
             var plan = BenchmarkPlan.create(route, resolutions, smoke ? 1 : 2);

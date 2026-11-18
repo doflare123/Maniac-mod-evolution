@@ -19,7 +19,7 @@ import java.util.zip.ZipFile;
 @Mod("mrbenchsmoke")
 @Mod.EventBusSubscriber(modid = "mrbenchsmoke", value = Dist.CLIENT)
 public final class ProductionBenchmarkHarness {
-    private static boolean loading, running, done;
+    private static boolean loading, running, done, sawReducedPipeline;
     private static long started, worldReadyAt;
     private static int frames;
 
@@ -40,6 +40,10 @@ public final class ProductionBenchmarkHarness {
             if (System.nanoTime() - worldReadyAt < TimeUnit.SECONDS.toNanos(20)) return;
             if (mc.screen != null) mc.setScreen(null);
             if (!running) {
+                if (mc.getMainRenderTarget().width != 1920 || mc.getMainRenderTarget().height != 1080) {
+                    if (mc.getWindow().isFullscreen()) mc.getWindow().toggleFullScreen();
+                    mc.getWindow().setWindowed(1920, 1080); return;
+                }
                 running = true; AtmosphereBenchmark.startSmoke(false);
                 if (!AtmosphereBenchmark.isRunning()) throw new AssertionError("Cannot start production command");
                 return;
@@ -53,6 +57,7 @@ public final class ProductionBenchmarkHarness {
                     throw new AssertionError("Invalid production report/restoration");
                 var bypass = report.getAsJsonArray("results").get(0).getAsJsonObject();
                 if (bypass.get("observedBypassGates").getAsInt() != 15) throw new AssertionError("Production mixin gates missing");
+                if (!sawReducedPipeline) throw new AssertionError("Dense LIGHT pipeline never ran; prepare a point with at least 40 sources");
             }
             done = true; LoggerFactory.getLogger("MRBenchProduction").info("Portable production benchmark PASSED: release JAR, mixin gates, five modes, ZIP and restoration"); mc.stop();
         } catch (Exception | AssertionError error) {
@@ -62,5 +67,9 @@ public final class ProductionBenchmarkHarness {
     @SubscribeEvent
     public static void frame(TickEvent.RenderTickEvent event) {
         if (event.phase == TickEvent.Phase.END && loading) frames++;
+        if (event.phase == TickEvent.Phase.END && AtmosphereBenchmark.isRunning()) {
+            for (var entry : foundry.veil.api.client.render.VeilRenderSystem.renderer().getPostProcessingManager().getActivePipelines())
+                if (entry.getPipeline().equals(org.example.maniacrevolution.atmosphere.client.AtmosphereClient.REDUCED_LIGHT_PIPELINE)) sawReducedPipeline = true;
+        }
     }
 }

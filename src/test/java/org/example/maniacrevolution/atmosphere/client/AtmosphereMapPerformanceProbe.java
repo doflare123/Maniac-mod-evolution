@@ -26,12 +26,18 @@ import java.util.concurrent.TimeUnit;
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public final class AtmosphereMapPerformanceProbe {
     private static final String LABEL = System.getProperty("maniacrev.atmosphere.mapBenchmark", "");
+    private static final GraphicsMode MODE = GraphicsMode.valueOf(System.getProperty("maniacrev.atmosphere.mapBenchmarkMode", "HEAVY"));
     private static boolean loading, initialized, done, measuring;
     private static int ticks, view = -1, query;
     private static long started;
     private static Vec3 recent;
     private static final ArrayList<Double> samples = new ArrayList<>();
     private static final StringBuilder report = new StringBuilder("view,x,y,z,yaw,width,height,groups,median_ms,p95_ms\n");
+
+    private static boolean measuredPipeline(net.minecraft.resources.ResourceLocation name) {
+        return MODE == GraphicsMode.LIGHT ? name.equals(AtmosphereClient.LIGHT_PIPELINE) || name.equals(AtmosphereClient.REDUCED_LIGHT_PIPELINE)
+                : name.equals(AtmosphereClient.PIPELINE);
+    }
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
@@ -54,15 +60,35 @@ public final class AtmosphereMapPerformanceProbe {
             if (mc.screen != null) mc.setScreen(null);
             if (!initialized) {
                 initialized = true; recent = new Vec3(-244.5, 41, -22.92);
-                mc.getWindow().setWidth(3840); mc.getWindow().setHeight(2160); mc.resizeDisplay();
+                mc.getSingleplayerServer().submit(() -> {
+                    var level = mc.getSingleplayerServer().overworld();
+                    var rules = level.getGameRules();
+                    rules.getRule(net.minecraft.world.level.GameRules.RULE_DAYLIGHT).set(false, mc.getSingleplayerServer());
+                    rules.getRule(net.minecraft.world.level.GameRules.RULE_WEATHER_CYCLE).set(false, mc.getSingleplayerServer());
+                    rules.getRule(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING).set(false, mc.getSingleplayerServer());
+                    rules.getRule(net.minecraft.world.level.GameRules.RULE_RANDOMTICKING).set(0, mc.getSingleplayerServer());
+                    level.setDayTime(6000); level.setWeatherParameters(6000, 0, false, false);
+                }).get(10, TimeUnit.SECONDS);
+                int width = Integer.getInteger("maniacrev.atmosphere.mapBenchmarkWidth", 3840);
+                mc.getWindow().setWidth(width); mc.getWindow().setHeight(width * 9 / 16); mc.resizeDisplay();
                 ClientCommandHandler.runCommand("mrvisual preview survivor");
                 query = GL15.glGenQueries();
             }
-            ClientGameSettings.setGraphicsMode(GraphicsMode.HEAVY);
+            ClientGameSettings.setGraphicsMode(MODE);
             if (mc.isPaused()) return;
             if (++ticks < 60) return;
             if (view >= 0 && samples.size() < 40) return;
             if (view >= 0) {
+                if (MODE == GraphicsMode.LIGHT) {
+                    var expected = AtmosphereClient.lightPipelineFor(mc.getMainRenderTarget().height, AtmosphereLights.sourceCount());
+                    int active = 0;
+                    for (var entry : foundry.veil.api.client.render.VeilRenderSystem.renderer().getPostProcessingManager().getActivePipelines()) {
+                        if (!measuredPipeline(entry.getPipeline())) continue;
+                        active++;
+                        if (!entry.getPipeline().equals(expected)) throw new AssertionError("Wrong LIGHT pipeline: " + entry.getPipeline());
+                    }
+                    if (active != 1) throw new AssertionError("Expected exactly one LIGHT pipeline, got " + active);
+                }
                 samples.sort(Double::compareTo);
                 Vec3 p = mc.player.position();
                 report.append(String.format(Locale.ROOT, "%d,%.2f,%.2f,%.2f,%.1f,%d,%d,%d,%.3f,%.3f%n", view,
@@ -101,14 +127,14 @@ public final class AtmosphereMapPerformanceProbe {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void before(ForgeVeilPostProcessingEvent.Pre event) {
-        if (LABEL.isEmpty() || done || view < 0 || ticks < 40 || !AtmosphereClient.PIPELINE.equals(event.getName())) return;
+        if (LABEL.isEmpty() || done || view < 0 || ticks < 40 || !measuredPipeline(event.getName())) return;
         event.getPipeline().setFloat("Time", 12);
         GL15.glBeginQuery(GL33.GL_TIME_ELAPSED, query); measuring = true;
     }
 
     @SubscribeEvent
     public static void after(ForgeVeilPostProcessingEvent.Post event) {
-        if (!measuring || !AtmosphereClient.PIPELINE.equals(event.getName())) return;
+        if (!measuring || !measuredPipeline(event.getName())) return;
         GL15.glEndQuery(GL33.GL_TIME_ELAPSED); measuring = false;
         samples.add(GL33.glGetQueryObjecti64(query, GL15.GL_QUERY_RESULT) / 1_000_000.0);
     }

@@ -24,6 +24,7 @@ import org.lwjgl.glfw.GLFW;
 public final class AtmosphereRenderProbe {
     private static boolean done;
     private static int frames;
+    private static net.minecraft.resources.ResourceLocation lightPipeline = AtmosphereClient.LIGHT_PIPELINE;
 
     @SubscribeEvent
     public static void render(TickEvent.RenderTickEvent event) {
@@ -53,7 +54,8 @@ public final class AtmosphereRenderProbe {
             var rotation = new Matrix4f();
             VeilRenderSystem.renderer().getCameraMatrices().update(projection, rotation, new Vector3f(0, 2, 4), 0.05F, 160);
             if (!System.getProperty("maniacrev.atmosphere.benchmark", "").isEmpty()) {
-                AtmospherePerformanceProbe.run(AtmosphereRenderProbe::scene);
+                if (Boolean.getBoolean("maniacrev.atmosphere.lightBenchmark")) AtmosphereLightPerformanceProbe.run(AtmosphereRenderProbe::scene);
+                else AtmospherePerformanceProbe.run(AtmosphereRenderProbe::scene);
                 return;
             }
             double baseline = 0;
@@ -126,14 +128,18 @@ public final class AtmosphereRenderProbe {
             }
             visibilityChecks(manager, pipeline);
             thinGeometryChecks(manager, pipeline);
-            graphicsModes(manager);
-            lightingChecks(manager);
-            lighterChecks(manager);
-            fogMaskChecks(manager);
-            coloredLightsChecks(manager);
-            rowLightingChecks(manager);
-            ceilingLightChecks(manager);
-            haloContinuityChecks(manager);
+            for (var lightName : new net.minecraft.resources.ResourceLocation[]{AtmosphereClient.LIGHT_PIPELINE, AtmosphereClient.REDUCED_LIGHT_PIPELINE}) {
+                lightPipeline = lightName;
+                graphicsModes(manager);
+                lightingChecks(manager);
+                lighterChecks(manager);
+                fogMaskChecks(manager);
+                coloredLightsChecks(manager);
+                rowLightingChecks(manager);
+                ceilingLightChecks(manager);
+                haloContinuityChecks(manager);
+                Maniacrev.LOGGER.info("Light pipeline regression PASSED: {}", lightName);
+            }
             org.example.maniacrevolution.settings.SettingsGraphicsProbe.run();
             Maniacrev.LOGGER.info("Atmosphere render probe PASSED: common base, four graphics modes, warm lighting, sanity, depth occlusion, visibility range, settings menu");
         } catch (Exception | AssertionError error) {
@@ -148,13 +154,13 @@ public final class AtmosphereRenderProbe {
     }
 
     private static void graphicsModes(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
-        var light = manager.getPipeline(AtmosphereClient.LIGHT_PIPELINE);
+        var light = manager.getPipeline(lightPipeline);
         if (light == null || !light.hasUniform("FogDensity")) throw new AssertionError("Light shader did not compile");
         for (var mode : org.example.maniacrevolution.settings.GraphicsMode.values()) {
             org.example.maniacrevolution.settings.ClientGameSettings.setGraphicsMode(mode);
             scene();
             var pipeline = manager.getPipeline(mode == org.example.maniacrevolution.settings.GraphicsMode.LIGHT
-                    ? AtmosphereClient.LIGHT_PIPELINE : AtmosphereClient.PIPELINE);
+                    ? lightPipeline : AtmosphereClient.PIPELINE);
             pipeline.setFloat("Active", mode.enabled() ? 1 : 0);
             pipeline.setFloat("Time", 12); pipeline.setFloat("Corruption", 0); pipeline.setFloat("Pursuit", 0);
             pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
@@ -171,6 +177,7 @@ public final class AtmosphereRenderProbe {
             }
         }
         visibilityChecks(manager, light);
+        thinGeometryChecks(manager, light);
         org.example.maniacrevolution.settings.ClientGameSettings.resetGraphicsMode();
         Maniacrev.LOGGER.info("Graphics modes render PASSED: OFF without a pass, LIGHT analytic fog, NORMAL 12 steps, HEAVY 24 steps");
     }
@@ -231,7 +238,7 @@ public final class AtmosphereRenderProbe {
     /** Numeric assertions exercise the real shader, not a Java copy of its lighting equations. */
     private static void lightingChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
         var volume = manager.getPipeline(AtmosphereClient.PIPELINE);
-        var light = manager.getPipeline(AtmosphereClient.LIGHT_PIPELINE);
+        var light = manager.getPipeline(lightPipeline);
         for (var pipeline : new foundry.veil.api.client.render.post.PostPipeline[]{light, volume}) {
             if (!pipeline.hasUniform("LightCorruption")) throw new AssertionError("Sanity lighting uniform missing");
             pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
@@ -323,7 +330,7 @@ public final class AtmosphereRenderProbe {
                 org.example.maniacrevolution.settings.GraphicsMode.LIGHT,
                 org.example.maniacrevolution.settings.GraphicsMode.NORMAL,
                 org.example.maniacrevolution.settings.GraphicsMode.HEAVY}) {
-            var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : AtmosphereClient.LIGHT_PIPELINE);
+            var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : lightPipeline);
             pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
             pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
             pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Plague", 0);
@@ -409,7 +416,7 @@ public final class AtmosphereRenderProbe {
         checkPalette(red != cyan && cyan != flame && sea != flame, "Different luminous materials share one color");
         for (var mode : org.example.maniacrevolution.settings.GraphicsMode.values()) {
             if (!mode.enabled()) continue;
-            var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : AtmosphereClient.LIGHT_PIPELINE);
+            var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : lightPipeline);
             pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
             pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
             pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
@@ -441,7 +448,7 @@ public final class AtmosphereRenderProbe {
 
     /** Compare a four-lamp row to its two-point representation using pixels from the real shader. */
     private static void rowLightingChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
-        for (var name : new net.minecraft.resources.ResourceLocation[]{AtmosphereClient.LIGHT_PIPELINE, AtmosphereClient.PIPELINE}) {
+        for (var name : new net.minecraft.resources.ResourceLocation[]{lightPipeline, AtmosphereClient.PIPELINE}) {
             var pipeline = manager.getPipeline(name);
             source(pipeline, false);
             pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
@@ -575,7 +582,7 @@ public final class AtmosphereRenderProbe {
     private static void haloContinuityChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
         for (var mode : org.example.maniacrevolution.settings.GraphicsMode.values()) {
             if (!mode.enabled()) continue;
-            var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : AtmosphereClient.LIGHT_PIPELINE);
+            var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : lightPipeline);
             source(pipeline, false);
             pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
             pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
@@ -616,7 +623,9 @@ public final class AtmosphereRenderProbe {
     private static void thinGeometryChecks(foundry.veil.api.client.render.post.PostProcessingManager manager,
                                            foundry.veil.api.client.render.post.PostPipeline pipeline) {
         var mc = Minecraft.getInstance(); var target = mc.getMainRenderTarget();
-        source(pipeline, false); pipeline.setFloat("SurfaceLight", 0);
+        boolean light = pipeline == manager.getPipeline(lightPipeline);
+        source(pipeline, light); pipeline.setFloat("SurfaceLight", 0);
+        if (light) { pipeline.setInt("LightSamples", 2); pipeline.setFloat("ContactShadows", 0); }
         pipeline.setFloat("FogGround", 0); pipeline.setFloat("FogDensity", .055F);
         pipeline.setFloat("Indoor", 0); pipeline.setInt("FogSamples", 24);
         int[] foreground = new int[2], background = new int[2];

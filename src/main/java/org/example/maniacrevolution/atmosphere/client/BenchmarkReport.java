@@ -68,7 +68,8 @@ final class BenchmarkReport {
             if (frames.size() < 100) warnings.add("fewer_than_100_frames_percentiles_are_noisy");
             if (actualWidth != test.resolution().width() || actualHeight != test.resolution().height()) warnings.add("actual_resolution_differs_from_requested");
             if (minLights != maxLights) warnings.add("uploaded_light_count_changed_during_measurement");
-            if (frameIntervals != null && frameIntervals.medianFps() >= fpsLimit * .96) warnings.add("fps_near_configured_limit");
+            // Minecraft's maximum value (260) disables the limiter rather than capping FPS.
+            if (frameIntervals != null && fpsLimit < 260 && frameIntervals.medianFps() >= fpsLimit * .96) warnings.add("fps_near_configured_limit");
             if (frameIntervals != null && refreshRateHz > 0 && Math.abs(frameIntervals.medianFps() - refreshRateHz) < refreshRateHz * .025)
                 warnings.add("possible_refresh_rate_ceiling");
         }
@@ -133,10 +134,17 @@ final class BenchmarkReport {
         try {
             var digest = MessageDigest.getInstance("SHA-256");
             for (String resource : List.of("/org/example/maniacrevolution/atmosphere/client/AtmosphereBenchmark.class",
+                    "/org/example/maniacrevolution/atmosphere/client/AtmosphereClient.class",
                     "/org/example/maniacrevolution/atmosphere/client/VeilRenderControl.class",
                     "/assets/maniacrev/pinwheel/shaders/program/atmosphere.fsh",
                     "/assets/maniacrev/pinwheel/shaders/program/atmosphere_volume.fsh",
-                    "/assets/maniacrev/pinwheel/shaders/include/atmosphere_lighting.glsl")) {
+                    "/assets/maniacrev/pinwheel/shaders/include/atmosphere_lighting.glsl",
+                    "/assets/maniacrev/pinwheel/post/atmosphere_light.json",
+                    "/assets/maniacrev/pinwheel/shaders/program/atmosphere_light.fsh",
+                    "/assets/maniacrev/pinwheel/post/atmosphere_light_reduced.json",
+                    "/assets/maniacrev/pinwheel/shaders/program/atmosphere_light_reduced.fsh",
+                    "/assets/maniacrev/pinwheel/shaders/program/atmosphere_light_volume.fsh",
+                    "/assets/maniacrev/pinwheel/shaders/include/atmosphere_light_reconstruction.glsl")) {
                 digest.update(resource.getBytes(StandardCharsets.UTF_8));
                 try (var input = BenchmarkReport.class.getResourceAsStream(resource)) {
                     if (input != null) digest.update(input.readAllBytes());
