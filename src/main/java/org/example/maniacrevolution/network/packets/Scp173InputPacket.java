@@ -6,7 +6,7 @@ import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.scp173.Scp173GameplayManager;
 
 public record Scp173InputPacket(Action action) {
-    public enum Action { BLINK, LIGHT, MELEE }
+    public enum Action { BLINK, LIGHT, MELEE, TENSION }
     public void encode(FriendlyByteBuf b) { b.writeEnum(action); }
     public static Scp173InputPacket decode(FriendlyByteBuf b) { return new Scp173InputPacket(b.readEnum(Action.class)); }
     public void handle(Supplier<NetworkEvent.Context> ctx) {

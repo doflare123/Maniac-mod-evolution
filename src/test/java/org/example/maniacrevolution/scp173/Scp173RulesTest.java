@@ -54,20 +54,43 @@ public final class Scp173RulesTest {
         check(first.remaining(19) > 0 && second.remaining(19) > 0 && first.remaining(20) == 0, "only overlapping blink windows release both observers");
         var ability = new Scp173AbilityState();
         check(ability.lightReady() && ability.cost() == 10, "light ready initially at ten mana");
-        for (int tick = 0; tick < 100; tick++) ability.tick(2);
+        for (int tick = 0; tick < 100; tick++) ability.tick(2, false);
         check(Math.abs(ability.observation() - 130) < 1e-7, "two observers add 30 percent discount rate");
-        double saved = ability.observation(); ability.tick(0);
+        double saved = ability.observation(); ability.tick(0, false);
         check(ability.observation() == saved, "discount persists without observers");
-        for (int tick = 0; tick < 1100; tick++) ability.tick(1);
+        for (int tick = 0; tick < 1100; tick++) ability.tick(1, false);
         check(ability.cost() == 0, "full discount costs zero mana");
         ability.usedLight();
         check(!ability.lightReady() && ability.cost() == 10, "successful activation resets discount and starts cooldown");
-        for (int tick = 0; tick < 100; tick++) ability.tick(2);
+        for (int tick = 0; tick < 100; tick++) ability.tick(2, false);
         check(Math.abs(ability.lightCooldown() - 3460) < 1e-7, "cooldown runs at 1.4 independently of 1.3 discount rate");
         check(ability.melee(0) && !ability.melee(99) && ability.melee(100), "five-second strike cooldown");
         ability.changeClock(60, 1000);
         check(ability.meleeCooldown(1000) == 140
                 && ability.cost() < 10, "dimension clock remap preserves cooldown and discount");
+        var charge = new Scp173AbilityState();
+        check(charge.movementBonus() == 0.5 && !charge.useTension(), "initial speed and empty tension");
+        for (int tick = 0; tick < 159; tick++) charge.tick(3, false);
+        check(charge.tension() == 159 && charge.movementBonus() < 1.0, "watchers charge once per tick");
+        charge.tick(1, true);
+        check(charge.movementBonus() == 1.0, "full momentum after 160 watched ticks, even with external motion");
+        for (int tick = 0; tick < 39; tick++) charge.tick(1, false);
+        check(charge.tension() == 199 && !charge.useTension(), "cannot spend partial tension");
+        for (int tick = 0; tick < 100; tick++) charge.tick(0, false);
+        check(charge.tension() == 199 && charge.movementBonus() == 1.0, "both charges survive idle time");
+        check(charge.tick(1, false) && !charge.tick(1, false), "ready cue fires once at 200 watched ticks");
+        check(charge.useTension() && charge.tension() == 0 && !charge.useTension()
+                && charge.movementBonus() == 1.0, "activation consumes only tension");
+        for (int tick = 0; tick < 39; tick++) charge.tick(0, true);
+        check(charge.movementBonus() > 0.5, "momentum remains above minimum before 40 moving ticks");
+        charge.tick(0, true);
+        charge.tick(0, true);
+        check(charge.movementBonus() == 0.5, "momentum reaches and stays at the speed floor");
+        var forced = new Scp173BlinkState();
+        forced.blink(10);
+        forced.forceBlink(15);
+        check(forced.remaining(15) == 10 && forced.forcedBlinking(24) && !forced.forcedBlinking(25),
+                "forced blink synchronizes a survivor already blinking");
         check(Math.abs(Scp173Rules.darknessRange(1, 0) - 3) < 1e-8, "darkness pulse minimum three");
         check(Math.abs(Scp173Rules.darknessRange(1, 40) - 20) < 1e-8, "darkness pulse returns to twenty");
         check(Scp173Rules.darknessRange(0.5, 0) == 11.5, "darkness factor interpolates range");

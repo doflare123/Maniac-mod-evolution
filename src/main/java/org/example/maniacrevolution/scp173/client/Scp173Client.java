@@ -1,6 +1,8 @@
 package org.example.maniacrevolution.scp173.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
@@ -14,7 +16,7 @@ import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.network.packets.Scp173HoldPacket;
 import org.example.maniacrevolution.util.PlayerModeUtil;
 
-/** Input/camera feedback; the server gate independently enforces the same restriction. */
+/** The local camera stays free while the server enforces the statue's frozen pose. */
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public final class Scp173Client {
     private static Scp173HoldPacket state;
@@ -25,11 +27,18 @@ public final class Scp173Client {
         var mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || !mc.player.getUUID().equals(packet.player())
                 || !mc.level.dimension().location().equals(packet.dimension())) return;
-        if (!packet.held()) { reset(); return; }
+        if (!packet.held()) {
+            boolean released = state != null && player == mc.player && level == mc.level;
+            reset();
+            // The angles previously sent while held were discarded by the server gate.
+            if (released && mc.getConnection() != null)
+                mc.getConnection().send(new ServerboundMovePlayerPacket.Rot(
+                        mc.player.getYRot(), mc.player.getXRot(), mc.player.onGround()));
+            return;
+        }
         state = packet; player = mc.player; level = mc.level;
         mc.player.setPos(packet.position());
         mc.player.setDeltaMovement(packet.velocity());
-        rotation();
     }
 
     private static boolean held() {
@@ -43,13 +52,8 @@ public final class Scp173Client {
         return true;
     }
 
-    private static void rotation() {
-        if (!held()) return;
-        var p = Minecraft.getInstance().player;
-        p.setYRot(state.yaw()); p.setXRot(state.pitch());
-        p.setYHeadRot(state.yaw()); p.setYBodyRot(state.yaw());
-        p.yRotO = state.yaw(); p.xRotO = state.pitch();
-        p.yHeadRotO = state.yaw(); p.yBodyRotO = state.yaw();
+    static Scp173HoldPacket heldPose(AbstractClientPlayer renderedPlayer) {
+        return renderedPlayer == Minecraft.getInstance().player && held() ? state : null;
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -58,7 +62,6 @@ public final class Scp173Client {
         var input = e.getInput();
         input.forwardImpulse = input.leftImpulse = 0;
         input.up = input.down = input.left = input.right = input.jumping = input.shiftKeyDown = false;
-        rotation();
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -69,8 +72,9 @@ public final class Scp173Client {
         }
     }
 
-    @SubscribeEvent public static void tick(TickEvent.ClientTickEvent e) { rotation(); }
-    @SubscribeEvent public static void render(TickEvent.RenderTickEvent e) { rotation(); }
+    @SubscribeEvent public static void tick(TickEvent.ClientTickEvent e) {
+        if (e.phase == TickEvent.Phase.END) held();
+    }
     @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e) { reset(); }
     private static void reset() { state = null; player = level = null; }
 }

@@ -6,6 +6,8 @@ import com.mojang.blaze3d.vertex.VertexSorting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.*;
@@ -20,6 +22,7 @@ import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.Scp173InputPacket;
 import org.example.maniacrevolution.network.packets.Scp173InputPacket.Action;
 import org.example.maniacrevolution.network.packets.Scp173StatusPacket;
+import org.example.maniacrevolution.scp173.Scp173AbilityState;
 import org.example.maniacrevolution.scp173.Scp173CombatGeometry;
 import org.example.maniacrevolution.scp173.Scp173Rules;
 import org.example.maniacrevolution.util.PlayerModeUtil;
@@ -31,6 +34,7 @@ import org.joml.Matrix4f;
 public final class Scp173GameplayClient {
     private static final KeyMapping BLINK = new KeyMapping("key.maniacrev.scp173_blink", KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C, "key.categories.maniacrev");
+    private static final InputConstants.Key TENSION_BUTTON = InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
     private static Scp173StatusPacket state;
     private static Object player, level;
     private static long strikeTick = -1;
@@ -78,6 +82,15 @@ public final class Scp173GameplayClient {
         while (BLINK.consumeClick()) if (survivor() && state.blinkEnabled() && mc.screen == null)
             ModNetworking.sendToServer(new Scp173InputPacket(Action.BLINK));
     }
+    @SubscribeEvent
+    public static void tension(InputEvent.MouseButton.Pre e) {
+        var mc = Minecraft.getInstance();
+        if (e.getButton() != TENSION_BUTTON.getValue() || e.getAction() != GLFW.GLFW_PRESS
+                || mc.screen != null || mc.getOverlay() != null || !mc.mouseHandler.isMouseGrabbed()
+                || !statue() || state.tension() < Scp173AbilityState.TENSION_TICKS) return;
+        e.setCanceled(true);
+        ModNetworking.sendToServer(new Scp173InputPacket(Action.TENSION));
+    }
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void attack(InputEvent.InteractionKeyMappingTriggered e) {
         var mc = Minecraft.getInstance();
@@ -97,16 +110,26 @@ public final class Scp173GameplayClient {
                 && event.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id())) event.setCanceled(true);
     }
     @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void beforeChat(RenderGuiOverlayEvent.Pre e) {
+        var mc = Minecraft.getInstance();
+        if (e.getOverlay() != VanillaGuiOverlay.CHAT_PANEL.type() || !(mc.screen instanceof ChatScreen) || !valid()) return;
+        var g = e.getGuiGraphics();
+        int width = mc.getWindow().getGuiScaledWidth(), height = mc.getWindow().getGuiScaledHeight();
+        Scp173BlinkOverlay.mask(g, width, height, closure(e.getPartialTick()));
+        if (!mc.options.hideGui) renderTopPanel(g, width);
+        g.flush();
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void gui(RenderGuiEvent.Post e) {
         if (!valid()) return;
         var mc = Minecraft.getInstance(); var g = e.getGuiGraphics();
+        if (mc.screen instanceof ChatScreen) return;
         int width = mc.getWindow().getGuiScaledWidth(), height = mc.getWindow().getGuiScaledHeight();
         // Eye closure also covers third person; the status panel is rendered above it.
         Scp173BlinkOverlay.mask(g, width, height, closure(e.getPartialTick()));
         if (!mc.options.hideGui && mc.screen == null) {
-            if (survivor() && state.blinkEnabled()) {
-                Scp173BlinkOverlay.panel(g, width, state.meter(), state.pressure(), BLINK.getTranslatedKeyMessage());
-            }
+            renderTopPanel(g, width);
             if (statue()) {
                 int x = width / 2, y = height / 2;
                 if (mc.options.getCameraType().isFirstPerson()) {
@@ -125,6 +148,32 @@ public final class Scp173GameplayClient {
                 }
             }
         }
+    }
+    private static void renderTopPanel(GuiGraphics g, int width) {
+        if (survivor() && state.blinkEnabled()) {
+            Scp173BlinkOverlay.panel(g, width, state.meter(), state.pressure(), BLINK.getTranslatedKeyMessage());
+        } else if (statue()) {
+            renderTension(g, width);
+        }
+    }
+
+    private static void renderTension(GuiGraphics g, int width) {
+        var font = Minecraft.getInstance().font;
+        int center = width / 2;
+        boolean ready = state.tension() >= Scp173AbilityState.TENSION_TICKS;
+        int tensionColor = ready ? 0xFFFFBE73 : 0xFFBB694E;
+        int tensionWidth = 120 * state.tension() / Scp173AbilityState.TENSION_TICKS;
+        int momentumWidth = 120 * state.momentum() / Scp173AbilityState.MOMENTUM_TICKS;
+        int speedBonus = Math.round(50F * state.momentum() / Scp173AbilityState.MOMENTUM_TICKS);
+        g.fill(center - 67, 24, center + 67, 59, 0xD016171A);
+        g.drawCenteredString(font, Component.translatable("hud.maniacrev.scp173.tension",
+                TENSION_BUTTON.getDisplayName()), center, 28, tensionColor);
+        g.fill(center - 60, 39, center + 60, 43, 0xFF333338);
+        g.fill(center - 60, 39, center - 60 + tensionWidth, 43, tensionColor);
+        g.drawCenteredString(font, Component.translatable("hud.maniacrev.scp173.momentum", speedBonus),
+                center, 46, 0xFFE6D8B8);
+        g.fill(center - 60, 55, center + 60, 57, 0xFF333338);
+        g.fill(center - 60, 55, center - 60 + momentumWidth, 57, 0xFFD0C2A2);
     }
     private static float closure(float partial) {
         return survivor() ? org.example.maniacrevolution.scp173.Scp173Presentation.blinkClosure(state.blink() - age() - partial) : 0;

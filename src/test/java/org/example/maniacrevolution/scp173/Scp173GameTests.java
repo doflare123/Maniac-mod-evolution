@@ -8,6 +8,7 @@ import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import net.minecraft.network.chat.Component;
@@ -20,6 +21,7 @@ import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.downed.DownedState;
 import org.example.maniacrevolution.entity.RedColorCardProjectile;
+import org.example.maniacrevolution.network.packets.Scp173InputPacket.Action;
 import org.example.maniacrevolution.perk.perks.common.GtoMedalPerk;
 
 import java.util.UUID;
@@ -28,6 +30,69 @@ import java.util.UUID;
 @GameTestHolder("maniacrev")
 @PrefixGameTestTemplate(false)
 public final class Scp173GameTests {
+    @GameTest(template = "scp173_empty", batch = "scp173", timeoutTicks = 40)
+    public static void tensionAndMomentum(GameTestHelper h) {
+        var scoreboard = h.getLevel().getScoreboard();
+        var objective = scoreboard.getObjective("phaseGame");
+        if (objective == null) objective = scoreboard.addObjective("phaseGame", ObjectiveCriteria.DUMMY,
+                Component.literal("phase"), ObjectiveCriteria.RenderType.INTEGER);
+        var phase = scoreboard.getOrCreatePlayerScore("game", objective);
+        int oldPhase = phase.getScore();
+        phase.setScore(1);
+        var statue = player(h, "scp_tension", "maniac", 2, 2, 8);
+        var outside = player(h, "scp_tension_far", "survivors", 2, 2, 2);
+        var downed = player(h, "scp_tension_down", "survivors", 3, 2, 2);
+        var observers = new FakePlayer[4];
+        PlayerDataManager.get(statue).setManiacClassId(13);
+        try {
+            outside.setPos(statue.position().add(20.01, 0, 0));
+            outside.setYRot(-90);
+            DownedCapability.get(downed).setState(DownedState.DOWNED);
+            for (int i = 0; i < observers.length; i++) {
+                observers[i] = player(h, "scp_tension_eye" + i, "survivors", 2, 2, 2);
+                observers[i].setYRot(180);
+            }
+            var speed = statue.getAttribute(Attributes.MOVEMENT_SPEED);
+            double baseSpeed = speed.getValue();
+            // Rotate fresh observers in without advancing the world's shared GameTest clock.
+            for (int i = 0; i < observers.length; i++) {
+                var observer = observers[i];
+                observer.setYRot(0);
+                var sample = java.util.List.<net.minecraft.server.level.ServerPlayer>of(statue, observer);
+                for (int tick = 0; tick < (i == 3 ? 49 : 50); tick++) Scp173GameplayManager.update(sample);
+                if (i < 3) observer.setYRot(180);
+            }
+            Scp173GameplayManager.input(statue, Action.TENSION);
+            h.assertTrue(Scp173Manager.held(statue) && !Scp173GameplayManager.blinking(observers[3]),
+                    "partial charge cannot force a blink");
+            var match = java.util.List.<net.minecraft.server.level.ServerPlayer>of(statue, observers[3], downed, outside);
+            Scp173GameplayManager.update(match);
+            outside.setYRot(0);
+            Scp173GameplayManager.input(statue, Action.TENSION);
+            h.assertTrue(!Scp173Manager.held(statue) && Scp173GameplayManager.blinking(observers[3])
+                    && Scp173GameplayManager.blinking(observers[0]) && Scp173GameplayManager.blinking(downed)
+                    && !Scp173GameplayManager.blinking(outside), "forces nearby survivors to blink regardless of gaze");
+            h.assertTrue(Math.abs(speed.getValue() / baseSpeed - 2.0) < 1e-8, "release immediately enables full speed");
+            Scp173GameplayManager.update(match);
+            h.assertTrue(Scp173GameplayManager.blinking(downed), "forced blink persists for downed survivors");
+            var before = statue.position();
+            statue.setPos(before.add(0.25, 0, 0));
+            Scp173GameplayManager.recordMovement(statue, before);
+            Scp173GameplayManager.update(match);
+            h.assertTrue(speed.getValue() < 2.0 * baseSpeed && speed.getValue() > 1.5 * baseSpeed,
+                    "accepted movement spends part of the speed bonus");
+            h.succeed();
+        } finally {
+            Scp173GameplayManager.update(java.util.List.of());
+            phase.setScore(oldPhase);
+            for (var p : new FakePlayer[]{statue, outside, downed, observers[0], observers[1], observers[2], observers[3]}) {
+                if (p == null) continue;
+                p.discard();
+                scoreboard.removePlayerFromTeam(p.getScoreboardName());
+            }
+        }
+    }
+
     @GameTest(template = "scp173_empty", batch = "scp173", timeoutTicks = 40)
     public static void blinkCoordinationAndLifecycle(GameTestHelper h) {
         var scoreboard = h.getLevel().getScoreboard();
@@ -54,8 +119,9 @@ public final class Scp173GameTests {
             Scp173GameplayManager.input(second, org.example.maniacrevolution.network.packets.Scp173InputPacket.Action.BLINK);
             h.assertTrue(Scp173GameplayManager.observers(statue) == 0 && !Scp173Manager.held(statue), "simultaneous eyes closed release statue");
             Scp173GameplayManager.update(players);
+            double speedAfterOneWatchedTick = 1.5 + 0.5 / Scp173AbilityState.MOMENTUM_TICKS;
             h.assertTrue(Math.abs(statue.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).getValue()
-                    / baseSpeed - 1.5) < 1e-8, "unobserved statue is fifty percent faster");
+                    / baseSpeed - speedAfterOneWatchedTick) < 1e-8, "release applies base speed bonus plus one tick of momentum");
             DownedCapability.get(first).setState(DownedState.DOWNED);
             second.setGameMode(GameType.SPECTATOR);
             Scp173GameplayManager.update(players);
@@ -124,28 +190,29 @@ public final class Scp173GameTests {
             statue.getCapability(org.example.maniacrevolution.mana.ManaProvider.MANA).ifPresent(m -> h.assertTrue(m.getMana() == 10, "cooldown rejection does not spend mana"));
             observer.setPos(statue.position().add(0, 0, 1.0)); observer.setYRot(0);
             statue.setYRot(0); statue.setXRot(0);
-            observer.setPos(statue.position().add(0, 0, 1.81));
-            h.assertTrue(Scp173CombatGeometry.target(statue) == null, "body contact beyond 1.5 blocks misses");
-            observer.setPos(statue.position().add(0, 0, 1.79));
-            h.assertTrue(Scp173CombatGeometry.target(statue) == observer, "body contact just inside 1.5 blocks reaches target");
+            h.assertTrue(statue.getEntityReach() == 3.0, "default survival reach is three blocks");
+            observer.setPos(statue.position().add(0, 0, 3.31));
+            h.assertTrue(Scp173CombatGeometry.target(statue) == null, "body contact beyond normal reach misses");
+            observer.setPos(statue.position().add(0, 0, 3.29));
+            h.assertTrue(Scp173CombatGeometry.target(statue) == observer, "body contact just inside normal reach hits");
             var cover = statue.blockPosition().offset(0, 1, 1);
             var oldCover = h.getLevel().getBlockState(cover);
             try {
                 h.getLevel().setBlockAndUpdate(cover, Blocks.STONE.defaultBlockState());
-                h.assertTrue(Scp173CombatGeometry.target(statue) == null, "extended strike cannot pass through solid cover");
+                h.assertTrue(Scp173CombatGeometry.target(statue) == null, "strike cannot pass through solid cover");
             } finally { h.getLevel().setBlockAndUpdate(cover, oldCover); }
             h.assertTrue(!Scp173Manager.held(statue) && Scp173CombatGeometry.target(statue) == observer, "fixture has an unheld statue aimed at a close target");
             float health = observer.getHealth();
             Scp173GameplayManager.input(statue, org.example.maniacrevolution.network.packets.Scp173InputPacket.Action.MELEE);
-            h.assertTrue(observer.getHealth() < health, "1.5-block hand strike deals damage beyond previous reach");
+            h.assertTrue(observer.getHealth() < health, "hand strike deals damage at normal reach");
             health = observer.getHealth();
             Scp173GameplayManager.input(statue, org.example.maniacrevolution.network.packets.Scp173InputPacket.Action.MELEE);
             h.assertTrue(observer.getHealth() == health, "repeated strike during cooldown does no damage");
             observer.setPos(statue.position().add(0, 0, 1.0));
             statue.setOnGround(true); statue.setDeltaMovement(Vec3.ZERO);
             h.assertTrue(Scp173GameplayManager.permitClientJump(statue), "first ordinary jump is ready");
-            h.assertTrue(statue.getEffect(org.example.maniacrevolution.effect.ModEffects.JUMP_COOLDOWN.get()).getDuration() == 60,
-                    "jump cooldown is a visible three-second effect");
+            h.assertTrue(statue.getEffect(org.example.maniacrevolution.effect.ModEffects.JUMP_COOLDOWN.get()).getDuration() == 20,
+                    "jump cooldown is a visible one-second effect");
             var repeatJump = new ServerboundMovePlayerPacket.PosRot(statue.getX(), statue.getY() + 0.42,
                     statue.getZ(), statue.getYRot(), statue.getXRot(), false);
             h.assertTrue(Scp173MovementGate.filter(statue, repeatJump) == null, "server rejects repeated positional jump during cooldown");
@@ -426,6 +493,11 @@ public final class Scp173GameTests {
             Scp173MovementGate.handleMove(listener, (ServerboundMovePlayerPacket) Scp173MovementGate.filter(p, forged));
             h.assertTrue(p.position().equals(before) && p.getYRot() == yaw,
                     "native listener cannot move or turn using a held client packet");
+            float pitch = p.getXRot();
+            var camera = new ServerboundMovePlayerPacket.Rot(yaw + 22, pitch + 10, p.onGround());
+            Scp173MovementGate.handleMove(listener, (ServerboundMovePlayerPacket) Scp173MovementGate.filter(p, camera));
+            h.assertTrue(p.getYRot() == yaw && p.getXRot() == pitch && p.yHeadRot == yaw && p.yBodyRot == yaw,
+                    "local camera rotation cannot rotate the statue under observation");
             p.setNoGravity(true);
             p.setDeltaMovement(Vec3.ZERO);
             for (int i = 0; i < 100; i++) {
@@ -437,6 +509,10 @@ public final class Scp173GameTests {
             p.setNoGravity(false);
             observer.setYRot(180);
             h.assertTrue(!Scp173Manager.held(p), "free jump setup releases gaze");
+            Scp173MovementGate.handleMove(listener, (ServerboundMovePlayerPacket) Scp173MovementGate.filter(p, camera));
+            h.assertTrue(p.getYRot() == yaw + 22 && p.getXRot() == pitch + 10,
+                    "server accepts the camera orientation once the last observer looks away");
+            Scp173MovementGate.handleMove(listener, new ServerboundMovePlayerPacket.Rot(yaw, pitch, p.onGround()));
             p.setOnGround(true);
             p.setSprinting(true);
             p.setDeltaMovement(0, -0.08, 0);

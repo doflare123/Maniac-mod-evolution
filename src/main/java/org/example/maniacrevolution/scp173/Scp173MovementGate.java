@@ -58,7 +58,11 @@ public final class Scp173MovementGate extends ChannelInboundHandlerAdapter {
         boolean ordinaryJump = Scp173Manager.active(p) && p.onGround() && !move.isOnGround()
                 && move.getY(p.getY()) > p.getY();
         if (ordinaryJump) PACKET_JUMP.set(new JumpBaseline(p, p.getDeltaMovement()));
-        try { listener.handleMovePlayer(move); }
+        var before = p.position();
+        try {
+            listener.handleMovePlayer(move);
+            if (!serverPhysics && move.hasPosition()) Scp173GameplayManager.recordMovement(p, before);
+        }
         finally {
             if (ordinaryJump) PACKET_JUMP.remove();
             if (serverPhysics) p.getAbilities().mayfly = mayfly;

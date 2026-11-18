@@ -7,11 +7,10 @@ import net.minecraft.world.phys.AABB;
 
 /** Same eye ray on client and server; nearest body and solid blocks occlude the strike. */
 public final class Scp173CombatGeometry {
-    public static final double REACH = 1.5;
     private Scp173CombatGeometry() {}
     public static LivingEntity target(Player player) {
         var start = player.getEyePosition();
-        var end = player.level().clip(new ClipContext(start, start.add(player.getLookAngle().scale(REACH)),
+        var end = player.level().clip(new ClipContext(start, start.add(player.getLookAngle().scale(player.getEntityReach())),
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player)).getLocation();
         LivingEntity nearest = null; double distance = start.distanceToSqr(end);
         for (var entity : player.level().getEntitiesOfClass(LivingEntity.class, new AABB(start, end).inflate(0.2),

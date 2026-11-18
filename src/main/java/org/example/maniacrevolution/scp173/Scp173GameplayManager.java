@@ -10,6 +10,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -24,7 +26,9 @@ import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.Scp173InputPacket.Action;
 import org.example.maniacrevolution.network.packets.Scp173StatusPacket;
+import org.example.maniacrevolution.sound.ModSounds;
 import org.example.maniacrevolution.util.ManaUtil;
+import org.example.maniacrevolution.util.PlayerModeUtil;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public final class Scp173GameplayManager {
@@ -34,14 +38,15 @@ public final class Scp173GameplayManager {
         ResourceKey<Level> dimension;
         final Scp173AbilityState state = new Scp173AbilityState();
         long lightUntil, impactUntil, clock, nextScrape;
-        boolean jumpOwned;
-        net.minecraft.world.phys.Vec3 lastPosition;
+        boolean jumpOwned, moved;
+        Vec3 lastPosition;
         Statue(ServerPlayer p) {
             player = p; dimension = p.level().dimension(); lastPosition = p.position(); clock = p.level().getGameTime();
             p.addEffect(new MobEffectInstance(ModEffects.SCP173_ARMOR.get(), -1, 0, false, false, true));
         }
     }
     private static final UUID SPEED = UUID.fromString("f3c1e4e9-e3a1-4a55-a53b-6e9e8c9dcbd1");
+    private static final double TENSION_RANGE = 20;
     private static final Map<UUID, Observer> OBSERVERS = new HashMap<>();
     private static final Map<UUID, Statue> STATUES = new HashMap<>();
     private static ServerPlayer authorized;
@@ -55,6 +60,7 @@ public final class Scp173GameplayManager {
             // a player's decision to remove armor. Remap deadlines if the new world's clock differs.
             old.state.changeClock(old.clock, p.level().getGameTime());
             old.dimension = p.level().dimension(); old.lightUntil = old.impactUntil = old.nextScrape = 0; old.lastPosition = p.position();
+            old.moved = false;
         }
         if (old == null) { old = new Statue(p); STATUES.put(p.getUUID(), old); }
         old.clock = p.level().getGameTime();
@@ -70,6 +76,33 @@ public final class Scp173GameplayManager {
         var observer = OBSERVERS.get(p.getUUID());
         return observer != null && observer.player == p && observer.dimension == p.level().dimension()
                 && observer.state.remaining(p.level().getGameTime()) > 0;
+    }
+    private static boolean isSurvivor(ServerPlayer p) {
+        return p.isAlive() && p.getTeam() != null && "survivors".equals(p.getTeam().getName())
+                && PlayerModeUtil.isSurvivalOrAdventure(p);
+    }
+
+    static void recordMovement(ServerPlayer p, Vec3 before) {
+        var s = STATUES.get(p.getUUID());
+        if (s == null || s.player != p || s.dimension != p.level().dimension() || p.isPassenger()) return;
+        var delta = p.position().subtract(before);
+        if (delta.horizontalDistanceSqr() > 1.0e-8 || (p.isSwimming() && Math.abs(delta.y) > 1.0e-4))
+            s.moved = true;
+    }
+
+    private static void updateSpeed(Statue s, boolean held) {
+        var speed = s.player.getAttribute(Attributes.MOVEMENT_SPEED);
+        if (speed == null) return;
+        var modifier = speed.getModifier(SPEED);
+        if (held) {
+            if (modifier != null) speed.removeModifier(SPEED);
+            return;
+        }
+        double bonus = s.state.movementBonus();
+        if (modifier != null && modifier.getAmount() == bonus) return;
+        if (modifier != null) speed.removeModifier(SPEED);
+        speed.addTransientModifier(new AttributeModifier(SPEED, "SCP-173 movement", bonus,
+                AttributeModifier.Operation.MULTIPLY_TOTAL));
     }
     public static int blackout(ServerPlayer p) {
         long now = p.level().getGameTime(), until = now;
@@ -93,7 +126,7 @@ public final class Scp173GameplayManager {
     }
     public static boolean permitClientJump(ServerPlayer p) {
         if (!Scp173Manager.active(p) || Scp173Manager.held(p) || p.hasEffect(ModEffects.JUMP_COOLDOWN.get())) return false;
-        p.addEffect(new MobEffectInstance(ModEffects.JUMP_COOLDOWN.get(), 60, 0, false, false, true));
+        p.addEffect(new MobEffectInstance(ModEffects.JUMP_COOLDOWN.get(), 20, 0, false, false, true));
         statue(p).jumpOwned = true;
         return true;
     }
@@ -107,6 +140,18 @@ public final class Scp173GameplayManager {
         if (!Scp173Manager.active(p) || p.containerMenu != p.inventoryMenu) return;
         var s = statue(p); long now = p.level().getGameTime();
         switch (action) {
+            case TENSION -> {
+                if (!s.state.useTension()) return;
+                for (var survivor : p.serverLevel().players()) {
+                    if (!isSurvivor(survivor) || p.distanceToSqr(survivor) > TENSION_RANGE * TENSION_RANGE) continue;
+                    var observer = OBSERVERS.compute(survivor.getUUID(), (id, old) ->
+                            old != null && old.player == survivor && old.dimension == s.dimension ? old
+                                    : new Observer(survivor, s.dimension, new Scp173BlinkState()));
+                    observer.state.forceBlink(now);
+                    send(survivor, observer, null);
+                }
+                updateSpeed(s, Scp173Manager.held(p));
+            }
             case LIGHT -> {
                 if (!s.state.lightReady()) return;
                 float cost = s.state.cost();
@@ -163,7 +208,9 @@ public final class Scp173GameplayManager {
         OBSERVERS.entrySet().removeIf(entry -> {
             var s = entry.getValue();
             return active.isEmpty() || !players.contains(s.player)
-                    || !Scp173Manager.eligibleObserver(s.player) || s.dimension != s.player.level().dimension();
+                    || s.dimension != s.player.level().dimension()
+                    || (!Scp173Manager.eligibleObserver(s.player)
+                            && !(isSurvivor(s.player) && s.state.forcedBlinking(s.player.level().getGameTime())));
         });
         for (var p : players) {
             Observer observer = null;
@@ -178,13 +225,13 @@ public final class Scp173GameplayManager {
             var statue = STATUES.get(p.getUUID());
             if (statue != null) {
                 int watching = observers(p);
-                statue.state.tick(watching);
-                var speed = p.getAttribute(Attributes.MOVEMENT_SPEED);
-                if (speed != null) {
-                    if (watching > 0) speed.removeModifier(SPEED);
-                    else if (speed.getModifier(SPEED) == null) speed.addTransientModifier(new AttributeModifier(SPEED,
-                            "SCP-173 movement", 0.5, AttributeModifier.Operation.MULTIPLY_TOTAL));
+                if (statue.state.tick(watching, statue.moved)) {
+                    p.serverLevel().playSound(null, p.getX(), p.getY(), p.getZ(), ModSounds.SCP173_SCRAPE.get(),
+                            SoundSource.PLAYERS, 1.25F, 0.7F);
+                    statue.nextScrape = statue.clock + 20;
                 }
+                statue.moved = false;
+                updateSpeed(statue, watching > 0);
                 // Moving a rigid statue makes sound, including externally forced motion.
                 if (p.level().getGameTime() >= statue.nextScrape && p.position().distanceToSqr(statue.lastPosition) > 0.0025 && p.onGround()) {
                     p.serverLevel().playSound(null, p.blockPosition(), org.example.maniacrevolution.sound.ModSounds.SCP173_SCRAPE.get(),
@@ -198,15 +245,15 @@ public final class Scp173GameplayManager {
     }
     private static void send(ServerPlayer p, Observer observer, Statue statue) {
         long now = p.level().getGameTime();
-        boolean survivor = p.isAlive() && p.getTeam() != null && "survivors".equals(p.getTeam().getName())
-                && org.example.maniacrevolution.util.PlayerModeUtil.isSurvivalOrAdventure(p);
         ModNetworking.sendToPlayer(new Scp173StatusPacket(p.level().dimension().location(), now,
-                observer != null, observer == null ? 0 : observer.state.remaining(now), observer == null ? 1 : observer.state.meter(),
-                observer == null ? 0 : observer.state.pressure(), survivor ? blackout(p) : 0,
+                observer != null && Scp173Manager.eligibleObserver(p),
+                observer == null ? 0 : observer.state.remaining(now), observer == null ? 1 : observer.state.meter(),
+                observer == null ? 0 : observer.state.pressure(), isSurvivor(p) ? blackout(p) : 0,
                 statue != null, statue != null && Scp173Manager.held(p), statue == null ? 0 : statue.state.meleeCooldown(now),
                 statue == null ? 0 : statue.state.lightCooldown(),
                 statue == null ? 10 : statue.state.cost(), statue == null ? 0 : (int) Math.max(0, statue.impactUntil - now),
-                statue == null ? 0 : (int) Math.max(0, statue.lightUntil - now)), p);
+                statue == null ? 0 : (int) Math.max(0, statue.lightUntil - now),
+                statue == null ? 0 : statue.state.tension(), statue == null ? 0 : statue.state.momentum()), p);
     }
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent event) {
         var s = STATUES.remove(event.getEntity().getUUID()); if (s != null) clear(s);

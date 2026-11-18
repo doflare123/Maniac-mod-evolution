@@ -33,11 +33,14 @@ public class Scp173Renderer extends GeoReplacedEntityRenderer<AbstractClientPlay
             var baked = getGeoModel().getBakedModel(getGeoModel().getModelResource(getAnimatable()));
             pose.pushPose();
             try {
-                pose.mulPose(Axis.YP.rotationDegrees(180 - player.getYRot()));
+                var heldPose = Scp173Client.heldPose(player);
+                float bodyYaw = heldPose == null ? player.getYRot() : heldPose.yaw();
+                float bodyPitch = heldPose == null ? player.getXRot() : heldPose.pitch();
+                pose.mulPose(Axis.YP.rotationDegrees(180 - bodyYaw));
                 float swim = player.getSwimAmount(partialTick);
                 pose.translate(0, org.example.maniacrevolution.scp173.Scp173Geometry.swimCenter(swim), 0);
                 pose.mulPose(Axis.XP.rotationDegrees(org.example.maniacrevolution.scp173.Scp173Geometry.swimAngle(swim,
-                        player.getXRot(), player.isInWater())));
+                        bodyPitch, player.isInWater())));
                 pose.translate(0, -org.example.maniacrevolution.scp173.Scp173Geometry.CENTER_Y, 0);
                 pose.scale(scaleWidth, scaleHeight, scaleWidth);
                 for (var bone : baked.topLevelBones())
