@@ -28,7 +28,6 @@ import org.example.maniacrevolution.scp173.client.Scp173PlayerForm;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,44 +38,12 @@ public class CharacterSelectionScreen extends Screen {
     private static final int SLOT_SIZE = 22;
     private static final UUID FALLBACK_PROFILE = new UUID(0L, 0L);
 
-    private static final Map<String, FrescoDimensions> FRESCO_DIMENSIONS = Map.ofEntries(
-            Map.entry("agent", new FrescoDimensions(1024, 1536)),
-            Map.entry("alchemist", new FrescoDimensions(1024, 1536)),
-            Map.entry("death", new FrescoDimensions(1024, 1536)),
-            Map.entry("doctor", new FrescoDimensions(1024, 1536)),
-            Map.entry("dodepovich", new FrescoDimensions(1024, 1536)),
-            Map.entry("freddy_bear", new FrescoDimensions(1024, 1536)),
-            Map.entry("ghost", new FrescoDimensions(1024, 1536)),
-            Map.entry("keeper_of_nightmares", new FrescoDimensions(1024, 1536)),
-            Map.entry("mefedronshchik", new FrescoDimensions(1024, 1536)),
-            Map.entry("necromancer", new FrescoDimensions(1024, 1536)),
-            Map.entry("plague_doctor", new FrescoDimensions(1024, 1536)),
-            Map.entry("pudge", new FrescoDimensions(1024, 1536)),
-            Map.entry("scientist", new FrescoDimensions(1024, 1536)),
-            Map.entry("shaman", new FrescoDimensions(1024, 1536)),
-            Map.entry("ursa", new FrescoDimensions(1024, 1536)),
-            Map.entry("warden", new FrescoDimensions(1024, 1536)),
-            Map.entry("scp_173", new FrescoDimensions(1024, 1536))
-    );
-
-    private static final Map<String, FrescoDimensions> SELECTION_FRESCO_DIMENSIONS = Map.ofEntries(
-            Map.entry("agent", new FrescoDimensions(2170, 725)),
-            Map.entry("alchemist", new FrescoDimensions(2169, 725)),
-            Map.entry("death", new FrescoDimensions(2172, 724)),
-            Map.entry("doctor", new FrescoDimensions(2169, 725)),
-            Map.entry("dodepovich", new FrescoDimensions(2171, 724)),
-            Map.entry("freddy_bear", new FrescoDimensions(2168, 725)),
-            Map.entry("ghost", new FrescoDimensions(2171, 724)),
-            Map.entry("keeper_of_nightmares", new FrescoDimensions(2172, 724)),
-            Map.entry("mefedronshchik", new FrescoDimensions(2170, 725)),
-            Map.entry("necromancer", new FrescoDimensions(2172, 724)),
-            Map.entry("plague_doctor", new FrescoDimensions(2172, 724)),
-            Map.entry("pudge", new FrescoDimensions(2172, 724)),
-            Map.entry("scientist", new FrescoDimensions(2171, 724)),
-            Map.entry("shaman", new FrescoDimensions(2172, 724)),
-            Map.entry("ursa", new FrescoDimensions(2172, 724)),
-            Map.entry("warden", new FrescoDimensions(2172, 724)),
-            Map.entry("scp_173", new FrescoDimensions(2170, 725))
+    private static final FrescoDimensions PORTRAIT_FRESCO = new FrescoDimensions(640, 960);
+    private static final FrescoDimensions SELECTION_FRESCO = new FrescoDimensions(1200, 400);
+    private static final Set<String> FITTED_FRESCO_CHARACTERS = Set.of(
+            "agent", "alchemist", "death", "doctor", "dodepovich", "freddy_bear", "ghost",
+            "keeper_of_nightmares", "mefedronshchik", "necromancer", "plague_doctor", "pudge",
+            "scientist", "shaman", "ursa", "warden", "scp_173"
     );
 
     private final CharacterType type;
@@ -473,7 +440,7 @@ public class CharacterSelectionScreen extends Screen {
     private void drawCroppedFresco(GuiGraphics graphics, CharacterClass character, Rect destination,
                                    boolean selectionCard) {
         // Dedicated compositions retain their full framing across window sizes.
-        if (SELECTION_FRESCO_DIMENSIONS.containsKey(character.getId())) {
+        if (FITTED_FRESCO_CHARACTERS.contains(character.getId())) {
             drawFittedFresco(graphics, character, destination, selectionCard);
             return;
         }
@@ -502,11 +469,10 @@ public class CharacterSelectionScreen extends Screen {
 
     private FrescoDimensions frescoDimensions(CharacterClass character, Rect destination,
                                                boolean selectionCard) {
-        FrescoDimensions portrait = FRESCO_DIMENSIONS.getOrDefault(character.getId(),
-                new FrescoDimensions(destination.width(), destination.height()));
-        return selectionCard
-                ? SELECTION_FRESCO_DIMENSIONS.getOrDefault(character.getId(), portrait)
-                : portrait;
+        if (!FITTED_FRESCO_CHARACTERS.contains(character.getId())) {
+            return new FrescoDimensions(destination.width(), destination.height());
+        }
+        return selectionCard ? SELECTION_FRESCO : PORTRAIT_FRESCO;
     }
 
     private void drawFittedFresco(GuiGraphics graphics, CharacterClass character, Rect destination,

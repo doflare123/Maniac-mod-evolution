@@ -38,8 +38,8 @@ public class CharactersPage extends GuidePage {
     // ── Размеры фрески ────────────────────────────────────────────────────────
     private static final int FRESCO_WIDTH = 200;
     private static final int FRESCO_HEIGHT = 500;
-    private static final int FRESCO_TEXTURE_WIDTH = 1024;
-    private static final int FRESCO_TEXTURE_HEIGHT = 1536;
+    private static final int FRESCO_TEXTURE_WIDTH = 640;
+    private static final int FRESCO_TEXTURE_HEIGHT = 960;
     private static final float FRESCO_SCALE = 0.3f; // Масштаб для списка
     private static final int SCALED_FRESCO_WIDTH = (int) (FRESCO_WIDTH * FRESCO_SCALE);
     private static final int SCALED_FRESCO_HEIGHT = (int) (FRESCO_HEIGHT * FRESCO_SCALE);
