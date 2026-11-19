@@ -1,33 +1,18 @@
 #include veil:deferred_utils
 
-uniform sampler2D DiffuseSampler0;
-uniform sampler2D DiffuseDepthSampler;
-uniform float Active;
-uniform float Time;
-uniform float Corruption;
-uniform float LightCorruption;
-uniform float Comfort;
-uniform float Pursuit;
-uniform float FogDensity;
-uniform float SightFadeStart;
-uniform float SightRange;
-uniform float Hurt;
-uniform float Fear;
-uniform float Plague;
+#include maniacrev:atmosphere_uniforms
 
 in vec2 texCoord;
 out vec4 fragColor;
 
 #include maniacrev:atmosphere_color
 #include maniacrev:atmosphere_lighting
+#include maniacrev:atmosphere_stress
 
 // Color and depth only. Simple fog plus two light samples per sphere, without 3D noise or shadow taps.
 void main() {
     if (Active < 0.5) { fragColor = texture(DiffuseSampler0, texCoord); return; }
-    float edge = smoothstep(0.15, 1.2, length(texCoord * 2.0 - 1.0));
-    float unrest = Corruption * Corruption;
-    vec2 uv = clamp(texCoord + vec2(sin(texCoord.y * 29.0 + Time * 1.9), 0.0)
-            * 0.0018 * (unrest + Fear * 0.4) * edge, vec2(0.001), vec2(0.999));
+    vec2 uv = stressUv(texCoord);
     vec4 source = texture(DiffuseSampler0, uv);
     float depth = texture(DiffuseDepthSampler, uv).r;
     vec3 viewPosition = viewPosFromDepthSample(depth, uv);
@@ -42,8 +27,6 @@ void main() {
     float homogeneousOpacity = 1.0 - exp(-FogDensity * max(0.0, min(distance, SightRange) - 1.5));
     haze += pointLightFog(direction, distance) / max(homogeneousOpacity, 0.00001);
     color = color * transmission + haze * (1.0 - transmission);
-    float heartbeat = pow(0.5 + 0.5 * sin(Time * 8.0), 5.0);
-    color *= 1.0 - edge * edge * (0.10 + Corruption * 0.18 + Pursuit * (0.08 + heartbeat * 0.055));
-    color += vec3(0.07, 0.007, 0.012) * edge * (Hurt * 0.5 + Pursuit * heartbeat * 0.18);
+    color = stressComposite(color, texCoord);
     fragColor = vec4(max(color, vec3(0.0)), source.a);
 }

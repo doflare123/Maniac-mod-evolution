@@ -60,27 +60,21 @@ public final class AtmosphereRulesTest {
         for (int i = 0; i < 30; i++) transition.tick(0);
         check(transition.dark(), "An extinguished source eventually releases its slot");
 
-        ChaseContact chase = new ChaseContact();
-        chase.update(0, true, true);
-        chase.update(5, true, true);
-        check(chase.strength(5) == 0, "passing glance is not a chase");
-        chase.update(10, false, false);
-        chase.update(15, true, true);
-        chase.update(20, true, true);
-        check(chase.strength(20) == 0, "acquisition restarts after lost sight");
-        chase.update(25, true, true);
-        check(chase.strength(25) == 1, "sustained acquisition");
-        chase.update(30, false, false);
-        check(chase.strength(85) == 1, "corner grace");
-        check(chase.strength(105) == .5F, "gradual release");
-        check(chase.strength(125) == 0, "escape");
-        chase.hit(140);
-        check(chase.strength(140) == 1, "attack starts chase immediately");
-        chase.update(220, false, true);
-        check(chase.strength(220) == 1, "visible reacquisition during release");
-        check(chase.strength(320) == 0, "contact eventually expires");
-        ChaseContact other = new ChaseContact();
-        check(other.strength(220) == 0, "each killer/victim pair is independent");
+        ImpactPulse impact = new ImpactPulse();
+        impact.tick(0);
+        check(impact.value(1) == 0, "no damage has no impact pulse");
+        impact.tick(10);
+        check(impact.value(0) == 0 && impact.value(1) == 1, "damage attacks immediately with interpolated onset");
+        for (int tick = 9; tick >= 0; tick--) impact.tick(tick);
+        check(impact.value(1) > 0, "damage release outlasts vanilla hurt animation");
+        impact.tick(10);
+        check(impact.value(1) == 1, "another hit retriggers the pulse");
+        for (int i = 0; i < ImpactPulse.DURATION_TICKS + 1; i++) impact.tick(0);
+        check(impact.value(1) == 0, "damage pulse ends independently of remaining health");
+        impact.trigger(); impact.tick(0);
+        check(impact.value(1) == 1, "preview can trigger damage without health changes");
+        impact.reset();
+        check(impact.value(0) == 0 && impact.value(1) == 0, "world/profile reset clears damage immediately");
         System.out.println("Atmosphere rules checks passed");
     }
 

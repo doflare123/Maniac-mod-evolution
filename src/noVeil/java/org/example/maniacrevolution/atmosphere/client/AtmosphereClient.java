@@ -28,7 +28,6 @@ public final class AtmosphereClient {
     /** No shader profile; the shared fog handler uses its vanilla fallback near plane. */
     public static AtmosphereRules.Profile profile() { return AtmosphereRules.Profile.OFF; }
     public static float cameraCorruption() { return 0; }
-    public static void chase(float ignored) {}
 
     public static boolean hasFogLimit() {
         var mc = Minecraft.getInstance();

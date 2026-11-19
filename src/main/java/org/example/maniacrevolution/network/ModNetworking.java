@@ -617,6 +617,7 @@ public class ModNetworking {
                 .encoder(WardenStaminaPacket::encode).decoder(WardenStaminaPacket::decode)
                 .consumerMainThread(WardenStaminaPacket::handle).add();
 
+        // Keep the retired decoder for compatibility with existing protocol-30 servers; no effect or sender remains.
         CHANNEL.messageBuilder(org.example.maniacrevolution.atmosphere.ChaseStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(org.example.maniacrevolution.atmosphere.ChaseStatePacket::encode)
                 .decoder(org.example.maniacrevolution.atmosphere.ChaseStatePacket::decode)

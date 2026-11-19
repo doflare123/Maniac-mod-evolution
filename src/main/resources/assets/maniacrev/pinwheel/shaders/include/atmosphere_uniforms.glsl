@@ -6,7 +6,6 @@ uniform float Time;
 uniform float Corruption;
 uniform float LightCorruption;
 uniform float Comfort;
-uniform float Pursuit;
 uniform float FogGround;
 uniform float FogDensity;
 uniform float SightFadeStart;

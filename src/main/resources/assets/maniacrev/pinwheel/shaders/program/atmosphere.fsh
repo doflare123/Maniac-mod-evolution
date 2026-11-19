@@ -11,6 +11,7 @@ out vec4 fragColor;
 #include maniacrev:atmosphere_base
 #include maniacrev:atmosphere_lighting
 #include maniacrev:atmosphere_volume
+#include maniacrev:atmosphere_stress
 
 vec4 reconstructedVolume(vec2 uv, vec3 direction, float distance) {
     ivec2 size = textureSize(FogSampler, 0);
@@ -41,19 +42,16 @@ void main() {
         return;
     }
 
-    vec2 centered = texCoord * 2.0 - 1.0;
-    float edge = smoothstep(0.15, 1.2, length(centered));
-    float instability = pow(Corruption, 2.2);
-    float wave = sin(texCoord.y * 29.0 + Time * 1.9) + sin(texCoord.y * 53.0 - Time * 2.7) * 0.4;
-    vec2 uv = clamp(texCoord + vec2(wave, sin(Time * 1.3 + texCoord.x * 14.0))
-                    * 0.0018 * (instability + Fear * 0.4) * edge, vec2(0.001), vec2(0.999));
-    float separation = instability * edge * 2.5 / InSize.x;
+    float edge = stressEdge(texCoord);
+    float instability = sanityInstability();
+    vec2 uv = stressUv(texCoord);
+    float separation = instability * edge * mix(0.5, 2.5, sanityBreath()) / InSize.x;
     vec3 color = vec3(texture(DiffuseSampler0, clamp(uv + vec2(separation, 0), vec2(0), vec2(1))).r,
                       texture(DiffuseSampler0, uv).g,
                       texture(DiffuseSampler0, clamp(uv - vec2(separation, 0), vec2(0), vec2(1))).b);
     vec2 ghostOffset = vec2(sin(Time * 1.7) * 5.0, cos(Time * 2.1)) / InSize;
     vec3 ghost = texture(DiffuseSampler0, clamp(uv + ghostOffset, vec2(0), vec2(1))).rgb;
-    color = mix(color, ghost, instability * edge * 0.16);
+    color = mix(color, ghost, instability * edge * sanityBreath() * 0.12);
 
     float depth = texture(DiffuseDepthSampler, uv).r;
     vec3 viewPosition = viewPosFromDepthSample(depth, uv);
@@ -70,11 +68,8 @@ void main() {
     float transmission = fog.a * visible;
     color = color * transmission + fog.rgb * (1.0 - transmission);
 
-    float heartbeat = pow(0.5 + 0.5 * sin(Time * 8.0), 5.0);
-    float vignette = edge * edge * (0.10 + Corruption * 0.18 + Pursuit * (0.08 + 0.055 * heartbeat));
-    color *= 1.0 - vignette;
-    color += vec3(0.07, 0.007, 0.012) * edge * (Hurt * 0.5 + Pursuit * heartbeat * 0.18);
+    color = stressComposite(color, texCoord);
     float grain = hash(vec3(gl_FragCoord.xy, floor(Time * 18.0))) - 0.5;
-    color += grain * instability * 0.035;
+    color += grain * instability * mix(0.008, 0.020, sanityBreath()) * edge;
     fragColor = vec4(max(color, vec3(0.0)), original.a);
 }

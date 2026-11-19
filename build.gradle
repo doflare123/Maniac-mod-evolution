@@ -154,7 +154,7 @@ dependencies {
 
 tasks.register('verifyAtmosphere', JavaExec) {
     group = 'verification'
-    description = 'Checks atmosphere eligibility and chase acquisition/contact loss.'
+    description = 'Checks atmosphere eligibility, visibility, light transitions and damage pulses.'
     dependsOn tasks.named('testClasses')
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'org.example.maniacrevolution.atmosphere.AtmosphereRulesTest'

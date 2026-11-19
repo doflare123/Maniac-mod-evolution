@@ -10,5 +10,4 @@ public final class AtmosphereClient {
     public static AtmosphereRules.Profile profile() { return AtmosphereRules.Profile.OFF; }
     public static boolean hasFogLimit() { return false; }
     public static float cameraCorruption() { return 0; }
-    public static void chase(float ignored) {}
 }

@@ -22,6 +22,7 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.item.NightmareLighterItem;
 import org.example.maniacrevolution.atmosphere.AtmosphereConfig;
 import org.example.maniacrevolution.atmosphere.AtmosphereRules;
+import org.example.maniacrevolution.atmosphere.ImpactPulse;
 import org.example.maniacrevolution.atmosphere.AtmosphereRules.Profile;
 import org.example.maniacrevolution.character.maniac.WardenClass;
 import org.example.maniacrevolution.data.ClientGameState;
@@ -43,8 +44,9 @@ public final class AtmosphereClient {
     public static final java.util.List<ResourceLocation> PIPELINES = java.util.List.of(PIPELINE, LIGHT_PIPELINE, REDUCED_LIGHT_PIPELINE);
     private static Profile preview;
     private static boolean disabled;
-    private static float previewSanity = 1, previewChase;
-    private static float serverChase, corruption, pursuit;
+    private static float previewSanity = 1;
+    private static float corruption, previousCorruption;
+    private static final ImpactPulse IMPACT = new ImpactPulse();
     private static ClientLevel world;
     private static java.util.UUID playerId;
     private static float fogGround, indoor;
@@ -68,13 +70,11 @@ public final class AtmosphereClient {
         return benchmark == null ? ClientGameSettings.getGraphicsMode() : benchmark;
     }
 
-    public static void chase(float value) {
-        serverChase = AtmosphereRules.clamp(value);
-    }
-
     public static float cameraCorruption() {
         if (AtmosphereBenchmark.forcingProfile()) return 0;
-        return profile() == Profile.SURVIVOR ? corruption : 0;
+        var mc = Minecraft.getInstance();
+        return profile() == Profile.SURVIVOR
+                ? previousCorruption + (corruption - previousCorruption) * (mc.isPaused() ? 1 : mc.getFrameTime()) : 0;
     }
 
     private static boolean viewingWorld() {
@@ -123,10 +123,12 @@ public final class AtmosphereClient {
         }
         if (mc.player == null || mc.level == null || mc.isPaused()) return;
         Profile current = profile();
+        previousCorruption = corruption;
         float sanity = preview != null ? previewSanity : ClientNightmareData.getSanityPercent();
         float target = AtmosphereRules.corruption(current, preview != null || ClientNightmareData.isActive(), sanity);
         corruption += (target - corruption) * 0.12F;
-        pursuit += ((current == Profile.OFF ? 0 : preview != null ? previewChase : serverChase) - pursuit) * 0.2F;
+        if (current == Profile.OFF) IMPACT.reset();
+        else IMPACT.tick(mc.player.hurtTime);
         fogGround += ((float) mc.player.getY() - fogGround) * 0.05F;
         if (mc.player.tickCount % 10 == 0) {
             float roof = mc.level.canSeeSky(mc.player.blockPosition().above()) ? 0 : 1;
@@ -159,19 +161,20 @@ public final class AtmosphereClient {
         if (mc.level == null || mc.player == null) return;
         float time = (mc.level.getGameTime() % 240000 + mc.getFrameTime()) / 20F;
         float comfort = AtmosphereConfig.DISTORTION.get().floatValue();
-        float lightingCorruption = current == Profile.SURVIVOR ? corruption : 0;
+        float partial = mc.isPaused() ? 1 : mc.getFrameTime();
+        float lightingCorruption = current == Profile.SURVIVOR
+                ? previousCorruption + (corruption - previousCorruption) * partial : 0;
         pipeline.setFloat("Active", current == Profile.OFF ? 0 : 1);
         pipeline.setFloat("Time", time);
-        pipeline.setFloat("Corruption", lightingCorruption * comfort);
+        pipeline.setFloat("Corruption", lightingCorruption);
         pipeline.setFloat("LightCorruption", lightingCorruption);
         pipeline.setFloat("Comfort", comfort);
-        pipeline.setFloat("Pursuit", pursuit * comfort);
         pipeline.setFloat("FogGround", fogGround);
-        pipeline.setFloat("FogDensity", 0.055F + lightingCorruption * 0.012F);
+        pipeline.setFloat("FogDensity", 0.055F + lightingCorruption * 0.008F);
         pipeline.setFloat("Indoor", indoor);
         pipeline.setFloat("SightFadeStart", AtmosphereRules.FOG_FADE_START);
         pipeline.setFloat("SightRange", AtmosphereRules.FOG_END);
-        pipeline.setFloat("Hurt", Math.min(1, mc.player.hurtTime / 10F) * comfort);
+        pipeline.setFloat("Hurt", IMPACT.value(partial));
         pipeline.setFloat("Fear", mc.player.hasEffect(ModEffects.FEAR.get()) ? comfort : 0);
         pipeline.setFloat("Plague", mc.player.hasEffect(ModEffects.PLAGUE.get()) ? 1 : 0);
         pipeline.setInt("FogSamples", graphicsMode().fogSamples());
@@ -200,7 +203,8 @@ public final class AtmosphereClient {
         preview = null;
         disabled = testLight = false;
         previewSanity = 1;
-        previewChase = serverChase = corruption = pursuit = indoor = 0;
+        corruption = previousCorruption = indoor = 0;
+        IMPACT.reset();
     }
 
     @SubscribeEvent
@@ -227,7 +231,8 @@ public final class AtmosphereClient {
     public static void commands(RegisterClientCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("mrvisual")
                 .then(Commands.literal("auto").executes(c -> {
-                    preview = null; disabled = false; previewSanity = 1; previewChase = 0;
+                    preview = null; disabled = false; previewSanity = 1;
+                    IMPACT.reset();
                     testLight = false; removeLight();
                     return message("Атмосфера определяется ролью и состоянием матча.");
                 }))
@@ -245,12 +250,11 @@ public final class AtmosphereClient {
                             previewSanity = FloatArgumentType.getFloat(c, "percent") / 100F;
                             return message("Тестовый рассудок: " + Math.round(previewSanity * 100) + "% (серверный рассудок не изменён).");
                         })))
-                .then(Commands.literal("chase").then(Commands.argument("intensity", FloatArgumentType.floatArg(0, 1))
-                        .executes(c -> {
-                            if (preview == null) return message("Сначала /mrvisual preview survivor|maniac|keeper.");
-                            previewChase = FloatArgumentType.getFloat(c, "intensity");
-                            return message("Тестовая погоня: " + previewChase);
-                        })))
+                .then(Commands.literal("hurt").executes(c -> {
+                    if (preview == null) return message("Сначала /mrvisual preview survivor|maniac|keeper.");
+                    IMPACT.trigger();
+                    return message("Тестовый импульс урона (здоровье не изменено).");
+                }))
                 .then(Commands.literal("light").then(Commands.argument("enabled", BoolArgumentType.bool())
                         .executes(c -> {
                             if (BoolArgumentType.getBool(c, "enabled") && !graphicsMode().enabled())
@@ -272,7 +276,7 @@ public final class AtmosphereClient {
                             + ", группы=" + AtmosphereLights.groupCount() + ", секции=" + AtmosphereLights.cachedSections()
                             + ", сканирования=" + AtmosphereLights.sectionScans()
                             + ", обзор=" + (hasFogLimit() ? AtmosphereRules.FOG_END + " блоков" : "обычный")
-                            + ", рассудок=" + Math.round((1 - corruption) * 100) + "%, погоня=" + pursuit);
+                            + ", рассудок=" + Math.round((1 - corruption) * 100) + "%");
                 })));
     }
 }

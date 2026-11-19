@@ -123,7 +123,7 @@ public final class AtmosphereBenchmark {
     static void configureUniforms(PostPipeline pipeline) {
         if (!forcingProfile()) return;
         pipeline.setFloat("Time", 12); pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
-        pipeline.setFloat("Comfort", 1); pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Hurt", 0);
+        pipeline.setFloat("Comfort", 1); pipeline.setFloat("Hurt", 0);
         pipeline.setFloat("Fear", 0); pipeline.setFloat("Plague", 0);
         pipeline.setFloat("FogGround", (float) session.current.point().y());
     }

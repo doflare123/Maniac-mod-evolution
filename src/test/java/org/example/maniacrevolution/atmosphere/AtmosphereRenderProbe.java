@@ -60,14 +60,13 @@ public final class AtmosphereRenderProbe {
             }
             double baseline = 0;
             long commonHash = 0;
-            for (String variant : new String[]{"vanilla", "survivor", "maniac", "keeper", "sanity", "chase", "lamp"}) {
+            for (String variant : new String[]{"vanilla", "survivor", "maniac", "keeper", "sanity", "lamp"}) {
                 scene();
                 pipeline.setFloat("Active", variant.equals("vanilla") ? 0 : 1);
                 pipeline.setFloat("Time", 12.0F);
                 pipeline.setFloat("Corruption", variant.equals("sanity") ? .95F : 0);
                 pipeline.setFloat("LightCorruption", variant.equals("sanity") ? .95F : 0);
                 pipeline.setFloat("Comfort", 1);
-                pipeline.setFloat("Pursuit", variant.equals("chase") ? 1 : 0);
                 pipeline.setFloat("FogGround", 0);
                 pipeline.setFloat("FogDensity", .055F);
                 pipeline.setFloat("SightFadeStart", AtmosphereRules.FOG_FADE_START);
@@ -140,6 +139,7 @@ public final class AtmosphereRenderProbe {
                 haloContinuityChecks(manager);
                 Maniacrev.LOGGER.info("Light pipeline regression PASSED: {}", lightName);
             }
+            stressChecks(manager);
             org.example.maniacrevolution.settings.SettingsGraphicsProbe.run();
             Maniacrev.LOGGER.info("Atmosphere render probe PASSED: common base, four graphics modes, warm lighting, sanity, depth occlusion, visibility range, settings menu");
         } catch (Exception | AssertionError error) {
@@ -153,6 +153,59 @@ public final class AtmosphereRenderProbe {
         }
     }
 
+    private record StressFrame(long hash, int center) {}
+
+    /** Exercise the final composition over the actual fog/light scene in all three pipelines. */
+    private static void stressChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        var mc = Minecraft.getInstance();
+        for (var id : AtmosphereClient.PIPELINES) {
+            var pipeline = manager.getPipeline(id);
+            if (pipeline == null || !pipeline.hasUniform("Hurt") || pipeline.hasUniform("Pursuit"))
+                throw new AssertionError("Stress shader failed to compile: " + id);
+            pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12); pipeline.setFloat("Comfort", 1);
+            pipeline.setFloat("Fear", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("FogGround", 0); pipeline.setFloat("Indoor", 0);
+            pipeline.setFloat("SightFadeStart", 18); pipeline.setFloat("SightRange", 28);
+            pipeline.setInt("FogSamples", 12); pipeline.setFloat("SurfaceLight", 1);
+            source(pipeline, true);
+            StressFrame healthy = null;
+            for (String state : new String[]{"healthy", "sanity75", "sanity35", "sanity5", "hurt", "combined"}) {
+                float corruption = switch (state) {
+                    case "sanity75" -> .25F;
+                    case "sanity35" -> .65F;
+                    case "sanity5", "combined" -> .95F;
+                    default -> 0;
+                };
+                float hurt = state.equals("hurt") || state.equals("combined") ? 1 : 0;
+                pipeline.setFloat("Corruption", corruption); pipeline.setFloat("LightCorruption", corruption);
+                pipeline.setFloat("Hurt", hurt);
+                pipeline.setFloat("FogDensity", .055F + corruption * .008F);
+                scene(); manager.runPipeline(pipeline);
+                try (var image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
+                    long hash = 1;
+                    for (int y = 0; y < image.getHeight(); y += 5) for (int x = 0; x < image.getWidth(); x += 5)
+                        hash = hash * 31 + image.getPixelRGBA(x, y);
+                    var frame = new StressFrame(hash,
+                            brightness(image.getPixelRGBA(image.getWidth() / 2, image.getHeight() / 2)));
+                    if (healthy == null) healthy = frame;
+                    else {
+                        if (frame.hash == healthy.hash) throw new AssertionError("Missing stress state: " + id + "/" + state);
+                        if (state.equals("hurt")) {
+                            if (Math.abs(frame.center - healthy.center) > 3)
+                                throw new AssertionError("Transient effect obscures central view: " + id + "/" + state);
+                        }
+                        if (state.equals("combined") && frame.center < healthy.center * .25)
+                            throw new AssertionError("Combined states destroy readability: " + id);
+                    }
+                    image.writeToFile(mc.gameDirectory.toPath().resolve("stress-" + id.getPath() + "-" + state + ".png"));
+                }
+            }
+            Maniacrev.LOGGER.info("Atmosphere stress PASSED: sanity stages, hurt, combined, readable center, no pursuit uniform: {}", id);
+            pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
+            pipeline.setFloat("Hurt", 0);
+        }
+    }
+
     private static void graphicsModes(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
         var light = manager.getPipeline(lightPipeline);
         if (light == null || !light.hasUniform("FogDensity")) throw new AssertionError("Light shader did not compile");
@@ -162,7 +215,7 @@ public final class AtmosphereRenderProbe {
             var pipeline = manager.getPipeline(mode == org.example.maniacrevolution.settings.GraphicsMode.LIGHT
                     ? lightPipeline : AtmosphereClient.PIPELINE);
             pipeline.setFloat("Active", mode.enabled() ? 1 : 0);
-            pipeline.setFloat("Time", 12); pipeline.setFloat("Corruption", 0); pipeline.setFloat("Pursuit", 0);
+            pipeline.setFloat("Time", 12); pipeline.setFloat("Corruption", 0);
             pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
             pipeline.setFloat("FogGround", 0); pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("Indoor", 0);
             pipeline.setFloat("SightFadeStart", AtmosphereRules.FOG_FADE_START);
@@ -185,7 +238,7 @@ public final class AtmosphereRenderProbe {
     /** A white source and black source at the same point must become indistinguishable. */
     private static void visibilityChecks(foundry.veil.api.client.render.post.PostProcessingManager manager,
                                          foundry.veil.api.client.render.post.PostPipeline pipeline) throws java.io.IOException {
-        pipeline.setFloat("Active", 1); pipeline.setFloat("Corruption", 0); pipeline.setFloat("Pursuit", 0);
+        pipeline.setFloat("Active", 1); pipeline.setFloat("Corruption", 0);
         pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
         pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
         source(pipeline, false); pipeline.setFloat("FogDensity", .055F);
@@ -242,7 +295,7 @@ public final class AtmosphereRenderProbe {
         for (var pipeline : new foundry.veil.api.client.render.post.PostPipeline[]{light, volume}) {
             if (!pipeline.hasUniform("LightCorruption")) throw new AssertionError("Sanity lighting uniform missing");
             pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
-            pipeline.setFloat("Corruption", 0); pipeline.setFloat("Pursuit", 0);
+            pipeline.setFloat("Corruption", 0);
             pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
             pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
             pipeline.setFloat("FogGround", -20); pipeline.setFloat("Indoor", 1); pipeline.setFloat("FogDensity", .055F);
@@ -333,7 +386,7 @@ public final class AtmosphereRenderProbe {
             var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : lightPipeline);
             pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
             pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
-            pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("Hurt", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Plague", 0);
             pipeline.setFloat("FogDensity", 0); pipeline.setFloat("SurfaceLight", 0);
             pipeline.setInt("FogSamples", mode.fogSamples());
             source(pipeline, false);
@@ -373,7 +426,7 @@ public final class AtmosphereRenderProbe {
         var pipeline = manager.getPipeline(AtmosphereClient.PIPELINE);
         pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
         pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
-        pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+        pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
         pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("FogGround", -20); pipeline.setFloat("Indoor", 1);
         pipeline.setInt("FogSamples", 24); source(pipeline, true);
         var sourcePosition = new org.joml.Vector4f[]{new org.joml.Vector4f(.5F, .5F, -6, 8)};
@@ -419,7 +472,7 @@ public final class AtmosphereRenderProbe {
             var pipeline = manager.getPipeline(mode.volumetric() ? AtmosphereClient.PIPELINE : lightPipeline);
             pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
             pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
-            pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
             pipeline.setFloat("FogDensity", 0); pipeline.setInt("FogSamples", mode.fogSamples());
             pipeline.setFloat("SightFadeStart", 18); pipeline.setFloat("SightRange", 28);
             source(pipeline, false);
@@ -453,7 +506,7 @@ public final class AtmosphereRenderProbe {
             source(pipeline, false);
             pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
             pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
-            pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
             pipeline.setFloat("FogDensity", 0); pipeline.setFloat("SurfaceLight", 1); pipeline.setFloat("ContactShadows", 0);
             int[] unlit = rowPixels(manager, pipeline);
             var points = new org.joml.Vector4f[4];
@@ -499,7 +552,7 @@ public final class AtmosphereRenderProbe {
         camera.update(RenderSystem.getProjectionMatrix(), rotation, new Vector3f(0, 2, 4), .05F, 160);
         pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
         pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0); pipeline.setFloat("Comfort", 1);
-        pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+        pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
         pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("FogGround", -20); pipeline.setFloat("Indoor", 1);
         pipeline.setInt("FogSamples", 24);
         source(pipeline, false);
@@ -586,7 +639,7 @@ public final class AtmosphereRenderProbe {
             source(pipeline, false);
             pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
             pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
-            pipeline.setFloat("Fear", 0); pipeline.setFloat("Pursuit", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("Fear", 0); pipeline.setFloat("Hurt", 0); pipeline.setFloat("Plague", 0);
             pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("FogGround", -20); pipeline.setFloat("Indoor", 1);
             pipeline.setFloat("SurfaceLight", 1); pipeline.setFloat("ContactShadows", 0);
             pipeline.setInt("FogSamples", mode.fogSamples()); pipeline.setInt("LightSamples", mode.lightSamples());

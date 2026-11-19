@@ -41,7 +41,7 @@ final class AtmosphereLightPerformanceProbe {
                     if (pipeline == null || !pipeline.hasUniform("FogDensity")) throw new AssertionError("Shader failed to compile: " + mode);
                     pipeline.setFloat("Active", 1); pipeline.setFloat("Time", 12);
                     pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
-                    pipeline.setFloat("Comfort", 1); pipeline.setFloat("Pursuit", 0);
+                    pipeline.setFloat("Comfort", 1);
                     pipeline.setFloat("FogGround", 0); pipeline.setFloat("FogDensity", .055F);
                     pipeline.setFloat("SightFadeStart", AtmosphereRules.FOG_FADE_START);
                     pipeline.setFloat("SightRange", AtmosphereRules.FOG_END);
