@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "30";
+    private static final String PROTOCOL_VERSION = "31";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -617,11 +617,15 @@ public class ModNetworking {
                 .encoder(WardenStaminaPacket::encode).decoder(WardenStaminaPacket::decode)
                 .consumerMainThread(WardenStaminaPacket::handle).add();
 
-        // Keep the retired decoder for compatibility with existing protocol-30 servers; no effect or sender remains.
+        // Preserve the retired message's ID; no effect or sender remains.
         CHANNEL.messageBuilder(org.example.maniacrevolution.atmosphere.ChaseStatePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(org.example.maniacrevolution.atmosphere.ChaseStatePacket::encode)
                 .decoder(org.example.maniacrevolution.atmosphere.ChaseStatePacket::decode)
                 .consumerMainThread(org.example.maniacrevolution.atmosphere.ChaseStatePacket::handle).add();
+
+        CHANNEL.messageBuilder(KeeperVisionPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(KeeperVisionPacket::encode).decoder(KeeperVisionPacket::decode)
+                .consumerMainThread(KeeperVisionPacket::handle).add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }

@@ -123,6 +123,7 @@ public final class AtmosphereClient {
         }
         if (mc.player == null || mc.level == null || mc.isPaused()) return;
         Profile current = profile();
+        KeeperVisionClient.tick(current == Profile.KEEPER, preview == Profile.KEEPER);
         previousCorruption = corruption;
         float sanity = preview != null ? previewSanity : ClientNightmareData.getSanityPercent();
         float target = AtmosphereRules.corruption(current, preview != null || ClientNightmareData.isActive(), sanity);
@@ -177,6 +178,7 @@ public final class AtmosphereClient {
         pipeline.setFloat("Hurt", IMPACT.value(partial));
         pipeline.setFloat("Fear", mc.player.hasEffect(ModEffects.FEAR.get()) ? comfort : 0);
         pipeline.setFloat("Plague", mc.player.hasEffect(ModEffects.PLAGUE.get()) ? 1 : 0);
+        KeeperVisionClient.upload(pipeline, current == Profile.KEEPER, preview == Profile.KEEPER, partial);
         pipeline.setInt("FogSamples", graphicsMode().fogSamples());
         Vec3 light = testLight ? lampPosition : holdingBurningLighter()
                 ? mc.player.getEyePosition(mc.getFrameTime()).add(0, -0.3, 0) : null;
@@ -205,6 +207,7 @@ public final class AtmosphereClient {
         previewSanity = 1;
         corruption = previousCorruption = indoor = 0;
         IMPACT.reset();
+        KeeperVisionClient.reset();
     }
 
     @SubscribeEvent
@@ -222,6 +225,7 @@ public final class AtmosphereClient {
     }
 
     private static int preview(Profile value) {
+        KeeperVisionClient.clearPreview();
         preview = value;
         disabled = false;
         return message("Атмосфера: " + value + ". Просмотр работает в survival/adventure; /mrvisual auto — вернуть матч.");
@@ -233,6 +237,7 @@ public final class AtmosphereClient {
                 .then(Commands.literal("auto").executes(c -> {
                     preview = null; disabled = false; previewSanity = 1;
                     IMPACT.reset();
+                    KeeperVisionClient.clearPreview();
                     testLight = false; removeLight();
                     return message("Атмосфера определяется ролью и состоянием матча.");
                 }))
@@ -255,6 +260,23 @@ public final class AtmosphereClient {
                     IMPACT.trigger();
                     return message("Тестовый импульс урона (здоровье не изменено).");
                 }))
+                .then(Commands.literal("soul")
+                        .then(Commands.literal("off").executes(c -> {
+                            KeeperVisionClient.clearPreview();
+                            return message("Тестовая душа убрана.");
+                        }))
+                        .then(Commands.argument("percent", FloatArgumentType.floatArg(0, 100)).executes(c -> {
+                            if (preview != Profile.KEEPER) return message("Сначала /mrvisual preview keeper.");
+                            KeeperVisionClient.previewSoul(FloatArgumentType.getFloat(c, "percent") / 100F);
+                            return message("Тестовая душа закреплена в мире; рассудок="
+                                    + Math.round(FloatArgumentType.getFloat(c, "percent")) + "%. /mrvisual soul off — убрать.");
+                        })))
+                .then(Commands.literal("feeding").then(Commands.argument("enabled", BoolArgumentType.bool()).executes(c -> {
+                    if (preview != Profile.KEEPER) return message("Сначала /mrvisual preview keeper и /mrvisual soul 100.");
+                    boolean enabled = BoolArgumentType.getBool(c, "enabled");
+                    KeeperVisionClient.previewFeeding(enabled);
+                    return message(enabled ? "Тестовое питание включено." : "Тестовое питание затухает.");
+                })))
                 .then(Commands.literal("light").then(Commands.argument("enabled", BoolArgumentType.bool())
                         .executes(c -> {
                             if (BoolArgumentType.getBool(c, "enabled") && !graphicsMode().enabled())

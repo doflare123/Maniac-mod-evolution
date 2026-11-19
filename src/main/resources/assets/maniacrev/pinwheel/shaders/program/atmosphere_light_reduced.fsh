@@ -8,6 +8,7 @@ out vec4 fragColor;
 #include maniacrev:atmosphere_lighting
 #include maniacrev:atmosphere_light_reconstruction
 #include maniacrev:atmosphere_stress
+#include maniacrev:atmosphere_keeper
 
 // Same LIGHT composition, with only scattered lamp light reconstructed from the smaller buffer.
 void main() {
@@ -27,6 +28,7 @@ void main() {
     float homogeneousOpacity = 1.0 - exp(-FogDensity * max(0.0, min(distance, SightRange) - 1.5));
     haze += reconstructedLightFog(uv, direction, distance) / max(homogeneousOpacity, 0.00001);
     color = color * transmission + haze * (1.0 - transmission);
+    color = keeperComposite(color, direction, depth >= 0.999999 ? 100000.0 : length(viewPosition));
     color = stressComposite(color, texCoord);
     fragColor = vec4(max(color, vec3(0.0)), source.a);
 }

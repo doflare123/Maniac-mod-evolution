@@ -76,7 +76,7 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 if (!withVeil) {
     def atmosphereRoot = 'src/main/java/org/example/maniacrevolution/atmosphere'
-    def veilOnlyFiles = ['AtmosphereClient', 'AtmosphereLights', 'AtmosphereBenchmark',
+    def veilOnlyFiles = ['AtmosphereClient', 'AtmosphereLights', 'AtmosphereBenchmark', 'KeeperVisionClient',
                          'VeilRenderControl', 'BenchmarkReport'].collect {
         file("${atmosphereRoot}/client/${it}.java")
     } as Set

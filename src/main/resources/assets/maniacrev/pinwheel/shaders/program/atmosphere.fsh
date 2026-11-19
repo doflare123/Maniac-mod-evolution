@@ -12,6 +12,7 @@ out vec4 fragColor;
 #include maniacrev:atmosphere_lighting
 #include maniacrev:atmosphere_volume
 #include maniacrev:atmosphere_stress
+#include maniacrev:atmosphere_keeper
 
 vec4 reconstructedVolume(vec2 uv, vec3 direction, float distance) {
     ivec2 size = textureSize(FogSampler, 0);
@@ -68,6 +69,7 @@ void main() {
     float transmission = fog.a * visible;
     color = color * transmission + fog.rgb * (1.0 - transmission);
 
+    color = keeperComposite(color, direction, depth >= 0.999999 ? 100000.0 : length(viewPosition));
     color = stressComposite(color, texCoord);
     float grain = hash(vec3(gl_FragCoord.xy, floor(Time * 18.0))) - 0.5;
     color += grain * instability * mix(0.008, 0.020, sanityBreath()) * edge;

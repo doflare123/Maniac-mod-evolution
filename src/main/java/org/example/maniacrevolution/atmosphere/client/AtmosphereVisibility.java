@@ -40,9 +40,10 @@ public final class AtmosphereVisibility {
         if (!AtmosphereClient.hasFogLimit() || event.getCamera().getFluidInCamera() != FogType.NONE
                 || mc.player.hasEffect(MobEffects.BLINDNESS) || mc.player.hasEffect(MobEffects.DARKNESS)
                 || mc.player.hasEffect(ModEffects.FORESTER_BLIND.get())) return;
-        event.setRed(0.19F);
-        event.setGreen(0.215F);
-        event.setBlue(0.205F);
+        boolean keeper = AtmosphereClient.profile() == AtmosphereRules.Profile.KEEPER;
+        event.setRed(keeper ? 0.163F : 0.19F);
+        event.setGreen(keeper ? 0.177F : 0.215F);
+        event.setBlue(keeper ? 0.218F : 0.205F);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

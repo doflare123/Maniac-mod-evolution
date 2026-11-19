@@ -76,6 +76,8 @@ public final class AtmosphereRenderProbe {
                 pipeline.setFloat("Hurt", 0);
                 pipeline.setFloat("Fear", 0);
                 pipeline.setFloat("Plague", 0);
+                pipeline.setFloat("Keeper", variant.equals("keeper") ? 1 : 0);
+                pipeline.setInt("SoulCount", 0);
                 source(pipeline, variant.equals("lamp"));
                 pipeline.setFloat("SurfaceLight", variant.equals("lamp") ? 1 : 0);
                 manager.runPipeline(pipeline);
@@ -91,9 +93,11 @@ public final class AtmosphereRenderProbe {
                     if (variant.equals("vanilla")) baseline = sum;
                     else if (Math.abs(sum - baseline) < 100) throw new AssertionError("Effect missing: " + variant);
                     if (variant.equals("survivor")) commonHash = hash;
-                    if ((variant.equals("maniac") || variant.equals("keeper")) && hash != commonHash)
+                    if (variant.equals("maniac") && hash != commonHash)
                         throw new AssertionError("Roles do not share the same base: " + variant);
-                    if (!variant.equals("vanilla")) {
+                    if (variant.equals("keeper") && hash == commonHash)
+                        throw new AssertionError("Keeper palette missing");
+                    if (!variant.equals("vanilla") && !variant.equals("keeper")) {
                         int light = image.getPixelRGBA(image.getWidth() / 2, image.getHeight() / 2);
                         int red = light & 255, green = light >> 8 & 255, blue = light >> 16 & 255;
                         if (red <= green || green <= blue + (variant.equals("sanity") ? 0 : 15))
@@ -103,6 +107,7 @@ public final class AtmosphereRenderProbe {
                     Maniacrev.LOGGER.info("Atmosphere render probe {}: luminance sum {}", variant, sum);
                 }
             }
+            pipeline.setFloat("Keeper", 0);
             // Equal source colors/depth, symmetric screen positions: the lower sample
             // must encounter a fog bank instead of both receiving the same tint.
             var target = mc.getMainRenderTarget();
@@ -140,8 +145,9 @@ public final class AtmosphereRenderProbe {
                 Maniacrev.LOGGER.info("Light pipeline regression PASSED: {}", lightName);
             }
             stressChecks(manager);
+            keeperChecks(manager);
             org.example.maniacrevolution.settings.SettingsGraphicsProbe.run();
-            Maniacrev.LOGGER.info("Atmosphere render probe PASSED: common base, four graphics modes, warm lighting, sanity, depth occlusion, visibility range, settings menu");
+            Maniacrev.LOGGER.info("Atmosphere render probe PASSED: common base, keeper souls, four graphics modes, warm lighting, sanity, depth occlusion, visibility range, settings menu");
         } catch (Exception | AssertionError error) {
             Maniacrev.LOGGER.error("Atmosphere render probe FAILED", error);
         } finally {
@@ -154,6 +160,94 @@ public final class AtmosphereRenderProbe {
     }
 
     private record StressFrame(long hash, int center) {}
+
+    private static void keeperChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        var mc = Minecraft.getInstance();
+        for (var id : AtmosphereClient.PIPELINES) {
+            var pipeline = manager.getPipeline(id);
+            if (!pipeline.hasUniform("Keeper") || !pipeline.hasUniform("SoulCenterSanity"))
+                throw new AssertionError("Keeper shader failed to compile: " + id);
+            pipeline.setFloat("Active", 1); pipeline.setFloat("Keeper", 1);
+            pipeline.setFloat("Time", 12); pipeline.setFloat("Comfort", 1);
+            pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
+            pipeline.setFloat("Hurt", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("FogGround", 0); pipeline.setFloat("Indoor", 0);
+            pipeline.setFloat("SightFadeStart", 18); pipeline.setFloat("SightRange", 28);
+            pipeline.setInt("FogSamples", 12); source(pipeline, false); pipeline.setFloat("SurfaceLight", 0);
+            int hidden = keeperFrame(manager, pipeline, 0, 1, 0, 80, null);
+            for (int distance : new int[]{6, 28, 32, 38}) {
+                int visible = keeperFrame(manager, pipeline, distance, 1, 0, 80,
+                        "keeper-" + id.getPath() + "-soul-" + distance);
+                if (brightness(visible) <= brightness(hidden) + (distance == 38 ? 8 : 30))
+                    throw new AssertionError("Soul lost in fog at " + distance + ": " + id);
+            }
+            int wall = keeperFrame(manager, pipeline, 0, 1, 0, 6, null);
+            int blocked = keeperFrame(manager, pipeline, 32, 1, 1, 6,
+                    "keeper-" + id.getPath() + "-wall");
+            if (blocked != wall) throw new AssertionError("Soul leaks through a wall: " + id);
+            int outOfRange = keeperFrame(manager, pipeline, 41, 1, 0, 80, null);
+            if (outOfRange != hidden) throw new AssertionError("Soul exceeds gaze range: " + id);
+            int healthy = keeperFrame(manager, pipeline, 6, 1, 0, 80, null);
+            int previousBrightness = brightness(healthy);
+            for (int sanity : new int[]{100, 75, 50, 20, 0}) {
+                int soul = keeperFrame(manager, pipeline, 6, sanity / 100F, 0, 80,
+                        "keeper-" + id.getPath() + "-sanity-" + sanity);
+                if (brightness(soul) > previousBrightness)
+                    throw new AssertionError("Soul becomes brighter as sanity falls: " + id + "/" + sanity);
+                if (sanity <= 20 && ((soul >> 16 & 255) <= (soul & 255) + 15
+                        || (soul & 255) <= (soul >> 8 & 255) + 15))
+                    throw new AssertionError("Exhausted soul is not violet: " + id + "/" + sanity);
+                previousBrightness = brightness(soul);
+            }
+            int broken = keeperFrame(manager, pipeline, 6, .08F, 1, 80,
+                    "keeper-" + id.getPath() + "-feeding");
+            if (healthy == broken) throw new AssertionError("Feeding/exhaustion has no visible response: " + id);
+            int skin = keeperFrame(manager, pipeline, 0, .08F, 0, 5.86F, null);
+            int internal = keeperFrame(manager, pipeline, 6, .08F, 1, 5.86F,
+                    "keeper-" + id.getPath() + "-inside-model");
+            if (brightness(internal) <= brightness(skin) + 60)
+                throw new AssertionError("The player's own surface hides the inner core: " + id);
+            pipeline.setFloat("Comfort", 0); pipeline.setFloat("FogDensity", 0);
+            int stable = keeperFrame(manager, pipeline, 6, .35F, 1, 80, null);
+            pipeline.setFloat("Time", 27);
+            if (keeperFrame(manager, pipeline, 6, .35F, 1, 80, null) != stable)
+                throw new AssertionError("Comfort=0 leaves soul pulses active: " + id);
+            pipeline.setFloat("Comfort", 1); pipeline.setFloat("Time", 12);
+            pipeline.setFloat("Keeper", 0);
+            int otherRole = keeperFrame(manager, pipeline, 6, 1, 1, 80, null);
+            int otherRoleEmpty = keeperFrame(manager, pipeline, 0, 1, 0, 80, null);
+            if (otherRole != otherRoleEmpty) throw new AssertionError("Souls leaked into another role: " + id);
+            pipeline.setInt("SoulCount", 0);
+            Maniacrev.LOGGER.info("Keeper vision PASSED: palette, sanity white-to-violet, 6/28/32/38 blocks, wall, 40-block cap, feeding, role isolation: {}", id);
+        }
+    }
+
+    private static int keeperFrame(foundry.veil.api.client.render.post.PostProcessingManager manager,
+                                   foundry.veil.api.client.render.post.PostPipeline pipeline,
+                                   float distance, float sanity, float feeding, float wall, String filename) throws Exception {
+        var mc = Minecraft.getInstance();
+        var target = mc.getMainRenderTarget();
+        target.clear(Minecraft.ON_OSX); target.bindWrite(true);
+        RenderSystem.enableDepthTest(); RenderSystem.depthMask(true);
+        RenderSystem.disableCull(); RenderSystem.disableBlend();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        var b = Tesselator.getInstance().getBuilder();
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        quad(b, -100, -100, -wall, 100, -100, -wall, 100, 100, -wall, -100, 100, -wall, .4F, .4F, .4F);
+        BufferUploader.drawWithShader(b.end());
+        var centers = new org.joml.Vector4f[16];
+        var shapes = new org.joml.Vector4f[16];
+        for (int i = 0; i < 16; i++) { centers[i] = new org.joml.Vector4f(); shapes[i] = new org.joml.Vector4f(); }
+        centers[0].set(0, 0, -distance, sanity);
+        shapes[0].set(.25F, .56F, feeding, .37F);
+        pipeline.setInt("SoulCount", distance > 0 ? 1 : 0);
+        pipeline.setVectors("SoulCenterSanity", centers); pipeline.setVectors("SoulShape", shapes);
+        manager.runPipeline(pipeline);
+        try (var image = Screenshot.takeScreenshot(target)) {
+            if (filename != null) image.writeToFile(mc.gameDirectory.toPath().resolve(filename + ".png"));
+            return image.getPixelRGBA(image.getWidth() / 2, image.getHeight() / 2);
+        }
+    }
 
     /** Exercise the final composition over the actual fog/light scene in all three pipelines. */
     private static void stressChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
