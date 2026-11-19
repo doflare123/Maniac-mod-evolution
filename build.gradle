@@ -7,6 +7,14 @@ plugins {
 
 group = mod_group_id
 version = mod_version
+def withVeilProperty = providers.gradleProperty('withVeil').getOrElse('true')
+if (!(withVeilProperty in ['true', 'false'])) {
+    throw new GradleException('withVeil must be true or false')
+}
+def withVeil = withVeilProperty == 'true'
+def graphicsVariant = withVeil ? 'veil' : 'no-veil'
+// Keep the existing development output for Veil tools; isolate all no-Veil intermediates.
+if (!withVeil) layout.buildDirectory = layout.projectDirectory.dir('build/no-veil')
 def statsVersion = providers.gradleProperty('mod_stats_version').get()
 if (!(statsVersion ==~ /[A-Za-z0-9][A-Za-z0-9_.-]{0,95}/)) {
     throw new GradleException('mod_stats_version must contain 1-96 letters, digits, dots, underscores or hyphens')
@@ -30,9 +38,11 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            args '--mixin.config', 'maniacrev.veil-development.mixins.json'
+            if (withVeil) {
+                property 'mixin.env.remapRefMap', 'true'
+                property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+                args '--mixin.config', 'maniacrev.veil-development.mixins.json'
+            }
 
             mods {
                 "${mod_id}" {
@@ -64,6 +74,36 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+if (!withVeil) {
+    def atmosphereRoot = 'src/main/java/org/example/maniacrevolution/atmosphere'
+    def veilOnlyFiles = ['AtmosphereClient', 'AtmosphereLights', 'AtmosphereBenchmark',
+                         'VeilRenderControl', 'BenchmarkReport'].collect {
+        file("${atmosphereRoot}/client/${it}.java")
+    } as Set
+    def mixinRoot = file("${atmosphereRoot}/mixin").toPath()
+    def compatRoot = file("${atmosphereRoot}/compat").toPath()
+    sourceSets.main.java {
+        srcDir 'src/noVeil/java'
+        // Filter only the original adapter; the replacement keeps the shared gameplay hooks.
+        exclude { details ->
+            veilOnlyFiles.contains(details.file) || details.file.toPath().startsWith(mixinRoot)
+                    || details.file.toPath().startsWith(compatRoot)
+        }
+    }
+    sourceSets.main.resources {
+        exclude 'assets/maniacrev/pinwheel/**', 'maniacrev.veil-development.mixins.json'
+    }
+    sourceSets.test.java {
+        // These probes exercise Veil APIs and cannot run in a client without the library.
+        exclude 'org/example/maniacrevolution/atmosphere/AtmosphereRenderProbe.java',
+                'org/example/maniacrevolution/atmosphere/AtmospherePerformanceProbe.java',
+                'org/example/maniacrevolution/atmosphere/AtmosphereLightPerformanceProbe.java',
+                'org/example/maniacrevolution/atmosphere/client/AtmosphereMapPerformanceProbe.java',
+                'org/example/maniacrevolution/atmosphere/client/AtmosphereWorldProbe.java',
+                'org/example/maniacrevolution/atmosphere/client/PortableBenchmarkSmoke.java'
+    }
+}
+
 configurations {
     veilLibraries
     implementation.extendsFrom veilLibraries
@@ -92,22 +132,24 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.4.7')
-    // The full 1.20.1 Maven JAR embeds LWJGL core and conflicts with Forge's modules.
-    // Use the author's slim artifact and resolve its runtime libraries separately.
-    implementation(fg.deobf("foundry.veil:Veil-forge-${minecraft_version}:${veil_version}:slim")) {
-        transitive = false
+    if (withVeil) {
+        // The full 1.20.1 Maven JAR embeds LWJGL core and conflicts with Forge's modules.
+        // Use the author's slim artifact and resolve its runtime libraries separately.
+        implementation(fg.deobf("foundry.veil:Veil-forge-${minecraft_version}:${veil_version}:slim")) {
+            transitive = false
+        }
+        veilLibraries('gg.moonflower:molang-compiler:3.1.1.19') {
+            exclude group: 'org.ow2.asm' // Forge already provides ASM.
+        }
+        veilLibraries 'io.github.spair:imgui-java-binding:1.86.11'
+        veilLibraries('io.github.spair:imgui-java-lwjgl3:1.86.11') { exclude group: 'org.lwjgl' }
+        def veilOs = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+        def veilNative = veilOs.contains('win') ? 'windows' : veilOs.contains('mac') ? 'macos' : 'linux'
+        veilLibraries "io.github.spair:imgui-java-natives-${veilNative == 'macos' ? 'macos-ft' : veilNative}:1.86.11"
+        veilLibraries('org.lwjgl:lwjgl-opencl:3.3.1') { transitive = false }
+        veilLibraries('org.lwjgl:lwjgl-shaderc:3.3.1') { transitive = false }
+        veilLibraries("org.lwjgl:lwjgl-shaderc:3.3.1:natives-${veilNative}") { transitive = false }
     }
-    veilLibraries('gg.moonflower:molang-compiler:3.1.1.19') {
-        exclude group: 'org.ow2.asm' // Forge already provides ASM.
-    }
-    veilLibraries 'io.github.spair:imgui-java-binding:1.86.11'
-    veilLibraries('io.github.spair:imgui-java-lwjgl3:1.86.11') { exclude group: 'org.lwjgl' }
-    def veilOs = System.getProperty('os.name').toLowerCase(Locale.ROOT)
-    def veilNative = veilOs.contains('win') ? 'windows' : veilOs.contains('mac') ? 'macos' : 'linux'
-    veilLibraries "io.github.spair:imgui-java-natives-${veilNative == 'macos' ? 'macos-ft' : veilNative}:1.86.11"
-    veilLibraries('org.lwjgl:lwjgl-opencl:3.3.1') { transitive = false }
-    veilLibraries('org.lwjgl:lwjgl-shaderc:3.3.1') { transitive = false }
-    veilLibraries("org.lwjgl:lwjgl-shaderc:3.3.1:natives-${veilNative}") { transitive = false }
 }
 
 tasks.register('verifyAtmosphere', JavaExec) {
@@ -154,6 +196,13 @@ tasks.named('processResources', ProcessResources).configure {
             mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
             mod_authors: mod_authors, mod_description: mod_description,
             mod_stats_version: statsVersion,
+            veil_dependency: withVeil ? """[[dependencies."${mod_id}"]]
+   modId="veil"
+   mandatory=true
+   versionRange="[1.0.0,1.0.1)"
+   ordering="AFTER"
+   side="CLIENT"
+""" : '',
     ]
     inputs.properties replaceProperties
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta', 'mod-stats-version.properties']) {
@@ -245,6 +294,8 @@ tasks.register('verifyEngineer', JavaExec) {
 // ──────────────────────────────────────────────────────────────────
 
 tasks.named('jar', Jar).configure {
+    archiveClassifier = graphicsVariant
+    destinationDirectory = layout.projectDirectory.dir('build/libs')
     manifest {
         attributes([
                 "Specification-Title": mod_id,
@@ -252,12 +303,69 @@ tasks.named('jar', Jar).configure {
                 "Specification-Version": "1",
                 "Implementation-Title": project.name,
                 "Implementation-Version": project.jar.archiveVersion,
-                "MixinConfigs": "maniacrev.veil-development.mixins.json",
                 "Implementation-Vendor": mod_authors,
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
+        if (withVeil) attributes('MixinConfigs': 'maniacrev.veil-development.mixins.json')
     }
     finalizedBy 'reobfJar'
+}
+
+tasks.register('verifyVeilVariant') {
+    group = 'verification'
+    description = 'Checks the reobfuscated graphics variant JAR and its runtime dependencies.'
+    dependsOn tasks.named('reobfJar')
+    doLast {
+        def artifact = tasks.named('jar', Jar).get().archiveFile.get().asFile
+        new java.util.jar.JarFile(artifact).withCloseable { jarFile ->
+            def entries = jarFile.entries().toList()
+            def names = entries.collect { it.name }
+            def textOf = { name -> jarFile.getInputStream(jarFile.getJarEntry(name)).getText('UTF-8') }
+            def hasVeilDependency = textOf('META-INF/mods.toml').contains('modId="veil"')
+            def hasMixinConfig = names.contains('maniacrev.veil-development.mixins.json')
+            def hasMixinManifest = jarFile.manifest.mainAttributes.getValue('MixinConfigs') != null
+            def hasShaders = names.any { it.startsWith('assets/maniacrev/pinwheel/') }
+            if ([hasVeilDependency, hasMixinConfig, hasMixinManifest, hasShaders].any { it != withVeil }) {
+                throw new GradleException("Incorrect metadata/resources for ${graphicsVariant}: ${artifact}")
+            }
+            def clientRoot = 'org/example/maniacrevolution/atmosphere/client/'
+            ['AtmosphereLights', 'AtmosphereBenchmark', 'VeilRenderControl', 'BenchmarkReport'].each { name ->
+                if (names.contains("${clientRoot}${name}.class".toString()) != withVeil) {
+                    throw new GradleException("Unexpected ${name} presence in ${graphicsVariant}")
+                }
+            }
+            if (!names.contains("${clientRoot}AtmosphereClient.class".toString())
+                    || !names.contains("${clientRoot}AtmosphereVisibility.class".toString())) {
+                throw new GradleException('Missing atmosphere adapter or shared vanilla fog handler')
+            }
+            if (!withVeil) {
+                if (names.any { it.startsWith('org/example/maniacrevolution/atmosphere/mixin/')
+                        || it.startsWith('org/example/maniacrevolution/atmosphere/compat/') }) {
+                    throw new GradleException('Veil mixins or bootstrap leaked into no-veil JAR')
+                }
+                entries.findAll { it.name.endsWith('.class') }.each { entry ->
+                    def bytecode = jarFile.getInputStream(entry).getText('ISO-8859-1')
+                    if (bytecode.contains('foundry/veil/') || bytecode.contains('foundry.veil.')) {
+                        throw new GradleException("Veil reference in ${entry.name}")
+                    }
+                }
+            }
+        }
+        def veilArtifacts = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.findAll {
+            it.moduleVersion.id.group == 'foundry.veil'
+        }
+        def hasVeilRuntime = !veilArtifacts.isEmpty()
+        if (hasVeilRuntime != withVeil) throw new GradleException('Incorrect Veil runtime dependency')
+        if (!withVeil && !configurations.veilLibraries.files.isEmpty()) {
+            throw new GradleException('Veil runtime libraries leaked into no-veil classpath')
+        }
+        logger.lifecycle("Verified ${graphicsVariant}: ${artifact}")
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyVeilVariant')
+    dependsOn tasks.named('verifyAtmosphere')
 }
 
 tasks.withType(JavaCompile).configureEach {

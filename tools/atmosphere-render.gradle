@@ -7,10 +7,11 @@ allprojects {
                 include 'maniacrev.veil-development.mixins.json'
             }
             if (project.hasProperty('atmosphereReference')) {
-                if (!project.file('build/atmosphere-perf/original-shaders/pinwheel').isDirectory()) {
+                def reference = project.file(project.findProperty('atmosphereReferenceDirectory') ?: 'build/atmosphere-perf/original-shaders/pinwheel')
+                if (!reference.isDirectory()) {
                     throw new GradleException('Capture the reference pinwheel directory before using -PatmosphereReference')
                 }
-                from(project.file('build/atmosphere-perf/original-shaders/pinwheel')) { into 'assets/maniacrev/pinwheel' }
+                from(reference) { into 'assets/maniacrev/pinwheel' }
             } else {
                 from(project.file('src/main/resources')) { include 'assets/maniacrev/pinwheel/**' }
             }
@@ -26,7 +27,10 @@ allprojects {
             property 'maniacrev.atmosphere.renderProbe', (!worldProbe && !mapProbe).toString()
             property 'maniacrev.atmosphere.worldProbe', worldProbe.toString()
             property 'maniacrev.atmosphere.benchmark', project.findProperty('atmosphereBenchmark') ?: ''
+            property 'maniacrev.atmosphere.lightBenchmark', project.hasProperty('atmosphereLightBenchmark').toString()
             property 'maniacrev.atmosphere.mapBenchmark', project.findProperty('atmosphereMapBenchmark') ?: ''
+            property 'maniacrev.atmosphere.mapBenchmarkMode', project.findProperty('atmosphereMapBenchmarkMode') ?: 'HEAVY'
+            property 'maniacrev.atmosphere.mapBenchmarkWidth', project.findProperty('atmosphereMapBenchmarkWidth') ?: '3840'
             property 'maniacrev.atmosphere.probeWidth', project.findProperty('atmosphereProbeWidth') ?: '0'
             mods { maniacrev { source sourceSets.test } }
             args '--width', mapProbe ? '3840' : '960', '--height', mapProbe ? '2160' : '540'
