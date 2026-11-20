@@ -42,6 +42,7 @@ public class ModEntities {
                     .sized(0.25f, 0.25f)
                     .clientTrackingRange(64)
                     .updateInterval(1)
+                    .noSave()
                     .build("hook"));
 
     public static final RegistryObject<EntityType<PlagueOrbEntity>> PLAGUE_ORB =

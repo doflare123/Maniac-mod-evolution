@@ -3,6 +3,13 @@ package org.example.maniacrevolution.client;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.resources.ResourceLocation;
+import org.example.maniacrevolution.ModItems;
+import org.example.maniacrevolution.entity.HookDeployment;
+import org.example.maniacrevolution.client.renderer.HookRenderer;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
@@ -22,9 +29,17 @@ import org.example.maniacrevolution.hack.client.ComputerBlockRenderer;
 public class ClientSetupEvents {
 
     @SubscribeEvent
+    public static void setupHookItemProperties(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> ItemProperties.register(ModItems.HOOK.get(),
+                new ResourceLocation(Maniacrev.MODID, "deployed"), (stack, level, entity, seed) ->
+                        HookDeployment.isDeployed(stack, level != null ? level : Minecraft.getInstance().level) ? 1 : 0));
+    }
+
+    @SubscribeEvent
     public static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(Agent47TabletItemRenderer.BASE_MODEL);
         event.register(RoseColoredGlassesItemRenderer.INVENTORY_MODEL);
+        event.register(HookRenderer.HEAD_MODEL);
     }
 
     @SubscribeEvent

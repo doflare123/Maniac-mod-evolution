@@ -18,7 +18,6 @@ import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.dodepovich.DodepovichCasinoManager;
 import org.example.maniacrevolution.item.DeathScytheItem;
 import org.example.maniacrevolution.item.GhostHandItem;
-import org.example.maniacrevolution.item.HookItem;
 import org.example.maniacrevolution.item.IItemWithAbility;
 import org.example.maniacrevolution.item.ITimedAbility;
 import org.example.maniacrevolution.item.ToyKnifeItem;
@@ -42,7 +41,6 @@ public class ManaEvents {
             // Очищаем кэши
             ArmorAbilityCooldownManager.onPlayerLogout(player);
             DeathScytheItem.onPlayerLogout(playerId);
-            HookItem.clearCooldown(playerId);
         }
     }
 

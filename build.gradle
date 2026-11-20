@@ -158,6 +158,14 @@ tasks.register('verifyNightmareSync', JavaExec) {
     mainClass = 'org.example.maniacrevolution.nightmare.NightmareSyncStateTest'
 }
 
+tasks.register('verifyHookAim', JavaExec) {
+    group = 'verification'
+    description = 'Checks hook aim release/cancellation and unobtrusive guide geometry.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.hook.HookAimStateTest'
+}
+
 tasks.register('verifyGameSettings', JavaExec) {
     group = 'verification'
     description = 'Checks settings persistence, validation and timer reconfiguration.'

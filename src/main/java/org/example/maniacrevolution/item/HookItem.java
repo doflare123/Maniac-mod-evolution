@@ -12,48 +12,24 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import org.example.maniacrevolution.Maniacrev;
-import org.example.maniacrevolution.client.ClientAbilityData;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import org.example.maniacrevolution.client.HookItemClientExtensions;
 import org.example.maniacrevolution.entity.HookEntity;
+import org.example.maniacrevolution.entity.HookDeployment;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.SyncAbilityCooldownPacket;
 import org.example.maniacrevolution.util.ManaUtil;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.function.Consumer;
 
 public class HookItem extends SwordItem implements IItemWithAbility {
 
     private static final float MANA_COST = 5.0f;
-    private static final int COOLDOWN_TICKS = 20 * 20; // 20 секунд
+    private static final int COOLDOWN_TICKS = 20 * 20; // 20 секунд.
     private static final int DAMAGE = 0;
     private static final float SPEED = -2.4F;
-
-    // ИСПРАВЛЕНО: Используем timestamp вместо тиков
-    private static final Map<UUID, CooldownData> cooldowns = new HashMap<>();
-
-    private static class CooldownData {
-        long timestamp;
-        int durationTicks;
-
-        CooldownData(long timestamp, int durationTicks) {
-            this.timestamp = timestamp;
-            this.durationTicks = durationTicks;
-        }
-
-        int getRemaining() {
-            long currentTime = System.currentTimeMillis();
-            long elapsed = currentTime - timestamp;
-            long elapsedTicks = elapsed / 50;
-            return Math.max(0, (int)(durationTicks - elapsedTicks));
-        }
-
-        boolean isExpired() {
-            return getRemaining() <= 0;
-        }
-    }
 
     public HookItem(Properties properties) {
         super(Tiers.NETHERITE, DAMAGE-1, SPEED, properties.stacksTo(1));
@@ -64,15 +40,13 @@ public class HookItem extends SwordItem implements IItemWithAbility {
         ItemStack stack = player.getItemInHand(hand);
 
         if (level.isClientSide()) {
-            return InteractionResultHolder.success(stack);
+            return InteractionResultHolder.consume(stack);
         }
+        if (HookDeployment.hasActiveHook(player)) return InteractionResultHolder.fail(stack);
 
-        UUID playerUUID = player.getUUID();
-
-        // ИСПРАВЛЕНО: Проверяем кулдаун через новую систему
-        CooldownData cooldownData = cooldowns.get(playerUUID);
-        if (cooldownData != null && !cooldownData.isExpired()) {
-            int secondsLeft = cooldownData.getRemaining() / 20;
+        // The same native cooldown is used for validation and both HUD indicators.
+        if (player.getCooldowns().isOnCooldown(this)) {
+            int secondsLeft = getCooldownSeconds(player);
             player.displayClientMessage(
                     Component.literal("§cПерезарядка: " + secondsLeft + "с"),
                     true
@@ -89,20 +63,22 @@ public class HookItem extends SwordItem implements IItemWithAbility {
             return InteractionResultHolder.fail(stack);
         }
 
-        // Тратим ману
-        ManaUtil.consumeMana(player, MANA_COST);
+        // The projectile is launched on this click. Player animation never delays gameplay.
 
         // Запускаем хук
-        HookEntity hook = new HookEntity(level, player);
-        level.addFreshEntity(hook);
+        HookEntity hook = new HookEntity(level, player, hand);
+        if (!level.addFreshEntity(hook)) return InteractionResultHolder.fail(stack);
+        if (!ManaUtil.consumeMana(player, MANA_COST)) {
+            hook.discard();
+            return InteractionResultHolder.fail(stack);
+        }
+        HookDeployment.launched(player, stack, hook);
 
         // Звук
         level.playSound(null, player.blockPosition(),
                 SoundEvents.FISHING_BOBBER_THROW, SoundSource.PLAYERS, 1.0f, 1.0f);
 
-        // ИСПРАВЛЕНО: Устанавливаем кулдаун через timestamp
-        long currentTime = System.currentTimeMillis();
-        cooldowns.put(playerUUID, new CooldownData(currentTime, COOLDOWN_TICKS));
+        // One authoritative tick-based timer for activation, the slot overlay and the ability HUD.
         player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
 
         // НОВОЕ: Синхронизируем с клиентом
@@ -117,6 +93,17 @@ public class HookItem extends SwordItem implements IItemWithAbility {
     }
 
     @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new HookItemClientExtensions());
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, net.minecraft.world.entity.Entity entity, int slot, boolean selected) {
+        super.inventoryTick(stack, level, entity, slot, selected);
+        HookDeployment.clearStale(stack, level);
+    }
+
+    @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal(""));
         tooltip.add(Component.translatable("tooltip.maniacrev.ability", getAbilityName()).withStyle(ChatFormatting.GOLD));
@@ -125,7 +112,8 @@ public class HookItem extends SwordItem implements IItemWithAbility {
         tooltip.add(Component.translatable("tooltip.maniacrev.mana_cost", (int) MANA_COST).withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.translatable("tooltip.maniacrev.cooldown", COOLDOWN_TICKS / 20).withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal(""));
-        tooltip.add(Component.translatable("tooltip.maniacrev.right_click_activate").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.hook_aim").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable("tooltip.maniacrev.hook_cancel").withStyle(ChatFormatting.DARK_GRAY));
     }
 
     // === Реализация IItemWithAbility ===
@@ -152,12 +140,13 @@ public class HookItem extends SwordItem implements IItemWithAbility {
 
     @Override
     public int getCooldownSeconds(Player player) {
-        if (player.level().isClientSide) {
-            return ClientAbilityData.getCooldownSeconds(this);
-        }
+        int remainingTicks = Math.round(getCooldownProgress(player) * COOLDOWN_TICKS);
+        return (remainingTicks + 19) / 20;
+    }
 
-        CooldownData data = cooldowns.get(player.getUUID());
-        return data != null ? data.getRemaining() / 20 : 0;
+    @Override
+    public float getCooldownProgress(Player player) {
+        return player.getCooldowns().getCooldownPercent(this, 0);
     }
 
     @Override
@@ -165,20 +154,4 @@ public class HookItem extends SwordItem implements IItemWithAbility {
         return COOLDOWN_TICKS / 20;
     }
 
-    /**
-     * Очистка кулдауна при выходе игрока
-     */
-    public static void clearCooldown(UUID playerUUID) {
-        CooldownData data = cooldowns.get(playerUUID);
-        if (data != null && data.isExpired()) {
-            cooldowns.remove(playerUUID);
-        }
-    }
-
-    /**
-     * НОВОЕ: Очистка всех истекших кулдаунов
-     */
-    public static void cleanupExpiredCooldowns() {
-        cooldowns.entrySet().removeIf(entry -> entry.getValue().isExpired());
-    }
 }

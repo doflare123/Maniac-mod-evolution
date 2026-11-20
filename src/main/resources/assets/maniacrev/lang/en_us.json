@@ -1102,5 +1102,7 @@
   "character.maniacrev.scp_173.feature.0.name": "Held by gaze",
   "character.maniacrev.scp_173.feature.0.description": "A visible body part within 20 blocks and a 120° × 80° field of view holds the statue. Glass allows sight.",
   "character.maniacrev.scp_173.feature.1.name": "While observed",
-  "character.maniacrev.scp_173.feature.1.description": "You can look around while others see a statue with a fixed pose. Perks and abilities remain available. Gravity and external impulses still apply."
+  "character.maniacrev.scp_173.feature.1.description": "You can look around while others see a statue with a fixed pose. Perks and abilities remain available. Gravity and external impulses still apply.",
+  "tooltip.maniacrev.hook_aim": "Hold RMB to aim; release to throw",
+  "tooltip.maniacrev.hook_cancel": "LMB while aiming or switching items cancels"
 }

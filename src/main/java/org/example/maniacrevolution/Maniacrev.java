@@ -24,7 +24,6 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.example.maniacrevolution.block.ModBlocks;
 import org.example.maniacrevolution.block.entity.ModBlockEntities;
-import org.example.maniacrevolution.client.model.HookModel;
 import org.example.maniacrevolution.client.model.TotemModel;
 import org.example.maniacrevolution.client.renderer.HookRenderer;
 import org.example.maniacrevolution.client.renderer.ForgetMeNotRenderer;
@@ -225,7 +224,6 @@ public class Maniacrev {
 
         @SubscribeEvent
         public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
-            event.registerLayerDefinition(HookModel.LAYER_LOCATION, HookModel::createBodyLayer);
             event.registerLayerDefinition(TotemModel.LAYER_LOCATION, TotemModel::createBodyLayer);
         }
     }
