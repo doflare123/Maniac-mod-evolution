@@ -22,31 +22,35 @@ public final class AtmosphereLightIndexTest {
         var index = new AtmosphereLightIndex();
         Object section = new Object();
         long a = SectionPos.asLong(0, 12, 0), b = SectionPos.asLong(1, 12, 0);
-        var first = index.get(a, section, () -> List.of(emitter(0, 200, 0, Blocks.GLOWSTONE.defaultBlockState(), 15, 0xFFFFFF)));
-        for (int tick = 0; tick < 100; tick++)
-            check(index.get(a, section, () -> { throw new AssertionError("Stationary/moving revisit rescanned unchanged section"); }) == first,
-                    "Unchanged group objects must survive revisits");
-        index.get(b, section, List::of);
+        check(index.get(a) == null, "An unscanned section has no fallback");
+        var first = index.refresh(a, section, List.of(emitter(0, 200, 0, Blocks.GLOWSTONE.defaultBlockState(), 15, 0xFFFFFF)));
+        check(index.get(a).isCurrent(section) && index.get(a).groups == first, "Clean entries reuse their groups");
+        index.refresh(b, section, List.of());
+        check(index.get(b).isCurrent(section) && index.get(b).groups.isEmpty(), "Empty entries remain current");
         check(index.scans() == 2, "Empty sections are cached too");
         index.invalidate(new BlockPos(0, 200, 0));
-        index.get(a, section, List::of);
-        index.get(b, section, () -> { throw new AssertionError("Unrelated section invalidated"); });
+        check(!index.get(a).isCurrent(section) && index.get(a).groups == first, "A dirty section keeps its last groups until refreshed");
+        check(!index.get(a).isCurrent(new Object()) && index.get(a).groups == first, "A replacement can use the same section's fallback");
+        check(index.get(b).isCurrent(section) && index.get(b).groups.isEmpty(), "Unrelated sections keep their own results");
+        index.refresh(a, section, List.of());
+        check(index.get(a).isCurrent(section) && index.get(a).groups.isEmpty(), "Refresh publishes the new groups");
         check(index.scans() == 3, "A block edit rebuilds only its section");
-        index.get(a, new Object(), List::of);
+        Object replacement = new Object();
+        check(!index.get(a).isCurrent(replacement), "A replacement section is stale even without a block edit");
+        index.refresh(a, replacement, List.of());
         check(index.scans() == 4, "Replacement after chunk unload must revalidate metadata");
         index.invalidate(new ChunkPos(1, 0));
-        index.get(b, section, List::of);
+        check(!index.get(b).isCurrent(section) && index.get(a).isCurrent(replacement), "Only the replaced chunk is invalidated");
+        index.refresh(b, section, List.of());
         check(index.scans() == 5, "Full chunk packet invalidates an existing section object");
         index.clear();
         for (int x = 0; x < AtmosphereLightIndex.MAX_SECTIONS; x++)
-            index.get(SectionPos.asLong(x, 12, 0), section, List::of);
-        index.get(a, section, () -> { throw new AssertionError("Recent entry vanished"); });
-        index.get(SectionPos.asLong(AtmosphereLightIndex.MAX_SECTIONS, 12, 0), section, List::of);
+            index.refresh(SectionPos.asLong(x, 12, 0), section, List.of());
+        check(index.get(a).isCurrent(section), "Recent entry vanished");
+        index.refresh(SectionPos.asLong(AtmosphereLightIndex.MAX_SECTIONS, 12, 0), section, List.of());
         check(index.size() == AtmosphereLightIndex.MAX_SECTIONS, "Cache memory must remain bounded");
-        index.get(a, section, () -> { throw new AssertionError("LRU evicted the recently used section"); });
-        long scans = index.scans();
-        index.get(b, section, List::of);
-        check(index.scans() == scans + 1, "LRU must evict the least recently used section");
+        check(index.get(a).isCurrent(section), "LRU evicted the recently used section");
+        check(index.get(b) == null, "LRU must evict the least recently used section");
         index.clear();
         check(index.size() == 0 && index.scans() == 0, "World change releases all metadata");
     }

@@ -9,7 +9,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
-import java.util.function.Supplier;
 
 /** Session-local section index. Entries retain metadata, never unloaded chunks or sections. */
 final class AtmosphereLightIndex {
@@ -25,24 +24,26 @@ final class AtmosphereLightIndex {
         boolean contains(BlockPos block) { return members.stream().anyMatch(member -> member.block.equals(block)); }
     }
 
-    private static final class Entry {
-        final WeakReference<Object> section;
+    static final class Entry {
+        private final WeakReference<Object> section;
         final List<Group> groups;
-        boolean dirty;
+        private boolean dirty;
 
         Entry(Object section, List<Group> groups) {
             this.section = new WeakReference<>(section);
             this.groups = groups;
         }
+
+        boolean isCurrent(Object section) { return !dirty && this.section.get() == section; }
     }
 
     private final Map<Long, Entry> sections = new LinkedHashMap<>(256, .75F, true);
     private long scans;
 
-    List<Group> get(long key, Object section, Supplier<List<Emitter>> scan) {
-        Entry cached = sections.get(key);
-        if (cached != null && !cached.dirty && cached.section.get() == section) return cached.groups;
-        List<Group> groups = group(scan.get());
+    Entry get(long key) { return sections.get(key); }
+
+    List<Group> refresh(long key, Object section, List<Emitter> emitters) {
+        List<Group> groups = emitters.isEmpty() ? List.of() : group(emitters);
         scans++;
         sections.put(key, new Entry(section, groups));
         if (sections.size() > MAX_SECTIONS) sections.remove(sections.keySet().iterator().next());

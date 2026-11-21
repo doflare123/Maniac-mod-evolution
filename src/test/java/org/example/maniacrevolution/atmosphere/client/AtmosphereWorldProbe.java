@@ -21,6 +21,9 @@ import org.example.maniacrevolution.item.NightmareLighterItem;
 import org.example.maniacrevolution.settings.ClientGameSettings;
 import org.example.maniacrevolution.settings.GraphicsMode;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /** Real player, block discovery, movement, NBT synchronization and use-item packets in an isolated world. */
@@ -38,6 +41,7 @@ public final class AtmosphereWorldProbe {
     private static long started;
     private static long cachedScans;
     private static final BlockPos EDITED_EMITTER = new BlockPos(-1, 202, 16);
+    private static final MotionProbe motion = new MotionProbe();
 
     private static void check(boolean condition, String message) {
         if (!condition) throw new AssertionError(message);
@@ -65,6 +69,14 @@ public final class AtmosphereWorldProbe {
             if (mc.screen != null) mc.setScreen(null);
             // Tick events can run while a loading/menu frame still pauses the world.
             if (mc.isPaused()) return;
+            if (stage == 8) {
+                if (motion.tick(mc)) {
+                    done = true;
+                    Maniacrev.LOGGER.info("Atmosphere world probe PASSED: lighting, cache invalidation, movement and lighter");
+                    mc.stop();
+                }
+                return;
+            }
             ticks++;
             ClientGameSettings.setGraphicsMode(stage < 2 || stage >= 6 ? GraphicsMode.HEAVY : MODES[mode]);
             if (stage == 0) {
@@ -250,12 +262,12 @@ public final class AtmosphereWorldProbe {
                         "Closed lighter leaves its vanilla light block behind");
                 Maniacrev.LOGGER.info("Atmosphere world lighter PASSED: {} {}, closed/open/held/closed", MODES[mode], hand());
                 if (++mode < MODES.length) { stage = 2; ticks = 0; return; }
-                done = true;
-                Maniacrev.LOGGER.info("Atmosphere world probe PASSED: crowded colored emitters at 24 blocks, moving rescans, Lit NBT, both hands, three-quality light");
-                mc.stop();
+                motion.prepare(mc);
+                stage = 8;
             }
         } catch (Exception | AssertionError error) {
             done = true;
+            mc.options.keyUp.setDown(false);
             Maniacrev.LOGGER.error("Atmosphere world probe FAILED", error);
             mc.stop();
         }
@@ -263,11 +275,115 @@ public final class AtmosphereWorldProbe {
 
     @SubscribeEvent
     public static void render(TickEvent.RenderTickEvent event) {
-        if (!Boolean.getBoolean("maniacrev.atmosphere.worldProbe") || capture == null || event.phase != TickEvent.Phase.END) return;
+        if (!Boolean.getBoolean("maniacrev.atmosphere.worldProbe")) return;
+        if (stage == 8 && !done && event.phase == TickEvent.Phase.START) motion.frame();
+        if (capture == null || event.phase != TickEvent.Phase.END) return;
         var mc = Minecraft.getInstance();
         try (var image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
             image.writeToFile(mc.gameDirectory.toPath().resolve(capture + ".png"));
         } catch (Exception error) { Maniacrev.LOGGER.error("Atmosphere world screenshot failed", error); }
         capture = null;
+    }
+
+    private static final class MotionProbe {
+        private static final int CORRIDOR_Y = 272;
+        private enum Phase { OUTSIDE, ARRIVAL, WARMUP, WALK }
+
+        private final List<Double> arrivals = new ArrayList<>(), walking = new ArrayList<>();
+        private Phase phase = Phase.OUTSIDE;
+        private int ticks, visits;
+        private long previousFrame;
+
+        void prepare(Minecraft mc) throws Exception {
+            var server = mc.getSingleplayerServer();
+            var playerId = mc.player.getUUID();
+            server.submit(() -> {
+                var level = server.getPlayerList().getPlayer(playerId).serverLevel();
+                var wall = Blocks.STONE_BRICKS.defaultBlockState();
+                for (int z = -40; z <= 105; z++) {
+                    for (int x = -3; x <= 3; x++) {
+                        level.setBlock(new BlockPos(x, CORRIDOR_Y - 1, z), wall, 2);
+                        level.setBlock(new BlockPos(x, CORRIDOR_Y + 5, z), wall, 2);
+                    }
+                    for (int y = CORRIDOR_Y; y < CORRIDOR_Y + 5; y++) {
+                        level.setBlock(new BlockPos(-3, y, z), wall, 2);
+                        level.setBlock(new BlockPos(3, y, z), wall, 2);
+                    }
+                    if (z % 5 == 0) level.setBlock(new BlockPos(2, CORRIDOR_Y, z), Blocks.TORCH.defaultBlockState(), 2);
+                    if (z % 4 == 0) for (int x = 6; x <= 38; x += 4) {
+                        for (int side : new int[]{-1, 1}) for (int y = CORRIDOR_Y + 1; y <= CORRIDOR_Y + 4; y += 3)
+                            level.setBlock(new BlockPos(x * side, y, z), Blocks.GLOWSTONE.defaultBlockState(), 2);
+                    }
+                }
+            }).get(20, TimeUnit.SECONDS);
+            ClientGameSettings.setGraphicsMode(GraphicsMode.LIGHT);
+            mc.options.pauseOnLostFocus = false;
+            mc.options.enableVsync().set(false);
+            mc.options.framerateLimit().set(260);
+        }
+
+        boolean tick(Minecraft mc) {
+            ticks++;
+            switch (phase) {
+                case OUTSIDE -> {
+                    if (mc.player.getY() >= CORRIDOR_Y - 1 || ticks < 30) return false;
+                    AtmosphereLights.clear();
+                    teleport(mc, CORRIDOR_Y);
+                    advance(Phase.ARRIVAL);
+                }
+                case ARRIVAL -> {
+                    if (mc.player.getY() < CORRIDOR_Y - 1) { ticks = 0; return false; }
+                    if (ticks < 20) return false;
+                    if (++visits == 6) {
+                        advance(Phase.WARMUP);
+                    } else {
+                        teleport(mc, 200);
+                        advance(Phase.OUTSIDE);
+                    }
+                }
+                case WARMUP -> {
+                    if (ticks < 70) return false;
+                    mc.options.keyUp.setDown(true);
+                    advance(Phase.WALK);
+                }
+                case WALK -> {
+                    if (ticks < 220) return false;
+                    mc.options.keyUp.setDown(false);
+                    check(mc.player.getZ() > 25, "Frame-time probe did not walk through the corridor: " + mc.player.position());
+                    report("cold teleport", arrivals);
+                    report("corridor walk", walking);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void advance(Phase next) { phase = next; ticks = 0; }
+
+        private static void teleport(Minecraft mc, int y) {
+            var server = mc.getSingleplayerServer();
+            var playerId = mc.player.getUUID();
+            server.execute(() -> {
+                var player = server.getPlayerList().getPlayer(playerId);
+                player.teleportTo(player.serverLevel(), .5, y, .5, 0, 0);
+            });
+        }
+
+        void frame() {
+            long now = System.nanoTime();
+            if (previousFrame != 0) {
+                double interval = (now - previousFrame) / 1e6;
+                if (phase == Phase.ARRIVAL) arrivals.add(interval);
+                if (phase == Phase.WALK) walking.add(interval);
+            }
+            previousFrame = now;
+        }
+
+        private static void report(String scene, List<Double> frames) {
+            check(frames.size() >= 100, "Too few frame intervals for p99: " + scene + " (" + frames.size() + ")");
+            var result = BenchmarkPlan.statistics(frames);
+            Maniacrev.LOGGER.info(String.format(Locale.ROOT, "Atmosphere frame time %s: n=%d, p50=%.3f ms, p99=%.3f ms, max=%.3f ms",
+                    scene, result.count(), result.medianMs(), result.p99Ms(), result.maxMs()));
+        }
     }
 }

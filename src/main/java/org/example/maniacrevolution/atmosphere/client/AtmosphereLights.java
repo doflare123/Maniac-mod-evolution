@@ -9,6 +9,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -36,13 +37,44 @@ public final class AtmosphereLights {
         List<Source> touchingEmitters = List.of();
 
         Source(AtmosphereLightIndex.Group group) { this.group = group; }
+
+        boolean needsVisibilityCheck(Vec3 eye) {
+            return checkedEye == null || checkedRevision != visibilityRevision
+                    || checkedEye.distanceToSqr(eye) >= .0625;
+        }
+
+        boolean hasCurrentProbes() { return probes != null && probeRevision == visibilityRevision; }
+    }
+
+    private record SectionScan(long key, LevelChunkSection section, List<AtmosphereLightIndex.Group> previousGroups,
+                               double distanceSquared) {}
+
+    private static final class VisibilityBudget {
+        int remaining = MAX_VISIBILITY_RAYS_PER_TICK;
+
+        boolean canCheck(Source source, int reserved) {
+            int members = source.group.members().size();
+            // Each endpoint face can require two rays to build probes and two more to test them.
+            int probeRays = source.hasCurrentProbes() ? source.probes.size() : Math.min(2, members) * PROBE_FACES.length * 4;
+            return remaining - reserved >= members + probeRays;
+        }
+
+        BlockHitResult clip(Vec3 from, Vec3 to) {
+            remaining--;
+            return AtmosphereLights.clip(from, to);
+        }
     }
 
     static final int MAX_SOURCES = 64;
+    static final int MAX_SECTION_SCANS_PER_TICK = 2;
+    static final int MAX_VISIBILITY_RAYS_PER_TICK = 192;
+    private static final Direction[] PROBE_FACES = Direction.values();
     // Full influence radius, row half-length and a movement/prefetch margin beyond the fog.
     private static final int SCAN_RADIUS = (int) Math.ceil(AtmosphereRules.FOG_END + 9.25 + 1.5 + 6);
     private static final AtmosphereLightIndex index = new AtmosphereLightIndex();
+    private static final Set<Long> pendingScans = new LinkedHashSet<>();
     private static final Map<BlockPos, Source> sources = new LinkedHashMap<>();
+    private static final Set<Source> pendingVisibility = new LinkedHashSet<>();
     private static final Set<BlockPos> previousSelection = new HashSet<>();
     private static final List<Source> selected = new ArrayList<>();
     private static final Vector4f[] positions = new Vector4f[MAX_SOURCES];
@@ -62,6 +94,7 @@ public final class AtmosphereLights {
 
     /** Stop rendering without throwing away the world index on blindness, menus or quality changes. */
     static void suspend() {
+        pendingScans.clear(); pendingVisibility.clear();
         sources.clear(); selected.clear(); previousSelection.clear();
         handStrength = new LightTransition(); uploadedCount = uploadedHandCount = 0;
     }
@@ -124,24 +157,52 @@ public final class AtmosphereLights {
         int minY = Math.max(level.getMinBuildHeight(), center.getY() - SCAN_RADIUS) >> 4;
         int maxY = Math.min(level.getMaxBuildHeight() - 1, center.getY() + SCAN_RADIUS) >> 4;
         List<AtmosphereLightIndex.Group> result = new ArrayList<>();
+        Map<Long, SectionScan> scans = new HashMap<>();
         for (int cx = (center.getX() - SCAN_RADIUS) >> 4; cx <= (center.getX() + SCAN_RADIUS) >> 4; cx++) {
             for (int cz = (center.getZ() - SCAN_RADIUS) >> 4; cz <= (center.getZ() + SCAN_RADIUS) >> 4; cz++) {
                 if (!level.hasChunk(cx, cz)) continue;
                 var chunk = level.getChunk(cx, cz);
                 for (int sy = minY; sy <= maxY; sy++) {
                     var section = chunk.getSection(level.getSectionIndex(sy << 4));
-                    int x = cx << 4, y = sy << 4, z = cz << 4;
-                    result.addAll(index.get(SectionPos.asLong(cx, sy, cz), section,
-                            () -> scanSection(section, x, y, z)));
+                    long key = SectionPos.asLong(cx, sy, cz);
+                    var cached = index.get(key);
+                    if (cached != null && cached.isCurrent(section)) {
+                        result.addAll(cached.groups);
+                    } else if (hasPotentialEmitters(section)) {
+                        double distance = center.distToCenterSqr((cx << 4) + 8, (sy << 4) + 8, (cz << 4) + 8);
+                        scans.put(key, new SectionScan(key, section, cached == null ? List.of() : cached.groups, distance));
+                    } else {
+                        index.refresh(key, section, List.of());
+                    }
                 }
             }
+        }
+        // Finish queued work before new arrivals, with nearby sections first for each new batch.
+        pendingScans.retainAll(scans.keySet());
+        scans.values().stream().filter(scan -> !pendingScans.contains(scan.key()))
+                .sorted(Comparator.comparingDouble(SectionScan::distanceSquared).thenComparingLong(SectionScan::key))
+                .forEachOrdered(scan -> pendingScans.add(scan.key()));
+        int remaining = MAX_SECTION_SCANS_PER_TICK;
+        for (var queue = pendingScans.iterator(); queue.hasNext();) {
+            long key = queue.next();
+            var scan = scans.get(key);
+            if (remaining == 0) {
+                result.addAll(scan.previousGroups());
+                continue;
+            }
+            int x = SectionPos.x(key) << 4, y = SectionPos.y(key) << 4, z = SectionPos.z(key) << 4;
+            result.addAll(index.refresh(key, scan.section(), scanSection(scan.section(), x, y, z)));
+            remaining--;
+            queue.remove();
         }
         return result;
     }
 
+    private static boolean hasPotentialEmitters(LevelChunkSection section) {
+        return !section.hasOnlyAir() && section.maybeHas(state -> !state.is(Blocks.LIGHT) && state.getLightEmission() > 0);
+    }
+
     private static List<AtmosphereLightIndex.Emitter> scanSection(LevelChunkSection section, int x0, int y0, int z0) {
-        if (section.hasOnlyAir() || !section.maybeHas(state -> !state.is(Blocks.LIGHT)
-                && state.getLightEmission() > 0)) return List.of();
         var level = Minecraft.getInstance().level;
         var cursor = new BlockPos.MutableBlockPos();
         List<AtmosphereLightIndex.Emitter> result = new ArrayList<>();
@@ -157,40 +218,42 @@ public final class AtmosphereLights {
     }
 
     private static boolean clearRay(Vec3 eye, Vec3 point, BlockPos emitter) {
+        return reachesEmitter(clip(eye, point), emitter);
+    }
+
+    private static BlockHitResult clip(Vec3 from, Vec3 to) {
         var mc = Minecraft.getInstance();
-        var hit = mc.level.clip(new ClipContext(eye, point, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player));
+        return mc.level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player));
+    }
+
+    private static boolean reachesEmitter(BlockHitResult hit, BlockPos emitter) {
         return hit.getType() == HitResult.Type.MISS || emitter != null && hit.getBlockPos().equals(emitter);
     }
 
     /** Conservative visibility of lit space, rather than requiring the lamp itself to face the camera. */
-    private static boolean influenceVisible(Source source, Vec3 eye) {
-        if (source.checkedEye != null && source.checkedRevision == visibilityRevision
-                && source.checkedEye.distanceToSqr(eye) < .0625) return source.visible;
-        source.checkedEye = eye;
-        source.checkedRevision = visibilityRevision;
+    private static boolean influenceVisible(Source source, Vec3 eye, VisibilityBudget budget) {
         for (var member : source.group.members()) {
-            if (clearRay(eye, member.position(), member.block())) return source.visible = true;
+            if (reachesEmitter(budget.clip(eye, member.position()), member.block())) return true;
         }
-        if (source.probes == null || source.probeRevision != visibilityRevision) {
-            source.probes = influenceProbes(source.group);
+        if (!source.hasCurrentProbes()) {
+            source.probes = influenceProbes(source.group, budget);
             source.probeRevision = visibilityRevision;
         }
-        for (Vec3 probe : source.probes) if (clearRay(eye, probe, null)) return source.visible = true;
-        return source.visible = false;
+        for (Vec3 probe : source.probes) if (budget.clip(eye, probe).getType() == HitResult.Type.MISS) return true;
+        return false;
     }
 
-    private static List<Vec3> influenceProbes(AtmosphereLightIndex.Group group) {
-        var mc = Minecraft.getInstance();
+    private static List<Vec3> influenceProbes(AtmosphereLightIndex.Group group, VisibilityBudget budget) {
         List<Vec3> points = new ArrayList<>();
         // Endpoints preserve a partly exposed row; rays terminate before the first world obstacle.
         var ends = group.members().size() == 1 ? List.of(group.members().get(0))
                 : List.of(group.members().get(0), group.members().get(group.members().size() - 1));
-        for (var member : ends) for (Direction face : Direction.values()) {
+        for (var member : ends) for (Direction face : PROBE_FACES) {
             Vec3 direction = new Vec3(face.getStepX(), face.getStepY(), face.getStepZ());
             Vec3 start = member.position().add(direction.scale(.55));
-            if (!clearRay(member.position(), start, member.block())) continue;
+            if (!reachesEmitter(budget.clip(member.position(), start), member.block())) continue;
             Vec3 end = member.position().add(direction.scale(group.radius() * .65));
-            var hit = mc.level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player));
+            var hit = budget.clip(start, end);
             points.add(hit.getType() == HitResult.Type.MISS ? end : hit.getLocation().subtract(direction.scale(.06)));
             points.add(start);
         }
@@ -211,20 +274,56 @@ public final class AtmosphereLights {
         }
         for (var bucket : buckets) bucket.sort(Comparator.comparingDouble(source ->
                 source.group.position().distanceToSqr(camera) * (previousSelection.contains(source.group.key()) ? .8 : 1)));
-        selected.clear();
-        for (int round = 0; selected.size() < MAX_SOURCES; round++) {
+        List<Source> candidates = new ArrayList<>();
+        for (int round = 0;; round++) {
             boolean available = false;
             for (var bucket : buckets) if (round < bucket.size()) {
                 available = true;
-                Source source = bucket.get(round);
-                if (influenceVisible(source, camera)) selected.add(source);
-                if (selected.size() == MAX_SOURCES) break;
+                candidates.add(bucket.get(round));
             }
             if (!available) break;
+        }
+        refreshVisibility(candidates, camera);
+        selected.clear();
+        for (Source source : candidates) {
+            if (source.visible) selected.add(source);
+            if (selected.size() == MAX_SOURCES) break;
         }
         previousSelection.clear();
         for (Source source : selected) previousSelection.add(source.group.key());
         linkTouchingEmitters();
+    }
+
+    private static void refreshVisibility(List<Source> candidates, Vec3 eye) {
+        Set<Source> needsCheck = new LinkedHashSet<>();
+        int visible = 0;
+        for (Source source : candidates) {
+            if (source.needsVisibilityCheck(eye)) needsCheck.add(source);
+            if (source.visible && ++visible == MAX_SOURCES) break;
+        }
+        // Camera motion makes a checked source eligible again, at the back of the queue.
+        pendingVisibility.retainAll(needsCheck);
+        pendingVisibility.addAll(needsCheck);
+        var budget = new VisibilityBudget();
+        // Keep displayed lights responsive to occlusion while leaving half the budget for waiting candidates.
+        for (Source source : selected) {
+            if (!pendingVisibility.contains(source)) continue;
+            if (!budget.canCheck(source, MAX_VISIBILITY_RAYS_PER_TICK / 2)) break;
+            checkVisibility(source, eye, budget);
+            pendingVisibility.remove(source);
+        }
+        for (var queue = pendingVisibility.iterator(); queue.hasNext();) {
+            Source source = queue.next();
+            if (!budget.canCheck(source, 0)) break;
+            checkVisibility(source, eye, budget);
+            queue.remove();
+        }
+    }
+
+    private static void checkVisibility(Source source, Vec3 eye, VisibilityBudget budget) {
+        source.visible = influenceVisible(source, eye, budget);
+        source.checkedEye = eye;
+        source.checkedRevision = visibilityRevision;
     }
 
     /** A luminous block is not a screen-space occluder for its own connected light fixture. */
