@@ -283,7 +283,30 @@ tasks.register('verifySyringeAssets', JavaExec) {
     mainClass = 'org.example.maniacrevolution.client.renderer.SyringeAssetsTest'
 }
 
+tasks.register('verifyNetworkProtocol') {
+    group = 'verification'
+    doLast {
+        def source = file('src/main/java/org/example/maniacrevolution/network/ModNetworking.java').getText('UTF-8')
+        def version = (source =~ /PROTOCOL_VERSION\s*=\s*"(\d+)"/)[0][1]
+        def expected = file("src/test/resources/network/protocol-${version}.txt").readLines('UTF-8')
+        def actual = []
+        def calls = source =~ /CHANNEL\.(messageBuilder|registerMessage)\s*\(([^;]+?);/
+        calls.each { call, method, args ->
+            def signature = method == 'messageBuilder'
+                    ? (args =~ /^\s*([\w.]+)\.class,\s*packetId\+\+,\s*NetworkDirection\.(\w+)\s*\)/)
+                    : (args =~ /^\s*packetId\+\+,\s*([\w.]+)\.class,(?:\s*[\w.]+::\w+,){2}\s*[\w.]+::\w+\s*\)$/)
+            if (!signature.find()) throw new GradleException("Unrecognised packet registration: $call")
+            def direction = method == 'messageBuilder' ? signature.group(2) : 'ANY'
+            actual.add([actual.size(), signature.group(1), direction].join(' '))
+        }
+        if (actual != expected) {
+            throw new GradleException('Packet table changed. Bump PROTOCOL_VERSION and add the corresponding protocol snapshot.')
+        }
+    }
+}
+
 tasks.named('check') {
+    dependsOn tasks.named('verifyNetworkProtocol')
     dependsOn tasks.named('verifyEngineer')
     dependsOn tasks.named('verifyNightmareSync')
     dependsOn tasks.named('verifyGameSettings')
