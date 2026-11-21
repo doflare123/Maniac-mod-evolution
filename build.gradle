@@ -77,7 +77,7 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 if (!withVeil) {
     def atmosphereRoot = 'src/main/java/org/example/maniacrevolution/atmosphere'
     def veilOnlyFiles = ['AtmosphereClient', 'AtmosphereLights', 'AtmosphereBenchmark', 'KeeperVisionClient',
-                         'VeilRenderControl', 'BenchmarkReport'].collect {
+                         'VeilRenderControl', 'VeilPostOrder', 'BenchmarkReport'].collect {
         file("${atmosphereRoot}/client/${it}.java")
     } as Set
     def mixinRoot = file("${atmosphereRoot}/mixin").toPath()
@@ -100,6 +100,7 @@ if (!withVeil) {
                 'org/example/maniacrevolution/atmosphere/AtmosphereLightPerformanceProbe.java',
                 'org/example/maniacrevolution/atmosphere/client/AtmosphereMapPerformanceProbe.java',
                 'org/example/maniacrevolution/atmosphere/client/AtmosphereWorldProbe.java',
+                'org/example/maniacrevolution/atmosphere/client/AtmosphereEffectsProbe.java',
                 'org/example/maniacrevolution/atmosphere/client/PortableBenchmarkSmoke.java'
     }
 }

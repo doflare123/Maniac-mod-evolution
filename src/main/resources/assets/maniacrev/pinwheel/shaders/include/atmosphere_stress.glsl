@@ -33,3 +33,14 @@ vec3 stressComposite(vec3 color, vec2 uv) {
     color = mix(color, vec3(0.30, 0.022, 0.035), blood);
     return max(color, vec3(0.0));
 }
+
+// Applied after lights and soul volumes: neither haze nor emitters can fill blindness with light.
+vec3 impairedVision(vec3 color, vec2 uv, float distance) {
+    float blindFade = smoothstep(SightRange * 0.25, SightRange, distance);
+    float darkFade = smoothstep(SightRange * 0.55, SightRange, distance);
+    float obscured = max(Blindness * blindFade, Darkness * darkFade);
+    vec3 blackHaze = mix(vec3(0.004, 0.003, 0.009), vec3(0.009, 0.004, 0.015), Corruption);
+    color = mix(color, blackHaze, obscured);
+    float edge = stressEdge(uv);
+    return color * (1.0 - edge * edge * max(Blindness * 0.28, Darkness * 0.16));
+}

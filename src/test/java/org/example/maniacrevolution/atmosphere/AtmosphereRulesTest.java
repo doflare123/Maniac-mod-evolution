@@ -27,6 +27,16 @@ public final class AtmosphereRulesTest {
         check(profile(true, true, 4, "survivors", false, false) == OFF, "unknown phase");
         check(profile(true, true, 1, null, true, false) == OFF, "selected class is not team membership");
         check(AtmosphereRules.corruption(KEEPER, true, 0) == 0, "keeper has no sanity distortion");
+        check(AtmosphereRules.visionRange(0, 0) == 28, "Unimpaired sight stays unchanged");
+        check(AtmosphereRules.visionRange(1, 0) == 5, "Blindness has a five-block pocket");
+        check(AtmosphereRules.visionRange(0, 1) == 15, "Darkness has its own shorter view");
+        check(AtmosphereRules.visionRange(1, 1) == 5, "Overlapping effects cannot extend vision");
+        check(AtmosphereRules.visionFadeStart(0, 0) == 18, "Ordinary fog fade stays unchanged");
+        for (float strength : new float[]{0, .25F, .5F, .75F, 1}) {
+            float range = AtmosphereRules.visionRange(strength, 0);
+            check(range >= 5 && range <= 28 && AtmosphereRules.visionFadeStart(strength, 0) < range,
+                    "Blindness release preserves valid fog bounds");
+        }
         check(AtmosphereRules.corruption(SURVIVOR, false, 0) == 0, "disabled sanity mirror");
         check(AtmosphereRules.corruption(SURVIVOR, true, .2F) == .8F, "survivor corruption");
         check(AtmosphereRules.fogVisibility(8) == 1, "near space stays clear of range cutoff");

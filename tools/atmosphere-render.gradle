@@ -22,9 +22,11 @@ allprojects {
         tasks.matching { it.name == 'runClient' }.configureEach { dependsOn syncAtmosphereShaders }
         minecraft.runs.client {
             def worldProbe = project.hasProperty('atmosphereWorldProbe')
+            def effectsProbe = project.hasProperty('atmosphereEffectsProbe')
             def mapProbe = project.hasProperty('atmosphereMapBenchmark')
-            workingDirectory project.file(mapProbe ? 'run/atmosphere-map-client' : worldProbe ? 'run/atmosphere-world-probe' : 'run/atmosphere-client')
-            property 'maniacrev.atmosphere.renderProbe', (!worldProbe && !mapProbe).toString()
+            workingDirectory project.file(effectsProbe ? 'run/atmosphere-effects-probe' : mapProbe ? 'run/atmosphere-map-client' : worldProbe ? 'run/atmosphere-world-probe' : 'run/atmosphere-client')
+            property 'maniacrev.atmosphere.effectsProbe', effectsProbe.toString()
+            property 'maniacrev.atmosphere.renderProbe', (!worldProbe && !mapProbe && !effectsProbe).toString()
             property 'maniacrev.atmosphere.worldProbe', worldProbe.toString()
             property 'maniacrev.atmosphere.benchmark', project.findProperty('atmosphereBenchmark') ?: ''
             property 'maniacrev.atmosphere.lightBenchmark', project.hasProperty('atmosphereLightBenchmark').toString()

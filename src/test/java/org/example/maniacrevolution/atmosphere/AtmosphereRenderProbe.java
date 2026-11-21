@@ -146,6 +146,7 @@ public final class AtmosphereRenderProbe {
             }
             stressChecks(manager);
             keeperChecks(manager);
+            impairedVisionChecks(manager);
             org.example.maniacrevolution.settings.SettingsGraphicsProbe.run();
             Maniacrev.LOGGER.info("Atmosphere render probe PASSED: common base, keeper souls, four graphics modes, warm lighting, sanity, depth occlusion, visibility range, settings menu");
         } catch (Exception | AssertionError error) {
@@ -160,6 +161,44 @@ public final class AtmosphereRenderProbe {
     }
 
     private record StressFrame(long hash, int center) {}
+
+    private static void impairedVisionChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
+        var mc = Minecraft.getInstance();
+        for (var id : AtmosphereClient.PIPELINES) {
+            var pipeline = manager.getPipeline(id);
+            if (!pipeline.hasUniform("Blindness") || !pipeline.hasUniform("Darkness"))
+                throw new AssertionError("Impaired vision shader did not compile: " + id);
+            pipeline.setFloat("Active", 1); pipeline.setFloat("Keeper", 0); pipeline.setInt("SoulCount", 0);
+            pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
+            pipeline.setFloat("Hurt", 0); pipeline.setFloat("Fear", 0); pipeline.setFloat("Plague", 0);
+            pipeline.setFloat("Comfort", 0); pipeline.setFloat("FogDensity", .055F); pipeline.setFloat("FogGround", 0);
+            pipeline.setFloat("SightFadeStart", 18); pipeline.setFloat("SightRange", 28);
+            pipeline.setFloat("SurfaceLight", 0); source(pipeline, false);
+            int healthy = lightingPlane(manager, pipeline, 8);
+            pipeline.setFloat("Corruption", 1); pipeline.setFloat("LightCorruption", 1);
+            int violet = lightingPlane(manager, pipeline, 8);
+            if ((violet >> 16 & 255) <= (violet >> 8 & 255) + 5 || (violet & 255) <= (violet >> 8 & 255) + 3)
+                throw new AssertionError("Low sanity is not subtly violet: " + id + ", pixel=" + Integer.toHexString(violet));
+            if (brightness(violet) >= brightness(healthy)) throw new AssertionError("Violet sanity lost its dimming: " + id);
+            pipeline.setFloat("Blindness", 1); pipeline.setFloat("SightRange", 5); pipeline.setFloat("SightFadeStart", 1.25F);
+            source(pipeline, true); pipeline.setFloat("SurfaceLight", 1);
+            int near = lightingPlane(manager, pipeline, 1.5F);
+            int far = lightingPlane(manager, pipeline, 8);
+            if (brightness(near) < 30 || brightness(far) > 12)
+                throw new AssertionError("Blindness lost nearby geometry or reveals distant light: " + id);
+            scene(); manager.runPipeline(pipeline);
+            try (var image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
+                image.writeToFile(mc.gameDirectory.toPath().resolve("blindness-" + id.getPath() + ".png"));
+            }
+            pipeline.setFloat("Blindness", 0); pipeline.setFloat("Darkness", 1);
+            pipeline.setFloat("SightRange", 15); pipeline.setFloat("SightFadeStart", 11.25F);
+            if (brightness(lightingPlane(manager, pipeline, 20)) > 12)
+                throw new AssertionError("Darkness reveals distant light: " + id);
+            pipeline.setFloat("Darkness", 0); pipeline.setFloat("Corruption", 0); pipeline.setFloat("LightCorruption", 0);
+            pipeline.setFloat("SightRange", 28); pipeline.setFloat("SightFadeStart", 18);
+            Maniacrev.LOGGER.info("Impaired vision PASSED: violet sanity, nearby visibility, black distant lights, blindness/darkness: {}", id);
+        }
+    }
 
     private static void keeperChecks(foundry.veil.api.client.render.post.PostProcessingManager manager) throws Exception {
         var mc = Minecraft.getInstance();

@@ -73,5 +73,6 @@ void main() {
     color = stressComposite(color, texCoord);
     float grain = hash(vec3(gl_FragCoord.xy, floor(Time * 18.0))) - 0.5;
     color += grain * instability * mix(0.008, 0.020, sanityBreath()) * edge;
+    color = impairedVision(color, texCoord, distance);
     fragColor = vec4(max(color, vec3(0.0)), original.a);
 }

@@ -17,6 +17,18 @@ public final class AtmosphereRules {
         return distanceSquared >= FOG_END * FOG_END;
     }
 
+    /** Blindness never extends normal vision; darkness retains its separate, softer falloff. */
+    public static float visionRange(float blindness, float darkness) {
+        return Math.min(FOG_END + (5 - FOG_END) * clamp(blindness),
+                FOG_END + (15 - FOG_END) * clamp(darkness));
+    }
+
+    public static float visionFadeStart(float blindness, float darkness) {
+        float range = visionRange(blindness, darkness);
+        return Math.min(FOG_FADE_START + (range * .25F - FOG_FADE_START) * clamp(blindness),
+                FOG_FADE_START + (range * .75F - FOG_FADE_START) * clamp(darkness));
+    }
+
     /** Cull the influence volume, never the emitter's center at the fog boundary. */
     public static boolean lightIntersectsView(double distance, double reach) {
         return Double.isFinite(distance) && Double.isFinite(reach) && reach >= 0 && distance < FOG_END + reach;

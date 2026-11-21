@@ -15,3 +15,5 @@ uniform int FogSamples;
 uniform float Hurt;
 uniform float Fear;
 uniform float Plague;
+uniform float Blindness;
+uniform float Darkness;

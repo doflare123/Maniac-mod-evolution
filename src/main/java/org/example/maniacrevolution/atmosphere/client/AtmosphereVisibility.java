@@ -48,8 +48,12 @@ public final class AtmosphereVisibility {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void living(RenderLivingEvent.Pre<?, ?> event) {
-        if (AtmosphereClient.hasFogLimit() && AtmosphereRules.beyondFog(event.getEntity()
-                .getPosition(event.getPartialTick()).distanceToSqr(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition()))) {
+        var mc = Minecraft.getInstance();
+        // Feed glowing models into the normal outline buffer even beyond the world's fog limit.
+        // Atmosphere erases their ordinary body first; vanilla then composites the authorized outline.
+        if (AtmosphereClient.hasFogLimit() && !mc.shouldEntityAppearGlowing(event.getEntity())
+                && !event.getEntity().hasCustomOutlineRendering(mc.player) && AtmosphereRules.beyondFog(event.getEntity()
+                .getPosition(event.getPartialTick()).distanceToSqr(mc.gameRenderer.getMainCamera().getPosition()))) {
             event.setCanceled(true);
         }
     }

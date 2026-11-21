@@ -45,6 +45,7 @@ public final class AtmosphereClient {
     private static Profile preview;
     private static boolean disabled;
     private static float previewSanity = 1;
+    private static boolean previewBlindness;
     private static float corruption, previousCorruption;
     private static final ImpactPulse IMPACT = new ImpactPulse();
     private static ClientLevel world;
@@ -104,11 +105,25 @@ public final class AtmosphereClient {
         var player = mc.player;
         if (VeilRenderControl.isBypassed() || !graphicsMode().enabled() || (!AtmosphereBenchmark.forcingProfile() && (disabled || !AtmosphereConfig.ENABLED.get())) || !viewingWorld()
                 || mc.gameRenderer.getMainCamera().getFluidInCamera() != FogType.NONE
-                || player.hasEffect(MobEffects.BLINDNESS) || player.hasEffect(MobEffects.DARKNESS)
                 || player.hasEffect(ModEffects.FORESTER_BLIND.get())) return Profile.OFF;
         if (AtmosphereBenchmark.forcingProfile()) return Profile.SURVIVOR;
         if (preview != null) return preview;
         return matchProfile();
+    }
+
+    private static float blindness() {
+        var player = Minecraft.getInstance().player;
+        if (preview != null && previewBlindness) return 1;
+        var effect = player == null ? null : player.getEffect(MobEffects.BLINDNESS);
+        return effect == null ? 0 : effect.isInfiniteDuration() ? 1
+                : AtmosphereRules.clamp(effect.getDuration() / 20F);
+    }
+
+    private static float darkness(float partialTick) {
+        var player = Minecraft.getInstance().player;
+        var effect = player == null ? null : player.getEffect(MobEffects.DARKNESS);
+        return effect == null ? 0 : AtmosphereRules.clamp(effect.getFactorData()
+                .map(data -> data.getFactor(player, partialTick)).orElse(1F));
     }
 
     @SubscribeEvent
@@ -165,6 +180,8 @@ public final class AtmosphereClient {
         float partial = mc.isPaused() ? 1 : mc.getFrameTime();
         float lightingCorruption = current == Profile.SURVIVOR
                 ? previousCorruption + (corruption - previousCorruption) * partial : 0;
+        float blind = blindness(), dark = darkness(partial);
+        float sight = AtmosphereRules.visionRange(blind, dark);
         pipeline.setFloat("Active", current == Profile.OFF ? 0 : 1);
         pipeline.setFloat("Time", time);
         pipeline.setFloat("Corruption", lightingCorruption);
@@ -173,12 +190,14 @@ public final class AtmosphereClient {
         pipeline.setFloat("FogGround", fogGround);
         pipeline.setFloat("FogDensity", 0.055F + lightingCorruption * 0.008F);
         pipeline.setFloat("Indoor", indoor);
-        pipeline.setFloat("SightFadeStart", AtmosphereRules.FOG_FADE_START);
-        pipeline.setFloat("SightRange", AtmosphereRules.FOG_END);
+        pipeline.setFloat("SightFadeStart", AtmosphereRules.visionFadeStart(blind, dark));
+        pipeline.setFloat("SightRange", sight);
+        pipeline.setFloat("Blindness", blind);
+        pipeline.setFloat("Darkness", dark);
         pipeline.setFloat("Hurt", IMPACT.value(partial));
         pipeline.setFloat("Fear", mc.player.hasEffect(ModEffects.FEAR.get()) ? comfort : 0);
         pipeline.setFloat("Plague", mc.player.hasEffect(ModEffects.PLAGUE.get()) ? 1 : 0);
-        KeeperVisionClient.upload(pipeline, current == Profile.KEEPER, preview == Profile.KEEPER, partial);
+        KeeperVisionClient.upload(pipeline, current == Profile.KEEPER && blind == 0 && dark == 0, preview == Profile.KEEPER, partial);
         pipeline.setInt("FogSamples", graphicsMode().fogSamples());
         Vec3 light = testLight ? lampPosition : holdingBurningLighter()
                 ? mc.player.getEyePosition(mc.getFrameTime()).add(0, -0.3, 0) : null;
@@ -205,6 +224,7 @@ public final class AtmosphereClient {
         preview = null;
         disabled = testLight = false;
         previewSanity = 1;
+        previewBlindness = false;
         corruption = previousCorruption = indoor = 0;
         IMPACT.reset();
         KeeperVisionClient.reset();
@@ -226,6 +246,7 @@ public final class AtmosphereClient {
 
     private static int preview(Profile value) {
         KeeperVisionClient.clearPreview();
+        previewBlindness = false;
         preview = value;
         disabled = false;
         return message("Атмосфера: " + value + ". Просмотр работает в survival/adventure; /mrvisual auto — вернуть матч.");
@@ -236,6 +257,7 @@ public final class AtmosphereClient {
         event.getDispatcher().register(Commands.literal("mrvisual")
                 .then(Commands.literal("auto").executes(c -> {
                     preview = null; disabled = false; previewSanity = 1;
+                    previewBlindness = false;
                     IMPACT.reset();
                     KeeperVisionClient.clearPreview();
                     testLight = false; removeLight();
@@ -260,6 +282,11 @@ public final class AtmosphereClient {
                     IMPACT.trigger();
                     return message("Тестовый импульс урона (здоровье не изменено).");
                 }))
+                .then(Commands.literal("blindness").then(Commands.argument("enabled", BoolArgumentType.bool()).executes(c -> {
+                    if (preview == null) return message("Сначала /mrvisual preview survivor|maniac|keeper.");
+                    previewBlindness = BoolArgumentType.getBool(c, "enabled");
+                    return message(previewBlindness ? "Тестовая слепота включена (без серверного эффекта)." : "Тестовая слепота выключена.");
+                })))
                 .then(Commands.literal("soul")
                         .then(Commands.literal("off").executes(c -> {
                             KeeperVisionClient.clearPreview();

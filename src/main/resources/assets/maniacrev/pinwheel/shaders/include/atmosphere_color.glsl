@@ -1,6 +1,6 @@
 // Shared across all quality levels. Comfort only suppresses motion/pulses, not the steady light response.
 vec3 atmosphereLightTint() {
-    return mix(vec3(1.10, 0.96, 0.78), vec3(0.66, 0.79, 1.0), smoothstep(0.10, 1.0, LightCorruption));
+    return mix(vec3(1.10, 0.96, 0.78), vec3(0.84, 0.69, 1.0), smoothstep(0.10, 1.0, LightCorruption));
 }
 
 float atmosphereLightLevel() {
@@ -11,7 +11,7 @@ float atmosphereLightLevel() {
 }
 
 vec3 atmosphereHaze(vec3 color) {
-    return color * mix(vec3(1.035, 1.0, 0.94), vec3(0.72, 0.82, 1.0), smoothstep(0.10, 1.0, LightCorruption))
+    return color * mix(vec3(1.035, 1.0, 0.94), vec3(0.96, 0.68, 1.0), smoothstep(0.10, 1.0, LightCorruption))
             * atmosphereLightLevel();
 }
 
@@ -25,5 +25,7 @@ vec3 atmosphereMaterial(vec3 source, float distance) {
     vec3 surface = mix(vec3(luma), source, saturation);
     surface = pow(max(surface, vec3(0.0)), vec3(1.14));
     surface *= mix(vec3(0.86, 0.93, 0.94), atmosphereLightTint(), 0.35 + highlight * 0.65);
+    // A small persistent violet bias also reaches neutral materials, whose base tint is green-grey.
+    surface *= mix(vec3(1.0), vec3(1.03, 0.95, 1.03), smoothstep(0.12, 1.0, LightCorruption));
     return surface * atmosphereLightLevel();
 }

@@ -30,5 +30,6 @@ void main() {
     color = color * transmission + haze * (1.0 - transmission);
     color = keeperComposite(color, direction, depth >= 0.999999 ? 100000.0 : length(viewPosition));
     color = stressComposite(color, texCoord);
+    color = impairedVision(color, texCoord, distance);
     fragColor = vec4(max(color, vec3(0.0)), source.a);
 }
