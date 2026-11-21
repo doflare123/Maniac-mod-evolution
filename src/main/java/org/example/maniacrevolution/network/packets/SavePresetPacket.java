@@ -1,11 +1,13 @@
 package org.example.maniacrevolution.network.packets;
 
+import io.netty.handler.codec.DecoderException;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
+import org.example.maniacrevolution.settings.GameSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +25,10 @@ public class SavePresetPacket {
     public SavePresetPacket(FriendlyByteBuf buf) {
         this.name = buf.readUtf(64);
         int count = buf.readInt();
-        this.perkIds = new ArrayList<>();
+        if (count < 0 || count > GameSettings.EXPERIMENTAL_PERK_LIMIT) {
+            throw new DecoderException("Invalid preset perk count: " + count);
+        }
+        this.perkIds = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             perkIds.add(buf.readUtf(64));
         }
