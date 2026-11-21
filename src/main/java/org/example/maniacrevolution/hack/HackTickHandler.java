@@ -23,7 +23,7 @@ public class HackTickHandler {
 
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
-        HackManager.get().save(event.getServer());
+        HackManager.get().saveAndWait(event.getServer());
     }
 
     @SubscribeEvent

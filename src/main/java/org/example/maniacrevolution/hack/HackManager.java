@@ -1,18 +1,29 @@
 package org.example.maniacrevolution.hack;
 
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.perk.perks.maniac.GrieferPerk;
 import org.example.maniacrevolution.perk.perks.survivor.EmergencyOverclockPerk;
 import org.example.maniacrevolution.sbersprout.SberSproutManager;
 
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -44,6 +55,10 @@ public class HackManager {
      * Один блок — одна сессия.
      */
     private final Map<BlockPos, HackSession> activeSessions = new ConcurrentHashMap<>();
+
+    // Accessed on the server thread. The task returns the last successfully saved snapshot.
+    private CompletableFuture<SaveSnapshot> saveTask = CompletableFuture.completedFuture(captureSnapshot());
+    private boolean saveRequested;
 
     private HackManager() {}
 
@@ -349,6 +364,8 @@ public class HackManager {
         }
 
         toRemove.forEach(activeSessions::remove);
+
+        if (saveRequested) save(server);
     }
 
     /**
@@ -606,31 +623,79 @@ public class HackManager {
 
     // ── Персистентность ───────────────────────────────────────────────────────
 
-    /**
-     * Сохраняет прогресс взломов в файл.
-     * Вызывать из ServerLifecycleHooks.SERVER_STOPPING или периодически.
-     */
-    public void save(net.minecraft.server.MinecraftServer server) {
+    /** Запрашивает фоновое сохранение. Вызывать в серверном потоке. */
+    public void save(MinecraftServer server) {
+        if (!saveTask.isDone()) {
+            saveRequested = true;
+            return;
+        }
+        saveRequested = false;
+        SaveSnapshot saved = saveTask.join();
+        if (saved.totalHacked() == totalHacked
+                && saved.goal() == HackConfig.COMPUTERS_NEEDED_FOR_WIN
+                && Float.compare(saved.pointsRequired(), HackConfig.HACK_POINTS_REQUIRED) == 0
+                && saved.progress().equals(hackProgress)
+                && saved.hacked().equals(hackedComputers)) {
+            return;
+        }
+
+        SaveSnapshot snapshot = captureSnapshot();
+        Path file = getDataFile(server);
+        saveTask = CompletableFuture.supplyAsync(
+                () -> writeSnapshot(file, snapshot) ? snapshot : saved, Util.ioPool());
+    }
+
+    /** При остановке дожидается текущей записи и сохраняет последние изменения. */
+    void saveAndWait(MinecraftServer server) {
+        saveTask.join();
+        save(server);
+        saveTask.join();
+    }
+
+    private SaveSnapshot captureSnapshot() {
+        return new SaveSnapshot(Map.copyOf(hackProgress), Map.copyOf(hackedComputers), totalHacked,
+                HackConfig.COMPUTERS_NEEDED_FOR_WIN, HackConfig.HACK_POINTS_REQUIRED);
+    }
+
+    private static boolean writeSnapshot(Path file, SaveSnapshot snapshot) {
+        Path temporary = null;
         try {
-            java.io.File file = getDataFile(server);
-            net.minecraft.nbt.CompoundTag root = new net.minecraft.nbt.CompoundTag();
-            net.minecraft.nbt.CompoundTag progress = new net.minecraft.nbt.CompoundTag();
-            for (var e : hackProgress.entrySet()) {
-                progress.putFloat("p_" + e.getKey(), e.getValue());
+            Files.createDirectories(file.getParent());
+            temporary = Files.createTempFile(file.getParent(), "hackdata-", ".tmp");
+            NbtIo.writeCompressed(snapshot.toTag(), temporary.toFile());
+            try (FileChannel channel = FileChannel.open(temporary, StandardOpenOption.WRITE)) {
+                channel.force(true);
             }
-            net.minecraft.nbt.CompoundTag hacked = new net.minecraft.nbt.CompoundTag();
-            for (var e : hackedComputers.entrySet()) {
-                hacked.putBoolean("h_" + e.getKey(), e.getValue());
+            Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            return true;
+        } catch (IOException | RuntimeException e) {
+            if (temporary != null) {
+                try {
+                    Files.deleteIfExists(temporary);
+                } catch (IOException | RuntimeException cleanupError) {
+                    e.addSuppressed(cleanupError);
+                }
             }
-            root.put("progress", progress);
-            root.put("hacked", hacked);
+            Maniacrev.LOGGER.warn("[HackManager] Could not save {}", file, e);
+            return false;
+        }
+    }
+
+    private record SaveSnapshot(Map<Integer, Float> progress, Map<Integer, Boolean> hacked,
+                                int totalHacked, int goal, float pointsRequired) {
+        CompoundTag toTag() {
+            CompoundTag progressTag = new CompoundTag();
+            progress.forEach((id, points) -> progressTag.putFloat("p_" + id, points));
+            CompoundTag hackedTag = new CompoundTag();
+            hacked.forEach((id, completed) -> hackedTag.putBoolean("h_" + id, completed));
+
+            CompoundTag root = new CompoundTag();
+            root.put("progress", progressTag);
+            root.put("hacked", hackedTag);
             root.putInt("totalHacked", totalHacked);
-            // Сохраняем настройки конфига чтобы они пережили рестарт
-            root.putInt("goal", HackConfig.COMPUTERS_NEEDED_FOR_WIN);
-            root.putFloat("pointsRequired", HackConfig.HACK_POINTS_REQUIRED);
-            net.minecraft.nbt.NbtIo.writeCompressed(root, file);
-        } catch (Exception e) {
-            Maniacrev.LOGGER.warn("[HackManager] Save error: {}", e.getMessage());
+            root.putInt("goal", goal);
+            root.putFloat("pointsRequired", pointsRequired);
+            return root;
         }
     }
 
@@ -638,21 +703,21 @@ public class HackManager {
      * Загружает прогресс взломов из файла.
      * Вызывать из ServerLifecycleHooks.SERVER_STARTED после HackManager.reset().
      */
-    public void load(net.minecraft.server.MinecraftServer server) {
+    public void load(MinecraftServer server) {
         try {
-            java.io.File file = getDataFile(server);
+            var file = getDataFile(server).toFile();
             if (!file.exists()) {
                 initialized = true;
                 ComputerBlockEntity.syncTrackedBlockEntities(server);
                 return;
             }
-            net.minecraft.nbt.CompoundTag root = net.minecraft.nbt.NbtIo.readCompressed(file);
-            net.minecraft.nbt.CompoundTag progress = root.getCompound("progress");
+            CompoundTag root = NbtIo.readCompressed(file);
+            CompoundTag progress = root.getCompound("progress");
             for (String key : progress.getAllKeys()) {
                 int id = Integer.parseInt(key.substring(2));
                 hackProgress.put(id, progress.getFloat(key));
             }
-            net.minecraft.nbt.CompoundTag hacked = root.getCompound("hacked");
+            CompoundTag hacked = root.getCompound("hacked");
             for (String key : hacked.getAllKeys()) {
                 int id = Integer.parseInt(key.substring(2));
                 hackedComputers.put(id, hacked.getBoolean(key));
@@ -671,15 +736,13 @@ public class HackManager {
         } catch (Exception e) {
             Maniacrev.LOGGER.warn("[HackManager] Load error: {}", e.getMessage());
             initialized = true;
+        } finally {
+            saveTask = CompletableFuture.completedFuture(captureSnapshot());
         }
     }
 
-    private static java.io.File getDataFile(net.minecraft.server.MinecraftServer server) {
-        java.io.File worldDir = server.getWorldPath(
-                net.minecraft.world.level.storage.LevelResource.ROOT).toFile();
-        java.io.File modDir = new java.io.File(worldDir, "maniacrev");
-        if (!modDir.exists()) modDir.mkdirs();
-        return new java.io.File(modDir, "hackdata.dat");
+    private static Path getDataFile(MinecraftServer server) {
+        return server.getWorldPath(LevelResource.ROOT).resolve("maniacrev").resolve("hackdata.dat");
     }
 
     /** Рассылает актуальный прогресс взломов всем клиентам для HUD. */
@@ -707,7 +770,7 @@ public class HackManager {
         }
     }
 
-    /** Сохраняет данные и немедленно синхронизирует HUD всем клиентам. */
+    /** Запрашивает сохранение и немедленно синхронизирует HUD всем клиентам. */
     public void saveAndSync(net.minecraft.server.MinecraftServer server) {
         save(server);
         sendSyncPacket(server);
