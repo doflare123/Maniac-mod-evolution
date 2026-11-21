@@ -109,3 +109,4 @@
 108 WardenStaminaPacket PLAY_TO_CLIENT
 109 org.example.maniacrevolution.atmosphere.ChaseStatePacket PLAY_TO_CLIENT
 110 KeeperVisionPacket PLAY_TO_CLIENT
+111 StaminaSyncPacket PLAY_TO_CLIENT

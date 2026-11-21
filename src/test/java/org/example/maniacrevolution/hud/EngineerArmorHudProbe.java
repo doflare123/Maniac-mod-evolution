@@ -40,7 +40,7 @@ public final class EngineerArmorHudProbe {
                 if(buy.active!=(reserves[i]<20) || buy.getMessage().getString().contains("%s"))
                     throw new AssertionError("Incorrect protection purchase button at reserve "+reserves[i]);
                 var hud = new CustomHud();
-                ((HudAnimationState)animation.get(hud)).update(1,1,0,false,false);
+                ((HudAnimationState)animation.get(hud)).update(1,1,10,0,false,false);
                 g.drawString(mc.font,"Protection: "+(int)reserves[i],20,15+i*47,0xFFD99B4E,false);
                 g.pose().pushPose(); g.pose().translate(20,28+i*47,0); g.pose().scale(2,2,2);
                 method.invoke(hud,g,mc.player,0,0); g.pose().popPose();

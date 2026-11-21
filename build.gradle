@@ -38,9 +38,10 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', layout.buildDirectory.file('createSrgToMcp/output.srg').get().asFile.absolutePath
+            args '--mixin.config', 'maniacrev.stamina.mixins.json'
             if (withVeil) {
-                property 'mixin.env.remapRefMap', 'true'
-                property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
                 args '--mixin.config', 'maniacrev.veil-development.mixins.json'
             }
 
@@ -128,11 +129,17 @@ repositories {
     maven {
         url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
     }
+    maven {
+        name = 'KosmX'
+        url = 'https://maven.kosmx.dev/'
+        content { includeGroup 'dev.kosmx.player-anim' }
+    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.4.7')
+    implementation fg.deobf('dev.kosmx.player-anim:player-animation-lib-forge:1.0.2-rc1+1.20')
     if (withVeil) {
         // The full 1.20.1 Maven JAR embeds LWJGL core and conflicts with Forge's modules.
         // Use the author's slim artifact and resolve its runtime libraries separately.
@@ -315,6 +322,7 @@ tasks.register('verifyNetworkProtocol') {
 
 tasks.named('check') {
     dependsOn tasks.named('verifyNetworkProtocol')
+    dependsOn tasks.named('verifyStamina')
     dependsOn tasks.named('verifyEngineer')
     dependsOn tasks.named('verifyNightmareSync')
     dependsOn tasks.named('verifyGameSettings')
@@ -323,6 +331,14 @@ tasks.named('check') {
     dependsOn tasks.named('verifyHelsing')
     dependsOn tasks.named('verifyRadialSelection')
     dependsOn tasks.named('verifyForester')
+}
+
+tasks.register('verifyStamina', JavaExec) {
+    group = 'verification'
+    description = 'Checks stamina timing and loads imported clips with playerAnimator.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.stamina.StaminaTest'
 }
 
 tasks.register('verifyEngineer', JavaExec) {
@@ -347,7 +363,9 @@ tasks.named('jar', Jar).configure {
                 "Implementation-Vendor": mod_authors,
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
-        if (withVeil) attributes('MixinConfigs': 'maniacrev.veil-development.mixins.json')
+        def configs = ['maniacrev.stamina.mixins.json']
+        if (withVeil) configs.add('maniacrev.veil-development.mixins.json')
+        attributes('MixinConfigs': configs.join(','))
     }
     finalizedBy 'reobfJar'
 }
@@ -364,7 +382,11 @@ tasks.register('verifyVeilVariant') {
             def textOf = { name -> jarFile.getInputStream(jarFile.getJarEntry(name)).getText('UTF-8') }
             def hasVeilDependency = textOf('META-INF/mods.toml').contains('modId="veil"')
             def hasMixinConfig = names.contains('maniacrev.veil-development.mixins.json')
-            def hasMixinManifest = jarFile.manifest.mainAttributes.getValue('MixinConfigs') != null
+            def mixinConfigs = jarFile.manifest.mainAttributes.getValue('MixinConfigs')?.split(',') ?: []
+            def hasMixinManifest = mixinConfigs.contains('maniacrev.veil-development.mixins.json')
+            if (!mixinConfigs.contains('maniacrev.stamina.mixins.json') || !names.contains('maniacrev.stamina.mixins.json')) {
+                throw new GradleException('Missing stamina mixins')
+            }
             def hasShaders = names.any { it.startsWith('assets/maniacrev/pinwheel/') }
             if ([hasVeilDependency, hasMixinConfig, hasMixinManifest, hasShaders].any { it != withVeil }) {
                 throw new GradleException("Incorrect metadata/resources for ${graphicsVariant}: ${artifact}")

@@ -9,17 +9,19 @@ final class HudAnimationState {
     private float health = Float.NaN;
     private float healthTrail = Float.NaN;
     private float mana = Float.NaN;
+    private float stamina = Float.NaN;
     private float statusVisibility;
     private float slotPulse;
     private int selectedSlot = -1;
 
-    void update(float targetHealth, float targetMana, int newSelectedSlot,
+    void update(float targetHealth, float targetMana, float targetStamina, int newSelectedSlot,
                 boolean hasContextStatus, boolean paused) {
         long now = Util.getMillis();
         if (lastUpdateMs < 0L) {
             health = targetHealth;
             healthTrail = targetHealth;
             mana = targetMana;
+            stamina = targetStamina;
             statusVisibility = hasContextStatus ? 1.0f : 0.0f;
             selectedSlot = newSelectedSlot;
             lastUpdateMs = now;
@@ -31,6 +33,7 @@ final class HudAnimationState {
 
         health = approach(health, targetHealth, delta, 14.0f);
         mana = approach(mana, targetMana, delta, 12.0f);
+        stamina = Float.isNaN(stamina) ? targetStamina : approach(stamina, targetStamina, delta, 15.0f);
 
         if (targetHealth >= healthTrail) {
             healthTrail = targetHealth;
@@ -58,6 +61,14 @@ final class HudAnimationState {
 
     float mana() {
         return mana;
+    }
+
+    float stamina() {
+        return stamina;
+    }
+
+    void resetStamina() {
+        stamina = Float.NaN;
     }
 
     float statusVisibility() {

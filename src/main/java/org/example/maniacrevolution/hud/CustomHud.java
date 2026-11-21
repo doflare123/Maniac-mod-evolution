@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -37,6 +38,8 @@ import org.example.maniacrevolution.mana.ClientManaData;
 import org.example.maniacrevolution.perk.PerkType;
 import org.example.maniacrevolution.perk.perks.maniac.BouquetToTheOtherSidePerk;
 import org.example.maniacrevolution.settings.ClientGameSettings;
+import org.example.maniacrevolution.stamina.Stamina;
+import org.example.maniacrevolution.stamina.client.ClientStamina;
 import org.example.maniacrevolution.util.PlayerModeUtil;
 
 import java.util.Comparator;
@@ -65,6 +68,7 @@ public class CustomHud implements IGuiOverlay {
     private static final int CHAT_HUD_OFFSET = 14;
     private static final int RESOURCE_BAR_WIDTH = 120;
     private static final int RESOURCE_BAR_HEIGHT = 14;
+    private static final int STAMINA_BAR_HEIGHT = 6;
     private static final int ADDICTION_INDICATOR_WIDTH = 68;
     private static final int BOUQUET_FLOWER_ICON_CENTER = 8;
     private static final int BOUQUET_FLOWER_HORIZONTAL_SPACING = 7;
@@ -82,6 +86,7 @@ public class CustomHud implements IGuiOverlay {
     private static final int HP_COLOR = 0xFFE04444;
     private static final int HP_TRAIL_COLOR = 0xFFC98A8A;
     private static final int MANA_COLOR = 0xFF3C9FE8;
+    private static final int STAMINA_COLOR = 0xFFFFC857;
     private static final int ABSORPTION_COLOR = 0xFFFFC94A;
     private static final int SCRAP_ARMOR_COLOR = 0xFF65717D;
     private static final int PENALTY_BG = 0xD02A1115;
@@ -109,6 +114,7 @@ public class CustomHud implements IGuiOverlay {
     private static int activePerkCenterY = Integer.MIN_VALUE;
 
     private final HudAnimationState animation = new HudAnimationState();
+    private LocalPlayer staminaPlayer;
     private final Map<MobEffect, TimedEffectState> timedEffectStates = new HashMap<>();
     private ItemStack lastSelectedItem = ItemStack.EMPTY;
     private UUID timedEffectPlayer;
@@ -135,7 +141,7 @@ public class CustomHud implements IGuiOverlay {
     private void renderHud(GuiGraphics gui, float partialTick, int screenWidth,
                            int screenHeight, boolean chatOpen) {
         Minecraft mc = Minecraft.getInstance();
-        Player player = mc.player;
+        LocalPlayer player = mc.player;
         if (mc.options.hideGui || player == null || !PlayerModeUtil.isSurvivalOrAdventure(player)
                 || !HudConfig.isCustomHudEnabled()) {
             return;
@@ -144,7 +150,12 @@ public class CustomHud implements IGuiOverlay {
         float healthPercent = safeRatio(player.getHealth(), player.getMaxHealth());
         float manaPercent = ClientManaData.getManaPercentage();
         boolean hasStatus = hasContextStatus(player);
-        animation.update(healthPercent, manaPercent, player.getInventory().selected, hasStatus, mc.isPaused());
+        if (staminaPlayer != player) {
+            staminaPlayer = player;
+            animation.resetStamina();
+        }
+        animation.update(healthPercent, manaPercent, ClientStamina.cells(player),
+                player.getInventory().selected, hasStatus, mc.isPaused());
 
         int hudY = screenHeight - HUD_HEIGHT - 4 - (chatOpen ? CHAT_HUD_OFFSET : 0);
 
@@ -369,6 +380,7 @@ public class CustomHud implements IGuiOverlay {
         int effectsY = y + 4;
         renderHealthBar(gui, player, healthX, resourcesY);
         renderManaBar(gui, manaX, resourcesY);
+        renderStaminaBar(gui, manaX, resourcesY + RESOURCE_BAR_HEIGHT + 2);
 
         int currentX = effectX;
 
@@ -470,6 +482,30 @@ public class CustomHud implements IGuiOverlay {
                     x + RESOURCE_BAR_WIDTH - Minecraft.getInstance().font.width(regenText) - 2,
                     y - 8, 0xFF8ED1FF, true);
         }
+    }
+
+    private void renderStaminaBar(GuiGraphics gui, int x, int y) {
+        gui.fill(x, y, x + RESOURCE_BAR_WIDTH, y + STAMINA_BAR_HEIGHT, PANEL_BG);
+        gui.renderOutline(x, y, RESOURCE_BAR_WIDTH, STAMINA_BAR_HEIGHT, PANEL_BORDER);
+
+        float amount = animation.stamina();
+        int width = RESOURCE_BAR_WIDTH - 1;
+        gui.pose().pushPose();
+        gui.pose().translate(x, y, 0);
+        // Keep the edge smooth at GUI scales where individual cells are only a few pixels wide.
+        int precision = 8;
+        gui.pose().scale(1.0f / precision, 1.0f, 1.0f);
+        for (int cell = 0; cell < Stamina.CELLS; cell++) {
+            int left = (1 + cell * width / Stamina.CELLS) * precision;
+            int right = ((cell + 1) * width / Stamina.CELLS) * precision;
+            gui.fill(left, 1, right, STAMINA_BAR_HEIGHT - 1, 0xFF352B1E);
+            int filled = Math.round((right - left) * Mth.clamp(amount - cell, 0.0f, 1.0f));
+            if (filled > 0) {
+                gui.fill(left, 1, left + filled, STAMINA_BAR_HEIGHT - 1, STAMINA_COLOR);
+                gui.fill(left, 1, left + filled, 2, 0xFFFFE3A2);
+            }
+        }
+        gui.pose().popPose();
     }
 
     private void renderPerkSlot(GuiGraphics gui, ClientPlayerData.ClientPerkData perk,

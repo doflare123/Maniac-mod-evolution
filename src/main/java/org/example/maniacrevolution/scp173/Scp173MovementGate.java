@@ -4,8 +4,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import org.example.maniacrevolution.stamina.StaminaManager;
 
 /** Gate decoded vanilla movement before the vanilla listener. No reflection or mixin mappings. */
 public final class Scp173MovementGate extends ChannelInboundHandlerAdapter {
@@ -25,13 +27,18 @@ public final class Scp173MovementGate extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) throws Exception {
         if (!(message instanceof ServerboundMovePlayerPacket || message instanceof ServerboundMoveVehiclePacket
-                || message instanceof ServerboundPlayerInputPacket)) {
+                || message instanceof ServerboundPlayerInputPacket || isSprintCommand(message))) {
             super.channelRead(ctx, message);
             return;
         }
         // Match vanilla's main-thread enqueue. Never inspect players/worlds on Netty's thread.
         listener.player.getServer().execute(() -> {
             if (!listener.connection.isConnected()) return;
+            if (message instanceof ServerboundPlayerCommandPacket sprint) {
+                if (sprint.getAction() == ServerboundPlayerCommandPacket.Action.STOP_SPRINTING
+                        || StaminaManager.canSprint(listener.player)) listener.handlePlayerCommand(sprint);
+                return;
+            }
             // listener survives respawn; the player instance does not.
             Object accepted = filter(listener.player, message);
             if (accepted == null) return;
@@ -42,6 +49,12 @@ public final class Scp173MovementGate extends ChannelInboundHandlerAdapter {
             else if (accepted instanceof ServerboundPlayerInputPacket input) listener.handlePlayerInput(input);
             else if (accepted instanceof ServerboundMoveVehiclePacket vehicle) listener.handleMoveVehicle(vehicle);
         });
+    }
+
+    private static boolean isSprintCommand(Object message) {
+        return message instanceof ServerboundPlayerCommandPacket command
+                && (command.getAction() == ServerboundPlayerCommandPacket.Action.START_SPRINTING
+                || command.getAction() == ServerboundPlayerCommandPacket.Action.STOP_SPRINTING);
     }
 
     static void handleMove(ServerGamePacketListenerImpl listener, ServerboundMovePlayerPacket move) {
@@ -79,6 +92,7 @@ public final class Scp173MovementGate extends ChannelInboundHandlerAdapter {
             return message; // Vanilla rejects invalid movement before a mod cooldown can issue a correction.
         boolean jumpBlocked = org.example.maniacrevolution.util.PlayerModeUtil.isSurvivalOrAdventure(p)
                 && p.hasEffect(org.example.maniacrevolution.effect.ModEffects.JUMP_COOLDOWN.get());
+        jumpBlocked |= message instanceof ServerboundMovePlayerPacket && !StaminaManager.canJump(p);
         if ((Scp173Manager.active(p) || jumpBlocked) && !Scp173Manager.held(p) && message instanceof ServerboundMovePlayerPacket move
                 && p.onGround() && move.getY(p.getY()) > p.getY() + 1.0e-6 && p.getDeltaMovement().y <= 0
                 && !p.onClimbable() && !p.isInWaterOrBubble() && !p.isInLava()) {
