@@ -46,8 +46,8 @@ public class ClientScreenHelper {
         }
     }
 
-    public static void openResurrectionScreen() {
-        Minecraft.getInstance().setScreen(new org.example.maniacrevolution.gui.ResurrectionScreen());
+    public static void openResurrectionScreen(UUID ritualId) {
+        Minecraft.getInstance().setScreen(new org.example.maniacrevolution.gui.ResurrectionScreen(ritualId));
     }
 
     public static void openMedicTabletScreen() {

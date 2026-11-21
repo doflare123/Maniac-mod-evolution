@@ -235,6 +235,14 @@ tasks.register('verifyPlayerDataSync', JavaExec) {
     mainClass = 'org.example.maniacrevolution.network.packets.PlayerDataSyncTest'
 }
 
+tasks.register('verifyNecromancerResurrection', JavaExec) {
+    group = 'verification'
+    description = 'Checks the lifecycle of server-issued resurrection permits.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.example.maniacrevolution.necromancer.NecromancerResurrectionTest'
+}
+
 tasks.register('verifyHelsing', JavaExec) {
     group = 'verification'
     description = 'Checks Helsing rune costs, cooldown freezing and prey acquisition.'
@@ -311,6 +319,7 @@ tasks.named('check') {
     dependsOn tasks.named('verifyNightmareSync')
     dependsOn tasks.named('verifyGameSettings')
     dependsOn tasks.named('verifyPlayerDataSync')
+    dependsOn tasks.named('verifyNecromancerResurrection')
     dependsOn tasks.named('verifyHelsing')
     dependsOn tasks.named('verifyRadialSelection')
     dependsOn tasks.named('verifyForester')

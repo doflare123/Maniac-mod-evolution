@@ -13,11 +13,14 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import org.example.maniacrevolution.mana.ManaProvider;
+import org.example.maniacrevolution.necromancer.NecromancerProvider;
+import org.example.maniacrevolution.necromancer.NecromancerResurrection;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.OpenResurrectionGuiPacket;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
 public class NecromancerStaffItem extends Item {
     private static final int USE_DURATION = 100; // 5 секунд (20 тиков = 1 секунда)
@@ -47,9 +50,9 @@ public class NecromancerStaffItem extends Item {
         ItemStack itemStack = player.getItemInHand(hand);
 
         if (!level.isClientSide()) {
-            if (!(player instanceof ServerPlayer serverPlayer) || !isNecromancer(serverPlayer)) {
+            if (!(player instanceof ServerPlayer serverPlayer) || !NecromancerResurrection.canCast(serverPlayer)) {
                 player.displayClientMessage(
-                        Component.literal("§cТолько некромант может использовать этот посох!"),
+                        Component.literal("§cПосох доступен только живому некроманту из команды выживших во время матча."),
                         true
                 );
                 return InteractionResultHolder.fail(itemStack);
@@ -86,31 +89,25 @@ public class NecromancerStaffItem extends Item {
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         if (entity instanceof ServerPlayer player) {
-            if (!isNecromancer(player)) {
+            if (!NecromancerResurrection.canCast(player)) {
                 player.displayClientMessage(
-                        Component.literal("§cРитуал прерван: вы больше не некромант."),
+                        Component.literal("§cРитуал прерван: воскрешение сейчас недоступно."),
                         true
                 );
                 return stack;
             }
 
-            // Потребляем ману
-            player.getCapability(ManaProvider.MANA).ifPresent(mana -> {
-                if (mana.consumeMana(MANA_COST)) {
-                    // Повреждаем посох за успешное использование
-                    stack.hurtAndBreak(DAMAGE_ON_SUCCESS, player, (p) -> {
-                        p.broadcastBreakEvent(player.getUsedItemHand());
-                    });
+            var necromancer = player.getCapability(NecromancerProvider.NECROMANCER).orElse(null);
+            if (necromancer == null || !player.getCapability(ManaProvider.MANA)
+                    .map(mana -> mana.consumeMana(MANA_COST)).orElse(false)) {
+                return stack;
+            }
 
-                    // Открываем GUI для выбора игрока
-                    ModNetworking.sendToPlayer(new OpenResurrectionGuiPacket(), player);
+            stack.hurtAndBreak(DAMAGE_ON_SUCCESS, player, p -> p.broadcastBreakEvent(player.getUsedItemHand()));
 
-                    player.displayClientMessage(
-                            Component.literal("§5Выберите душу для воскрешения..."),
-                            true
-                    );
-                }
-            });
+            UUID ritualId = necromancer.grantResurrection(player.server.getTickCount());
+            ModNetworking.sendToPlayer(new OpenResurrectionGuiPacket(ritualId), player);
+            player.displayClientMessage(Component.literal("§5Выберите душу для воскрешения..."), true);
         }
 
         return stack;
@@ -187,14 +184,5 @@ public class NecromancerStaffItem extends Item {
     @Override
     public UseAnim getUseAnimation(ItemStack stack) {
         return UseAnim.BOW;
-    }
-
-    private static boolean isNecromancer(ServerPlayer player) {
-        net.minecraft.world.scores.Objective objective =
-                player.getScoreboard().getObjective("SurvivorClass");
-        if (objective == null) return false;
-        return player.getScoreboard()
-                .getOrCreatePlayerScore(player.getScoreboardName(), objective)
-                .getScore() == 8;
     }
 }

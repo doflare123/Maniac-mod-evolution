@@ -20,6 +20,7 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
+import org.example.maniacrevolution.necromancer.NecromancerResurrection;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.GameStatePacket;
 import org.example.maniacrevolution.nightmare.NightmareConfig;
@@ -124,6 +125,8 @@ public class GameManager {
                 PlayerData data = PlayerDataManager.get(player);
                 data.onPhaseChange(player, newPhase);
             }
+        } else {
+            NecromancerResurrection.clearPending(server);
         }
 
         syncGameState();
@@ -199,6 +202,7 @@ public class GameManager {
 
     public static void startGame(CommandSourceStack source) {
         if (server == null) return;
+        NecromancerResurrection.clearPending(server);
         org.example.maniacrevolution.techies.TechiesManager.resetMatch(server);
         org.example.maniacrevolution.engineer.EngineerManager.resetMatch(server);
 

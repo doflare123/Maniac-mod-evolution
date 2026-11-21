@@ -4,10 +4,12 @@ import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterType;
 
 public class NecromancerClass extends CharacterClass {
+    public static final int SCOREBOARD_ID = 8;
+
     public NecromancerClass() {
         super("necromancer", "Некромант", CharacterType.SURVIVOR,
                 "Душа ушла к богам, так что тело им не нужно",
-                8, 2); // ID для scoreboard
+                SCOREBOARD_ID, 2);
 
         // Тэги
         addTag("Поддержка");

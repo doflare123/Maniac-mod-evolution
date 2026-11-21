@@ -9,22 +9,27 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.network.NetworkEvent;
+import org.example.maniacrevolution.necromancer.NecromancerProvider;
+import org.example.maniacrevolution.necromancer.NecromancerResurrection;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
 public class ResurrectPlayerPacket {
+    private final UUID ritualId;
     private final UUID targetPlayerUUID;
 
-    public ResurrectPlayerPacket(UUID targetPlayerUUID) {
+    public ResurrectPlayerPacket(UUID ritualId, UUID targetPlayerUUID) {
+        this.ritualId = ritualId;
         this.targetPlayerUUID = targetPlayerUUID;
     }
 
     public ResurrectPlayerPacket(FriendlyByteBuf buf) {
-        this.targetPlayerUUID = buf.readUUID();
+        this(buf.readUUID(), buf.readUUID());
     }
 
     public void toBytes(FriendlyByteBuf buf) {
+        buf.writeUUID(ritualId);
         buf.writeUUID(targetPlayerUUID);
     }
 
@@ -34,29 +39,21 @@ public class ResurrectPlayerPacket {
             ServerPlayer sender = ctx.getSender();
             if (sender == null) return;
 
-            // Находим целевого игрока
+            var necromancer = sender.getCapability(NecromancerProvider.NECROMANCER).orElse(null);
+            int currentTick = sender.server.getTickCount();
+            if (necromancer == null || !necromancer.hasPendingResurrection(ritualId, currentTick)
+                    || !NecromancerResurrection.canCast(sender)) {
+                sender.displayClientMessage(Component.literal("§cРитуал воскрешения недоступен."), false);
+                return;
+            }
+
             ServerPlayer target = sender.server.getPlayerList().getPlayer(targetPlayerUUID);
-            if (target == null) {
-                sender.displayClientMessage(
-                        Component.literal("§cИгрок не найден!"),
-                        false
-                );
+            if (target == null || !NecromancerResurrection.isEligibleTarget(target)) {
+                sender.displayClientMessage(Component.literal("§cЭтого игрока уже нельзя воскресить."), false);
                 return;
             }
 
-            // Проверяем, что игрок в спектаторе
-            if (target.gameMode.getGameModeForPlayer() != GameType.SPECTATOR) {
-                sender.displayClientMessage(
-                        Component.literal("§cИгрок не мёртв!"),
-                        false
-                );
-                return;
-            }
-
-            // Проверяем команду (если нужно)
-            // Здесь нужно добавить проверку team survivors
-
-            // Воскрешаем игрока
+            if (!necromancer.consumeResurrection(ritualId, currentTick)) return;
             resurrectPlayer(target, sender);
 
             // Сообщения

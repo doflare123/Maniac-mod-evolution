@@ -33,6 +33,7 @@ allprojects {
             property 'maniacrev.atmosphere.mapBenchmark', project.findProperty('atmosphereMapBenchmark') ?: ''
             property 'maniacrev.atmosphere.mapBenchmarkMode', project.findProperty('atmosphereMapBenchmarkMode') ?: 'HEAVY'
             property 'maniacrev.atmosphere.mapBenchmarkWidth', project.findProperty('atmosphereMapBenchmarkWidth') ?: '3840'
+            property 'maniacrev.atmosphere.mapLightBreakdown', project.hasProperty('atmosphereMapLightBreakdown').toString()
             property 'maniacrev.atmosphere.probeWidth', project.findProperty('atmosphereProbeWidth') ?: '0'
             mods { maniacrev { source sourceSets.test } }
             args '--width', mapProbe ? '3840' : '960', '--height', mapProbe ? '2160' : '540'

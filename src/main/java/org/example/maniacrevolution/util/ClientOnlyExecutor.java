@@ -40,8 +40,8 @@ public final class ClientOnlyExecutor {
         run("openGuiByType", new Class<?>[]{String.class}, new Object[]{typeName});
     }
 
-    public static void openResurrectionScreen() {
-        runNoArgs("openResurrectionScreen");
+    public static void openResurrectionScreen(UUID ritualId) {
+        run("openResurrectionScreen", new Class<?>[]{UUID.class}, new Object[]{ritualId});
     }
 
     public static void openMedicTabletScreen() {

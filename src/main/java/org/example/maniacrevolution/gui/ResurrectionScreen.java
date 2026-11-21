@@ -20,6 +20,7 @@ public class ResurrectionScreen extends Screen {
     private static final int FRAME_WIDTH = 256;
     private static final int FRAME_HEIGHT = 200;
 
+    private final UUID ritualId;
     private List<DeadPlayer> deadPlayers = new ArrayList<>();
     private static List<DeadPlayer> pendingDeadPlayers = new ArrayList<>();
     private int selectedIndex = -1;
@@ -28,8 +29,9 @@ public class ResurrectionScreen extends Screen {
 
     private float animationTick = 0;
 
-    public ResurrectionScreen() {
+    public ResurrectionScreen(UUID ritualId) {
         super(Component.literal("Воскрешение"));
+        this.ritualId = ritualId;
     }
 
     @Override
@@ -41,7 +43,7 @@ public class ResurrectionScreen extends Screen {
         pendingDeadPlayers.clear();
 
         // Запрашиваем список мёртвых игроков с сервера
-        ModNetworking.sendToServer(new RequestDeadPlayersPacket());
+        ModNetworking.sendToServer(new RequestDeadPlayersPacket(ritualId));
 
         System.out.println("[ResurrectionScreen] Sent request for dead players");
     }
@@ -289,7 +291,7 @@ public class ResurrectionScreen extends Screen {
 
     private void resurrectPlayer(DeadPlayer player) {
         // Отправляем пакет на сервер
-        ModNetworking.sendToServer(new ResurrectPlayerPacket(player.uuid));
+        ModNetworking.sendToServer(new ResurrectPlayerPacket(ritualId, player.uuid));
         this.onClose();
     }
 

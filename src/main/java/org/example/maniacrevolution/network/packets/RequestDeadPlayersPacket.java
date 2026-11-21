@@ -3,6 +3,8 @@ package org.example.maniacrevolution.network.packets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
+import org.example.maniacrevolution.necromancer.NecromancerProvider;
+import org.example.maniacrevolution.necromancer.NecromancerResurrection;
 import org.example.maniacrevolution.network.ModNetworking;
 
 import java.util.ArrayList;
@@ -11,39 +13,39 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 public class RequestDeadPlayersPacket {
+    private final UUID ritualId;
 
-    public RequestDeadPlayersPacket() {
+    public RequestDeadPlayersPacket(UUID ritualId) {
+        this.ritualId = ritualId;
     }
 
     public static RequestDeadPlayersPacket decode(FriendlyByteBuf buffer) {
-        return new RequestDeadPlayersPacket();
+        return new RequestDeadPlayersPacket(buffer.readUUID());
     }
 
     public void encode(FriendlyByteBuf buffer) {
-        // Пустой пакет
+        buffer.writeUUID(ritualId);
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
             ServerPlayer sender = context.getSender();
-            if (sender == null) {
+            if (sender == null || !NecromancerResurrection.canCast(sender)) {
+                return;
+            }
+
+            var necromancer = sender.getCapability(NecromancerProvider.NECROMANCER).orElse(null);
+            if (necromancer == null || !necromancer.hasPendingResurrection(ritualId, sender.server.getTickCount())) {
                 return;
             }
 
             // Собираем список мёртвых игроков
             List<DeadPlayerInfo> deadPlayers = new ArrayList<>();
 
-            for (ServerPlayer player : sender.getServer().getPlayerList().getPlayers()) {
-                if (player.isSpectator()) {
-                    var team = player.getTeam();
-
-                    if (team != null && "survivors".equalsIgnoreCase(team.getName())) {
-                        deadPlayers.add(new DeadPlayerInfo(
-                                player.getUUID(),
-                                player.getName().getString()
-                        ));
-                    }
+            for (ServerPlayer player : sender.server.getPlayerList().getPlayers()) {
+                if (NecromancerResurrection.isEligibleTarget(player)) {
+                    deadPlayers.add(new DeadPlayerInfo(player.getUUID(), player.getName().getString()));
                 }
             }
 
