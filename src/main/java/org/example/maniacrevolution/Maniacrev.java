@@ -81,6 +81,9 @@ public class Maniacrev {
     public Maniacrev() {
         GeckoLib.initialize();
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                net.minecraftforge.fml.config.ModConfig.Type.CLIENT,
+                org.example.maniacrevolution.atmosphere.AtmosphereConfig.SPEC, "maniacrev-atmosphere.toml");
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
                 net.minecraftforge.fml.config.ModConfig.Type.SERVER,
                 org.example.maniacrevolution.helsing.HelsingConfig.SPEC, "maniacrev-helsing.toml");
 

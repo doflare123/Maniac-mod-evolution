@@ -9,6 +9,7 @@ import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.settings.GameSettings;
+import org.example.maniacrevolution.settings.GraphicsMode;
 
 import java.util.function.Supplier;
 
@@ -32,6 +33,7 @@ public class UpdateSettingsPacket {
     private final int   computersNeededForWin;
     // Эксперименты
     private final boolean threePerksEnabled;
+    private final GraphicsMode graphicsMode;
 
     public UpdateSettingsPacket(int hpBoost,
                                 int maniacCount, int gameTime, int selectedMap,
@@ -41,7 +43,7 @@ public class UpdateSettingsPacket {
                                 int qteIntervalMin, int qteIntervalMax,
                                 float qteSuccessBonus, float qteCritBonus,
                                 int computersNeededForWin,
-                                boolean threePerksEnabled) {
+                                boolean threePerksEnabled, GraphicsMode graphicsMode) {
         this.hpBoost              = hpBoost;
         this.maniacCount          = maniacCount;
         this.gameTime             = gameTime;
@@ -58,6 +60,7 @@ public class UpdateSettingsPacket {
         this.qteCritBonus         = qteCritBonus;
         this.computersNeededForWin = computersNeededForWin;
         this.threePerksEnabled    = threePerksEnabled;
+        this.graphicsMode = graphicsMode == null ? GraphicsMode.NORMAL : graphicsMode;
     }
 
     public static void encode(UpdateSettingsPacket msg, FriendlyByteBuf buf) {
@@ -77,6 +80,7 @@ public class UpdateSettingsPacket {
         buf.writeFloat(msg.qteCritBonus);
         buf.writeInt(msg.computersNeededForWin);
         buf.writeBoolean(msg.threePerksEnabled);
+        buf.writeVarInt(msg.graphicsMode.id());
     }
 
     public static UpdateSettingsPacket decode(FriendlyByteBuf buf) {
@@ -88,7 +92,7 @@ public class UpdateSettingsPacket {
                 buf.readInt(), buf.readInt(),
                 buf.readFloat(), buf.readFloat(),
                 buf.readInt(),
-                buf.readBoolean()
+                buf.readBoolean(), GraphicsMode.fromId(buf.readVarInt())
         );
     }
 
@@ -125,6 +129,7 @@ public class UpdateSettingsPacket {
             s.setQteCritBonus(msg.qteCritBonus);
             s.setComputersNeededForWin(msg.computersNeededForWin);
             s.setThreePerksEnabled(msg.threePerksEnabled);
+            s.setGraphicsMode(msg.graphicsMode);
 
             if (wasThreePerksEnabled && !msg.threePerksEnabled) {
                 for (ServerPlayer onlinePlayer : player.server.getPlayerList().getPlayers()) {

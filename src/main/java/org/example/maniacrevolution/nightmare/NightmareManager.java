@@ -23,6 +23,7 @@ import org.example.maniacrevolution.maze.MazeManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.NightmareScreamerPacket;
 import org.example.maniacrevolution.network.packets.SyncNightmarePacket;
+import org.example.maniacrevolution.network.packets.KeeperVisionPacket;
 import org.example.maniacrevolution.perk.perks.survivor.RealityAnchorPerk;
 import org.example.maniacrevolution.util.ManiacDamageAttribution;
 
@@ -46,12 +47,14 @@ public final class NightmareManager {
     private final Map<UUID, NightmarePlayerState> states = new ConcurrentHashMap<>();
     private final Map<UUID, NightmareSyncState> lastSentStates = new HashMap<>();
     private final Map<UUID, Integer> lastSentTicks = new HashMap<>();
+    private final Map<UUID, UUID> feedingKeepers = new HashMap<>();
     private UUID sessionId = UUID.randomUUID();
     private int nextTrialIndex;
 
     private NightmareManager() {}
 
     public void tick(MinecraftServer server) {
+        feedingKeepers.clear();
         List<ServerPlayer> players = server.getPlayerList().getPlayers();
         boolean keeperPresent = players.stream().anyMatch(this::isKeeper);
 
@@ -78,6 +81,30 @@ public final class NightmareManager {
             }
 
             sync(player, state, keeperPresent);
+        }
+        if (server.getTickCount() % KeeperSoulState.REFRESH_TICKS == 0) syncKeeperVision(keepers, players);
+    }
+
+    private void syncKeeperVision(List<ServerPlayer> keepers, List<ServerPlayer> players) {
+        for (ServerPlayer keeper : keepers) {
+            var souls = new ArrayList<KeeperSoulState>();
+            if (keeper.isAlive() && !keeper.isCreative() && !keeper.isSpectator()) {
+                players.stream()
+                        .filter(target -> target != keeper && target.isAlive() && !target.isCreative() && !target.isSpectator())
+                        .filter(target -> target.getTeam() != null && "survivors".equals(target.getTeam().getName()))
+                        .filter(target -> target.level() == keeper.level()
+                                && keeper.distanceToSqr(target) <= NightmareConfig.GAZE_RANGE * NightmareConfig.GAZE_RANGE)
+                        .filter(target -> !target.isInvisibleTo(keeper) && keeper.hasLineOfSight(target))
+                        .filter(target -> states.containsKey(target.getUUID()) && !states.get(target.getUUID()).isInTrial())
+                        .sorted(Comparator.<ServerPlayer, Boolean>comparing(target ->
+                                        !keeper.getUUID().equals(feedingKeepers.get(target.getUUID())))
+                                .thenComparingDouble(keeper::distanceToSqr))
+                        .limit(KeeperSoulState.MAX_SOULS)
+                        .forEach(target -> souls.add(new KeeperSoulState(target.getUUID(),
+                                states.get(target.getUUID()).sanity / NightmareConfig.MAX_SANITY,
+                                keeper.getUUID().equals(feedingKeepers.get(target.getUUID())))));
+            }
+            ModNetworking.sendToPlayer(new KeeperVisionPacket(souls), keeper);
         }
     }
 
@@ -190,6 +217,7 @@ public final class NightmareManager {
     }
 
     public void invalidateSync(ServerPlayer player) {
+        feedingKeepers.remove(player.getUUID());
         lastSentStates.remove(player.getUUID());
         lastSentTicks.remove(player.getUUID());
     }
@@ -204,6 +232,7 @@ public final class NightmareManager {
         states.clear();
         lastSentStates.clear();
         lastSentTicks.clear();
+        feedingKeepers.clear();
         nextTrialIndex = 0;
         sessionId = UUID.randomUUID();
         MazeManager.getInstance().clearAll();
@@ -273,6 +302,7 @@ public final class NightmareManager {
             state.lastGazeTick = tick;
             if (state.sanity > NightmareConfig.SANITY_BREAKPOINT) {
                 state.responsibleKeeperId = responsibleWatcher.getUUID();
+                feedingKeepers.put(player.getUUID(), responsibleWatcher.getUUID());
             }
             state.sanity = Math.max(0.0F, state.sanity - NightmareConfig.SANITY_DRAIN_PER_TICK);
         } else if (tick - state.lastGazeTick >= NightmareConfig.SANITY_REGEN_DELAY_TICKS) {

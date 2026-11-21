@@ -1,0 +1,21 @@
+// Real benchmark command lifecycle on a separately prepared save copy.
+allprojects {
+    afterEvaluate {
+        def sync = tasks.register('syncPortableBenchmarkResources', Copy) {
+            from(project.file('src/main/resources')) {
+                include 'assets/maniacrev/pinwheel/**'
+                include 'maniacrev.veil-development.mixins.json'
+            }
+            into project.layout.buildDirectory.dir('resources/main')
+            mustRunAfter tasks.named('processResources')
+        }
+        tasks.named('compileTestJava').configure { dependsOn sync }
+        tasks.matching { it.name == 'runClient' }.configureEach { dependsOn sync }
+        minecraft.runs.client {
+            workingDirectory project.file('run/benchmark-smoke-client')
+            property 'maniacrev.benchmark.smoke', 'true'
+            mods { maniacrev { source sourceSets.test } }
+            args '--width', '1600', '--height', '900'
+        }
+    }
+}

@@ -31,6 +31,11 @@ public final class ClientNightmareData {
         return true;
     }
 
+    /** Server activation flag, separate from the always-visible sanity HUD. */
+    public static boolean isActive() {
+        return visible;
+    }
+
     public static float getSanityPercent() {
         return maxSanity <= 0.0F ? 0.0F : Math.max(0.0F, Math.min(1.0F, sanity / maxSanity));
     }

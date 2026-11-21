@@ -1,0 +1,20 @@
+{
+  "stages": [
+    { "type": "veil:blit", "shader": "maniacrev:atmosphere_light_volume", "in": "veil:post", "out": "atmosphere_light_volume" },
+    { "type": "veil:blit", "shader": "maniacrev:atmosphere_light_reduced", "in": "veil:post", "out": "atmosphere_light_reduced_swap" },
+    { "type": "veil:copy", "in": "atmosphere_light_reduced_swap", "out": "veil:post", "color": true, "depth": false }
+  ],
+  "textures": {
+    "LightFogSampler": { "type": "framebuffer", "name": "atmosphere_light_volume" },
+    "LightFogDistanceSampler": { "type": "framebuffer", "name": "atmosphere_light_volume", "sampler": 1 }
+  },
+  "framebuffers": {
+    "atmosphere_light_volume": {
+      "width": "q.screen_height >= 1080 ? math.ceil(q.screen_width / 2) : 1",
+      "height": "q.screen_height >= 1080 ? math.ceil(q.screen_height / 2) : 1",
+      "depth": false,
+      "color_buffers": [ { "format": "RGBA16F" }, { "format": "R32F" } ]
+    },
+    "atmosphere_light_reduced_swap": { "depth": false, "format": "RGBA16F" }
+  }
+}

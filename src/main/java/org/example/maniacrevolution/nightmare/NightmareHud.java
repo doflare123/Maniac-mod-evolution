@@ -33,7 +33,6 @@ public final class NightmareHud {
         if (mc.player == null) return;
 
         if (ClientNightmareData.isVisible()) {
-            renderSanityVignette(gui, screenWidth, screenHeight);
             int panelX = 6;
             int bottomOffset = 4 + (mc.screen instanceof ChatScreen ? 14 : 0);
             int panelY = screenHeight - PANEL_HEIGHT - bottomOffset;
@@ -104,23 +103,6 @@ public final class NightmareHud {
         }
 
         renderSanitySegments(gui, contentX, y + 20, sanity, corruption);
-    }
-
-    private static void renderSanityVignette(GuiGraphics gui, int screenWidth, int screenHeight) {
-        float corruption = 1.0F - ClientNightmareData.getSanityPercent();
-        if (corruption <= 0.04F) return;
-
-        int alpha = (int) (Math.min(0.82F, corruption * corruption * 0.95F) * 255.0F);
-        int color = (alpha << 24) | 0x050009;
-        int sideWidth = Math.max(12, (int) (screenWidth * (0.08F + corruption * 0.20F)));
-        int verticalHeight = Math.max(8, (int) (screenHeight * (0.04F + corruption * 0.10F)));
-
-        RenderSystem.enableBlend();
-        gui.fill(0, 0, sideWidth, screenHeight, color);
-        gui.fill(screenWidth - sideWidth, 0, screenWidth, screenHeight, color);
-        gui.fill(0, 0, screenWidth, verticalHeight, color);
-        gui.fill(0, screenHeight - verticalHeight, screenWidth, screenHeight, color);
-        RenderSystem.disableBlend();
     }
 
     private static void renderSanitySegments(GuiGraphics gui, int x, int y,

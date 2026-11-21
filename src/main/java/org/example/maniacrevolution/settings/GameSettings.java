@@ -14,6 +14,7 @@ public class GameSettings extends SavedData {
     private int maniacCount   = 1;
     private int gameTime      = 10;
     private int selectedMap   = 0;
+    private GraphicsMode graphicsMode = GraphicsMode.NORMAL;
 
     // ── Эксперименты ─────────────────────────────────────────────────────
     private boolean threePerksEnabled = false;
@@ -37,6 +38,7 @@ public class GameSettings extends SavedData {
     public static final int   MAX_MANIAC_COUNT               = 3;
     public static final int   DEFAULT_GAME_TIME              = 10;
     public static final int   DEFAULT_SELECTED_MAP           = 0;
+    public static final GraphicsMode DEFAULT_GRAPHICS_MODE   = GraphicsMode.NORMAL;
     public static final boolean DEFAULT_THREE_PERKS_ENABLED  = false;
     public static final int DEFAULT_PERK_LIMIT                = 2;
     public static final int EXPERIMENTAL_PERK_LIMIT           = 3;
@@ -61,6 +63,7 @@ public class GameSettings extends SavedData {
     public int   getManiacCount()   { return maniacCount; }
     public int   getGameTime()      { return gameTime; }
     public int   getSelectedMap()   { return selectedMap; }
+    public GraphicsMode getGraphicsMode() { return graphicsMode; }
     public boolean isThreePerksEnabled() { return threePerksEnabled; }
     public int getPerkLimit() {
         return threePerksEnabled ? EXPERIMENTAL_PERK_LIMIT : DEFAULT_PERK_LIMIT;
@@ -85,6 +88,10 @@ public class GameSettings extends SavedData {
     public void setGameTime(int v)        { gameTime      = Math.min(Integer.MAX_VALUE / 1200, Math.max(1, v));               setDirty(); }
     public void setSelectedMap(int v)     { selectedMap   = Math.max(0, v);                            setDirty(); }
     public void setThreePerksEnabled(boolean enabled) { threePerksEnabled = enabled; setDirty(); }
+    public void setGraphicsMode(GraphicsMode mode) {
+        graphicsMode = mode == null ? DEFAULT_GRAPHICS_MODE : mode;
+        setDirty();
+    }
 
     // ── Сеттеры — Компьютеры ──────────────────────────────────────────────
     public void setHackPointsRequired(float v)   { hackPointsRequired  = Math.max(1f, Float.isFinite(v) ? v : DEFAULT_HACK_POINTS_REQUIRED);         setDirty(); }
@@ -105,6 +112,7 @@ public class GameSettings extends SavedData {
         maniacCount          = DEFAULT_MANIAC_COUNT;
         gameTime             = DEFAULT_GAME_TIME;
         selectedMap          = DEFAULT_SELECTED_MAP;
+        graphicsMode         = DEFAULT_GRAPHICS_MODE;
         threePerksEnabled    = DEFAULT_THREE_PERKS_ENABLED;
         hackPointsRequired   = DEFAULT_HACK_POINTS_REQUIRED;
         pointsPerPlayer      = DEFAULT_POINTS_PER_PLAYER;
@@ -127,6 +135,7 @@ public class GameSettings extends SavedData {
         tag.putInt("maniacCount", maniacCount);
         tag.putInt("gameTime", gameTime);
         tag.putInt("selectedMap", selectedMap);
+        tag.putInt("graphicsMode", graphicsMode.id());
         tag.putBoolean("threePerksEnabled", threePerksEnabled);
         tag.putFloat("hackPointsRequired", hackPointsRequired);
         tag.putFloat("pointsPerPlayer", pointsPerPlayer);
@@ -148,6 +157,7 @@ public class GameSettings extends SavedData {
         s.setManiacCount(tag.contains("maniacCount") ? tag.getInt("maniacCount") : DEFAULT_MANIAC_COUNT);
         s.setGameTime(tag.contains("gameTime") ? tag.getInt("gameTime") : DEFAULT_GAME_TIME);
         s.setSelectedMap(tag.contains("selectedMap") ? tag.getInt("selectedMap") : DEFAULT_SELECTED_MAP);
+        s.setGraphicsMode(tag.contains("graphicsMode") ? GraphicsMode.fromId(tag.getInt("graphicsMode")) : DEFAULT_GRAPHICS_MODE);
         s.setThreePerksEnabled(tag.contains("threePerksEnabled")
                 ? tag.getBoolean("threePerksEnabled")
                 : DEFAULT_THREE_PERKS_ENABLED);

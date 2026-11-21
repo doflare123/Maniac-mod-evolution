@@ -44,7 +44,14 @@ public final class ClientSelectiveGlowState {
     @SubscribeEvent
     public static void onRenderTick(TickEvent.RenderTickEvent event) {
         restoreFrame();
-        if (event.phase == TickEvent.Phase.START) ACTIVE.forEach(ClientSelectiveGlowState::apply);
+        if (event.phase == TickEvent.Phase.START) {
+            ACTIVE.forEach(ClientSelectiveGlowState::apply);
+            var level = Minecraft.getInstance().level;
+            if (level != null) for (int id : org.example.maniacrevolution.perk.perks.client.WallhackGlowHandler.getGlowingEntities()) {
+                var entity = level.getEntity(id);
+                if (entity != null) applyFrame(entity);
+            }
+        }
     }
 
     @SubscribeEvent
@@ -58,12 +65,15 @@ public final class ClientSelectiveGlowState {
         if (entity == null) {
             return;
         }
+        applyFrame(entity);
+    }
 
+    private static void applyFrame(Entity entity) {
         // setGlowingTag only changes the server-side source of this flag.
         // Override the actual render bit for this frame, then restore vanilla
         // metadata before the client processes the next server update.
         byte flags = entity.getEntityData().get(SHARED_FLAGS);
-        FRAME_FLAGS.put(entity, (flags & GLOWING_MASK) != 0);
+        FRAME_FLAGS.putIfAbsent(entity, (flags & GLOWING_MASK) != 0);
         entity.getEntityData().set(SHARED_FLAGS, (byte) (flags | GLOWING_MASK));
     }
 

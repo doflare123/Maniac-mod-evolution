@@ -81,6 +81,8 @@ public final class NightmareConfig {
     public static final int LIGHTER_DURABILITY = 1200;
     /** Как часто зажигалка тратит прочность, пока находится в руке. */
     public static final int LIGHTER_DAMAGE_INTERVAL_TICKS = 10;
+    /** Свет горящей зажигалки: освещает поверхности средствами Minecraft во всех режимах графики. */
+    public static final int LIGHTER_LIGHT_LEVEL = 12;
     /** Резервная длительность обновления света зажигалки, оставлена для настройки поведения. */
     public static final int LIGHTER_LIGHT_REFRESH_TICKS = 40;
 

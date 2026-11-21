@@ -39,6 +39,7 @@ public final class NightmareSyncStateTest {
         }
         check(sends == 1, "One minute without a keeper should send exactly one initial packet per player");
         check(disabled.shouldSend(null, 0), "Cache invalidation must force a snapshot after reconnect/respawn");
+        KeeperVisionDataTest.run();
         System.out.println("NightmareSyncState: 15 checks passed");
     }
 

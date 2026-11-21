@@ -1,0 +1,13 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+[[mods]]
+modId="mrbenchsmoke"
+version="1"
+displayName="MRBench production test harness"
+[[dependencies.mrbenchsmoke]]
+modId="maniacrev"
+mandatory=true
+versionRange="[0,)"
+ordering="AFTER"
+side="CLIENT"

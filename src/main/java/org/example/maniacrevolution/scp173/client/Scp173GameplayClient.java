@@ -158,7 +158,7 @@ public final class Scp173GameplayClient {
             if (blend) RenderSystem.enableBlend(); else RenderSystem.disableBlend();
         }
     }
-    @SubscribeEvent(priority = EventPriority.LOWEST)
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
     public static void fog(ViewportEvent.RenderFog event) {
         if (!survivor() || !state.blinkEnabled() && state.blackout() <= age()) return;
         var p = Minecraft.getInstance().player;

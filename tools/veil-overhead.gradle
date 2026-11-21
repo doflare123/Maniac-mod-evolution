@@ -1,0 +1,76 @@
+// Isolated A/B runtime. Production classes, dependency declarations and saves are not modified.
+// gradlew -I tools/veil-overhead.gradle -PveilOverhead=with -PveilOverheadRun=A1 runClient -x processResources --no-daemon --offline
+allprojects {
+    afterEvaluate {
+        def variant = project.findProperty('veilOverhead') ?: 'with'
+        if (!(variant in ['with', 'without'])) throw new GradleException('veilOverhead must be with or without')
+        def noVeil = variant == 'without'
+        def root = project.layout.buildDirectory.dir("veil-overhead/runtime-${variant}").get().asFile
+        def stub = sourceSets.create('veilOverheadStub') {
+            java.srcDir project.file('tools/fixtures/veil-off')
+            compileClasspath = sourceSets.main.compileClasspath + sourceSets.main.output
+        }
+        def isolated = sourceSets.create('veilOverheadRuntime')
+        isolated.output.classesDirs.setFrom(new File(root, 'classes'))
+        isolated.output.resourcesDir = new File(root, 'resources')
+        isolated.runtimeClasspath = isolated.output + sourceSets.main.runtimeClasspath.filter { file ->
+            file.isFile() && (!noVeil || !file.name.startsWith('Veil-'))
+        }
+        def prepare = tasks.register('prepareVeilOverheadRuntime') {
+            dependsOn tasks.named('compileJava'), tasks.named('compileTestJava')
+            if (noVeil) dependsOn tasks.named(stub.compileJavaTaskName)
+            doLast {
+                project.copy {
+                    from(sourceSets.main.output.classesDirs) {
+                        if (noVeil) {
+                            exclude 'org/example/maniacrevolution/atmosphere/client/AtmosphereClient*.class'
+                            exclude 'org/example/maniacrevolution/atmosphere/client/AtmosphereLights*.class'
+                            exclude 'org/example/maniacrevolution/atmosphere/client/AtmosphereBenchmark*.class'
+                        }
+                    }
+                    from(sourceSets.test.output.classesDirs) {
+                        include 'org/example/maniacrevolution/atmosphere/client/VeilOverheadProbe*.class'
+                    }
+                    if (noVeil) from stub.output.classesDirs
+                    into new File(root, 'classes')
+                }
+                project.copy {
+                    from(sourceSets.main.output.resourcesDir) {
+                        if (noVeil) exclude 'assets/maniacrev/pinwheel/**'
+                    }
+                    into new File(root, 'resources')
+                }
+                if (noVeil) {
+                    def metadata = new File(root, 'resources/META-INF/mods.toml')
+                    def original = metadata.getText('UTF-8')
+                    def stripped = original.replaceFirst(/(?ms)^\[\[dependencies\."maniacrev"\]\]\s*\r?\n\s*modId="veil".*\z/, '')
+                    if (stripped == original || stripped.contains('modId="veil"')) throw new GradleException('Cannot remove Veil dependency from test metadata')
+                    metadata.setText(stripped, 'UTF-8')
+                }
+            }
+        }
+        minecraft.runs.client {
+            workingDirectory project.file('run/veil-overhead-client')
+            setSources([isolated])
+            mods { maniacrev { setSources([isolated]) } }
+            property 'maniacrev.veilOverhead', variant
+            property 'maniacrev.veilOverheadRun', project.findProperty('veilOverheadRun') ?: variant
+            property 'maniacrev.atmosphere.renderProbe', 'false'
+            property 'maniacrev.atmosphere.worldProbe', 'false'
+            property 'maniacrev.atmosphere.mapBenchmark', ''
+            lazyToken('minecraft_classpath') { noVeil ? '' : configurations.veilLibraries.resolve().collect { it.absolutePath }.join(File.pathSeparator) }
+            args '--width', '960', '--height', '540'
+        }
+        tasks.matching { it.name == 'runClient' }.configureEach {
+            dependsOn prepare
+            doFirst {
+                def excluded = (sourceSets.main.output.files + sourceSets.test.output.files) as Set
+                setClasspath(project.files(isolated.output, classpath.files.findAll { file ->
+                    !excluded.contains(file) && (!noVeil || !file.name.startsWith('Veil-'))
+                }))
+                if (noVeil && classpath.files.any { it.name.startsWith('Veil-') }) throw new GradleException('Veil leaked into test classpath')
+                logger.lifecycle("Veil overhead runtime: ${variant}; mod sources: ${isolated.output.files}")
+            }
+        }
+    }
+}

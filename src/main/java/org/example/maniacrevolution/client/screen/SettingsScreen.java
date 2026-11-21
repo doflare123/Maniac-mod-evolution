@@ -16,6 +16,7 @@ import org.example.maniacrevolution.map.MapRegistry;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
+import org.example.maniacrevolution.settings.GraphicsMode;
 import org.example.maniacrevolution.settings.ClientGameSettings;
 import org.example.maniacrevolution.settings.GameSettings;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +39,7 @@ import java.util.function.Supplier;
  * of the in-game HUD.</p>
  */
 public class SettingsScreen extends Screen {
-    private enum Category { GAME, COMPUTERS, EXPERIMENTS }
+    private enum Category { GAME, COMPUTERS, GRAPHICS, EXPERIMENTS }
 
     private static final int PANEL_MAX_WIDTH = 600;
     private static final int PANEL_MAX_HEIGHT = 410;
@@ -59,6 +60,7 @@ public class SettingsScreen extends Screen {
     private static final int ACCENT_GAME = 0xFFFFC857;
     private static final int ACCENT_COMPUTERS = 0xFF59B7E8;
     private static final int ACCENT_EXPERIMENTS = 0xFFC28BFF;
+    private static final int ACCENT_GRAPHICS = 0xFF83C7A0;
     private static final int ACCENT_DANGER = 0xFFE05A63;
     private static final int ACCENT_SUCCESS = 0xFF70E28A;
 
@@ -81,6 +83,7 @@ public class SettingsScreen extends Screen {
     private float tempQteCritBonus;
     private int tempComputersNeededForWin;
     private boolean tempThreePerksEnabled;
+    private GraphicsMode tempGraphicsMode;
 
     private int panelX;
     private int panelY;
@@ -109,6 +112,7 @@ public class SettingsScreen extends Screen {
     private final Map<String, Long> valuePulse = new HashMap<>();
     private final List<SettingEntry> gameSettingEntries;
     private final List<SettingEntry> computerSettingEntries;
+    private final List<SettingEntry> graphicsSettingEntries;
     private List<Component> hoveredTooltip = List.of();
     private MapGuideRegistry.Entry hoveredMapPreview;
     private String activeMapPreviewId;
@@ -120,6 +124,7 @@ public class SettingsScreen extends Screen {
         loadFromClient();
         gameSettingEntries = buildGameEntries();
         computerSettingEntries = buildComputerEntries();
+        graphicsSettingEntries = buildGraphicsEntries();
         baselineSignature = settingsSignature();
     }
 
@@ -144,6 +149,7 @@ public class SettingsScreen extends Screen {
         tempQteCritBonus = ClientGameSettings.getQteCritBonus();
         tempComputersNeededForWin = ClientGameSettings.getComputersNeededForWin();
         tempThreePerksEnabled = ClientGameSettings.isThreePerksEnabled();
+        tempGraphicsMode = ClientGameSettings.getGraphicsMode();
     }
 
     @Override
@@ -326,10 +332,7 @@ public class SettingsScreen extends Screen {
     private void renderSidebar(GuiGraphics gui, int mouseX, int mouseY, int alpha) {
         int sideLeft = panelX + 8;
         int sideRight = panelX + sidebarWidth - 8;
-        int firstY = categoryButtonY(Category.GAME);
-        int secondY = categoryButtonY(Category.COMPUTERS);
-        int thirdY = categoryButtonY(Category.EXPERIMENTS);
-        int indicatorHeight = 37;
+        int indicatorHeight = categoryButtonHeight();
 
         gui.fill(panelX + 1, panelY + HEADER_HEIGHT + 1,
                 panelX + sidebarWidth, footerY,
@@ -344,15 +347,13 @@ public class SettingsScreen extends Screen {
         gui.fill(sideLeft, indicatorY, sideLeft + 2, indicatorY + indicatorHeight,
                 withAlpha(accentColor(), alpha));
 
-        drawCategoryButton(gui, Category.GAME, sideLeft, firstY,
-                sideRight - sideLeft, mouseX, mouseY, alpha);
-        drawCategoryButton(gui, Category.COMPUTERS, sideLeft, secondY,
-                sideRight - sideLeft, mouseX, mouseY, alpha);
-        drawCategoryButton(gui, Category.EXPERIMENTS, sideLeft, thirdY,
-                sideRight - sideLeft, mouseX, mouseY, alpha);
+        for (Category category : Category.values()) {
+            drawCategoryButton(gui, category, sideLeft, categoryButtonY(category),
+                    sideRight - sideLeft, mouseX, mouseY, alpha);
+        }
 
         int hintY = footerY - 33;
-        if (hintY > thirdY + 43) {
+        if (hintY > categoryButtonY(Category.EXPERIMENTS) + indicatorHeight + 6) {
             gui.drawString(font, "ПОДСКАЗКА", sideLeft + 2, hintY,
                     withAlpha(TEXT_MUTED, alpha), false);
             gui.drawString(font, "Shift  ×5", sideLeft + 2, hintY + 12,
@@ -362,35 +363,39 @@ public class SettingsScreen extends Screen {
 
     private void drawCategoryButton(GuiGraphics gui, Category category, int x, int y, int width,
                                     int mouseX, int mouseY, int alpha) {
-        boolean hovered = inside(mouseX, mouseY, x, y, width, 37);
+        int buttonHeight = categoryButtonHeight();
+        boolean hovered = inside(mouseX, mouseY, x, y, width, buttonHeight);
         boolean selected = currentCategory == category;
         if (hovered && !selected) {
-            gui.fill(x, y, x + width, y + 37, withAlpha(0xFF313B45, alpha));
+            gui.fill(x, y, x + width, y + buttonHeight, withAlpha(0xFF313B45, alpha));
         }
 
         int color = selected ? accentColor(category) : hovered ? TEXT_PRIMARY : TEXT_SECONDARY;
-        drawCategoryIcon(gui, category, x + 9, y + 10, color, alpha);
+        if (buttonHeight >= 18) drawCategoryIcon(gui, category, x + 9, y + (buttonHeight - 14) / 2, color, alpha);
         String name = switch (category) {
             case GAME -> "Матч";
             case COMPUTERS -> "Компьютеры";
+            case GRAPHICS -> "Графика";
             case EXPERIMENTS -> panelWidth < 470 ? "Эксперим." : "Эксперименты";
         };
-        int textX = x + 29;
-        int maxTextWidth = width - 34;
-        gui.drawString(font, trimToWidth(name, maxTextWidth), textX, y + 9,
+        int textX = x + (buttonHeight >= 18 ? 29 : 8);
+        int maxTextWidth = width - (textX - x) - 5;
+        gui.drawString(font, trimToWidth(name, maxTextWidth), textX, y + (buttonHeight >= 32 ? 9 : (buttonHeight - 8) / 2),
                 withAlpha(color, alpha), false);
         String count = switch (category) {
             case GAME -> "4 параметра";
             case COMPUTERS -> "11 параметров";
+            case GRAPHICS -> "1 параметр";
             case EXPERIMENTS -> "1 параметр";
         };
-        gui.drawString(font, trimToWidth(count, maxTextWidth), textX, y + 21,
+        if (buttonHeight >= 32) gui.drawString(font, trimToWidth(count, maxTextWidth), textX, y + 21,
                 withAlpha(TEXT_MUTED, alpha), false);
 
         if (hovered) {
             String description = switch (category) {
                 case GAME -> "Основные правила и карта текущего матча.";
                 case COMPUTERS -> "Скорость взлома, QTE и условия победы.";
+                case GRAPHICS -> "Единая атмосфера и качество графики для всех участников.";
                 case EXPERIMENTS -> "Нестабильные и тестовые правила матча.";
             };
             setTooltip(category == Category.EXPERIMENTS ? "Эксперименты" : name,
@@ -402,11 +407,13 @@ public class SettingsScreen extends Screen {
         String title = switch (currentCategory) {
             case GAME -> "НАСТРОЙКИ МАТЧА";
             case COMPUTERS -> "СИСТЕМА ВЗЛОМА";
+            case GRAPHICS -> "ГРАФИКА МАТЧА";
             case EXPERIMENTS -> "ЭКСПЕРИМЕНТЫ";
         };
         String subtitle = switch (currentCategory) {
             case GAME -> "Базовые правила следующего раунда";
             case COMPUTERS -> "Баланс компьютеров, помощников и QTE";
+            case GRAPHICS -> "Общий режим для всей группы";
             case EXPERIMENTS -> "Тестовые механики и нестандартные правила";
         };
         gui.drawString(font, title, contentLeft, panelY + HEADER_HEIGHT + 10,
@@ -452,6 +459,14 @@ public class SettingsScreen extends Screen {
             }
             renderSettingRow(gui, entry, i, contentLeft, rowY,
                     contentRight - contentLeft, mouseX, mouseY, now, deltaSeconds, contentAlpha);
+        }
+        if (currentCategory == Category.GRAPHICS) {
+            int descriptionY = rowsTop + ROW_HEIGHT + 12 + contentSlide;
+            for (var line : font.split(Component.literal(tempGraphicsMode.description()), contentRight - contentLeft - 8)) {
+                if (descriptionY + 9 > rowsBottom) break;
+                gui.drawString(font, line, contentLeft + 4, descriptionY, withAlpha(TEXT_SECONDARY, contentAlpha), false);
+                descriptionY += 11;
+            }
         }
         gui.disableScissor();
     }
@@ -721,6 +736,12 @@ public class SettingsScreen extends Screen {
                 gui.fill(x + 8, y + 10, x + 9, y + 11,
                         withAlpha(0xFFFFFFFF, alpha));
             }
+            case GRAPHICS -> {
+                gui.renderOutline(x, y + 1, 14, 10, c);
+                gui.fill(x + 2, y + 4, x + 10, y + 5, c);
+                gui.fill(x + 5, y + 7, x + 12, y + 8, c);
+                gui.fill(x + 6, y + 11, x + 8, y + 13, c);
+            }
         }
     }
 
@@ -846,7 +867,7 @@ public class SettingsScreen extends Screen {
             int x = panelX + 8;
             int y = categoryButtonY(category);
             int w = sidebarWidth - 16;
-            if (inside(mx, my, x, y, w, 37)) {
+            if (inside(mx, my, x, y, w, categoryButtonHeight())) {
                 switchCategory(category);
                 return true;
             }
@@ -995,6 +1016,7 @@ public class SettingsScreen extends Screen {
         playClick(switch (category) {
             case GAME -> 0.96f;
             case COMPUTERS -> 1.04f;
+            case GRAPHICS -> 1.08f;
             case EXPERIMENTS -> 1.12f;
         });
     }
@@ -1027,11 +1049,16 @@ public class SettingsScreen extends Screen {
     }
 
     private int categoryButtonY(Category category) {
-        int firstY = panelY + HEADER_HEIGHT + 28;
+        int firstY = panelY + HEADER_HEIGHT + (panelHeight < 260 ? 14 : 28);
         int categoryCount = Category.values().length;
-        int availableHeight = Math.max(0, footerY - firstY - 37);
+        int availableHeight = Math.max(0, footerY - firstY - categoryButtonHeight() - 6);
         int step = categoryCount <= 1 ? 0 : Math.min(43, availableHeight / (categoryCount - 1));
         return firstY + category.ordinal() * step;
+    }
+
+    private int categoryButtonHeight() {
+        int firstY = panelY + HEADER_HEIGHT + (panelHeight < 260 ? 14 : 28);
+        return Math.min(37, Math.max(12, (footerY - firstY - 6) / Category.values().length - 3));
     }
 
     private int maxScroll() {
@@ -1056,6 +1083,7 @@ public class SettingsScreen extends Screen {
         return switch (currentCategory) {
             case GAME -> gameSettingEntries;
             case COMPUTERS -> computerSettingEntries;
+            case GRAPHICS -> graphicsSettingEntries;
             case EXPERIMENTS -> List.of();
         };
     }
@@ -1090,6 +1118,18 @@ public class SettingsScreen extends Screen {
                         () -> tempSelectedMap == GameSettings.DEFAULT_SELECTED_MAP,
                         "Выберите конкретную карту или оставьте выбор игрокам через голосование.")
         );
+    }
+
+    private List<SettingEntry> buildGraphicsEntries() {
+        return List.of(new SettingEntry("graphics", "Режим графики", "Одинаковый для всех участников",
+                "Отключить — обычный обзор без атмосферы и лимита 28 блоков. Лёгкий — простой туман. "
+                        + "Обычный — объёмный туман. Тяжёлый — подробный туман и дополнительный свет.",
+                () -> tempGraphicsMode.displayName(),
+                n -> tempGraphicsMode = tempGraphicsMode.step(-1),
+                n -> tempGraphicsMode = tempGraphicsMode.step(1),
+                () -> tempGraphicsMode = GameSettings.DEFAULT_GRAPHICS_MODE,
+                () -> tempGraphicsMode == GameSettings.DEFAULT_GRAPHICS_MODE,
+                "Выбор хоста применяется сразу ко всем игрокам. В трёх включённых режимах обзор ограничен 28 блоками."));
     }
 
     private List<SettingEntry> buildComputerEntries() {
@@ -1265,6 +1305,7 @@ public class SettingsScreen extends Screen {
         tempQteCritBonus = GameSettings.DEFAULT_QTE_CRIT_BONUS;
         tempComputersNeededForWin = GameSettings.DEFAULT_COMPUTERS_NEEDED;
         tempThreePerksEnabled = GameSettings.DEFAULT_THREE_PERKS_ENABLED;
+        tempGraphicsMode = GameSettings.DEFAULT_GRAPHICS_MODE;
         if (threePerksToggle != null) {
             threePerksToggle.setValue(tempThreePerksEnabled);
         }
@@ -1282,7 +1323,7 @@ public class SettingsScreen extends Screen {
                 tempMaxBonusPlayers, tempHackerRadius, tempSupportRadius,
                 tempQteIntervalMin, tempQteIntervalMax, tempQteSuccessBonus,
                 tempQteCritBonus, tempComputersNeededForWin,
-                tempThreePerksEnabled));
+                tempThreePerksEnabled, tempGraphicsMode));
 
         // The server returns the accepted, validated values in SyncSettingsPacket.
 
@@ -1306,7 +1347,7 @@ public class SettingsScreen extends Screen {
                 + tempQteIntervalMin + ":" + tempQteIntervalMax + ":"
                 + Float.floatToIntBits(tempQteSuccessBonus) + ":"
                 + Float.floatToIntBits(tempQteCritBonus) + ":" + tempComputersNeededForWin + ":"
-                + tempThreePerksEnabled;
+                + tempThreePerksEnabled + ":" + tempGraphicsMode.id();
     }
 
     private void setTooltip(String title, String description, String hint) {
@@ -1364,6 +1405,7 @@ public class SettingsScreen extends Screen {
         return switch (category) {
             case GAME -> ACCENT_GAME;
             case COMPUTERS -> ACCENT_COMPUTERS;
+            case GRAPHICS -> ACCENT_GRAPHICS;
             case EXPERIMENTS -> ACCENT_EXPERIMENTS;
         };
     }
