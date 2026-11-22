@@ -19,7 +19,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "34";
+    private static final String PROTOCOL_VERSION = "35";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -633,6 +633,9 @@ public class ModNetworking {
         CHANNEL.messageBuilder(StaminaSyncPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(StaminaSyncPacket::encode).decoder(StaminaSyncPacket::decode)
                 .consumerMainThread(StaminaSyncPacket::handle).add();
+        CHANNEL.messageBuilder(DashStartedPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(DashStartedPacket::encode).decoder(DashStartedPacket::decode)
+                .consumerMainThread(DashStartedPacket::handle).add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }
@@ -651,6 +654,10 @@ public class ModNetworking {
      */
     public static <MSG> void sendToPlayer(MSG message, ServerPlayer player) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
+    }
+
+    public static <MSG> void sendToTrackingPlayer(MSG message, ServerPlayer player) {
+        CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player), message);
     }
 
     /**

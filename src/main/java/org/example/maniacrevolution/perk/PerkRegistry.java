@@ -15,7 +15,7 @@ public class PerkRegistry {
         // Общие перки (10 штук)
         register(new BigmoneyPerk());
         register(new MegamindPerk());
-        register(new GtoMedalPerk());
+        register(new DashPerk());
         register(new FearWavePerk());
         register(new StrPerk());
         register(new ManaBreakPerk());
@@ -73,7 +73,11 @@ public class PerkRegistry {
     }
 
     public static Perk getPerk(String id) {
-        return PERKS.get(id);
+        return PERKS.get(canonicalId(id));
+    }
+
+    public static String canonicalId(String id) {
+        return "gto_medal".equals(id) ? DashPerk.ID : id;
     }
 
     public static Collection<Perk> getAllPerks() {

@@ -7,6 +7,7 @@ import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import org.example.maniacrevolution.stamina.DashMovement;
 import org.example.maniacrevolution.stamina.StaminaManager;
 
 /** Gate decoded vanilla movement before the vanilla listener. No reflection or mixin mappings. */
@@ -36,7 +37,10 @@ public final class Scp173MovementGate extends ChannelInboundHandlerAdapter {
             if (!listener.connection.isConnected()) return;
             if (message instanceof ServerboundPlayerCommandPacket sprint) {
                 if (sprint.getAction() == ServerboundPlayerCommandPacket.Action.STOP_SPRINTING
-                        || StaminaManager.canSprint(listener.player)) listener.handlePlayerCommand(sprint);
+                        || !DashMovement.isMoving(listener.player) && StaminaManager.canSprint(listener.player)) {
+                    listener.handlePlayerCommand(sprint);
+                    StaminaManager.updateSprintSpeed(listener.player);
+                }
                 return;
             }
             // listener survives respawn; the player instance does not.
@@ -90,6 +94,7 @@ public final class Scp173MovementGate extends ChannelInboundHandlerAdapter {
                 || !Double.isFinite(move.getY(p.getY())) || !Double.isFinite(move.getZ(p.getZ()))
                 || !Float.isFinite(move.getYRot(p.getYRot())) || !Float.isFinite(move.getXRot(p.getXRot()))))
             return message; // Vanilla rejects invalid movement before a mod cooldown can issue a correction.
+        if (message instanceof ServerboundMovePlayerPacket && DashMovement.isMoving(p)) return null;
         boolean jumpBlocked = org.example.maniacrevolution.util.PlayerModeUtil.isSurvivalOrAdventure(p)
                 && p.hasEffect(org.example.maniacrevolution.effect.ModEffects.JUMP_COOLDOWN.get());
         jumpBlocked |= message instanceof ServerboundMovePlayerPacket && !StaminaManager.canJump(p);

@@ -36,10 +36,13 @@ import org.example.maniacrevolution.item.armor.NecromancerArmorItem;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.example.maniacrevolution.mana.ClientManaData;
 import org.example.maniacrevolution.perk.PerkType;
+import org.example.maniacrevolution.perk.perks.common.DashPerk;
 import org.example.maniacrevolution.perk.perks.maniac.BouquetToTheOtherSidePerk;
 import org.example.maniacrevolution.settings.ClientGameSettings;
+import org.example.maniacrevolution.stamina.DashMovement;
 import org.example.maniacrevolution.stamina.Stamina;
 import org.example.maniacrevolution.stamina.client.ClientStamina;
+import org.example.maniacrevolution.stamina.client.PlayerLocomotionAnimations;
 import org.example.maniacrevolution.util.PlayerModeUtil;
 
 import java.util.Comparator;
@@ -86,7 +89,7 @@ public class CustomHud implements IGuiOverlay {
     private static final int HP_COLOR = 0xFFE04444;
     private static final int HP_TRAIL_COLOR = 0xFFC98A8A;
     private static final int MANA_COLOR = 0xFF3C9FE8;
-    private static final int STAMINA_COLOR = 0xFFFFC857;
+    private static final int STAMINA_COLOR = 0xFF52C96D;
     private static final int ABSORPTION_COLOR = 0xFFFFC94A;
     private static final int SCRAP_ARMOR_COLOR = 0xFF65717D;
     private static final int PENALTY_BG = 0xD02A1115;
@@ -160,6 +163,7 @@ public class CustomHud implements IGuiOverlay {
         int hudY = screenHeight - HUD_HEIGHT - 4 - (chatOpen ? CHAT_HUD_OFFSET : 0);
 
         renderDock(gui, screenWidth / 2, hudY, player);
+        renderDodgeWindow(gui, player, partialTick, screenWidth / 2, screenHeight / 2);
         org.example.maniacrevolution.engineer.client.EngineerClient.resourceHud(gui, screenWidth - 5, screenHeight - 5 - (chatOpen ? CHAT_HUD_OFFSET : 0));
         int timedEffectsHeight = renderTimedEffects(gui, partialTick, screenWidth,
                 hudY - TIMED_EFFECT_SECTION_GAP, player);
@@ -498,14 +502,26 @@ public class CustomHud implements IGuiOverlay {
         for (int cell = 0; cell < Stamina.CELLS; cell++) {
             int left = (1 + cell * width / Stamina.CELLS) * precision;
             int right = ((cell + 1) * width / Stamina.CELLS) * precision;
-            gui.fill(left, 1, right, STAMINA_BAR_HEIGHT - 1, 0xFF352B1E);
+            gui.fill(left, 1, right, STAMINA_BAR_HEIGHT - 1, 0xFF203629);
             int filled = Math.round((right - left) * Mth.clamp(amount - cell, 0.0f, 1.0f));
             if (filled > 0) {
                 gui.fill(left, 1, left + filled, STAMINA_BAR_HEIGHT - 1, STAMINA_COLOR);
-                gui.fill(left, 1, left + filled, 2, 0xFFFFE3A2);
+                gui.fill(left, 1, left + filled, 2, 0xFFA6F0B1);
             }
         }
         gui.pose().popPose();
+    }
+
+    private void renderDodgeWindow(GuiGraphics gui, LocalPlayer player, float partialTick, int centerX, int centerY) {
+        float progress = PlayerLocomotionAnimations.dodgeProgress(player, partialTick);
+        if (progress <= 0.0f) return;
+        int x = centerX - 27;
+        int y = centerY - 36;
+        gui.fill(x, y, x + 54, y + 15, PANEL_BG);
+        gui.renderOutline(x, y, 54, 15, 0xFF70E6DB);
+        String text = net.minecraft.network.chat.Component.translatable("hud.maniacrev.dash.dodge").getString();
+        drawCentered(gui, text, x, y + 2, 54, 0xFFB8FFF3);
+        gui.fill(x + 1, y + 12, x + 1 + Math.round(52 * progress), y + 14, 0xFF70E6DB);
     }
 
     private void renderPerkSlot(GuiGraphics gui, ClientPlayerData.ClientPerkData perk,
@@ -524,6 +540,12 @@ public class CustomHud implements IGuiOverlay {
                     y + PERK_ICON_SIZE, 0xC0000000);
             String cooldown = perk.getCooldownSeconds() + "с";
             drawCentered(gui, cooldown, x, y + 8, PERK_ICON_SIZE, 0xFFFFFFFF);
+        } else if (DashPerk.ID.equals(perk.id())) {
+            int cells = DashMovement.COST / Stamina.CELL;
+            String cost = Integer.toString(cells);
+            int color = ClientStamina.cells(mc.player) >= cells ? STAMINA_COLOR : 0xFFFF7777;
+            gui.drawString(mc.font, cost, x + PERK_ICON_SIZE - mc.font.width(cost) - 1,
+                    y + PERK_ICON_SIZE - 10, color, true);
         } else if (perk.hasManaCost()) {
             float actualCost = perk.manaCost() * org.example.maniacrevolution.helsing.HelsingManager.costMultiplier(Minecraft.getInstance().player);
             String cost = Integer.toString((int) actualCost);

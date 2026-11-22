@@ -6,6 +6,7 @@ import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.animation.KeyframeAnimations;
 import net.minecraft.client.animation.definitions.WardenAnimation;
+import org.example.maniacrevolution.stamina.client.DashPresentation;
 import org.example.maniacrevolution.warden.WardenAnimationTimeline;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -35,6 +36,13 @@ public final class WardenPlayerModel extends HierarchicalModel<AbstractClientPla
         animate(walk, speed, age, yaw, pitch, player.isCrouching());
         swim(player.getSwimAmount(Mth.clamp(age - player.tickCount, 0, 1)), age);
         applyAbilities(WardenAnimationsClient.frame(player, age - player.tickCount));
+        float dash = DashPresentation.lunge(player, age - player.tickCount);
+        body.xRot += 0.44f * dash;
+        head.xRot += 0.35f * dash;
+        leftArm.xRot -= 0.95f * dash;
+        rightArm.xRot -= 0.95f * dash;
+        leftLeg.xRot -= 0.75f * dash;
+        rightLeg.xRot -= 0.75f * dash;
     }
     @Override public ModelPart root() { return root; }
     void swim(float weight, float age) {

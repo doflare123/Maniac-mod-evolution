@@ -2,6 +2,8 @@ package org.example.maniacrevolution.stamina;
 
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -14,12 +16,16 @@ import org.example.maniacrevolution.network.packets.StaminaSyncPacket;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID)
 public final class StaminaManager {
     private static final String SAVE_KEY = "maniacrev:stamina";
     private static final int SYNC_INTERVAL = 4;
     private static final int RESYNC_INTERVAL = 20;
+    private static final AttributeModifier SPRINT_SPEED = new AttributeModifier(
+            UUID.fromString("08dcc550-f355-45e2-907b-aa645586132f"), "Maniac Revolution sprint speed",
+            0.15, AttributeModifier.Operation.MULTIPLY_TOTAL);
     private static final Map<ServerPlayer, State> STATES = new HashMap<>();
 
     private static final class State {
@@ -45,11 +51,29 @@ public final class StaminaManager {
 
     public static boolean tryJump(ServerPlayer player) {
         if (!StaminaMovement.usesStamina(player)) return true;
+        return !DashMovement.isMoving(player) && spend(player, Stamina.CELL);
+    }
+
+    public static boolean has(ServerPlayer player, int points) {
+        return state(player).stamina.amount() >= points;
+    }
+
+    public static boolean spend(ServerPlayer player, int points) {
         State state = state(player);
-        if (!state.stamina.spendJump()) return false;
+        if (!state.stamina.spend(points)) return false;
         store(player, state);
         sync(player, state);
         return true;
+    }
+
+    public static void updateSprintSpeed(ServerPlayer player) {
+        var speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
+        if (speed == null) return;
+        if (player.isSprinting() && !player.isCrouching() && StaminaMovement.usesStamina(player) && canSprint(player)) {
+            if (!speed.hasModifier(SPRINT_SPEED)) speed.addTransientModifier(SPRINT_SPEED);
+        } else if (speed.hasModifier(SPRINT_SPEED)) {
+            speed.removeModifier(SPRINT_SPEED);
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -58,11 +82,14 @@ public final class StaminaManager {
         State state = state(player);
         int previous = state.stamina.amount();
         if (StaminaMovement.usesStamina(player)) {
-            boolean sprinting = player.isSprinting() && !player.isCrouching() && previous > 0;
-            state.stamina.tick(sprinting, player.onGround());
+            if (!DashMovement.isMoving(player)) {
+                boolean sprinting = player.isSprinting() && !player.isCrouching() && previous > 0;
+                state.stamina.tick(sprinting, player.onGround());
+            }
             if (player.isSprinting() && (state.stamina.amount() == 0 || previous == 0)) player.setSprinting(false);
             if (previous != state.stamina.amount()) store(player, state);
         }
+        updateSprintSpeed(player);
         int amount = state.stamina.amount();
         int sinceSync = player.tickCount - state.lastSync;
         if (state.lastSent < 0 || sinceSync >= RESYNC_INTERVAL || amount != state.lastSent

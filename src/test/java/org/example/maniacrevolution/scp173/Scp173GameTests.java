@@ -20,7 +20,6 @@ import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.downed.DownedState;
 import org.example.maniacrevolution.entity.RedColorCardProjectile;
-import org.example.maniacrevolution.perk.perks.common.GtoMedalPerk;
 
 import java.util.UUID;
 
@@ -315,13 +314,12 @@ public final class Scp173GameTests {
             double height = statue.getY();
             physicalTick(statue);
             h.assertTrue(statue.getY() < height && statue.getDeltaMovement().y < -0.2, "held statue falls with gravity");
-            // Use the actual perk, then vanilla travel and the held server tick hooks.
-            new GtoMedalPerk().onActivate(statue);
-            Vec3 impulse = statue.getDeltaMovement();
+            // External velocity still travels through vanilla physics while voluntary movement is held.
+            statue.setDeltaMovement(0, 0.5, 0.8);
             Vec3 before = statue.position();
             physicalTick(statue);
-            h.assertTrue(impulse.z > 0 && statue.getZ() > before.z && statue.getY() > before.y,
-                    "perk remains usable and its full impulse moves the held statue");
+            h.assertTrue(statue.getZ() > before.z && statue.getY() > before.y,
+                    "an external impulse moves the held statue");
             statue.setDeltaMovement(Vec3.ZERO);
             statue.knockback(1, -1, 0);
             before = statue.position();

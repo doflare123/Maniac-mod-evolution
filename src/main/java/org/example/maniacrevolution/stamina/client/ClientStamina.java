@@ -39,7 +39,7 @@ public final class ClientStamina {
 
     public static boolean canSprint(LocalPlayer current) {
         return !StaminaMovement.usesStamina(current)
-                || sprintKeyHeld() && !needsSprintRelease && amount > 0;
+                || sprintKeyHeld() && !needsSprintRelease && amount > 0 && !PlayerLocomotionAnimations.isDashing(current);
     }
 
     public static boolean usesHeldSprintKey(KeyMapping binding) {
@@ -51,6 +51,7 @@ public final class ClientStamina {
 
     public static boolean tryLocalJump(Player entity) {
         if (!(entity instanceof LocalPlayer current) || !StaminaMovement.usesStamina(current)) return true;
+        if (PlayerLocomotionAnimations.isDashing(current)) return false;
         usePlayer(current);
         if (amount < Stamina.CELL) return false;
         // Vanilla movement carries the jump and the server synchronizes its actual cost.
@@ -65,6 +66,11 @@ public final class ClientStamina {
         usePlayer(current);
         if (!sprintKeyHeld()) needsSprintRelease = false;
         if (current.isSprinting() && !canSprint(current)) current.setSprinting(false);
+        if (PlayerLocomotionAnimations.isDashing(current)) {
+            event.getInput().forwardImpulse = 0;
+            event.getInput().leftImpulse = 0;
+            event.getInput().jumping = false;
+        }
     }
 
     @SubscribeEvent

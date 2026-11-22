@@ -93,8 +93,11 @@
   "perk.maniacrev.megamind.name": "Мегамозг",
   "perk.maniacrev.megamind.desc": "Получайте на %s%% больше опыта в конце игры.",
 
-  "perk.maniacrev.gto_medal.name": "Золотая медаль ГТО",
-  "perk.maniacrev.gto_medal.desc": "Мощный рывок вперёд",
+  "perk.maniacrev.dash.name": "Кувырок",
+  "perk.maniacrev.dash.desc": "Кувырок вперёд до 5 блоков за 2 ячейки стамины. Первые 0,2 с — уворот от прямых атак и снарядов. После кувырка скорость выше на 5% в течение 2 с.",
+  "message.maniacrev.dash.stamina": "Для кувырка нужны две ячейки стамины",
+  "message.maniacrev.dash.blocked": "Кувырок доступен на земле, когда впереди есть место",
+  "hud.maniacrev.dash.dodge": "УВОРОТ",
 
   "perk.maniacrev.fear_wave.name": "Волна ужаса",
   "perk.maniacrev.fear_wave.desc": "Выпускает волну радиусом %s блоков, накладывающую Страх на всех, включая союзников, на %s сек.",

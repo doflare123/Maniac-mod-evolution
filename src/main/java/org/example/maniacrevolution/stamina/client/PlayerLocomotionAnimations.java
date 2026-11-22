@@ -11,6 +11,7 @@ import dev.kosmx.playerAnim.core.util.Vec3f;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationFactory;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -22,11 +23,13 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.stamina.DashMovement;
 import org.example.maniacrevolution.stamina.StaminaMovement;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class PlayerLocomotionAnimations {
     private static final ResourceLocation LAYER = new ResourceLocation(Maniacrev.MODID, "locomotion");
+    static final int DASH_POSE_TICKS = 11;
 
     private PlayerLocomotionAnimations() {}
 
@@ -45,9 +48,35 @@ public final class PlayerLocomotionAnimations {
         }
     }
 
+    public static void dashStarted(int entityId) {
+        var level = Minecraft.getInstance().level;
+        if (level != null && level.getEntity(entityId) instanceof AbstractClientPlayer player) {
+            var data = PlayerAnimationAccess.getPlayerAssociatedData(player).get(LAYER);
+            if (data instanceof Locomotion layer) {
+                layer.dashStart = player.tickCount;
+                layer.startDashPose();
+            }
+        }
+    }
+
+    public static boolean isDashing(AbstractClientPlayer player) {
+        return dashAge(player) < DashMovement.MOVE_TICKS;
+    }
+
+    public static float dodgeProgress(AbstractClientPlayer player, float partialTick) {
+        return Mth.clamp(1 - (dashAge(player) + partialTick) / DashMovement.DODGE_TICKS, 0, 1);
+    }
+
+    static float dashAge(AbstractClientPlayer player) {
+        if (PlayerAnimationAccess.getPlayerAssociatedData(player).get(LAYER) instanceof Locomotion layer) {
+            return player.tickCount - layer.dashStart;
+        }
+        return Float.POSITIVE_INFINITY;
+    }
+
     private enum Motion {
         VANILLA(null), WALK("walking"), RUN("running"), SNEAK_IDLE("sneak_idle"), SNEAK_WALK("sneak_walk"),
-        JUMP("jump_first"), FALL("falling"), LAND("landing");
+        JUMP("jump_first"), FALL("falling"), LAND("landing"), DASH("dash");
 
         final ResourceLocation clip;
 
@@ -64,6 +93,7 @@ public final class PlayerLocomotionAnimations {
         private Vec3 previousPosition;
         private int airTicks;
         private double highestY;
+        private long dashStart = Long.MIN_VALUE / 2;
 
         Locomotion(AbstractClientPlayer player) {
             this.player = player;
@@ -75,12 +105,24 @@ public final class PlayerLocomotionAnimations {
             Vec3 movement = previousPosition == null ? Vec3.ZERO : position.subtract(previousPosition);
             previousPosition = position;
             // A teleport is neither a stride nor a jump.
-            if (!StaminaMovement.usesStamina(player) || movement.lengthSqr() > 4.0) {
+            if (player.tickCount - dashStart < DASH_POSE_TICKS) {
+                airTicks = 0;
+                if (motion != Motion.DASH) startDashPose();
+            } else if (!StaminaMovement.usesStamina(player) || movement.lengthSqr() > 4.0) {
                 airTicks = 0;
                 select(Motion.VANILLA, 1.0f);
             } else {
                 select(motionFor(movement, position.y), paceFor(movement.horizontalDistance()));
             }
+        }
+
+        private void startDashPose() {
+            motion = Motion.DASH;
+            clip = PlayerAnimationRegistry.getAnimation(Motion.DASH.clip);
+            speed.speed = 1.0f;
+            // Remove outgoing locomotion fades, leaving the speed modifier at index 0.
+            while (size() > 1) removeModifier(1);
+            setAnimation(clip == null ? null : new KeyframeAnimationPlayer(clip));
         }
 
         private Motion motionFor(Vec3 movement, double y) {
@@ -122,8 +164,17 @@ public final class PlayerLocomotionAnimations {
 
         @Override
         public Vec3f get3DTransform(String part, TransformType type, float tickDelta, Vec3f original) {
-            if (part.equals("head") || (player.swinging || player.isUsingItem())
-                    && (part.equals("leftArm") || part.equals("rightArm"))) return original;
+            boolean rolling = motion == Motion.DASH && player.tickCount - dashStart < DASH_POSE_TICKS;
+            if (rolling && part.equals("body")) {
+                // playerAnimator rotates the whole model around its 0.7-block body pivot.
+                float angle = DashPresentation.rollAngle(player, tickDelta);
+                if (type == TransformType.ROTATION) return new Vec3f(-angle * Mth.DEG_TO_RAD, 0, 0);
+                if (type == TransformType.POSITION) return new Vec3f(0, DashPresentation.rollLift(angle), 0);
+            }
+            // PlayerAnimator positions the head and torso independently. Apply the clip's head
+            // position alongside the torso position, and preserve the look outside the roll.
+            if (!rolling && ((part.equals("head") && type == TransformType.ROTATION) || (player.swinging || player.isUsingItem())
+                    && (part.equals("leftArm") || part.equals("rightArm")))) return original;
             return super.get3DTransform(part, type, tickDelta, original);
         }
     }

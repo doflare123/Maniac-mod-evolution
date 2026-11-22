@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import org.example.maniacrevolution.perk.PerkRegistry;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +17,7 @@ public class PerkPreset {
 
     public PerkPreset(String name, List<String> perkIds) {
         this.name = name;
-        this.perkIds = new ArrayList<>(perkIds);
+        this.perkIds = new ArrayList<>(perkIds.stream().map(PerkRegistry::canonicalId).distinct().toList());
         this.createdAt = System.currentTimeMillis();
     }
 

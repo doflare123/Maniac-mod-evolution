@@ -93,8 +93,11 @@
   "perk.maniacrev.megamind.name": "Megamind",
   "perk.maniacrev.megamind.desc": "Receive %s%% more experience at the end of the game.",
 
-  "perk.maniacrev.gto_medal.name": "Golden GTO Medal",
-  "perk.maniacrev.gto_medal.desc": "Powerful dash forward",
+  "perk.maniacrev.dash.name": "Dodge Roll",
+  "perk.maniacrev.dash.desc": "Roll forward up to 5 blocks for 2 stamina cells. Dodge direct attacks and projectiles for the first 0.2 s. Gain 5% movement speed for 2 s afterward.",
+  "message.maniacrev.dash.stamina": "Dodge Roll requires two stamina cells",
+  "message.maniacrev.dash.blocked": "Dodge Roll requires solid ground and room ahead",
+  "hud.maniacrev.dash.dodge": "DODGE",
 
   "perk.maniacrev.fear_wave.name": "Fear Wave",
   "perk.maniacrev.fear_wave.desc": "Release a wave in a %s-block radius that inflicts Fear on everyone, including allies, for %s sec.",

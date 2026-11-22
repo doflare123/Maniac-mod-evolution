@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.resources.ResourceLocation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import org.example.maniacrevolution.stamina.client.DashPresentation;
 
 /** Uses the actual player's visibility, team, outline and name rules. Hitbox/camera are untouched. */
 public final class WardenPlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, WardenPlayerModel> {
@@ -24,6 +25,7 @@ public final class WardenPlayerRenderer extends LivingEntityRenderer<AbstractCli
     @Override
     protected void setupRotations(AbstractClientPlayer player, PoseStack pose, float age, float yaw, float partial) {
         super.setupRotations(player, pose, age, yaw, partial);
+        DashPresentation.rollModel(player, pose, partial, 1.35);
         float swim = player.getSwimAmount(partial);
         if (swim > 0 && !player.isFallFlying()) {
             pose.mulPose(Axis.XP.rotationDegrees(swim * (player.isInWater() ? -90 - player.getXRot() : -90)));

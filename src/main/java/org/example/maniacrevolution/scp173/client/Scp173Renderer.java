@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import org.example.maniacrevolution.stamina.client.DashPresentation;
 import software.bernie.geckolib.renderer.GeoReplacedEntityRenderer;
 
 public class Scp173Renderer extends GeoReplacedEntityRenderer<AbstractClientPlayer, Scp173Statue> {
@@ -34,6 +35,7 @@ public class Scp173Renderer extends GeoReplacedEntityRenderer<AbstractClientPlay
             pose.pushPose();
             try {
                 pose.mulPose(Axis.YP.rotationDegrees(180 - player.getYRot()));
+                DashPresentation.rollModel(player, pose, partialTick, org.example.maniacrevolution.scp173.Scp173Geometry.CENTER_Y);
                 float swim = player.getSwimAmount(partialTick);
                 pose.translate(0, org.example.maniacrevolution.scp173.Scp173Geometry.swimCenter(swim), 0);
                 pose.mulPose(Axis.XP.rotationDegrees(org.example.maniacrevolution.scp173.Scp173Geometry.swimAngle(swim,
