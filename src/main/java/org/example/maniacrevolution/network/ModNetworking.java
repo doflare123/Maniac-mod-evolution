@@ -8,6 +8,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.downed.DownedHudPacket;
+import org.example.maniacrevolution.downed.DownedPosePacket;
 import org.example.maniacrevolution.network.packets.*;
 import org.example.maniacrevolution.network.packets.MapVotingPacket;
 import org.example.maniacrevolution.network.packets.MapVotingResultPacket;
@@ -19,7 +20,7 @@ import org.example.maniacrevolution.network.packets.UpdateSettingsPacket;
 import org.example.maniacrevolution.network.packets.GiveSettingsToAllPacket;
 
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "35";
+    private static final String PROTOCOL_VERSION = "36";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Maniacrev.MODID, "main"),
@@ -636,6 +637,9 @@ public class ModNetworking {
         CHANNEL.messageBuilder(DashStartedPacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(DashStartedPacket::encode).decoder(DashStartedPacket::decode)
                 .consumerMainThread(DashStartedPacket::handle).add();
+        CHANNEL.messageBuilder(DownedPosePacket.class, packetId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(DownedPosePacket::encode).decoder(DownedPosePacket::decode)
+                .consumerMainThread(DownedPosePacket::handle).add();
 
         Maniacrev.LOGGER.info("Network packets registered: {} packets", packetId);
     }

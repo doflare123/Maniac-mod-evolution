@@ -4,6 +4,9 @@
   "package": "org.example.maniacrevolution.stamina.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": ["PlayerJumpMixin"],
-  "client": ["LocalPlayerSprintMixin", "SprintKeyMappingMixin", "DashHandsMixin"],
+  "client": [
+    "LocalPlayerSprintMixin", "SprintKeyMappingMixin", "DashHandsMixin",
+    "DownedTurnMixin", "DownedSwimMixin", "DownedBodyYawMixin"
+  ],
   "injectors": { "defaultRequire": 1 }
 }

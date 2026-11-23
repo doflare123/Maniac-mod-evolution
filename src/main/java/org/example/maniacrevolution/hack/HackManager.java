@@ -12,6 +12,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.perk.perks.maniac.GrieferPerk;
 import org.example.maniacrevolution.perk.perks.survivor.EmergencyOverclockPerk;
 import org.example.maniacrevolution.sbersprout.SberSproutManager;
@@ -304,6 +305,7 @@ public class HackManager {
      * Если сессии нет — создаём. Если уже взломан — ничего.
      */
     public void onPlayerActivate(ServerPlayer player, BlockPos pos, int computerId) {
+        if (DownedCapability.isDowned(player)) return;
         if (org.example.maniacrevolution.engineer.EngineerManager.busy(player)) return;
         if (org.example.maniacrevolution.techies.TechiesManager.placing(player)) {
             player.displayClientMessage(net.minecraft.network.chat.Component.literal("Сначала завершите установку мины"), true);
@@ -336,6 +338,27 @@ public class HackManager {
 
         player.displayClientMessage(
                 net.minecraft.network.chat.Component.literal("§6Взлом начат..."), true);
+    }
+
+    public void onPlayerDowned(ServerPlayer player) {
+        Map<Integer, Float> interruptedProgress = new HashMap<>();
+        for (HackSession session : activeSessions.values()) {
+            if (session.hacker == player) {
+                session.cancel();
+                interruptedProgress.merge(session.computerId, session.currentPoints, Math::max);
+                activeSessions.remove(session.pos, session);
+            } else {
+                session.removeSupporter(player);
+            }
+        }
+        if (interruptedProgress.isEmpty()) return;
+
+        MinecraftServer server = player.getServer();
+        hackProgress.putAll(interruptedProgress);
+        for (int computerId : interruptedProgress.keySet()) {
+            updateComputerDisplays(server, computerId, getLiveProgress(computerId), isHacked(computerId));
+        }
+        saveAndSync(server);
     }
 
     /**
@@ -492,6 +515,7 @@ public class HackManager {
 
     public HackSession getOrStartSessionForSprout(ServerPlayer player, BlockPos pos,
                                                    int computerId) {
+        if (DownedCapability.isDowned(player)) return null;
         HackSession session = activeSessions.get(pos);
         if (session == null) {
             onPlayerActivate(player, pos, computerId);

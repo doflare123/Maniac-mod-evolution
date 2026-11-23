@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
+import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.perk.perks.survivor.AltruistExePerk;
 import org.example.maniacrevolution.perk.perks.survivor.DutchHelmPerk;
 import org.example.maniacrevolution.perk.perks.survivor.IdealychPerk;
@@ -71,7 +72,7 @@ public class HackSession {
 
         ServerLevel level = (ServerLevel) hacker.level();
 
-        if (!hacker.isAlive() || hacker.hasDisconnected()) {
+        if (!hacker.isAlive() || hacker.hasDisconnected() || DownedCapability.isDowned(hacker)) {
             cancel();
             return false;
         }
@@ -97,16 +98,9 @@ public class HackSession {
         }
 
         // Саппортеры вышедшие из зоны — останавливаем QTE
-        List<ServerPlayer> leftZone = new ArrayList<>();
-        for (ServerPlayer sp : currentQTEPlayers) {
-            if (sp == hacker) continue;
-            if (!supporters.contains(sp)) {
-                HackManager.sendStopQTE(sp);
-                SberSproutManager.onParticipantLeft(sp, sessionId);
-                leftZone.add(sp);
-            }
+        for (ServerPlayer sp : List.copyOf(currentQTEPlayers)) {
+            if (sp != hacker && !supporters.contains(sp)) removeSupporter(sp);
         }
-        currentQTEPlayers.removeAll(leftZone);
 
         Map<ServerPlayer, Float> contributions = calcPoints(supporters);
         float requestedPoints = 0.0F;
@@ -220,6 +214,7 @@ public class HackSession {
         double r2 = HackConfig.SUPPORT_RADIUS * HackConfig.SUPPORT_RADIUS;
         for (ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
             if (p == hacker) continue;
+            if (DownedCapability.isDowned(p)) continue;
             if (org.example.maniacrevolution.techies.TechiesManager.placing(p)) continue;
             if (org.example.maniacrevolution.engineer.EngineerManager.busy(p)) continue;
             if (p.level() != level) continue;
@@ -248,6 +243,7 @@ public class HackSession {
     private final List<ServerPlayer> currentQTEPlayers = new ArrayList<>();
 
     boolean hasQTEParticipant(ServerPlayer player) {
+        if (DownedCapability.isDowned(player)) return false;
         for (ServerPlayer sp : currentQTEPlayers) {
             if (sp.getUUID().equals(player.getUUID())) return true;
         }
@@ -306,7 +302,7 @@ public class HackSession {
         HackManager.get().onComputerHacked(server, computerId, pos);
     }
 
-    private void cancel() {
+    void cancel() {
         org.example.maniacrevolution.stats.StatsManager.count(hacker, "hack_sessions_interrupted", 1);
         finished = true;
         IdealychPerk.resetStacks(hacker);
@@ -346,10 +342,17 @@ public class HackSession {
     }
 
     public void ensureParticipant(ServerPlayer player) {
-        if (hasQTEParticipant(player)) return;
+        if (DownedCapability.isDowned(player) || hasQTEParticipant(player)) return;
         currentQTEPlayers.add(player);
         HackManager.sendStartQTE(player);
         SberSproutManager.onParticipantJoined(player, this);
+    }
+
+    void removeSupporter(ServerPlayer player) {
+        if (currentQTEPlayers.remove(player)) {
+            HackManager.sendStopQTE(player);
+            SberSproutManager.onParticipantLeft(player, sessionId);
+        }
     }
 
     float addSproutPoints(ServerLevel level, float requestedPoints) {

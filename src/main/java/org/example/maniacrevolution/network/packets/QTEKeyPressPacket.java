@@ -5,6 +5,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.Config;
+import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.hack.HackConfig;
 import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.perk.perks.maniac.CatchMistakesPerk;
@@ -52,7 +53,7 @@ public class QTEKeyPressPacket {
     public static void handle(QTEKeyPressPacket packet, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
-            if (player == null) return;
+            if (player == null || DownedCapability.isDowned(player)) return;
 
             org.example.maniacrevolution.stats.StatsManager.count(player,
                     !packet.success ? "qte_failed" : packet.critical ? "qte_critical" : "qte_success", 1);

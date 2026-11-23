@@ -23,6 +23,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.example.maniacrevolution.Maniacrev;
+import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.stamina.DashMovement;
 import org.example.maniacrevolution.stamina.StaminaMovement;
 
@@ -68,6 +69,7 @@ public final class PlayerLocomotionAnimations {
     }
 
     static float dashAge(AbstractClientPlayer player) {
+        if (DownedCapability.isDowned(player)) return Float.POSITIVE_INFINITY;
         if (PlayerAnimationAccess.getPlayerAssociatedData(player).get(LAYER) instanceof Locomotion layer) {
             return player.tickCount - layer.dashStart;
         }

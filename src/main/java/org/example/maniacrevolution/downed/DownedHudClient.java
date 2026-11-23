@@ -3,13 +3,10 @@ package org.example.maniacrevolution.downed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.Pose;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.example.maniacrevolution.Maniacrev;
@@ -24,21 +21,11 @@ public class DownedHudClient {
     private static boolean isPaused       = false;
 
     public static void update(DownedHudPacket pkt) {
-        int oldRole = role;
         role           = pkt.role;
         downedName     = pkt.downedName;
         remainingTicks = pkt.remainingTicks;
         reviveProgress = pkt.reviveProgress;
         isPaused       = pkt.isPaused;
-
-        // Снимаем форсированную позу когда нас подняли / умерли
-        if (oldRole == DownedHudPacket.ROLE_SELF && role == DownedHudPacket.ROLE_CLEAR) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) {
-                mc.player.setForcedPose(null);
-                mc.player.setPose(Pose.STANDING);
-            }
-        }
     }
 
     @SubscribeEvent
@@ -48,24 +35,6 @@ public class DownedHudClient {
         remainingTicks = 0;
         reviveProgress = 0f;
         isPaused = false;
-    }
-
-    // ── Клиентский тик — форсируем позу локально ─────────────────────────
-
-    @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-        if (role != DownedHudPacket.ROLE_SELF) return;
-
-        Minecraft mc = Minecraft.getInstance();
-        LocalPlayer player = mc.player;
-        if (player == null) return;
-
-        // Форсируем позу на клиенте каждый тик — без этого клиент сбрасывает её локально
-        player.setForcedPose(Pose.SLEEPING);
-
-        // Блокируем прыжок на клиенте — обнуляем jumping флаг
-        player.input.jumping = false;
     }
 
     // ── Регистрация HUD оверлея (MOD bus) ────────────────────────────────

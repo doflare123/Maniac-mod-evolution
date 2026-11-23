@@ -47,6 +47,11 @@ public class DownedCapability {
         return player.getCapability(DOWNED).orElse(null);
     }
 
+    public static boolean isDowned(Player player) {
+        DownedData data = get(player);
+        return data != null && data.getState() == DownedState.DOWNED;
+    }
+
     public static class Provider implements ICapabilitySerializable<CompoundTag> {
 
         private final DownedData data = new DownedData();

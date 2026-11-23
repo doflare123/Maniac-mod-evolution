@@ -22,6 +22,7 @@ import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.hack.HackManager;
 import org.example.maniacrevolution.network.ModNetworking;
 import org.example.maniacrevolution.perk.Perk;
 import org.example.maniacrevolution.perk.PerkInstance;
@@ -160,12 +161,15 @@ public class DownedEventHandler {
         }
 
         data.setState(DownedState.DOWNED);
+        data.setBodyYaw(player.getYRot());
+        HackManager.get().onPlayerDowned(player);
         org.example.maniacrevolution.stats.StatsManager.knockdown(player, responsibleManiac);
         data.setDownedTicksElapsed(0);
         data.cancelRevive();
         data.setUsedSecondChance(true);
 
         player.setHealth(1.0f);
+        enterDownedPose(player);
         applyDownedEffects(player);
         spawnDownedStand(player);
 
@@ -216,10 +220,6 @@ public class DownedEventHandler {
         // Y оставляем только если падает вниз (гравитация) — чтобы не левитировал
         double vy = player.getDeltaMovement().y;
         player.setDeltaMovement(0, Math.min(vy, 0), 0);
-
-        // ── Поза SLEEPING — горизонтальное лежание ──────────────────────
-        // Поза форсируется на клиенте через DownedHudClient.onClientTick.
-        // На сервере просто ставим позу для корректной синхронизации с другими игроками.
 
         // ── Визуальные индикаторы для окружающих игроков ─────────────────
         // Каждые 10 тиков показываем частицы у ног и текст над головой
@@ -352,6 +352,28 @@ public class DownedEventHandler {
     // ══════════════════════════════════════════════════════════════════════
     // 4. РЕСПАУН — копируем Capability
     // ══════════════════════════════════════════════════════════════════════
+
+    @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking event) {
+        if (event.getEntity() instanceof ServerPlayer viewer && event.getTarget() instanceof ServerPlayer target
+                && DownedCapability.isDowned(target)) {
+            ModNetworking.sendToPlayer(downedPose(target), viewer);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && DownedCapability.isDowned(player)) {
+            enterDownedPose(player);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && DownedCapability.isDowned(player)) {
+            enterDownedPose(player);
+        }
+    }
 
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
@@ -545,15 +567,12 @@ public class DownedEventHandler {
 
         // Пакеты игрокам рядом (радиус 8 блоков)
         for (ServerPlayer nearby : downed.getServer().getPlayerList().getPlayers()) {
-            if (nearby == downed) continue;
+            if (nearby == downed || DownedCapability.isDowned(nearby)) continue;
             if (nearby.distanceTo(downed) > 8.0) {
                 // Если был в зоне — отправляем clear
                 ModNetworking.sendToPlayer(DownedHudPacket.clear(), nearby);
                 continue;
             }
-            DownedData nearbyData = DownedCapability.get(nearby);
-            if (nearbyData != null && nearbyData.getState() == DownedState.DOWNED) continue;
-
             // Только союзникам показываем HUD
             if (!areSameTeam(nearby, downed)) continue;
 
@@ -572,12 +591,26 @@ public class DownedEventHandler {
         if (downed.getServer() == null) return;
         ModNetworking.sendToPlayer(DownedHudPacket.clear(), downed);
         for (ServerPlayer nearby : downed.getServer().getPlayerList().getPlayers()) {
-            if (nearby == downed) continue;
+            if (nearby == downed || DownedCapability.isDowned(nearby)) continue;
             ModNetworking.sendToPlayer(DownedHudPacket.clear(), nearby);
         }
     }
 
     // ── Эффекты ───────────────────────────────────────────────────────────
+
+    private static DownedPosePacket downedPose(ServerPlayer player) {
+        DownedData data = DownedCapability.get(player);
+        // Older saved knockdowns have no facing recorded.
+        if (!Float.isFinite(data.getBodyYaw())) data.setBodyYaw(player.getYRot());
+        return new DownedPosePacket(player.getId(), data.getBodyYaw());
+    }
+
+    private static void enterDownedPose(ServerPlayer player) {
+        player.stopFallFlying();
+        player.setForcedPose(Pose.SWIMMING);
+        player.setPose(Pose.SWIMMING);
+        ModNetworking.sendToTrackingPlayer(downedPose(player), player);
+    }
 
     private static void applyDownedEffects(ServerPlayer player) {
         // SLOWNESS 255 блокирует ходьбу
@@ -596,6 +629,7 @@ public class DownedEventHandler {
         player.removeEffect(MobEffects.WEAKNESS);
         player.setForcedPose(null);
         player.setPose(Pose.STANDING);
+        ModNetworking.sendToTrackingPlayer(new DownedPosePacket(player.getId(), Float.NaN), player);
     }
 
     private static void applyWeakenedEffects(ServerPlayer player) {

@@ -18,6 +18,7 @@ public class DownedData {
 
     // ── Поля ───────────────────────────────────────────────────────────────
     private DownedState state = DownedState.ALIVE;
+    private float bodyYaw = Float.NaN;
 
     /** Сколько тиков игрок уже лежит */
     private int downedTicksElapsed = 0;
@@ -66,6 +67,9 @@ public class DownedData {
     public DownedState getState() { return state; }
     public void setState(DownedState state) { this.state = state; }
 
+    public float getBodyYaw() { return bodyYaw; }
+    public void setBodyYaw(float bodyYaw) { this.bodyYaw = bodyYaw; }
+
     public int getDownedTicksElapsed() { return downedTicksElapsed; }
     public void setDownedTicksElapsed(int t) { this.downedTicksElapsed = t; }
     public void incrementDownedTicks() { downedTicksElapsed++; }
@@ -112,6 +116,7 @@ public class DownedData {
     /** Сбросить всё в начальное состояние (для команды reset) */
     public void fullReset() {
         state = DownedState.ALIVE;
+        bodyYaw = Float.NaN;
         downedTicksElapsed = 0;
         resetDownedModifiers();
         reviverUUID = null;
@@ -139,6 +144,7 @@ public class DownedData {
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putString("state", state.name());
+        if (state == DownedState.DOWNED && Float.isFinite(bodyYaw)) tag.putFloat("bodyYaw", bodyYaw);
         tag.putInt("downedTicks", downedTicksElapsed);
         tag.putInt("downedTimeoutTicks", downedTimeoutTicks);
         tag.putFloat("selfReviveManaMultiplier", selfReviveManaMultiplier);
@@ -154,6 +160,7 @@ public class DownedData {
         } catch (IllegalArgumentException e) {
             state = DownedState.ALIVE;
         }
+        bodyYaw = tag.contains("bodyYaw") ? tag.getFloat("bodyYaw") : Float.NaN;
         downedTicksElapsed = tag.getInt("downedTicks");
         downedTimeoutTicks = tag.contains("downedTimeoutTicks")
                 ? Math.max(1, tag.getInt("downedTimeoutTicks"))
