@@ -4,6 +4,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -23,6 +24,7 @@ public final class StaminaManager {
     private static final String SAVE_KEY = "maniacrev:stamina";
     private static final int SYNC_INTERVAL = 4;
     private static final int RESYNC_INTERVAL = 20;
+    private static final double STATIONARY_DISTANCE_SQR = 1.0E-6;
     private static final AttributeModifier SPRINT_SPEED = new AttributeModifier(
             UUID.fromString("08dcc550-f355-45e2-907b-aa645586132f"), "Maniac Revolution sprint speed",
             0.15, AttributeModifier.Operation.MULTIPLY_TOTAL);
@@ -30,12 +32,14 @@ public final class StaminaManager {
 
     private static final class State {
         final Stamina stamina;
+        Vec3 lastPosition;
         int lastSent = -1;
         int lastSync;
 
         State(ServerPlayer player) {
             var data = player.getPersistentData();
             stamina = new Stamina(data.contains(SAVE_KEY, Tag.TAG_INT) ? data.getInt(SAVE_KEY) : Stamina.MAX);
+            lastPosition = player.position();
         }
     }
 
@@ -87,11 +91,14 @@ public final class StaminaManager {
     public static void tick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
         State state = state(player);
+        Vec3 position = player.position();
+        boolean stationary = position.subtract(state.lastPosition).horizontalDistanceSqr() <= STATIONARY_DISTANCE_SQR;
+        state.lastPosition = position;
         int previous = state.stamina.amount();
         if (StaminaMovement.usesStamina(player)) {
             if (!DashMovement.isMoving(player)) {
                 boolean sprinting = player.isSprinting() && !player.isCrouching() && previous > 0;
-                state.stamina.tick(sprinting, player.onGround());
+                state.stamina.tick(sprinting, player.onGround(), stationary);
             }
             if (player.isSprinting() && (state.stamina.amount() == 0 || previous == 0)) player.setSprinting(false);
             if (previous != state.stamina.amount()) store(player, state);
