@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerSprintMixin {
-    @Inject(method = {"canStartSprinting", "m_264082_"}, at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = {"canStartSprinting", "m_264082_"}, at = @At("RETURN"), cancellable = true, remap = false)
     private void maniacrev$requireHeldSprint(CallbackInfoReturnable<Boolean> cir) {
-        if (!ClientStamina.canSprint((LocalPlayer) (Object) this)) cir.setReturnValue(false);
+        if (cir.getReturnValue() && !ClientStamina.trySprint((LocalPlayer) (Object) this)) cir.setReturnValue(false);
     }
 }

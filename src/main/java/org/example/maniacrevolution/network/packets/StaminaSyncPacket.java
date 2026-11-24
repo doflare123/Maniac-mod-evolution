@@ -9,14 +9,15 @@ import org.example.maniacrevolution.stamina.client.ClientStamina;
 
 import java.util.function.Supplier;
 
-public record StaminaSyncPacket(int playerId, int amount) {
+public record StaminaSyncPacket(int playerId, int amount, boolean denied) {
     public void encode(FriendlyByteBuf buffer) {
         buffer.writeVarInt(playerId);
         buffer.writeVarInt(amount);
+        buffer.writeBoolean(denied);
     }
 
     public static StaminaSyncPacket decode(FriendlyByteBuf buffer) {
-        return new StaminaSyncPacket(buffer.readVarInt(), buffer.readVarInt());
+        return new StaminaSyncPacket(buffer.readVarInt(), buffer.readVarInt(), buffer.readBoolean());
     }
 
     public void handle(Supplier<NetworkEvent.Context> context) {

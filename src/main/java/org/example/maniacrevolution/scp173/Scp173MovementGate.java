@@ -36,11 +36,16 @@ public final class Scp173MovementGate extends ChannelInboundHandlerAdapter {
         listener.player.getServer().execute(() -> {
             if (!listener.connection.isConnected()) return;
             if (message instanceof ServerboundPlayerCommandPacket sprint) {
-                if (sprint.getAction() == ServerboundPlayerCommandPacket.Action.STOP_SPRINTING
-                        || !DashMovement.isMoving(listener.player) && StaminaManager.canSprint(listener.player)) {
-                    listener.handlePlayerCommand(sprint);
-                    StaminaManager.updateSprintSpeed(listener.player);
+                var player = listener.player;
+                if (sprint.getAction() == ServerboundPlayerCommandPacket.Action.START_SPRINTING) {
+                    if (DashMovement.isMoving(player)) return;
+                    if (!StaminaManager.canSprint(player)) {
+                        StaminaManager.notifyDenied(player);
+                        return;
+                    }
                 }
+                listener.handlePlayerCommand(sprint);
+                StaminaManager.updateSprintSpeed(player);
                 return;
             }
             // listener survives respawn; the player instance does not.
@@ -97,8 +102,9 @@ public final class Scp173MovementGate extends ChannelInboundHandlerAdapter {
         if (message instanceof ServerboundMovePlayerPacket && DashMovement.isMoving(p)) return null;
         boolean jumpBlocked = org.example.maniacrevolution.util.PlayerModeUtil.isSurvivalOrAdventure(p)
                 && p.hasEffect(org.example.maniacrevolution.effect.ModEffects.JUMP_COOLDOWN.get());
-        jumpBlocked |= message instanceof ServerboundMovePlayerPacket && !StaminaManager.canJump(p);
-        if ((Scp173Manager.active(p) || jumpBlocked) && !Scp173Manager.held(p) && message instanceof ServerboundMovePlayerPacket move
+        boolean jumpDeniedByStamina = message instanceof ServerboundMovePlayerPacket && !StaminaManager.canJump(p);
+        if ((Scp173Manager.active(p) || jumpBlocked || jumpDeniedByStamina)
+                && !Scp173Manager.held(p) && message instanceof ServerboundMovePlayerPacket move
                 && p.onGround() && move.getY(p.getY()) > p.getY() + 1.0e-6 && p.getDeltaMovement().y <= 0
                 && !p.onClimbable() && !p.isInWaterOrBubble() && !p.isInLava()) {
             var shifted = p.getBoundingBox().move(move.getX(p.getX()) - p.getX(), move.getY(p.getY()) - p.getY(),
@@ -106,7 +112,8 @@ public final class Scp173MovementGate extends ChannelInboundHandlerAdapter {
             // Stepping onto a supported block is not a jump. A forged onGround flag must not
             // bypass the cooldown for rising into unsupported space; external upward velocity is exempt.
             boolean supported = !p.level().noCollision(p, shifted.move(0, -0.05, 0));
-            if (!supported && (jumpBlocked || !Scp173GameplayManager.permitClientJump(p))) {
+            if (!supported && (jumpBlocked || jumpDeniedByStamina || !Scp173GameplayManager.permitClientJump(p))) {
+                if (jumpDeniedByStamina && !jumpBlocked) StaminaManager.notifyDenied(p);
                 p.connection.teleport(p.getX(), p.getY(), p.getZ(), move.getYRot(p.getYRot()), move.getXRot(p.getXRot()));
                 return null;
             }

@@ -360,7 +360,7 @@ public class CustomHud implements IGuiOverlay {
         }
     }
 
-    private void renderDock(GuiGraphics gui, int centerX, int y, Player player) {
+    private void renderDock(GuiGraphics gui, int centerX, int y, LocalPlayer player) {
         List<ClientPlayerData.ClientPerkData> perks = ClientPlayerData.getSelectedPerks();
         int activeIndex = ClientPlayerData.getActivePerkIndex();
         String activateKey = ModKeybinds.ACTIVATE_PERK.getTranslatedKeyMessage().getString();
@@ -384,7 +384,7 @@ public class CustomHud implements IGuiOverlay {
         int effectsY = y + 4;
         renderHealthBar(gui, player, healthX, resourcesY);
         renderManaBar(gui, manaX, resourcesY);
-        renderStaminaBar(gui, manaX, resourcesY + RESOURCE_BAR_HEIGHT + 2);
+        renderStaminaBar(gui, manaX, resourcesY + RESOURCE_BAR_HEIGHT + 2, ClientStamina.denialRemaining(player));
 
         int currentX = effectX;
 
@@ -488,25 +488,31 @@ public class CustomHud implements IGuiOverlay {
         }
     }
 
-    private void renderStaminaBar(GuiGraphics gui, int x, int y) {
-        gui.fill(x, y, x + RESOURCE_BAR_WIDTH, y + STAMINA_BAR_HEIGHT, PANEL_BG);
-        gui.renderOutline(x, y, RESOURCE_BAR_WIDTH, STAMINA_BAR_HEIGHT, PANEL_BORDER);
-
+    private void renderStaminaBar(GuiGraphics gui, int x, int y, float denialRemaining) {
+        float tint = Math.min(1.0f, denialRemaining * 2.5f);
+        float shake = 2.0f * denialRemaining * Mth.sin((1.0f - denialRemaining) * Mth.TWO_PI * 3.0f);
+        int borderColor = withAlpha(lerpColor(PANEL_BORDER, 0xFFFF5260, tint),
+                Math.round(Mth.lerp(tint, PANEL_BORDER >>> 24, 255)));
+        int emptyColor = lerpColor(0xFF203629, 0xFF582126, tint);
+        int fillColor = lerpColor(STAMINA_COLOR, 0xFFFF5260, tint);
+        int highlightColor = lerpColor(0xFFA6F0B1, 0xFFFFA1AA, tint);
         float amount = animation.stamina();
         int width = RESOURCE_BAR_WIDTH - 1;
         gui.pose().pushPose();
-        gui.pose().translate(x, y, 0);
+        gui.pose().translate(x + shake, y, 0);
+        gui.fill(0, 0, RESOURCE_BAR_WIDTH, STAMINA_BAR_HEIGHT, PANEL_BG);
+        gui.renderOutline(0, 0, RESOURCE_BAR_WIDTH, STAMINA_BAR_HEIGHT, borderColor);
         // Keep the edge smooth at GUI scales where individual cells are only a few pixels wide.
         int precision = 8;
         gui.pose().scale(1.0f / precision, 1.0f, 1.0f);
         for (int cell = 0; cell < Stamina.CELLS; cell++) {
             int left = (1 + cell * width / Stamina.CELLS) * precision;
             int right = ((cell + 1) * width / Stamina.CELLS) * precision;
-            gui.fill(left, 1, right, STAMINA_BAR_HEIGHT - 1, 0xFF203629);
+            gui.fill(left, 1, right, STAMINA_BAR_HEIGHT - 1, emptyColor);
             int filled = Math.round((right - left) * Mth.clamp(amount - cell, 0.0f, 1.0f));
             if (filled > 0) {
-                gui.fill(left, 1, left + filled, STAMINA_BAR_HEIGHT - 1, STAMINA_COLOR);
-                gui.fill(left, 1, left + filled, 2, 0xFFA6F0B1);
+                gui.fill(left, 1, left + filled, STAMINA_BAR_HEIGHT - 1, fillColor);
+                gui.fill(left, 1, left + filled, 2, highlightColor);
             }
         }
         gui.pose().popPose();

@@ -1,9 +1,11 @@
 package org.example.maniacrevolution.stamina.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -18,9 +20,13 @@ import org.lwjgl.glfw.GLFW;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public final class ClientStamina {
+    private static final long DENIAL_DURATION_MS = 350;
     private static LocalPlayer player;
     private static int amount = Stamina.MAX;
     private static boolean needsSprintRelease;
+    private static boolean sprintDenialShown;
+    private static boolean jumpDenialShown;
+    private static long denialUntil;
 
     private ClientStamina() {}
 
@@ -30,6 +36,7 @@ public final class ClientStamina {
         usePlayer(current);
         amount = packet.amount();
         if (amount == 0) needsSprintRelease = true;
+        if (packet.denied() && StaminaMovement.usesStamina(current)) showDenial();
     }
 
     public static float cells(LocalPlayer current) {
@@ -37,9 +44,20 @@ public final class ClientStamina {
         return (float) amount / Stamina.CELL;
     }
 
-    public static boolean canSprint(LocalPlayer current) {
-        return !StaminaMovement.usesStamina(current)
-                || sprintKeyHeld() && !needsSprintRelease && amount > 0 && !PlayerLocomotionAnimations.isDashing(current);
+    public static float denialRemaining(LocalPlayer current) {
+        usePlayer(current);
+        return Mth.clamp((float) (denialUntil - Util.getMillis()) / DENIAL_DURATION_MS, 0.0f, 1.0f);
+    }
+
+    public static boolean trySprint(LocalPlayer current) {
+        if (!StaminaMovement.usesStamina(current)) return true;
+        usePlayer(current);
+        if (!sprintKeyHeld() || PlayerLocomotionAnimations.isDashing(current)) return false;
+        if (amount == 0 && !sprintDenialShown) {
+            sprintDenialShown = true;
+            showDenial();
+        }
+        return !needsSprintRelease && amount > 0;
     }
 
     public static boolean usesHeldSprintKey(KeyMapping binding) {
@@ -53,7 +71,13 @@ public final class ClientStamina {
         if (!(entity instanceof LocalPlayer current) || !StaminaMovement.usesStamina(current)) return true;
         if (PlayerLocomotionAnimations.isDashing(current)) return false;
         usePlayer(current);
-        if (amount < Stamina.CELL) return false;
+        if (amount < Stamina.CELL) {
+            if (!jumpDenialShown) {
+                jumpDenialShown = true;
+                showDenial();
+            }
+            return false;
+        }
         // Vanilla movement carries the jump and the server synchronizes its actual cost.
         amount -= Stamina.CELL;
         if (amount == 0) needsSprintRelease = true;
@@ -64,8 +88,12 @@ public final class ClientStamina {
     public static void updateInput(MovementInputUpdateEvent event) {
         if (!(event.getEntity() instanceof LocalPlayer current)) return;
         usePlayer(current);
-        if (!sprintKeyHeld()) needsSprintRelease = false;
-        if (current.isSprinting() && !canSprint(current)) current.setSprinting(false);
+        if (!sprintKeyHeld()) {
+            needsSprintRelease = false;
+            sprintDenialShown = false;
+        }
+        if (!event.getInput().jumping) jumpDenialShown = false;
+        if (current.isSprinting() && !trySprint(current)) current.setSprinting(false);
         if (PlayerLocomotionAnimations.isDashing(current)) {
             event.getInput().forwardImpulse = 0;
             event.getInput().leftImpulse = 0;
@@ -83,6 +111,13 @@ public final class ClientStamina {
         player = current;
         amount = Stamina.MAX;
         needsSprintRelease = false;
+        sprintDenialShown = false;
+        jumpDenialShown = false;
+        denialUntil = 0;
+    }
+
+    private static void showDenial() {
+        denialUntil = Util.getMillis() + DENIAL_DURATION_MS;
     }
 
     public static boolean sprintKeyHeld() {

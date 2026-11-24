@@ -7,9 +7,12 @@ import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.game.GameManager;
+import org.example.maniacrevolution.ghost.GhostPossessionManager;
 import org.example.maniacrevolution.perk.PerkInstance;
 import org.example.maniacrevolution.perk.PerkPhase;
-import org.example.maniacrevolution.ghost.GhostPossessionManager;
+import org.example.maniacrevolution.perk.perks.common.DashPerk;
+import org.example.maniacrevolution.stamina.DashMovement;
+import org.example.maniacrevolution.stamina.StaminaManager;
 
 import java.util.function.Supplier;
 
@@ -77,8 +80,13 @@ public class ActivatePerkPacket {
                         Component.translatable("message.maniacrev.perk.not_active"), true);
                 case NOT_ENOUGH_MANA -> player.displayClientMessage(
                         Component.translatable("message.maniacrev.perk.not_enough_mana"), true);
-                case CONDITION_NOT_MET -> player.displayClientMessage(
-                        active.getPerk().getConditionNotMetMessage(player), true);
+                case CONDITION_NOT_MET -> {
+                    if (active.getPerk() instanceof DashPerk && DashMovement.canStart(player)
+                            && !StaminaManager.has(player, DashMovement.COST)) {
+                        StaminaManager.notifyDenied(player);
+                    }
+                    player.displayClientMessage(active.getPerk().getConditionNotMetMessage(player), true);
+                }
             }
 
             PlayerDataManager.syncToClient(player);

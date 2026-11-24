@@ -58,11 +58,18 @@ public final class StaminaManager {
         return state(player).stamina.amount() >= points;
     }
 
+    public static void notifyDenied(ServerPlayer player) {
+        sync(player, state(player), true);
+    }
+
     public static boolean spend(ServerPlayer player, int points) {
         State state = state(player);
-        if (!state.stamina.spend(points)) return false;
+        if (!state.stamina.spend(points)) {
+            if (points > 0) sync(player, state, true);
+            return false;
+        }
         store(player, state);
-        sync(player, state);
+        sync(player, state, false);
         return true;
     }
 
@@ -94,7 +101,7 @@ public final class StaminaManager {
         int sinceSync = player.tickCount - state.lastSync;
         if (state.lastSent < 0 || sinceSync >= RESYNC_INTERVAL || amount != state.lastSent
                 && (amount == 0 || amount == Stamina.MAX || sinceSync >= SYNC_INTERVAL)) {
-            sync(player, state);
+            sync(player, state, false);
         }
     }
 
@@ -130,10 +137,10 @@ public final class StaminaManager {
         player.getPersistentData().putInt(SAVE_KEY, state.stamina.amount());
     }
 
-    private static void sync(ServerPlayer player, State state) {
+    private static void sync(ServerPlayer player, State state, boolean denied) {
         if (player.connection == null) return;
         state.lastSync = player.tickCount;
         state.lastSent = state.stamina.amount();
-        ModNetworking.sendToPlayer(new StaminaSyncPacket(player.getId(), state.lastSent), player);
+        ModNetworking.sendToPlayer(new StaminaSyncPacket(player.getId(), state.lastSent, denied), player);
     }
 }
