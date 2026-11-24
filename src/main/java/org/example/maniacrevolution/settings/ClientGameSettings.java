@@ -21,7 +21,6 @@ public class ClientGameSettings {
     // ── Компьютеры ────────────────────────────────────────────────────────
     private static float hackPointsRequired   = 15.0f;
     private static float pointsPerPlayer      = 0.1f;
-    private static float pointsPerSpecialist  = 0.11f;
     private static int   maxBonusPlayers      = 4;
     private static float hackerRadius         = 1.7f;
     private static float supportRadius        = 3.0f;
@@ -41,13 +40,12 @@ public class ClientGameSettings {
     }
 
     // ── Сеттер — Компьютеры ───────────────────────────────────────────────
-    public static void setComputerSettings(float hackPtsReq, float ptsPlayer, float ptsSpc,
+    public static void setComputerSettings(float hackPtsReq, float ptsPlayer,
                                            int maxBonus, float hackerR, float supportR,
                                            int qteMin, int qteMax, float qteSuccess,
                                            float qteCrit, int computersNeeded) {
         hackPointsRequired   = hackPtsReq;
         pointsPerPlayer      = ptsPlayer;
-        pointsPerSpecialist  = ptsSpc;
         maxBonusPlayers      = maxBonus;
         hackerRadius         = hackerR;
         supportRadius        = supportR;
@@ -77,7 +75,6 @@ public class ClientGameSettings {
     // ── Геттеры — Компьютеры ──────────────────────────────────────────────
     public static float getHackPointsRequired()    { return hackPointsRequired; }
     public static float getPointsPerPlayer()       { return pointsPerPlayer; }
-    public static float getPointsPerSpecialist()   { return pointsPerSpecialist; }
     public static int   getMaxBonusPlayers()       { return maxBonusPlayers; }
     public static float getHackerRadius()          { return hackerRadius; }
     public static float getSupportRadius()         { return supportRadius; }

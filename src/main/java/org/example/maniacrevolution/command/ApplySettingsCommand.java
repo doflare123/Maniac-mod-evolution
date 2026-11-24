@@ -41,7 +41,6 @@ public class ApplySettingsCommand {
 
         HackConfig.HACK_POINTS_REQUIRED = settings.getHackPointsRequired();
         HackConfig.POINTS_PER_PLAYER_PER_SECOND = settings.getPointsPerPlayer();
-        HackConfig.POINTS_PER_SPECIALIST_PER_SECOND = settings.getPointsPerSpecialist();
         HackConfig.HACKER_RADIUS = settings.getHackerRadius();
         HackConfig.SUPPORT_RADIUS = settings.getSupportRadius();
         HackConfig.QTE_SUCCESS_BONUS = settings.getQteSuccessBonus();

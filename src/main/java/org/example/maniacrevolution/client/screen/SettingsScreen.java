@@ -73,7 +73,6 @@ public class SettingsScreen extends Screen {
 
     private float tempHackPointsRequired;
     private float tempPointsPerPlayer;
-    private float tempPointsPerSpecialist;
     private int tempMaxBonusPlayers;
     private float tempHackerRadius;
     private float tempSupportRadius;
@@ -139,7 +138,6 @@ public class SettingsScreen extends Screen {
         tempSelectedMap = ClientGameSettings.getSelectedMap();
         tempHackPointsRequired = ClientGameSettings.getHackPointsRequired();
         tempPointsPerPlayer = ClientGameSettings.getPointsPerPlayer();
-        tempPointsPerSpecialist = ClientGameSettings.getPointsPerSpecialist();
         tempMaxBonusPlayers = ClientGameSettings.getMaxBonusPlayers();
         tempHackerRadius = ClientGameSettings.getHackerRadius();
         tempSupportRadius = ClientGameSettings.getSupportRadius();
@@ -1143,12 +1141,7 @@ public class SettingsScreen extends Screen {
                         "Шаг: 0.01 очка/с", () -> tempPointsPerPlayer,
                         v -> tempPointsPerPlayer = Math.max(0.01f, v), 0.01f,
                         GameSettings.DEFAULT_POINTS_PER_PLAYER, "%.2f /с",
-                        "Скорость взлома за каждого обычного игрока у компьютера."),
-                floatEntry("points_specialist", "Скорость специалиста", "Прогресс специалиста в секунду",
-                        "Шаг: 0.01 очка/с", () -> tempPointsPerSpecialist,
-                        v -> tempPointsPerSpecialist = Math.max(0.01f, v), 0.01f,
-                        GameSettings.DEFAULT_POINTS_PER_SPECIALIST, "%.2f /с",
-                        "Скорость взлома персонажа со специализацией на компьютерах."),
+                        "Базовый вклад каждого участника взлома у компьютера."),
                 intEntry("helpers", "Максимум помощников", "Лимит бонусных участников взлома",
                         "Шаг: 1 игрок", () -> tempMaxBonusPlayers,
                         v -> tempMaxBonusPlayers = Math.max(1, v), 1,
@@ -1295,7 +1288,6 @@ public class SettingsScreen extends Screen {
         tempSelectedMap = GameSettings.DEFAULT_SELECTED_MAP;
         tempHackPointsRequired = GameSettings.DEFAULT_HACK_POINTS_REQUIRED;
         tempPointsPerPlayer = GameSettings.DEFAULT_POINTS_PER_PLAYER;
-        tempPointsPerSpecialist = GameSettings.DEFAULT_POINTS_PER_SPECIALIST;
         tempMaxBonusPlayers = GameSettings.DEFAULT_MAX_BONUS_PLAYERS;
         tempHackerRadius = GameSettings.DEFAULT_HACKER_RADIUS;
         tempSupportRadius = GameSettings.DEFAULT_SUPPORT_RADIUS;
@@ -1319,7 +1311,7 @@ public class SettingsScreen extends Screen {
         tempQteIntervalMax = Math.max(tempQteIntervalMin, tempQteIntervalMax);
         ModNetworking.sendToServer(new UpdateSettingsPacket(
                 tempHpBoost, tempManiacCount, tempGameTime, tempSelectedMap,
-                tempHackPointsRequired, tempPointsPerPlayer, tempPointsPerSpecialist,
+                tempHackPointsRequired, tempPointsPerPlayer,
                 tempMaxBonusPlayers, tempHackerRadius, tempSupportRadius,
                 tempQteIntervalMin, tempQteIntervalMax, tempQteSuccessBonus,
                 tempQteCritBonus, tempComputersNeededForWin,
@@ -1342,7 +1334,7 @@ public class SettingsScreen extends Screen {
         return tempHpBoost + ":" + tempManiacCount + ":" + tempGameTime + ":" + tempSelectedMap + ":"
                 + Float.floatToIntBits(tempHackPointsRequired) + ":"
                 + Float.floatToIntBits(tempPointsPerPlayer) + ":"
-                + Float.floatToIntBits(tempPointsPerSpecialist) + ":" + tempMaxBonusPlayers + ":"
+                + tempMaxBonusPlayers + ":"
                 + Float.floatToIntBits(tempHackerRadius) + ":" + Float.floatToIntBits(tempSupportRadius) + ":"
                 + tempQteIntervalMin + ":" + tempQteIntervalMax + ":"
                 + Float.floatToIntBits(tempQteSuccessBonus) + ":"

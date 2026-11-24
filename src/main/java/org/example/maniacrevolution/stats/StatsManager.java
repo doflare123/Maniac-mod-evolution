@@ -344,7 +344,6 @@ public final class StatsManager {
         }
         values.put("hackPointsRequired", HackConfig.HACK_POINTS_REQUIRED);
         values.put("pointsPerPlayer", HackConfig.POINTS_PER_PLAYER_PER_SECOND);
-        values.put("pointsPerSpecialist", HackConfig.POINTS_PER_SPECIALIST_PER_SECOND);
         values.put("computersNeededForWin", HackConfig.COMPUTERS_NEEDED_FOR_WIN);
         return values;
     }

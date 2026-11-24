@@ -10,17 +10,11 @@ public class HackConfig {
     /** Сколько очков нужно набрать чтобы взломать ОДИН компьютер */
     public static float HACK_POINTS_REQUIRED = 10.0f;
 
-    /** Базовый прирост очков в секунду на одного игрока (кроме спеца) */
+    /** Базовый прирост очков в секунду на одного игрока */
     public static float POINTS_PER_PLAYER_PER_SECOND = 0.1f;
-
-    /** Прирост очков для игрока с SurvivorClass == SPECIALIST_CLASS */
-    public static float POINTS_PER_SPECIALIST_PER_SECOND = 0.11f;
 
     /** Scoreboard-объектив для определения класса */
     public static String SURVIVOR_CLASS_OBJECTIVE = "SurvivorClass";
-
-    /** Значение SurvivorClass для "специалиста" (ускоряет взлом) */
-    public static int SPECIALIST_CLASS = 10;
 
     /** Максимальное количество игроков-бонусников на одном компьютере */
     public static int MAX_BONUS_PLAYERS = 4;

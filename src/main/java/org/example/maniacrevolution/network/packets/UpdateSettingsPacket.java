@@ -22,7 +22,6 @@ public class UpdateSettingsPacket {
     // Компьютеры
     private final float hackPointsRequired;
     private final float pointsPerPlayer;
-    private final float pointsPerSpecialist;
     private final int   maxBonusPlayers;
     private final float hackerRadius;
     private final float supportRadius;
@@ -38,7 +37,7 @@ public class UpdateSettingsPacket {
     public UpdateSettingsPacket(int hpBoost,
                                 int maniacCount, int gameTime, int selectedMap,
                                 float hackPointsRequired, float pointsPerPlayer,
-                                float pointsPerSpecialist, int maxBonusPlayers,
+                                int maxBonusPlayers,
                                 float hackerRadius, float supportRadius,
                                 int qteIntervalMin, int qteIntervalMax,
                                 float qteSuccessBonus, float qteCritBonus,
@@ -50,7 +49,6 @@ public class UpdateSettingsPacket {
         this.selectedMap          = selectedMap;
         this.hackPointsRequired   = hackPointsRequired;
         this.pointsPerPlayer      = pointsPerPlayer;
-        this.pointsPerSpecialist  = pointsPerSpecialist;
         this.maxBonusPlayers      = maxBonusPlayers;
         this.hackerRadius         = hackerRadius;
         this.supportRadius        = supportRadius;
@@ -70,7 +68,6 @@ public class UpdateSettingsPacket {
         buf.writeInt(msg.selectedMap);
         buf.writeFloat(msg.hackPointsRequired);
         buf.writeFloat(msg.pointsPerPlayer);
-        buf.writeFloat(msg.pointsPerSpecialist);
         buf.writeInt(msg.maxBonusPlayers);
         buf.writeFloat(msg.hackerRadius);
         buf.writeFloat(msg.supportRadius);
@@ -87,7 +84,7 @@ public class UpdateSettingsPacket {
         return new UpdateSettingsPacket(
                 buf.readInt(),
                 buf.readInt(), buf.readInt(), buf.readInt(),
-                buf.readFloat(), buf.readFloat(), buf.readFloat(),
+                buf.readFloat(), buf.readFloat(),
                 buf.readInt(), buf.readFloat(), buf.readFloat(),
                 buf.readInt(), buf.readInt(),
                 buf.readFloat(), buf.readFloat(),
@@ -119,7 +116,6 @@ public class UpdateSettingsPacket {
             // Компьютеры — сохраняем в GameSettings и применяем в HackConfig
             s.setHackPointsRequired(msg.hackPointsRequired);
             s.setPointsPerPlayer(msg.pointsPerPlayer);
-            s.setPointsPerSpecialist(msg.pointsPerSpecialist);
             s.setMaxBonusPlayers(msg.maxBonusPlayers);
             s.setHackerRadius(msg.hackerRadius);
             s.setSupportRadius(msg.supportRadius);

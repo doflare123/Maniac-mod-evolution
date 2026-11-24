@@ -4,11 +4,13 @@ import org.example.maniacrevolution.character.CharacterClass;
 import org.example.maniacrevolution.character.CharacterType;
 
 public class ScientistClass extends CharacterClass {
+    public static final int SCOREBOARD_ID = 10;
+    public static final float HACK_SPEED_MULTIPLIER = 1.2f;
 
     public ScientistClass() {
         super("scientist", "Учёный", CharacterType.SURVIVOR,
                 "I am perfectly suited for this environment",
-                10, 4); // ID для scoreboard
+                SCOREBOARD_ID, 4);
 
         // Тэги
         addTag("Хаккер");

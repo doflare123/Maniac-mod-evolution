@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
+import org.example.maniacrevolution.character.survivor.ScientistClass;
 import org.example.maniacrevolution.downed.DownedCapability;
 import org.example.maniacrevolution.perk.perks.survivor.AltruistExePerk;
 import org.example.maniacrevolution.perk.perks.survivor.DutchHelmPerk;
@@ -178,9 +179,10 @@ public class HackSession {
                 continue;
             }
 
-            float points = isSpecialist(sp)
-                    ? HackConfig.POINTS_PER_SPECIALIST_PER_SECOND
-                    : HackConfig.POINTS_PER_PLAYER_PER_SECOND;
+            float points = HackConfig.POINTS_PER_PLAYER_PER_SECOND;
+            if (isScientist(sp)) {
+                points *= ScientistClass.HACK_SPEED_MULTIPLIER;
+            }
 
             // Голландский Штурвал — только у одного владельца, считает всех кроме себя
             if (sp == dutchOwner) {
@@ -230,12 +232,12 @@ public class HackSession {
         return team != null && SURVIVORS_TEAM.equalsIgnoreCase(team.getName());
     }
 
-    private static boolean isSpecialist(ServerPlayer p) {
+    private static boolean isScientist(ServerPlayer p) {
         var sb = p.getServer().getScoreboard();
         var obj = sb.getObjective(HackConfig.SURVIVOR_CLASS_OBJECTIVE);
         if (obj == null) return false;
         return sb.getOrCreatePlayerScore(p.getScoreboardName(), obj)
-                .getScore() == HackConfig.SPECIALIST_CLASS;
+                .getScore() == ScientistClass.SCOREBOARD_ID;
     }
 
     // ── QTE ───────────────────────────────────────────────────────────────────

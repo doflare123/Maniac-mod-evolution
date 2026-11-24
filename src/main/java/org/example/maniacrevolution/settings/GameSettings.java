@@ -22,7 +22,6 @@ public class GameSettings extends SavedData {
     // ── Настройки компьютеров (из HackConfig) ────────────────────────────
     private float hackPointsRequired         = 15.0f;
     private float pointsPerPlayer            = 0.1f;
-    private float pointsPerSpecialist        = 0.11f;
     private int   maxBonusPlayers            = 4;
     private float hackerRadius               = 1.7f;
     private float supportRadius              = 3.0f;
@@ -46,7 +45,6 @@ public class GameSettings extends SavedData {
     // ── Дефолты — Компьютеры ──────────────────────────────────────────────
     public static final float DEFAULT_HACK_POINTS_REQUIRED   = 15.0f;
     public static final float DEFAULT_POINTS_PER_PLAYER      = 0.1f;
-    public static final float DEFAULT_POINTS_PER_SPECIALIST  = 0.11f;
     public static final int   DEFAULT_MAX_BONUS_PLAYERS      = 4;
     public static final float DEFAULT_HACKER_RADIUS          = 1.7f;
     public static final float DEFAULT_SUPPORT_RADIUS         = 3.0f;
@@ -72,7 +70,6 @@ public class GameSettings extends SavedData {
     // ── Геттеры — Компьютеры ──────────────────────────────────────────────
     public float getHackPointsRequired()    { return hackPointsRequired; }
     public float getPointsPerPlayer()       { return pointsPerPlayer; }
-    public float getPointsPerSpecialist()   { return pointsPerSpecialist; }
     public int   getMaxBonusPlayers()       { return maxBonusPlayers; }
     public float getHackerRadius()          { return hackerRadius; }
     public float getSupportRadius()         { return supportRadius; }
@@ -96,7 +93,6 @@ public class GameSettings extends SavedData {
     // ── Сеттеры — Компьютеры ──────────────────────────────────────────────
     public void setHackPointsRequired(float v)   { hackPointsRequired  = Math.max(1f, Float.isFinite(v) ? v : DEFAULT_HACK_POINTS_REQUIRED);         setDirty(); }
     public void setPointsPerPlayer(float v)      { pointsPerPlayer     = Math.max(0.01f, Float.isFinite(v) ? v : DEFAULT_POINTS_PER_PLAYER);      setDirty(); }
-    public void setPointsPerSpecialist(float v)  { pointsPerSpecialist = Math.max(0.01f, Float.isFinite(v) ? v : DEFAULT_POINTS_PER_SPECIALIST);      setDirty(); }
     public void setMaxBonusPlayers(int v)        { maxBonusPlayers     = Math.max(1, v);           setDirty(); }
     public void setHackerRadius(float v)         { hackerRadius        = Math.max(0.5f, Float.isFinite(v) ? v : DEFAULT_HACKER_RADIUS);        setDirty(); }
     public void setSupportRadius(float v)        { supportRadius       = Math.max(0.5f, Float.isFinite(v) ? v : DEFAULT_SUPPORT_RADIUS);        setDirty(); }
@@ -116,7 +112,6 @@ public class GameSettings extends SavedData {
         threePerksEnabled    = DEFAULT_THREE_PERKS_ENABLED;
         hackPointsRequired   = DEFAULT_HACK_POINTS_REQUIRED;
         pointsPerPlayer      = DEFAULT_POINTS_PER_PLAYER;
-        pointsPerSpecialist  = DEFAULT_POINTS_PER_SPECIALIST;
         maxBonusPlayers      = DEFAULT_MAX_BONUS_PLAYERS;
         hackerRadius         = DEFAULT_HACKER_RADIUS;
         supportRadius        = DEFAULT_SUPPORT_RADIUS;
@@ -139,7 +134,6 @@ public class GameSettings extends SavedData {
         tag.putBoolean("threePerksEnabled", threePerksEnabled);
         tag.putFloat("hackPointsRequired", hackPointsRequired);
         tag.putFloat("pointsPerPlayer", pointsPerPlayer);
-        tag.putFloat("pointsPerSpecialist", pointsPerSpecialist);
         tag.putInt("maxBonusPlayers", maxBonusPlayers);
         tag.putFloat("hackerRadius", hackerRadius);
         tag.putFloat("supportRadius", supportRadius);
@@ -163,7 +157,6 @@ public class GameSettings extends SavedData {
                 : DEFAULT_THREE_PERKS_ENABLED);
         s.setHackPointsRequired(tag.contains("hackPointsRequired")  ? tag.getFloat("hackPointsRequired")  : DEFAULT_HACK_POINTS_REQUIRED);
         s.setPointsPerPlayer(tag.contains("pointsPerPlayer")     ? tag.getFloat("pointsPerPlayer")     : DEFAULT_POINTS_PER_PLAYER);
-        s.setPointsPerSpecialist(tag.contains("pointsPerSpecialist") ? tag.getFloat("pointsPerSpecialist") : DEFAULT_POINTS_PER_SPECIALIST);
         s.setMaxBonusPlayers(tag.contains("maxBonusPlayers")     ? tag.getInt("maxBonusPlayers")       : DEFAULT_MAX_BONUS_PLAYERS);
         s.setHackerRadius(tag.contains("hackerRadius")        ? tag.getFloat("hackerRadius")        : DEFAULT_HACKER_RADIUS);
         s.setSupportRadius(tag.contains("supportRadius")       ? tag.getFloat("supportRadius")       : DEFAULT_SUPPORT_RADIUS);

@@ -24,7 +24,6 @@ public final class GameSettingsTest {
         settings.setGraphicsMode(GraphicsMode.HEAVY);
         settings.setHackPointsRequired(21.5F);
         settings.setPointsPerPlayer(0.3F);
-        settings.setPointsPerSpecialist(0.45F);
         settings.setMaxBonusPlayers(6);
         settings.setHackerRadius(2.4F);
         settings.setSupportRadius(4.6F);
@@ -34,8 +33,11 @@ public final class GameSettingsTest {
         settings.setQteCritBonus(1.5F);
         settings.setComputersNeededForWin(5);
         CompoundTag saved = settings.save(new CompoundTag());
-        GameSettings loaded = GameSettings.load(saved);
-        check(saved.equals(loaded.save(new CompoundTag())), "Every menu field must survive a world reload");
+        CompoundTag legacy = saved.copy();
+        legacy.putFloat("pointsPerSpecialist", 0.45F);
+        GameSettings loaded = GameSettings.load(legacy);
+        check(saved.equals(loaded.save(new CompoundTag())),
+                "Menu fields must survive reload and the old specialist rate must be discarded");
         check(loaded.getPerkLimit() == 3, "Experimental perk limit must survive reload");
         FriendlyByteBuf sync = new FriendlyByteBuf(Unpooled.buffer());
         FriendlyByteBuf update = new FriendlyByteBuf(Unpooled.buffer());
@@ -43,7 +45,7 @@ public final class GameSettingsTest {
         try {
             SyncSettingsPacket.encode(SyncSettingsPacket.from(loaded), sync);
             UpdateSettingsPacket.encode(new UpdateSettingsPacket(8, 3, 5, 2,
-                    21.5F, 0.3F, 0.45F, 6, 2.4F, 4.6F, 7, 9, 0.75F, 1.5F, 5, true, GraphicsMode.HEAVY), update);
+                    21.5F, 0.3F, 6, 2.4F, 4.6F, 7, 9, 0.75F, 1.5F, 5, true, GraphicsMode.HEAVY), update);
             check(sync.equals(update), "Menu upload and server snapshot must contain all the same fields");
             UpdateSettingsPacket.encode(UpdateSettingsPacket.decode(update), roundTrip);
             check(!update.isReadable() && sync.equals(roundTrip), "Upload codec must preserve every setting");

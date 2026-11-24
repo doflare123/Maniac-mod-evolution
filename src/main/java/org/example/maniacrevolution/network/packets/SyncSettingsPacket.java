@@ -16,7 +16,6 @@ public class SyncSettingsPacket {
     // Компьютеры
     private final float hackPointsRequired;
     private final float pointsPerPlayer;
-    private final float pointsPerSpecialist;
     private final int   maxBonusPlayers;
     private final float hackerRadius;
     private final float supportRadius;
@@ -32,7 +31,7 @@ public class SyncSettingsPacket {
     public SyncSettingsPacket(int hpBoost,
                               int maniacCount, int gameTime, int selectedMap,
                               float hackPointsRequired, float pointsPerPlayer,
-                              float pointsPerSpecialist, int maxBonusPlayers,
+                              int maxBonusPlayers,
                               float hackerRadius, float supportRadius,
                               int qteIntervalMin, int qteIntervalMax,
                               float qteSuccessBonus, float qteCritBonus,
@@ -44,7 +43,6 @@ public class SyncSettingsPacket {
         this.selectedMap          = selectedMap;
         this.hackPointsRequired   = hackPointsRequired;
         this.pointsPerPlayer      = pointsPerPlayer;
-        this.pointsPerSpecialist  = pointsPerSpecialist;
         this.maxBonusPlayers      = maxBonusPlayers;
         this.hackerRadius         = hackerRadius;
         this.supportRadius        = supportRadius;
@@ -63,7 +61,7 @@ public class SyncSettingsPacket {
                 s.getHpBoost(),
                 s.getManiacCount(), s.getGameTime(), s.getSelectedMap(),
                 s.getHackPointsRequired(), s.getPointsPerPlayer(),
-                s.getPointsPerSpecialist(), s.getMaxBonusPlayers(),
+                s.getMaxBonusPlayers(),
                 s.getHackerRadius(), s.getSupportRadius(),
                 s.getQteIntervalMin(), s.getQteIntervalMax(),
                 s.getQteSuccessBonus(), s.getQteCritBonus(),
@@ -79,7 +77,6 @@ public class SyncSettingsPacket {
         buf.writeInt(msg.selectedMap);
         buf.writeFloat(msg.hackPointsRequired);
         buf.writeFloat(msg.pointsPerPlayer);
-        buf.writeFloat(msg.pointsPerSpecialist);
         buf.writeInt(msg.maxBonusPlayers);
         buf.writeFloat(msg.hackerRadius);
         buf.writeFloat(msg.supportRadius);
@@ -96,7 +93,7 @@ public class SyncSettingsPacket {
         return new SyncSettingsPacket(
                 buf.readInt(),
                 buf.readInt(), buf.readInt(), buf.readInt(),
-                buf.readFloat(), buf.readFloat(), buf.readFloat(),
+                buf.readFloat(), buf.readFloat(),
                 buf.readInt(), buf.readFloat(), buf.readFloat(),
                 buf.readInt(), buf.readInt(),
                 buf.readFloat(), buf.readFloat(),
@@ -113,7 +110,7 @@ public class SyncSettingsPacket {
     public void applyToClient() {
         ClientGameSettings.setSettings(hpBoost, maniacCount, gameTime, selectedMap);
         ClientGameSettings.setComputerSettings(
-                hackPointsRequired, pointsPerPlayer, pointsPerSpecialist, maxBonusPlayers,
+                hackPointsRequired, pointsPerPlayer, maxBonusPlayers,
                 hackerRadius, supportRadius, qteIntervalMin, qteIntervalMax,
                 qteSuccessBonus, qteCritBonus, computersNeededForWin);
         ClientGameSettings.setExperimentSettings(threePerksEnabled);
