@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 public final class GuideProgressClient {
-    public static final int GUIDE_CONTENT_WEIGHT = 2026060801;
+    public static final int GUIDE_CONTENT_WEIGHT = 2026112501;
 
     private static final String FILE_NAME = "maniacrev_guide.properties";
     private static final String SEEN_WEIGHT_KEY = "seenGuideWeight";

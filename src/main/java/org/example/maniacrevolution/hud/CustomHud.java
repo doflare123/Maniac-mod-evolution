@@ -384,7 +384,8 @@ public class CustomHud implements IGuiOverlay {
         int effectsY = y + 4;
         renderHealthBar(gui, player, healthX, resourcesY);
         renderManaBar(gui, manaX, resourcesY);
-        renderStaminaBar(gui, manaX, resourcesY + RESOURCE_BAR_HEIGHT + 2, ClientStamina.denialRemaining(player));
+        renderStaminaBar(gui, manaX, resourcesY + RESOURCE_BAR_HEIGHT + 2,
+                animation.stamina(), ClientStamina.denialRemaining(player));
 
         int currentX = effectX;
 
@@ -488,7 +489,7 @@ public class CustomHud implements IGuiOverlay {
         }
     }
 
-    private void renderStaminaBar(GuiGraphics gui, int x, int y, float denialRemaining) {
+    public static void renderStaminaBar(GuiGraphics gui, int x, int y, float amount, float denialRemaining) {
         float tint = Math.min(1.0f, denialRemaining * 2.5f);
         float shake = 2.0f * denialRemaining * Mth.sin((1.0f - denialRemaining) * Mth.TWO_PI * 3.0f);
         int borderColor = withAlpha(lerpColor(PANEL_BORDER, 0xFFFF5260, tint),
@@ -496,7 +497,6 @@ public class CustomHud implements IGuiOverlay {
         int emptyColor = lerpColor(0xFF203629, 0xFF582126, tint);
         int fillColor = lerpColor(STAMINA_COLOR, 0xFFFF5260, tint);
         int highlightColor = lerpColor(0xFFA6F0B1, 0xFFFFA1AA, tint);
-        float amount = animation.stamina();
         int width = RESOURCE_BAR_WIDTH - 1;
         gui.pose().pushPose();
         gui.pose().translate(x + shake, y, 0);

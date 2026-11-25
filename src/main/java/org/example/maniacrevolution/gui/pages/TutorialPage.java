@@ -7,6 +7,8 @@ import org.example.maniacrevolution.gui.GuideScreen;
 import org.example.maniacrevolution.gui.GuideTheme;
 import org.example.maniacrevolution.downed.DownedData;
 import org.example.maniacrevolution.hack.HackConfig;
+import org.example.maniacrevolution.hud.CustomHud;
+import org.example.maniacrevolution.stamina.Stamina;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -238,7 +240,7 @@ public class TutorialPage extends GuidePage {
     // ═════════════════════════════════════════════════════════════════════════
 
     private enum Topic {
-        INTRO("intro"), HUD("hud"), BEFORE_START("before_start"), COMPUTERS("computers"),
+        INTRO("intro"), HUD("hud"), STAMINA("stamina"), BEFORE_START("before_start"), COMPUTERS("computers"),
         DOWNED("downed"), MAP_FEATURES("map_features"), PERKS("perks"), END("end");
 
         final String id;
@@ -253,6 +255,7 @@ public class TutorialPage extends GuidePage {
             return switch (this) {
                 case INTRO        -> buildIntro();
                 case HUD          -> buildHud();
+                case STAMINA      -> buildStamina();
                 case BEFORE_START -> buildBeforeStart();
                 case COMPUTERS    -> buildComputers();
                 case DOWNED       -> buildDowned();
@@ -299,6 +302,27 @@ public class TutorialPage extends GuidePage {
             s.add(new HeaderSection(t("guide.maniacrev.tutorial.hud.mana_title")));
             s.add(new TextSection(t("guide.maniacrev.tutorial.hud.mana_desc")));
             return s;
+        }
+
+        private static List<Section> buildStamina() {
+            String key = "guide.maniacrev.tutorial.stamina.";
+            return List.of(
+                    new TextSection(t(key + "overview", Stamina.CELLS)),
+                    new SpacerSection(6),
+                    new StaminaBarSection(t(key + "full"), Stamina.CELLS, 0.0f),
+                    new StaminaBarSection(t(key + "partial"), 4.5f, 0.0f),
+                    new StaminaBarSection(t(key + "empty"), 0.0f, 0.0f),
+                    new StaminaBarSection(t(key + "denied"), 0.5f, 1.0f),
+                    new SpacerSection(6),
+                    new HeaderSection(t(key + "spending_title")),
+                    new TextSection(t(key + "sprint")),
+                    new TextSection(t(key + "jump")),
+                    new SpacerSection(8),
+                    new HeaderSection(t(key + "recovery_title")),
+                    new TextSection(t(key + "recovery")),
+                    new SpacerSection(8),
+                    new HeaderSection(t(key + "denial_title")),
+                    new TextSection(t(key + "denial")));
         }
 
         // ── ДО СТАРТА ────────────────────────────────────────────────────────
@@ -537,6 +561,27 @@ public class TutorialPage extends GuidePage {
             for (int i = 0; i < lines.size(); i++) {
                 gui.drawString(font, lines.get(i), x, y + i * 11, 0xFFFFFF, false);
             }
+        }
+    }
+
+    private static class StaminaBarSection extends Section {
+        private final String label;
+        private final float cells;
+        private final float denial;
+
+        StaminaBarSection(String label, float cells, float denial) {
+            this.label = label;
+            this.cells = cells;
+            this.denial = denial;
+        }
+
+        @Override int getHeight(int maxWidth) { return 14; }
+
+        @Override
+        void render(GuiGraphics gui, int x, int y, int w, int mx, int my) {
+            CustomHud.renderStaminaBar(gui, x, y + 1, cells, denial);
+            gui.drawString(net.minecraft.client.Minecraft.getInstance().font, label,
+                    x + 130, y, GuideTheme.TEXT, false);
         }
     }
 
