@@ -18,6 +18,7 @@ import net.minecraft.world.phys.Vec3;
 import org.example.maniacrevolution.ModItems;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
+import org.example.maniacrevolution.game.GameManager;
 import org.example.maniacrevolution.maze.MazeGenerator;
 import org.example.maniacrevolution.maze.MazeManager;
 import org.example.maniacrevolution.network.ModNetworking;
@@ -65,6 +66,7 @@ public final class NightmareManager {
 
         long tick = server.overworld().getGameTime();
         List<ServerPlayer> keepers = players.stream().filter(this::isKeeper).toList();
+        boolean showSanity = shouldShowSanity(server);
 
         for (ServerPlayer player : players) {
             NightmarePlayerState state = state(player);
@@ -80,7 +82,7 @@ public final class NightmareManager {
                 tickSanity(player, state, keepers, tick);
             }
 
-            sync(player, state, keeperPresent);
+            sync(player, state, showSanity);
         }
         if (server.getTickCount() % KeeperSoulState.REFRESH_TICKS == 0) syncKeeperVision(keepers, players);
     }
@@ -140,7 +142,7 @@ public final class NightmareManager {
         state.sanity = Math.max(0.0F, state.sanity -
                 NightmareConfig.MAX_SANITY * NightmareConfig.CONCENTRATED_NIGHTMARE_SANITY_PERCENT);
         ModNetworking.sendToPlayer(new NightmareScreamerPacket(NightmareConfig.CONCENTRATED_NIGHTMARE_SCREAMER_TICKS), target);
-        sync(target, state, true);
+        sync(target, state, shouldShowSanity(target.server));
         target.displayClientMessage(Component.literal("Кошмар ударил по рассудку"), true);
         return true;
     }
@@ -160,7 +162,7 @@ public final class NightmareManager {
             abortTrial(player, state);
             state.abductionCooldownUntil = player.level().getGameTime() + NightmareConfig.ABDUCTION_COOLDOWN_TICKS;
             state.sanityImmunityUntil = player.level().getGameTime() + NightmareConfig.SANITY_IMMUNITY_AFTER_TRIAL_TICKS;
-            sync(player, state, hasKeeper(player.server));
+            sync(player, state, shouldShowSanity(player.server));
         }
     }
 
@@ -182,7 +184,7 @@ public final class NightmareManager {
         state.mazeTrialsStarted = 0;
         restoreInventory(player, state);
         state.clearTrial();
-        sync(player, state, hasKeeper(player.server));
+        sync(player, state, shouldShowSanity(player.server));
     }
 
     public int clearAll(MinecraftServer server) {
@@ -525,7 +527,7 @@ public final class NightmareManager {
                 responsibleKeeperId,
                 () -> player.hurt(player.damageSources().magic(), Float.MAX_VALUE)
         );
-        sync(player, state, hasKeeper(player.server));
+        sync(player, state, shouldShowSanity(player.server));
     }
 
     private void captureTrialInventory(ServerPlayer player, NightmarePlayerState state) {
@@ -626,17 +628,18 @@ public final class NightmareManager {
         });
     }
 
-    private boolean hasKeeper(MinecraftServer server) {
-        return server.getPlayerList().getPlayers().stream().anyMatch(this::isKeeper);
+    private static boolean shouldShowSanity(MinecraftServer server) {
+        return GameManager.getPhaseValue() > 0 && GameManager.hasActiveKeeperManiac(server);
     }
 
-    private void sync(ServerPlayer player, NightmarePlayerState state, boolean keeperPresent) {
+    private void sync(ServerPlayer player, NightmarePlayerState state, boolean showSanity) {
         int secondsLeft = state.isInTrial()
                 ? Math.max(0, (int) ((state.trialEndsAt - player.server.overworld().getGameTime()) / 20))
                 : 0;
         long immunityTicksLeft = Math.max(0L, state.sanityImmunityUntil - player.level().getGameTime());
         int immunitySecondsLeft = (int) ((immunityTicksLeft + 19L) / 20L);
-        sendState(player, new NightmareSyncState(keeperPresent, state.sanity,
+        boolean visible = showSanity && !isKeeper(player) && !player.isCreative() && !player.isSpectator();
+        sendState(player, new NightmareSyncState(visible, state.sanity,
                 state.trialType, secondsLeft, immunitySecondsLeft));
     }
 

@@ -32,7 +32,7 @@ public final class NightmareHud {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        if (ClientNightmareData.isVisible()) {
+        if (ClientNightmareData.isActive()) {
             int panelX = 6;
             int bottomOffset = 4 + (mc.screen instanceof ChatScreen ? 14 : 0);
             int panelY = screenHeight - PANEL_HEIGHT - bottomOffset;

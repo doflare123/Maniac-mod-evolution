@@ -27,11 +27,7 @@ public final class ClientNightmareData {
         sanityImmunitySecondsLeft = immunitySecondsLeft;
     }
 
-    public static boolean isVisible() {
-        return true;
-    }
-
-    /** Server activation flag, separate from the always-visible sanity HUD. */
+    /** Server activation flag for the sanity HUD and its visual effects. */
     public static boolean isActive() {
         return visible;
     }

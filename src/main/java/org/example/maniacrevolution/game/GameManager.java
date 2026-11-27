@@ -243,7 +243,7 @@ public class GameManager {
             return;
         }
 
-        if (!hasActiveKeeperManiac()) {
+        if (!hasActiveKeeperManiac(server)) {
             Maniacrev.LOGGER.info("No active Keeper of Nightmares found, skipped awakening needle distribution");
             return;
         }
@@ -273,10 +273,9 @@ public class GameManager {
         return mode == GameType.ADVENTURE || mode == GameType.SURVIVAL;
     }
 
-    private static boolean hasActiveKeeperManiac() {
+    public static boolean hasActiveKeeperManiac(MinecraftServer server) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            PlayerTeam team = (PlayerTeam) player.getTeam();
-            if (team == null || !MANIAC_TEAM_NAME.equalsIgnoreCase(team.getName())) {
+            if (!isInManiacTeam(player)) {
                 continue;
             }
 
