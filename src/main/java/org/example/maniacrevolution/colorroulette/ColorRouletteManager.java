@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.TickEvent;
@@ -18,7 +19,6 @@ import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -61,6 +61,7 @@ public final class ColorRouletteManager {
     private static final float COMPUTER_FRACTION =
             ColorRoulettePerk.COMPUTER_PERCENT / 100.0F;
     private static final Map<UUID, Spin> SPINS = new ConcurrentHashMap<>();
+    private static boolean wasInMatch;
 
     private ColorRouletteManager() {}
 
@@ -269,14 +270,16 @@ public final class ColorRouletteManager {
                 || stack.is(ModItems.GREEN_COLOR_CARD.get());
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         MinecraftServer server = event.getServer();
         if (GameManager.getPhaseValue() == 0) {
-            clearAll(server);
+            // The phase scoreboard can also be changed outside GameManager.setPhase.
+            if (wasInMatch) clearLobbyState(server);
             return;
         }
+        wasInMatch = true;
         for (Map.Entry<UUID, Spin> entry : SPINS.entrySet()) {
             UUID id = entry.getKey();
             ServerPlayer player = server.getPlayerList().getPlayer(id);
@@ -296,7 +299,6 @@ public final class ColorRouletteManager {
                 award(player, automatic);
             }
         }
-        tickAndEnforceCards(server);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -335,6 +337,13 @@ public final class ColorRouletteManager {
         }
     }
 
+    @SubscribeEvent
+    public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && GameManager.getPhaseValue() == 0) {
+            clearLobbyPlayer(player);
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onToss(ItemTossEvent event) {
         ItemStack stack = event.getEntity().getItem();
@@ -342,13 +351,6 @@ public final class ColorRouletteManager {
         event.setCanceled(true);
         if (!event.getPlayer().getInventory().add(stack.copy())) {
             event.getPlayer().containerMenu.setCarried(stack.copy());
-        }
-    }
-
-    @SubscribeEvent
-    public static void onContainerClosed(PlayerContainerEvent.Close event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            recoverExternalCards(player);
         }
     }
 
@@ -362,55 +364,7 @@ public final class ColorRouletteManager {
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         SPINS.clear();
-    }
-
-    private static void tickAndEnforceCards(MinecraftServer server) {
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-                ItemStack stack = player.getInventory().getItem(slot);
-                if (!isCard(stack)) continue;
-                UUID owner = ColorCardItem.getOwner(stack);
-                if (owner == null || !owner.equals(player.getUUID())) {
-                    player.getInventory().setItem(slot, ItemStack.EMPTY);
-                    if (owner != null) returnToOwner(server, owner, stack.copy());
-                    continue;
-                }
-                int remaining = ColorCardItem.getRemainingTicks(stack) - 1;
-                if (remaining <= 0) {
-                    player.getInventory().setItem(slot, ItemStack.EMPTY);
-                    player.displayClientMessage(Component.translatable(
-                            "message.maniacrev.color_roulette.card_expired"), true);
-                } else {
-                    ColorCardItem.setRemainingTicks(stack, remaining);
-                }
-            }
-            recoverExternalCards(player);
-        }
-    }
-
-    private static void recoverExternalCards(ServerPlayer viewer) {
-        for (net.minecraft.world.inventory.Slot slot : viewer.containerMenu.slots) {
-            if (slot.container instanceof Inventory || !slot.hasItem()
-                    || !isCard(slot.getItem())) continue;
-            ItemStack recovered = slot.getItem().copy();
-            slot.set(ItemStack.EMPTY);
-            UUID owner = ColorCardItem.getOwner(recovered);
-            if (owner != null) returnToOwner(viewer.server, owner, recovered);
-        }
-        ItemStack carried = viewer.containerMenu.getCarried();
-        if (isCard(carried)) {
-            viewer.containerMenu.setCarried(ItemStack.EMPTY);
-            UUID owner = ColorCardItem.getOwner(carried);
-            if (owner != null) returnToOwner(viewer.server, owner, carried.copy());
-        }
-    }
-
-    private static void returnToOwner(MinecraftServer server, UUID ownerId, ItemStack stack) {
-        ServerPlayer owner = server.getPlayerList().getPlayer(ownerId);
-        if (owner != null && !hasAnyCard(owner)) {
-            if (!owner.getInventory().add(stack)) owner.containerMenu.setCarried(stack);
-            owner.inventoryMenu.broadcastChanges();
-        }
+        wasInMatch = false;
     }
 
     private static void removeCards(ServerPlayer player) {
@@ -424,15 +378,25 @@ public final class ColorRouletteManager {
         }
     }
 
-    private static void clearAll(MinecraftServer server) {
+    public static void clearLobbyState(MinecraftServer server) {
+        wasInMatch = false;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            if (SPINS.remove(player.getUUID()) != null) {
-                ModNetworking.sendToPlayer(ColorRouletteStatePacket.clear(), player);
-            }
-            removeCards(player);
-            player.removeEffect(ModEffects.RED_GUIDANCE.get());
-            player.removeEffect(ModEffects.GREEN_CHARGE.get());
+            clearLobbyPlayer(player);
         }
+    }
+
+    private static void clearLobbyPlayer(ServerPlayer player) {
+        if (SPINS.remove(player.getUUID()) != null) {
+            ModNetworking.sendToPlayer(ColorRouletteStatePacket.clear(), player);
+        }
+        removeCards(player);
+        for (Slot slot : player.containerMenu.slots) {
+            if (!(slot.container instanceof Inventory) && isCard(slot.getItem())) {
+                slot.set(ItemStack.EMPTY);
+            }
+        }
+        player.removeEffect(ModEffects.RED_GUIDANCE.get());
+        player.removeEffect(ModEffects.GREEN_CHARGE.get());
     }
 
     private record Spin(long startedAt, ColorCard initialCenter) {}

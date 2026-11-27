@@ -13,7 +13,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
@@ -24,7 +23,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -223,7 +221,6 @@ public final class PinkOrchidManager {
             return;
         }
 
-        enforceBoundItems(server);
         if (phase == org.example.maniacrevolution.perk.PerkPhase.REVERSAL.getScoreboardValue()) {
             clearPhaseThreeRuntime(server);
             return;
@@ -275,14 +272,6 @@ public final class PinkOrchidManager {
         event.setCanceled(true);
         if (!event.getPlayer().getInventory().add(stack.copy())) {
             event.getPlayer().containerMenu.setCarried(stack.copy());
-        }
-    }
-
-    @SubscribeEvent
-    public static void onContainerClosed(PlayerContainerEvent.Close event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            recoverFromExternalMenu(player);
-            recoverCarried(player);
         }
     }
 
@@ -448,62 +437,11 @@ public final class PinkOrchidManager {
         if (resetMatchFlag) matchInitialized = false;
     }
 
-    private static void enforceBoundItems(MinecraftServer server) {
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-                ItemStack stack = player.getInventory().getItem(slot);
-                if (!stack.is(ModItems.PINK_ORCHID.get())) continue;
-                UUID ownerId = PinkOrchidItem.getOwner(stack);
-                if (ownerId == null || ownerId.equals(player.getUUID())) continue;
-                player.getInventory().setItem(slot, ItemStack.EMPTY);
-                returnToOwner(server, ownerId, stack.copy());
-            }
-            recoverFromExternalMenu(player);
-            recoverCarried(player);
-        }
-    }
-
-    private static void recoverFromExternalMenu(ServerPlayer viewer) {
-        for (net.minecraft.world.inventory.Slot slot : viewer.containerMenu.slots) {
-            if (slot.container instanceof Inventory || !slot.hasItem()
-                    || !slot.getItem().is(ModItems.PINK_ORCHID.get())) continue;
-            ItemStack recovered = slot.getItem().copy();
-            slot.set(ItemStack.EMPTY);
-            UUID ownerId = PinkOrchidItem.getOwner(recovered);
-            if (ownerId != null) returnToOwner(viewer.server, ownerId, recovered);
-        }
-    }
-
-    private static void recoverCarried(ServerPlayer viewer) {
-        ItemStack carried = viewer.containerMenu.getCarried();
-        if (!carried.is(ModItems.PINK_ORCHID.get())) return;
-        viewer.containerMenu.setCarried(ItemStack.EMPTY);
-        UUID ownerId = PinkOrchidItem.getOwner(carried);
-        if (ownerId != null) returnToOwner(viewer.server, ownerId, carried.copy());
-    }
-
-    private static void returnToOwner(MinecraftServer server, UUID ownerId, ItemStack stack) {
-        ServerPlayer owner = server.getPlayerList().getPlayer(ownerId);
-        if (owner != null && !hasBoundItem(owner)) {
-            if (!owner.getInventory().add(stack)) owner.containerMenu.setCarried(stack);
-            owner.inventoryMenu.broadcastChanges();
-        }
-    }
-
     private static void giveBoundItem(ServerPlayer owner) {
         removeBoundItems(owner);
         ItemStack orchid = PinkOrchidItem.createFor(owner);
         if (!owner.getInventory().add(orchid)) owner.containerMenu.setCarried(orchid);
         owner.inventoryMenu.broadcastChanges();
-    }
-
-    private static boolean hasBoundItem(ServerPlayer owner) {
-        for (int slot = 0; slot < owner.getInventory().getContainerSize(); slot++) {
-            if (PinkOrchidItem.belongsTo(owner.getInventory().getItem(slot), owner.getUUID())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static void removeBoundItems(ServerPlayer player) {

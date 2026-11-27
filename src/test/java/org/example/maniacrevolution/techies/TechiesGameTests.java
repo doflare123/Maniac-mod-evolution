@@ -202,6 +202,35 @@ public final class TechiesGameTests {
         h.succeed();
     }
     @GameTest(template="scp173_empty",batch="techies",timeoutTicks=40)
+    public static void emptyVisibilityCleanupAndRepopulation(GameTestHelper h) {
+        try(var s=new Scenario(h)) {
+            var known=(Map<UUID,Map<Integer,Integer>>)field("KNOWN");
+            var visibility=(Map<?,?>)field("VISIBILITY");
+            UUID owner=s.owner.getUUID();
+            s.update(0);
+            h.assertTrue(known.isEmpty() && visibility.isEmpty(),"empty index never populates visibility caches");
+
+            var mine=new TechiesManager.Mine(899,s.owner,s.support,MineType.RED);
+            mine.placed=true;
+            add(mine);
+            s.update(1);
+            h.assertTrue(known.getOrDefault(owner,Map.of()).containsKey(mine.id),"sparse scan shows the first mine");
+
+            TechiesManager.explode(mine,h.getLevel().getServer(),List.of());
+            s.update(2);
+            h.assertTrue(known.isEmpty() && visibility.isEmpty(),"removing the last mine discards cached visibility");
+            s.update(12);
+            h.assertTrue(known.isEmpty() && visibility.isEmpty(),"the next visibility interval leaves the caches empty");
+
+            var replacement=new TechiesManager.Mine(900,s.owner,s.support,MineType.RED);
+            replacement.placed=true;
+            add(replacement);
+            s.update(13);
+            h.assertTrue(known.getOrDefault(owner,Map.of()).containsKey(replacement.id),"visibility resumes when a mine is added");
+        }
+        h.succeed();
+    }
+    @GameTest(template="scp173_empty",batch="techies",timeoutTicks=40)
     public static void visibilitySpatialIndexAndLifecycle(GameTestHelper h) {
         try(var s=new Scenario(h)) {
             s.select(MineType.RED); s.place(); s.update(20); var mine=mines().values().iterator().next();
@@ -216,6 +245,8 @@ public final class TechiesGameTests {
             for(int i=0;i<4096;i++) { var m=new TechiesManager.Mine(10000+i,s.owner,s.support.offset(i*2,0,100),MineType.RED); m.placed=true; add(m); }
             h.assertTrue(mines().size()==4097,"no hard quantity limit");
             var index=(Map<?,?>)field("INDEX"); h.assertTrue(index.size()>100,"mines distributed among spatial cells");
+            s.update(23);
+            h.assertTrue(known.getOrDefault(s.owner.getUUID(),Map.of()).keySet().equals(Set.of(mine.id)),"dense index preserves nearby visibility");
             h.assertTrue(TechiesManager.clear(null)==4097 && index.isEmpty() && ((Set<?>)field("ACTIVE")).isEmpty(),"clear removes every spatial cell and pending activation");
         }
         h.succeed();

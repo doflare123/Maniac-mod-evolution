@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -22,7 +21,6 @@ import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -337,7 +335,6 @@ public final class SberSproutManager {
             }
             return;
         }
-        enforceBoundItems(server);
         if (phase == SberSproutPerk.LAST_ACTIVE_PHASE.getScoreboardValue() + 1) {
             for (UUID ownerId : new ArrayList<>(SESSIONS.keySet())) {
                 ServerPlayer player = server.getPlayerList().getPlayer(ownerId);
@@ -393,14 +390,6 @@ public final class SberSproutManager {
         event.setCanceled(true);
         if (!event.getPlayer().getInventory().add(stack.copy())) {
             event.getPlayer().containerMenu.setCarried(stack.copy());
-        }
-    }
-
-    @SubscribeEvent
-    public static void onContainerClosed(PlayerContainerEvent.Close event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            recoverFromExternalMenu(player);
-            recoverCarried(player);
         }
     }
 
@@ -527,54 +516,6 @@ public final class SberSproutManager {
         }
         if (player.containerMenu.getCarried().is(ModItems.SBER_SPROUT.get())) {
             player.containerMenu.setCarried(ItemStack.EMPTY);
-        }
-    }
-
-    private static void enforceBoundItems(MinecraftServer server) {
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            int ownCount = 0;
-            for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-                ItemStack stack = player.getInventory().getItem(slot);
-                if (!stack.is(ModItems.SBER_SPROUT.get())) continue;
-                UUID ownerId = SberSproutItem.getOwner(stack);
-                if (ownerId == null) {
-                    player.getInventory().setItem(slot, ItemStack.EMPTY);
-                } else if (!ownerId.equals(player.getUUID())) {
-                    player.getInventory().setItem(slot, ItemStack.EMPTY);
-                    returnToOwner(server, ownerId, stack.copy());
-                } else if (ownCount++ > 0) {
-                    player.getInventory().setItem(slot, ItemStack.EMPTY);
-                }
-            }
-            recoverFromExternalMenu(player);
-            recoverCarried(player);
-        }
-    }
-
-    private static void recoverFromExternalMenu(ServerPlayer viewer) {
-        for (net.minecraft.world.inventory.Slot slot : viewer.containerMenu.slots) {
-            if (slot.container instanceof Inventory || !slot.hasItem()
-                    || !slot.getItem().is(ModItems.SBER_SPROUT.get())) continue;
-            ItemStack recovered = slot.getItem().copy();
-            slot.set(ItemStack.EMPTY);
-            UUID ownerId = SberSproutItem.getOwner(recovered);
-            if (ownerId != null) returnToOwner(viewer.server, ownerId, recovered);
-        }
-    }
-
-    private static void recoverCarried(ServerPlayer viewer) {
-        ItemStack carried = viewer.containerMenu.getCarried();
-        if (!carried.is(ModItems.SBER_SPROUT.get())) return;
-        viewer.containerMenu.setCarried(ItemStack.EMPTY);
-        UUID ownerId = SberSproutItem.getOwner(carried);
-        if (ownerId != null) returnToOwner(viewer.server, ownerId, carried.copy());
-    }
-
-    private static void returnToOwner(MinecraftServer server, UUID ownerId, ItemStack stack) {
-        ServerPlayer owner = server.getPlayerList().getPlayer(ownerId);
-        if (owner != null && !hasOwnFilledItem(owner)) {
-            if (!owner.getInventory().add(stack)) owner.containerMenu.setCarried(stack);
-            owner.inventoryMenu.broadcastChanges();
         }
     }
 

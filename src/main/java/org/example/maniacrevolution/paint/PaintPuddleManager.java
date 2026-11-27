@@ -10,7 +10,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.GameType;
@@ -18,7 +17,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
-import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -186,7 +184,6 @@ public final class PaintPuddleManager {
             return;
         }
 
-        enforceBoundItems(server);
         synchronizePlayers(server);
         tickPuddles(server);
         tickQtes(server);
@@ -214,14 +211,6 @@ public final class PaintPuddleManager {
                 event.getHand(), event.getFace(), event.getHitVec().getLocation());
         event.setCancellationResult(result);
         event.setCanceled(true);
-    }
-
-    @SubscribeEvent
-    public static void onContainerClosed(PlayerContainerEvent.Close event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            recoverPaintFromOpenMenu(player);
-            recoverForeignCarriedPaint(player);
-        }
     }
 
     private static void tickPuddles(MinecraftServer server) {
@@ -367,55 +356,6 @@ public final class PaintPuddleManager {
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         clearMatch(event.getServer());
-    }
-
-    private static void enforceBoundItems(MinecraftServer server) {
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-                ItemStack stack = player.getInventory().getItem(slot);
-                if (!stack.is(ModItems.PAINT_CAN.get())) continue;
-                UUID ownerId = PaintCanItem.getOwner(stack);
-                if (ownerId != null && !ownerId.equals(player.getUUID())) {
-                    ItemStack recovered = stack.copy();
-                    player.getInventory().setItem(slot, ItemStack.EMPTY);
-                    returnToOwner(server, ownerId, recovered);
-                }
-            }
-            recoverPaintFromOpenMenu(player);
-            recoverForeignCarriedPaint(player);
-        }
-    }
-
-    private static void recoverForeignCarriedPaint(ServerPlayer viewer) {
-        ItemStack carried = viewer.containerMenu.getCarried();
-        if (!carried.is(ModItems.PAINT_CAN.get())) return;
-        UUID ownerId = PaintCanItem.getOwner(carried);
-        if (ownerId != null && !ownerId.equals(viewer.getUUID())) {
-            viewer.containerMenu.setCarried(ItemStack.EMPTY);
-            returnToOwner(viewer.server, ownerId, carried.copy());
-        }
-    }
-
-    private static void recoverPaintFromOpenMenu(ServerPlayer viewer) {
-        for (net.minecraft.world.inventory.Slot slot : viewer.containerMenu.slots) {
-            if (slot.container instanceof Inventory || !slot.hasItem()
-                    || !slot.getItem().is(ModItems.PAINT_CAN.get())) {
-                continue;
-            }
-            ItemStack recovered = slot.getItem().copy();
-            slot.set(ItemStack.EMPTY);
-            UUID ownerId = PaintCanItem.getOwner(recovered);
-            if (ownerId != null) {
-                returnToOwner(viewer.server, ownerId, recovered);
-            }
-        }
-    }
-
-    private static void returnToOwner(MinecraftServer server, UUID ownerId, ItemStack stack) {
-        ServerPlayer owner = server.getPlayerList().getPlayer(ownerId);
-        if (owner != null && !owner.getInventory().add(stack)) {
-            owner.containerMenu.setCarried(stack);
-        }
     }
 
     private static void removePaintCans(ServerPlayer player) {

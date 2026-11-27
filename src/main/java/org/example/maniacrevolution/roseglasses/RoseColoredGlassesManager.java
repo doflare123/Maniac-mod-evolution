@@ -6,13 +6,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -80,7 +78,6 @@ public final class RoseColoredGlassesManager {
             return;
         }
 
-        enforceBoundItems(server);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             tickPlayer(player, phase);
         }
@@ -160,14 +157,6 @@ public final class RoseColoredGlassesManager {
     }
 
     @SubscribeEvent
-    public static void onContainerClosed(PlayerContainerEvent.Close event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            recoverGlassesFromOpenMenu(player);
-            recoverCarriedGlasses(player);
-        }
-    }
-
-    @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             ACTIVE_PLAYERS.remove(player.getUUID());
@@ -223,56 +212,6 @@ public final class RoseColoredGlassesManager {
     private static boolean isActivePhase(int phase) {
         return phase == RoseColoredGlassesPerk.FIRST_ACTIVE_PHASE.getScoreboardValue()
                 || phase == RoseColoredGlassesPerk.LAST_ACTIVE_PHASE.getScoreboardValue();
-    }
-
-    private static void enforceBoundItems(MinecraftServer server) {
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-                ItemStack stack = player.getInventory().getItem(slot);
-                if (!stack.is(ModItems.ROSE_COLORED_GLASSES.get())) continue;
-                UUID ownerId = RoseColoredGlassesItem.getOwner(stack);
-                if (ownerId == null || ownerId.equals(player.getUUID())) continue;
-
-                ItemStack recovered = stack.copy();
-                player.getInventory().setItem(slot, ItemStack.EMPTY);
-                returnToOwner(server, ownerId, recovered);
-            }
-            recoverGlassesFromOpenMenu(player);
-            recoverCarriedGlasses(player);
-        }
-    }
-
-    private static void recoverCarriedGlasses(ServerPlayer viewer) {
-        ItemStack carried = viewer.containerMenu.getCarried();
-        if (!carried.is(ModItems.ROSE_COLORED_GLASSES.get())) return;
-
-        viewer.containerMenu.setCarried(ItemStack.EMPTY);
-        UUID ownerId = RoseColoredGlassesItem.getOwner(carried);
-        if (ownerId != null) {
-            returnToOwner(viewer.server, ownerId, carried.copy());
-        }
-    }
-
-    private static void recoverGlassesFromOpenMenu(ServerPlayer viewer) {
-        for (net.minecraft.world.inventory.Slot slot : viewer.containerMenu.slots) {
-            if (slot.container instanceof Inventory || !slot.hasItem()
-                    || !slot.getItem().is(ModItems.ROSE_COLORED_GLASSES.get())) {
-                continue;
-            }
-            ItemStack recovered = slot.getItem().copy();
-            slot.set(ItemStack.EMPTY);
-            UUID ownerId = RoseColoredGlassesItem.getOwner(recovered);
-            if (ownerId != null) {
-                returnToOwner(viewer.server, ownerId, recovered);
-            }
-        }
-    }
-
-    private static void returnToOwner(MinecraftServer server, UUID ownerId, ItemStack stack) {
-        ServerPlayer owner = server.getPlayerList().getPlayer(ownerId);
-        if (owner != null && !owner.getInventory().add(stack)) {
-            owner.containerMenu.setCarried(stack);
-        }
     }
 
     private static void removeGlasses(ServerPlayer player) {

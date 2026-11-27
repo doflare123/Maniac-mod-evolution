@@ -18,6 +18,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import org.example.maniacrevolution.Maniacrev;
 import org.example.maniacrevolution.ModItems;
+import org.example.maniacrevolution.colorroulette.ColorRouletteManager;
 import org.example.maniacrevolution.data.PlayerData;
 import org.example.maniacrevolution.data.PlayerDataManager;
 import org.example.maniacrevolution.necromancer.NecromancerResurrection;
@@ -110,6 +111,8 @@ public class GameManager {
         Objective obj = scoreboard.getObjective(PHASE_OBJECTIVE);
         Score score = scoreboard.getOrCreatePlayerScore("game", obj);
         score.setScore(phase);
+
+        if (phase == 0) ColorRouletteManager.clearLobbyState(server);
 
         // Оповещаем всех игроков
         if (phase != 3) {

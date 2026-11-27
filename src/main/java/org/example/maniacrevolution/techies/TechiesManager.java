@@ -38,10 +38,12 @@ public final class TechiesManager {
     public static final class Mine {
         final int id; final UUID owner; final ResourceLocation dimension; final BlockPos support;
         final Vec3 center; final MineType type;
+        private final Cell indexCell;
         boolean placed; long started=-1; int version;
         Mine(int id, ServerPlayer p, BlockPos support, MineType type) {
             this.id=id; owner=p.getUUID(); dimension=p.level().dimension().location(); this.support=support.immutable();
             center=center(support); this.type=type;
+            indexCell=cell(dimension,center);
         }
     }
     private record Cell(ResourceLocation dimension,int x,int y,int z) {}
@@ -49,7 +51,8 @@ public final class TechiesManager {
         final Mine mine; final Vec3 origin; final int slot; long start=-1;
         Placement(Mine mine, ServerPlayer p) { this.mine=mine; origin=p.position(); slot=p.getInventory().selected; }
     }
-    private static final Map<Integer,Mine> MINES=new HashMap<>();
+    // Sparse scans visit only live entries, even after a large match has been cleared.
+    private static final Map<Integer,Mine> MINES=new LinkedHashMap<>();
     private static final Map<Cell,Set<Integer>> INDEX=new HashMap<>();
     private static final Map<UUID,Set<Integer>> GREENS=new HashMap<>();
     private static final Set<Integer> ACTIVE=new HashSet<>();
@@ -78,20 +81,35 @@ public final class TechiesManager {
     }
     public static Vec3 center(BlockPos p) { return new Vec3(p.getX()+.5,p.getY()+1.002,p.getZ()+.5); }
     private static List<Mine> nearby(ResourceLocation d, Vec3 v, int cells) {
-        List<Mine> result=new ArrayList<>(); Cell c=cell(d,v);
+        if(INDEX.isEmpty()) return List.of();
+
+        List<Mine> result=new ArrayList<>();
+        Cell c=cell(d,v);
+        int width=2*cells+1;
+        if(MINES.size()<width*width*width) {
+            for(Mine mine:MINES.values()) {
+                Cell key=mine.indexCell;
+                if(d.equals(key.dimension) && Math.abs(key.x-c.x)<=cells
+                        && Math.abs(key.y-c.y)<=cells && Math.abs(key.z-c.z)<=cells) {
+                    result.add(mine);
+                }
+            }
+            return result;
+        }
+
         for(int x=c.x-cells;x<=c.x+cells;x++) for(int y=c.y-cells;y<=c.y+cells;y++) for(int z=c.z-cells;z<=c.z+cells;z++)
             for(int id:INDEX.getOrDefault(new Cell(d,x,y,z),Set.of())) { Mine m=MINES.get(id); if(m!=null) result.add(m); }
         return result;
     }
     private static void add(Mine m) {
-        MINES.put(m.id,m); INDEX.computeIfAbsent(cell(m.dimension,m.center),k->new HashSet<>()).add(m.id);
+        MINES.put(m.id,m); INDEX.computeIfAbsent(m.indexCell,k->new HashSet<>()).add(m.id);
         OWNER_COUNTS.merge(m.owner,1,Integer::sum); revision++;
     }
     private static void remove(Mine m) {
         revision++;
         if(MINES.remove(m.id)!=null) OWNER_COUNTS.computeIfPresent(m.owner,(owner,count)->count<=1?null:count-1);
         ACTIVE.remove(m.id);
-        Cell key=cell(m.dimension,m.center); Set<Integer> set=INDEX.get(key);
+        Cell key=m.indexCell; Set<Integer> set=INDEX.get(key);
         if(set!=null) { set.remove(m.id); if(set.isEmpty()) INDEX.remove(key); }
         Set<Integer> green=GREENS.get(m.owner); if(green!=null) { green.remove(m.id); if(green.isEmpty()) GREENS.remove(m.owner); }
     }
@@ -330,11 +348,21 @@ public final class TechiesManager {
         }
     }
     private static void visibility(ServerPlayer p) {
+        UUID playerId=p.getUUID();
+        if(INDEX.isEmpty()) {
+            VISIBILITY.remove(playerId);
+            Map<Integer,Integer> known=KNOWN.remove(playerId);
+            if(known!=null) {
+                for(int id:known.keySet()) send(p,2,id,0,BlockPos.ZERO,-1,0,0,0,0);
+            }
+            return;
+        }
+
         Mine chosen=active(p)&&holdingRemote(p)?target(p):null;
         Visibility signature=new Visibility(p.level().dimension().location(),p.getTeam()==null?"":p.getTeam().getName(),
                 PlayerModeUtil.isSurvivalOrAdventure(p),cell(p.level().dimension().location(),p.position()),chosen==null?0:chosen.id,revision,now/10);
-        if(signature.equals(VISIBILITY.put(p.getUUID(),signature))) return;
-        Map<Integer,Integer> known=KNOWN.computeIfAbsent(p.getUUID(),k->new HashMap<>());
+        if(signature.equals(VISIBILITY.put(playerId,signature))) return;
+        Map<Integer,Integer> known=KNOWN.computeIfAbsent(playerId,k->new HashMap<>());
         Set<Integer> wanted=new HashSet<>();
         if(PlayerModeUtil.isSurvivalOrAdventure(p) && p.getTeam()!=null) {
             List<Mine> candidates=nearby(p.level().dimension().location(),p.position(),4);
