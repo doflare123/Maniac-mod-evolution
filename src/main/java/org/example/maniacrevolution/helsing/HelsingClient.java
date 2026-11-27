@@ -22,7 +22,6 @@ import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.keybind.ModKeybinds;
 import org.joml.Vector3f;
 import java.util.*;
-import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber(modid = Maniacrev.MODID, value = Dist.CLIENT)
 public final class HelsingClient {
@@ -57,11 +56,10 @@ public final class HelsingClient {
         Minecraft mc = Minecraft.getInstance();
         return snapshot != null && mc.level == world && world != null && world.getGameTime() - received <= 20;
     }
-    public static Stream<MobEffectInstance> displayedEffects(Player player) {
-        Stream<MobEffectInstance> effects = player.getActiveEffects().stream();
+    public static MobEffectInstance getDisplayedProtection(Player player) {
         if (fresh() && protection != null && player == Minecraft.getInstance().player && HelsingManager.isSurvivor(player))
-            return Stream.concat(effects, Stream.of(protection));
-        return effects;
+            return protection;
+        return null;
     }
     public static float castTick(int id, float partial) {
         if (!fresh()) return -1;

@@ -6,6 +6,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -25,6 +26,14 @@ public class HudRenderer {
     private static int savedLeftHeight;
     private static int savedRightHeight;
     private static boolean actionbarHeightAdjusted;
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        var player = Minecraft.getInstance().player;
+        CustomHud.INSTANCE.updateTimedEffects(
+                player != null && PlayerModeUtil.isSurvivalOrAdventure(player) ? player : null);
+    }
 
     /**
      * Скрываем ванильные элементы HUD когда активен кастомный

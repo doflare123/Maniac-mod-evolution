@@ -29,6 +29,7 @@ import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.effect.ModEffects;
 import org.example.maniacrevolution.fleshheap.ClientFleshHeapData;
 import org.example.maniacrevolution.flower.FlowerVariant;
+import org.example.maniacrevolution.helsing.HelsingClient;
 import org.example.maniacrevolution.item.IItemWithAbility;
 import org.example.maniacrevolution.item.ITimedAbility;
 import org.example.maniacrevolution.item.armor.MedicalMaskItem;
@@ -43,15 +44,15 @@ import org.example.maniacrevolution.stamina.DashMovement;
 import org.example.maniacrevolution.stamina.Stamina;
 import org.example.maniacrevolution.stamina.client.ClientStamina;
 import org.example.maniacrevolution.stamina.client.PlayerLocomotionAnimations;
+import org.example.maniacrevolution.techies.MineType;
+import org.example.maniacrevolution.techies.client.TechiesClient;
 import org.example.maniacrevolution.util.PlayerModeUtil;
 
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 public class CustomHud implements IGuiOverlay {
     public static final CustomHud INSTANCE = new CustomHud();
@@ -68,6 +69,10 @@ public class CustomHud implements IGuiOverlay {
     private static final int TIMED_EFFECT_SECTION_GAP = 4;
     private static final int MAX_TIMED_EFFECTS_PER_ROW = 6;
     private static final int MAX_VISIBLE_TIMED_EFFECTS = MAX_TIMED_EFFECTS_PER_ROW * 2;
+    private static final MineType[] MINE_TYPES = MineType.values();
+    private static final Comparator<TimedEffectState> TIMED_EFFECT_ORDER = Comparator
+            .comparingInt((TimedEffectState effect) -> effect.priority)
+            .thenComparing(effect -> effect.sortKey);
     private static final int CHAT_HUD_OFFSET = 14;
     private static final int RESOURCE_BAR_WIDTH = 120;
     private static final int RESOURCE_BAR_HEIGHT = 14;
@@ -118,9 +123,11 @@ public class CustomHud implements IGuiOverlay {
 
     private final HudAnimationState animation = new HudAnimationState();
     private LocalPlayer staminaPlayer;
-    private final Map<MobEffect, TimedEffectState> timedEffectStates = new HashMap<>();
+    private final Map<MobEffectInstance, TimedEffectState> timedEffectStates = new IdentityHashMap<>();
+    private final List<TimedEffectState> timedEffects = new ArrayList<>();
     private ItemStack lastSelectedItem = ItemStack.EMPTY;
-    private UUID timedEffectPlayer;
+    private Player timedEffectPlayer;
+    private int timedEffectUpdate;
     private long itemNameShowTime;
 
     @Override
@@ -182,39 +189,53 @@ public class CustomHud implements IGuiOverlay {
         GeneratorChargeHud.render(gui, screenWidth - GeneratorChargeHud.WIDTH - 5, trackerY);
     }
 
+    void updateTimedEffects(Player player) {
+        if (player != timedEffectPlayer) {
+            timedEffectStates.clear();
+            timedEffectPlayer = player;
+        }
+        timedEffects.clear();
+        if (player == null) return;
+
+        timedEffectUpdate++;
+        for (MobEffectInstance effect : player.getActiveEffects()) {
+            addVisibleTimedEffect(effect);
+        }
+        MobEffectInstance protection = HelsingClient.getDisplayedProtection(player);
+        if (protection != null) addVisibleTimedEffect(protection);
+        if (!timedEffectStates.isEmpty()) {
+            timedEffectStates.values().removeIf(state -> state.lastUpdate != timedEffectUpdate);
+        }
+        if (timedEffects.size() > 1) timedEffects.sort(TIMED_EFFECT_ORDER);
+    }
+
+    private void addVisibleTimedEffect(MobEffectInstance effect) {
+        if (!isVisibleTimedEffect(effect)) return;
+
+        TimedEffectState state = timedEffectStates.computeIfAbsent(effect, TimedEffectState::new);
+        int remainingDuration = Math.max(0, effect.getDuration());
+        if (state.amplifier != effect.getAmplifier() || remainingDuration > state.previousRemainingDuration) {
+            state.totalDuration = Math.max(1, remainingDuration);
+            state.amplifier = effect.getAmplifier();
+        }
+        state.previousRemainingDuration = remainingDuration;
+        state.lastUpdate = timedEffectUpdate;
+        timedEffects.add(state);
+    }
+
+    private int visibleTimedEffectCount(Player player) {
+        // A new local player can render before its first client tick.
+        if (player != timedEffectPlayer) updateTimedEffects(player);
+        return Math.min(MAX_VISIBLE_TIMED_EFFECTS, timedEffects.size());
+    }
+
     private int renderTimedEffects(GuiGraphics gui, float partialTick, int screenWidth,
                                    int bottomY, Player player) {
-        if (!player.getUUID().equals(timedEffectPlayer)) {
-            timedEffectStates.clear();
-            timedEffectPlayer = player.getUUID();
-        }
-
-        List<MobEffectInstance> allEffects = org.example.maniacrevolution.helsing.HelsingClient.displayedEffects(player)
-                .filter(CustomHud::isVisibleTimedEffect)
-                .sorted(Comparator
-                        .comparingInt(CustomHud::getTimedEffectPriority)
-                        .thenComparing(effect ->
-                                BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect()).toString()))
-                .toList();
-
-        Set<MobEffect> activeEffectTypes = new HashSet<>();
-        for (MobEffectInstance effect : allEffects) {
-            activeEffectTypes.add(effect.getEffect());
-            updateTimedEffectState(effect);
-        }
-        timedEffectStates.keySet().removeIf(effect -> !activeEffectTypes.contains(effect));
-
-        List<MobEffectInstance> effects = allEffects.stream()
-                .limit(MAX_VISIBLE_TIMED_EFFECTS)
-                .toList();
-        int mineCount=org.example.maniacrevolution.techies.client.TechiesClient.eligible()?3:0;
-        int count=effects.size()+mineCount;
-        if (count==0) {
-            return 0;
-        }
+        int mineCount = TechiesClient.eligible() ? MINE_TYPES.length : 0;
+        int count = visibleTimedEffectCount(player) + mineCount;
+        if (count == 0) return 0;
 
         int effectsPerRow = MAX_TIMED_EFFECTS_PER_ROW;
-        int rowCount = (count + effectsPerRow - 1) / effectsPerRow;
 
         for (int index = 0; index < count; index++) {
             int row = index / effectsPerRow;
@@ -226,23 +247,18 @@ public class CustomHud implements IGuiOverlay {
                     + indexInRow * (TIMED_EFFECT_SIZE + TIMED_EFFECT_GAP);
             int y = bottomY - TIMED_EFFECT_SIZE
                     - row * (TIMED_EFFECT_SIZE + TIMED_EFFECT_GAP);
-            if(index<mineCount) renderMineStatus(gui,org.example.maniacrevolution.techies.MineType.values()[index],x,y);
-            else renderTimedEffect(gui, effects.get(index-mineCount), partialTick, x, y);
+            if (index < mineCount) renderMineStatus(gui, MINE_TYPES[index], x, y);
+            else renderTimedEffect(gui, timedEffects.get(index - mineCount), partialTick, x, y);
         }
 
-        return rowCount * TIMED_EFFECT_SIZE
-                + (rowCount - 1) * TIMED_EFFECT_GAP
-                + TIMED_EFFECT_SECTION_GAP;
+        return timedEffectSectionHeight(count);
     }
 
-    private void renderTimedEffect(GuiGraphics gui, MobEffectInstance effect,
+    private void renderTimedEffect(GuiGraphics gui, TimedEffectState state,
                                    float partialTick, int x, int y) {
+        MobEffectInstance effect = state.instance;
         MobEffect effectType = effect.getEffect();
         int remainingDuration = Math.max(0, effect.getDuration());
-        TimedEffectState state = timedEffectStates.get(effectType);
-        if (state == null) {
-            state = updateTimedEffectState(effect);
-        }
 
         float progress = effect.isInfiniteDuration() ? 1.0F
                 : Mth.clamp((remainingDuration - partialTick)
@@ -297,23 +313,6 @@ public class CustomHud implements IGuiOverlay {
         gui.pose().popPose();
     }
 
-    private TimedEffectState updateTimedEffectState(MobEffectInstance effect) {
-        MobEffect effectType = effect.getEffect();
-        int remainingDuration = Math.max(0, effect.getDuration());
-        TimedEffectState state = timedEffectStates.get(effectType);
-        if (state == null
-                || state.instance != effect
-                || state.amplifier != effect.getAmplifier()
-                || remainingDuration > state.previousRemainingDuration) {
-            state = new TimedEffectState(effect, Math.max(1, remainingDuration),
-                    remainingDuration, effect.getAmplifier());
-            timedEffectStates.put(effectType, state);
-        } else {
-            state.previousRemainingDuration = remainingDuration;
-        }
-        return state;
-    }
-
     private static boolean isVisibleTimedEffect(MobEffectInstance effect) {
         return effect.showIcon() && (!effect.isInfiniteDuration()
                 || effect.getEffect() == ModEffects.GREEN_CHARGE.get()
@@ -323,16 +322,13 @@ public class CustomHud implements IGuiOverlay {
                 || effect.getEffect() == ModEffects.SCP173_ARMOR.get());
     }
 
-    private static int getTimedEffectPriority(MobEffectInstance effect) {
-        ResourceLocation id = BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect());
-        return id != null && Maniacrev.MODID.equals(id.getNamespace()) ? 0 : 1;
-    }
-
     public static int getTimedEffectSectionHeight(Player player) {
         if (player == null) return 0;
-        int effectCount = (int) Math.min(MAX_VISIBLE_TIMED_EFFECTS,
-                org.example.maniacrevolution.helsing.HelsingClient.displayedEffects(player).filter(CustomHud::isVisibleTimedEffect).count());
-        if(org.example.maniacrevolution.techies.client.TechiesClient.eligible()) effectCount+=3;
+        int mineCount = TechiesClient.eligible() ? MINE_TYPES.length : 0;
+        return timedEffectSectionHeight(INSTANCE.visibleTimedEffectCount(player) + mineCount);
+    }
+
+    private static int timedEffectSectionHeight(int effectCount) {
         if (effectCount == 0) return 0;
         int rowCount = (effectCount + MAX_TIMED_EFFECTS_PER_ROW - 1)
                 / MAX_TIMED_EFFECTS_PER_ROW;
@@ -990,16 +986,18 @@ public class CustomHud implements IGuiOverlay {
 
     private static final class TimedEffectState {
         private final MobEffectInstance instance;
-        private final int totalDuration;
-        private final int amplifier;
+        private final int priority;
+        private final String sortKey;
+        private int totalDuration = 1;
+        private int amplifier;
         private int previousRemainingDuration;
+        private int lastUpdate;
 
-        private TimedEffectState(MobEffectInstance instance, int totalDuration,
-                                 int previousRemainingDuration, int amplifier) {
+        private TimedEffectState(MobEffectInstance instance) {
             this.instance = instance;
-            this.totalDuration = totalDuration;
-            this.previousRemainingDuration = previousRemainingDuration;
-            this.amplifier = amplifier;
+            ResourceLocation id = BuiltInRegistries.MOB_EFFECT.getKey(instance.getEffect());
+            this.priority = id != null && Maniacrev.MODID.equals(id.getNamespace()) ? 0 : 1;
+            this.sortKey = id == null ? "" : id.toString();
         }
     }
 }

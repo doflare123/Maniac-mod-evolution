@@ -18,6 +18,9 @@ public class CosmeticData {
     // Активированные эффекты (включённые)
     private final Set<String> enabledCosmetics = new HashSet<>();
 
+    private Set<String> purchasedSnapshot;
+    private Set<String> enabledSnapshot;
+
     // === Покупка ===
 
     public boolean hasPurchased(String cosmeticId) {
@@ -25,7 +28,7 @@ public class CosmeticData {
     }
 
     public void addPurchase(String cosmeticId) {
-        purchasedCosmetics.add(cosmeticId);
+        if (purchasedCosmetics.add(cosmeticId)) purchasedSnapshot = null;
     }
 
     public Set<String> getPurchasedCosmetics() {
@@ -41,25 +44,33 @@ public class CosmeticData {
     public void setEnabled(String cosmeticId, boolean enabled) {
         if (!purchasedCosmetics.contains(cosmeticId)) return;
 
-        if (enabled) {
-            enabledCosmetics.add(cosmeticId);
-        } else {
-            enabledCosmetics.remove(cosmeticId);
-        }
+        boolean changed = enabled ? enabledCosmetics.add(cosmeticId) : enabledCosmetics.remove(cosmeticId);
+        if (changed) enabledSnapshot = null;
     }
 
     public void toggleEnabled(String cosmeticId) {
-        if (!purchasedCosmetics.contains(cosmeticId)) return;
-
-        if (enabledCosmetics.contains(cosmeticId)) {
-            enabledCosmetics.remove(cosmeticId);
-        } else {
-            enabledCosmetics.add(cosmeticId);
-        }
+        setEnabled(cosmeticId, !enabledCosmetics.contains(cosmeticId));
     }
 
     public Set<String> getEnabledCosmetics() {
         return Collections.unmodifiableSet(enabledCosmetics);
+    }
+
+    // Identity is stable until the corresponding set changes.
+    public Set<String> getPurchasedSnapshot() {
+        if (purchasedSnapshot == null) {
+            purchasedSnapshot = purchasedCosmetics.isEmpty() ? Collections.emptySet()
+                    : Collections.unmodifiableSet(new HashSet<>(purchasedCosmetics));
+        }
+        return purchasedSnapshot;
+    }
+
+    public Set<String> getEnabledSnapshot() {
+        if (enabledSnapshot == null) {
+            enabledSnapshot = enabledCosmetics.isEmpty() ? Collections.emptySet()
+                    : Collections.unmodifiableSet(new HashSet<>(enabledCosmetics));
+        }
+        return enabledSnapshot;
     }
 
     // === Проверка активного эффекта для предмета ===

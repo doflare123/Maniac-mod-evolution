@@ -74,7 +74,12 @@ public class PerkInstance {
 
     /** Оставшееся время самого старого заряда — именно его показывает HUD. */
     public int getChargeRemainingTicks() {
-        return chargeDurationsRemaining.stream().min(Integer::compareTo).orElse(0);
+        if (chargeDurationsRemaining.isEmpty()) return 0;
+        int remaining = chargeDurationsRemaining.get(0);
+        for (int i = 1; i < chargeDurationsRemaining.size(); i++) {
+            remaining = Math.min(remaining, chargeDurationsRemaining.get(i));
+        }
+        return remaining;
     }
 
     public int getChargeDurationTicks() {

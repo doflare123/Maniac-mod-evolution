@@ -21,8 +21,8 @@ public class PlayerData {
     private int coins = 0;
 
     // Выбранные перки на текущую игру (2 или 3 с экспериментом)
-    private final List<PerkInstance> selectedPerks =
-            new ArrayList<>(GameSettings.EXPERIMENTAL_PERK_LIMIT);
+    private final List<PerkInstance> selectedPerks = new ArrayList<>(GameSettings.EXPERIMENTAL_PERK_LIMIT);
+    private final List<PerkInstance> selectedPerksView = Collections.unmodifiableList(selectedPerks);
     private int activePerkIndex = 0;
 
     // Выбранные классы на сервере. Scoreboard остаётся для датапака, это источник для логики мода.
@@ -31,6 +31,7 @@ public class PlayerData {
 
     // Пресеты (максимум 2 по умолчанию, можно докупить)
     private final List<PerkPreset> presets = new ArrayList<>();
+    private final List<PerkPreset> presetsView = Collections.unmodifiableList(presets);
     private int maxPresets = 2;
 
     // Косметика
@@ -99,7 +100,7 @@ public class PlayerData {
     // === Перки ===
 
     public List<PerkInstance> getSelectedPerks() {
-        return Collections.unmodifiableList(selectedPerks);
+        return selectedPerksView;
     }
 
     public int getActivePerkIndex() { return activePerkIndex; }
@@ -173,7 +174,7 @@ public class PlayerData {
     // === Пресеты ===
 
     public List<PerkPreset> getPresets() {
-        return Collections.unmodifiableList(presets);
+        return presetsView;
     }
 
     public int getMaxPresets() { return maxPresets; }

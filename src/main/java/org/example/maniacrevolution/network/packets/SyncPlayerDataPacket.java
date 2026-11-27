@@ -4,37 +4,35 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import org.example.maniacrevolution.data.ClientPlayerData;
 import org.example.maniacrevolution.data.PlayerData;
+import org.example.maniacrevolution.perk.PerkInstance;
 import org.example.maniacrevolution.preset.PerkPreset;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
 public class SyncPlayerDataPacket {
-    private final int level;
-    private final int experience;
-    private final int expForNext;
-    private final int coins;
+    private final ProfileSyncData profile;
     private final List<PerkSyncData> selectedPerks;
     private final int activePerkIndex;
-    private final List<PresetSyncData> presets;
-    private final int maxPresets;
-    private final Set<String> purchasedCosmetics;
-    private final Set<String> enabledCosmetics;
 
     public SyncPlayerDataPacket(PlayerData data) {
-        this.level = data.getLevel();
-        this.experience = data.getExperience();
-        this.expForNext = data.getExperienceForNextLevel();
-        this.coins = data.getCoins();
-        this.activePerkIndex = data.getActivePerkIndex();
-        this.maxPresets = data.getMaxPresets();
+        this(ProfileSyncData.capture(data), capturePerks(data.getSelectedPerks()), data.getActivePerkIndex());
+    }
 
-        this.selectedPerks = new ArrayList<>();
-        for (var inst : data.getSelectedPerks()) {
-            selectedPerks.add(new PerkSyncData(
+    private SyncPlayerDataPacket(ProfileSyncData profile, List<PerkSyncData> perks, int activePerkIndex) {
+        this.profile = profile;
+        this.selectedPerks = perks;
+        this.activePerkIndex = activePerkIndex;
+    }
+
+    private static List<PerkSyncData> capturePerks(List<PerkInstance> perks) {
+        List<PerkSyncData> snapshot = new ArrayList<>(perks.size());
+        for (PerkInstance inst : perks) {
+            snapshot.add(new PerkSyncData(
                     inst.getPerk().getId(),
                     inst.getCooldownRemaining(),
                     inst.getPerk().getCooldownTicks(),
@@ -45,39 +43,38 @@ public class SyncPlayerDataPacket {
                     inst.getChargeDurationTicks()
             ));
         }
-
-        this.presets = new ArrayList<>();
-        for (PerkPreset preset : data.getPresets()) {
-            presets.add(new PresetSyncData(preset.getName(), preset.getPerkIds()));
-        }
-
-        this.purchasedCosmetics = new HashSet<>(data.getCosmeticData().getPurchasedCosmetics());
-        this.enabledCosmetics = new HashSet<>(data.getCosmeticData().getEnabledCosmetics());
+        return snapshot;
     }
 
-    private SyncPlayerDataPacket(int level, int exp, int expNext, int coins,
-                                 List<PerkSyncData> perks, int activeIndex,
-                                 List<PresetSyncData> presets, int maxPresets,
-                                 Set<String> purchased, Set<String> enabled) {
-        this.level = level;
-        this.experience = exp;
-        this.expForNext = expNext;
-        this.coins = coins;
-        this.selectedPerks = perks;
-        this.activePerkIndex = activeIndex;
-        this.presets = presets;
-        this.maxPresets = maxPresets;
-        this.purchasedCosmetics = purchased;
-        this.enabledCosmetics = enabled;
+    /** Called with the last snapshot sent to this player, or null for the initial sync. */
+    public static SyncPlayerDataPacket periodicUpdate(PlayerData data, SyncPlayerDataPacket previous) {
+        if (previous == null || !previous.profile.matches(data)) return new SyncPlayerDataPacket(data);
+
+        List<PerkInstance> perks = data.getSelectedPerks();
+        int activeIndex = data.getActivePerkIndex();
+        if (activeIndex != previous.activePerkIndex || perks.size() != previous.selectedPerks.size()) {
+            return new SyncPlayerDataPacket(previous.profile, capturePerks(perks), activeIndex);
+        }
+
+        boolean refreshChargeClock = false;
+        for (int i = 0; i < perks.size(); i++) {
+            PerkSyncData synced = previous.selectedPerks.get(i);
+            if (!synced.matches(perks.get(i))) {
+                return new SyncPlayerDataPacket(previous.profile, capturePerks(perks), activeIndex);
+            }
+            // The client extrapolates the charge timer even while the server pauses it.
+            refreshChargeClock |= synced.chargeCount() > 0 && synced.chargeRemaining() > 0;
+        }
+        return refreshChargeClock ? previous : null;
     }
 
     public void encode(FriendlyByteBuf buf) {
-        buf.writeInt(level);
-        buf.writeInt(experience);
-        buf.writeInt(expForNext);
-        buf.writeInt(coins);
+        buf.writeInt(profile.level);
+        buf.writeInt(profile.experience);
+        buf.writeInt(profile.expForNext);
+        buf.writeInt(profile.coins);
         buf.writeInt(activePerkIndex);
-        buf.writeInt(maxPresets);
+        buf.writeInt(profile.maxPresets);
 
         // Перки
         buf.writeInt(selectedPerks.size());
@@ -93,8 +90,8 @@ public class SyncPlayerDataPacket {
         }
 
         // Пресеты
-        buf.writeInt(presets.size());
-        for (PresetSyncData preset : presets) {
+        buf.writeInt(profile.presets.size());
+        for (PresetSyncData preset : profile.presets) {
             buf.writeUtf(preset.name, 64);
             buf.writeInt(preset.perkIds.size());
             for (String id : preset.perkIds) {
@@ -103,32 +100,16 @@ public class SyncPlayerDataPacket {
         }
 
         // Косметика - купленная
-        buf.writeInt(purchasedCosmetics.size());
-        for (String id : purchasedCosmetics) {
+        buf.writeInt(profile.purchasedCosmetics.size());
+        for (String id : profile.purchasedCosmetics) {
             buf.writeUtf(id, 64);
         }
 
         // Косметика - включённая
-        buf.writeInt(enabledCosmetics.size());
-        for (String id : enabledCosmetics) {
+        buf.writeInt(profile.enabledCosmetics.size());
+        for (String id : profile.enabledCosmetics) {
             buf.writeUtf(id, 64);
         }
-    }
-
-    /** Active charges need a clock refresh even when their server timer is paused. */
-    public boolean needsPeriodicSync(SyncPlayerDataPacket previous) {
-        if (previous == null || level != previous.level || experience != previous.experience
-                || expForNext != previous.expForNext || coins != previous.coins
-                || activePerkIndex != previous.activePerkIndex || maxPresets != previous.maxPresets
-                || !selectedPerks.equals(previous.selectedPerks) || !presets.equals(previous.presets)
-                || !purchasedCosmetics.equals(previous.purchasedCosmetics)
-                || !enabledCosmetics.equals(previous.enabledCosmetics)) {
-            return true;
-        }
-        for (PerkSyncData perk : selectedPerks) {
-            if (perk.chargeCount() > 0 && perk.chargeRemaining() > 0) return true;
-        }
-        return false;
     }
 
     public static SyncPlayerDataPacket decode(FriendlyByteBuf buf) {
@@ -176,25 +157,73 @@ public class SyncPlayerDataPacket {
             enabled.add(buf.readUtf(64));
         }
 
-        return new SyncPlayerDataPacket(level, exp, expNext, coins, perks, activeIndex,
-                presets, maxPresets, purchased, enabled);
+        return new SyncPlayerDataPacket(new ProfileSyncData(level, exp, expNext, coins,
+                presets, maxPresets, purchased, enabled), perks, activeIndex);
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ClientPlayerData.update(level, experience, expForNext, coins,
-                    selectedPerks, activePerkIndex, presets, maxPresets,
-                    purchasedCosmetics, enabledCosmetics);
+            ClientPlayerData.update(profile.level, profile.experience, profile.expForNext, profile.coins,
+                    selectedPerks, activePerkIndex, profile.presets, profile.maxPresets,
+                    profile.purchasedCosmetics, profile.enabledCosmetics);
         });
         ctx.get().setPacketHandled(true);
     }
 
     public record PerkSyncData(String id, int cooldown, int maxCooldown, int typeOrdinal,
                                float manaCost, int chargeCount, int chargeRemaining,
-                               int chargeDuration) {}
+                               int chargeDuration) {
+        private boolean matches(PerkInstance instance) {
+            var perk = instance.getPerk();
+            return id.equals(perk.getId()) && cooldown == instance.getCooldownRemaining()
+                    && maxCooldown == perk.getCooldownTicks() && typeOrdinal == perk.getType().ordinal()
+                    && Float.compare(manaCost, perk.getManaCost()) == 0
+                    && chargeCount == instance.getChargeCount() && chargeRemaining == instance.getChargeRemainingTicks()
+                    && chargeDuration == instance.getChargeDurationTicks();
+        }
+    }
     public record PresetSyncData(String name, List<String> perkIds) {
         public PresetSyncData {
             perkIds = List.copyOf(perkIds);
+        }
+
+        private boolean matches(PerkPreset preset) {
+            List<String> currentIds = preset.getPerkIds();
+            if (!Objects.equals(name, preset.getName()) || perkIds.size() != currentIds.size()) return false;
+            for (int i = 0; i < perkIds.size(); i++) {
+                if (!perkIds.get(i).equals(currentIds.get(i))) return false;
+            }
+            return true;
+        }
+    }
+
+    private record ProfileSyncData(int level, int experience, int expForNext, int coins,
+                                   List<PresetSyncData> presets, int maxPresets,
+                                   Set<String> purchasedCosmetics, Set<String> enabledCosmetics) {
+        private static ProfileSyncData capture(PlayerData data) {
+            List<PresetSyncData> presets = new ArrayList<>(data.getPresets().size());
+            for (PerkPreset preset : data.getPresets()) {
+                presets.add(new PresetSyncData(preset.getName(), preset.getPerkIds()));
+            }
+            var cosmetics = data.getCosmeticData();
+            return new ProfileSyncData(data.getLevel(), data.getExperience(), data.getExperienceForNextLevel(),
+                    data.getCoins(), presets, data.getMaxPresets(),
+                    cosmetics.getPurchasedSnapshot(), cosmetics.getEnabledSnapshot());
+        }
+
+        private boolean matches(PlayerData data) {
+            var cosmetics = data.getCosmeticData();
+            List<PerkPreset> currentPresets = data.getPresets();
+            if (level != data.getLevel() || experience != data.getExperience() || coins != data.getCoins()
+                    || expForNext != data.getExperienceForNextLevel() || maxPresets != data.getMaxPresets()
+                    || purchasedCosmetics != cosmetics.getPurchasedSnapshot()
+                    || enabledCosmetics != cosmetics.getEnabledSnapshot() || presets.size() != currentPresets.size()) {
+                return false;
+            }
+            for (int i = 0; i < presets.size(); i++) {
+                if (!presets.get(i).matches(currentPresets.get(i))) return false;
+            }
+            return true;
         }
     }
 }

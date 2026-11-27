@@ -189,10 +189,9 @@ public class PlayerDataManager {
                     data.tick(player, currentPhase);
                 }
 
-                // ФИКС: Периодически синхронизируем кулдауны с клиентом
-                if (shouldSync && !data.getSelectedPerks().isEmpty()) {
-                    SyncPlayerDataPacket snapshot = new SyncPlayerDataPacket(data);
-                    if (snapshot.needsPeriodicSync(LAST_SYNC.get(player.getUUID()))) {
+                if (shouldSync) {
+                    SyncPlayerDataPacket snapshot = SyncPlayerDataPacket.periodicUpdate(data, LAST_SYNC.get(player.getUUID()));
+                    if (snapshot != null) {
                         sendSnapshot(player, snapshot);
                     }
                 }
